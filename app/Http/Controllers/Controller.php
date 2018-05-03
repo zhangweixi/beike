@@ -14,7 +14,9 @@ class Controller extends BaseController
 
     
 
-    //公共方法
+    /*
+    *公共方法
+    */
     public function action(Request $request)
     {
     	$method	= $request->input('action');
