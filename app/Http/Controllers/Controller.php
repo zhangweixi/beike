@@ -13,10 +13,12 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     
+
+    //公共方法
     public function action(Request $request)
     {
     	$method	= $request->input('action');
-    	
+
     	return $this->$method($request);
     }
 }
