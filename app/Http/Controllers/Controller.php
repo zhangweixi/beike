@@ -15,12 +15,19 @@ class Controller extends BaseController
     
 
     /*
-    *公共方法
+    * 公共方法
+    * param Request $request 请求变量
     */
     public function action(Request $request)
     {
     	$method	= $request->input('action');
 
     	return $this->$method($request);
+    }
+
+
+    public function test()
+    {
+    	
     }
 }
