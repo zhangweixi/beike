@@ -26,6 +26,7 @@ class MatchController extends Controller
 
         $dataType   = $request->input('dataType');
 
+        $matchId    = time();
         $matchData  = [
             'match_id'  => $matchId,
             'user_id'   => $userId,
