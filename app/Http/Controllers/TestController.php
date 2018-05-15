@@ -10,10 +10,15 @@ namespace App\Http\Controller;
 class TestController
 {
 	
-	function __construct(argument)
+	function __construct($argument)
 	{
 		
 	}
+
+	function test()
+    {
+
+    }
 }
 
 
