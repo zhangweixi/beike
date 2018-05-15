@@ -18,15 +18,12 @@ class MatchModel extends Model
     }
 
 
-
     /**
      * 添加传感仪数据
      * */
-    public function add_sensor_data()
+    public function add_sensor_data(array $sensorData)
     {
-
-
-
+        return DB::table('match_sensor')->insert($sensorData);
 
     }
 

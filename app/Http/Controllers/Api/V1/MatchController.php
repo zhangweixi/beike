@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\MatchModel;
+use Illuminate\Support\Facades\Redis;
+use DB;
 
 
 
@@ -42,6 +44,9 @@ class MatchController extends Controller
         }
         return apiData()->send(200,'ok');
     }
+
+
+
 
 
     /**
@@ -82,11 +87,99 @@ class MatchController extends Controller
     {
 
 
+        $sensor     = str_replace(" ","",$sensor);
+        $sensorArray= explode(',',$sensor);
+        $matchModel = new MatchModel();
+
+        foreach($sensorArray as $singleData)
+        {
+            $otherInfo  = [
+                'source_data'   => $singleData,
+                'data_key'      => time(),
+            ];
+
+            $fullMatchInfo      = array_merge($matchData,$otherInfo);
+            $matchModel->add_sensor_data($fullMatchInfo);
+
+        }
 
     }
 
 
 
+    public function redis()
+    {
+
+        return [Redis];
+        //Redis::set('name',time());
+
+        $name = Redis::get('name');
+        exit('kk');
+        return "hello";
+        return [$name];
+
+    }
 
 
+    public function read_data()
+    {
+
+        $datas  = DB::table('match_gps')->where('gps_id',">=",276)->where('gps_id',"<=",281)->get();
+
+        $str    = "";
+
+        $arr    = [];
+        foreach($datas as $key => $d)
+        {
+
+            //1.去掉前面的类型和数字  但是前面是不固定的，所以只有在第一条的时候切割掉前面的是数字
+
+            $posi   = stripos($d->source_data,"2c00");
+
+            $str    .= substr($d->source_data,$posi+4);
+        }
+
+
+        $arr    = explode("23232323",$str);
+        $arr    = array_filter($arr);
+        foreach($arr as $key =>  $single)
+        {
+            $data   = substr($single,16);
+            $data   = str_replace("0d0a","",$data);
+            $arr[$key]  = strToAscll($data);
+
+            $d = explode(",",$arr[$key]);
+            $d2 = [];
+            foreach($d as $k1 => $d1)
+            {
+
+                $d2['i-'.$k1]= $d1;
+            }
+            return $d2;
+        }
+        return $arr;
+    }
+
+
+
+
+}
+
+
+
+
+
+
+function strToAscll($str)
+{
+    $len    = strlen($str);
+    $temp   = "";
+
+    for($i = 0;$i<$len;$i=$i+2)
+    {
+
+        $temp .= chr(hexdec(substr($str,$i,2)));   //十六进制转换成ASCLL
+
+    }
+    return $temp;
 }
