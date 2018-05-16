@@ -111,14 +111,8 @@ class MatchController extends Controller
     public function redis()
     {
 
-        return [Redis];
-        //Redis::set('name',time());
-
-        $name = Redis::get('name');
-        exit('kk');
-        return "hello";
-        return [$name];
-
+        Redis::set('name',time());
+        return Redis::get('name');
     }
 
 
