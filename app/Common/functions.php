@@ -523,15 +523,6 @@ function unset_array_by_keys(&$arr,array $keys)
     }
 }
 
-function return_json($code, $message, $data = '') {
-    return apiData()
-        ->set_data('data',$data)
-        ->set_data('error_code',(string)$code)
-        ->set_data('error_info',$message)
-        ->send_old($code,$message);
-
-}
-
 
 
 /**
@@ -595,54 +586,34 @@ function create_qrcode($file,$text)
 }
 
 
-function get_user_status($isLogin,$status = 0,$endTime = '', $appKey = '')
+/**
+ * 十六进制转换成ascll格式的字符串
+ */
+function strToAscll($str)
 {
+    $len    = strlen($str);
+    $temp   = "";
 
-    define('mem_status_unlogin',3);
-    define('mem_status_had_end',1);
-    define('mem_status_payed',2);
-    define('mem_status_unpay',4);
-    $memStatus = mem_status_unlogin;
-    //判断用户的状态
-
-    if($isLogin)
+    for($i = 0;$i<$len;$i=$i+2)
     {
-        if ($status == 1) {
-            $nowtime = date('Y-m-d h:i:s', time());
 
-            if (strtotime($nowtime) > strtotime($endTime)) {
-                $memStatus = mem_status_had_end;//会员到期
-            } else {
+        $temp .= chr(hexdec(substr($str,$i,2)));   //十六进制转换成ASCLL
 
-                $memStatus = mem_status_payed; //已付费
-            }
-        } else {
-            $memStatus = mem_status_unpay;//未付费
-        }
     }
-
-    if($memStatus != mem_status_payed && $appKey)
-    {
-        $isPay = DB::table('orderprepaidlog')
-            ->where('app_key',$appKey)
-            ->where('pay_status',1)->count();
-        $memStatus = $isPay > 0 ? mem_status_payed : mem_status_unpay;
-    }
-    return $memStatus;
+    return $temp;
 }
 
 
-function change_read_number($readNumber)
+
+/**
+ * 驼峰转化成下划线
+ * @param $str string
+ * */
+function tofeng_to_line($str)
 {
-    if($readNumber < 10000)
-    {
-        return $readNumber."次播放";
+    $str = preg_replace_callback("/[A-Z]/", function($ma){return "_".strtolower($ma[0]);}, $str);
 
-    } else {
-
-        return sprintf("%.2f",$readNumber / 10000)."万次播放";
-    }
-
+    return $str;
 }
 
 ?>

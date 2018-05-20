@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\V1;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -8,6 +8,17 @@ use Illuminate\Support\Facades\DB;
 class MatchModel extends Model
 {
 
+    /**
+     * 添加设备源数据
+     * */
+    public function add_match_source_data($data)
+    {
+        $data['created_at'] = date_time();
+
+        $dataId     = DB::table('match_source_data')->insertGetId($data);
+
+        return $dataId;
+    }
 
     /**
      * 添加GPS数据

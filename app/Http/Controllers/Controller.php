@@ -7,7 +7,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Common\Params;
-use Request;
+use Illuminate\Http\Request;
 
 
 class Controller extends BaseController
@@ -22,7 +22,7 @@ class Controller extends BaseController
     */
     public function action(Request $request,$action)
     {
-    	//$method	= $request->input('action');
+        $action = tofeng_to_line($action);
 
         if(method_exists($this,$action))
         {

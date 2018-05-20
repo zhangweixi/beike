@@ -11,9 +11,11 @@ $api->version('v1',['prefix'=>"api/v1",'namespace'=>"App\Http\Controllers\Api\V1
     $api->post("checkCode","RestFulController@check_mobile_code");
 
     $api->post('/match/uploadMatchData','MatchController@upload_match_data');
-    $api->post('/match/{action}','MatchController@action');
+    $api->post('/match/{action}',       'MatchController@action');
     //
 
     //zhangweixi
+    $api->post('/user/{action}',        'UserController@action');
+
 
 });
