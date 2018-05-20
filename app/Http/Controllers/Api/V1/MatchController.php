@@ -46,6 +46,8 @@ class MatchController extends Controller
         $delayTime      = now()->addSecond(2);
         AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
 
+        $request->offsetSet('sourceId',$sourceId);
+        $this->handle_data($request);
         return apiData()->send(200,'ok');
     }
 
@@ -71,10 +73,8 @@ class MatchController extends Controller
                 'data_key'      => time(),
             ];
 
-
             $fullMatchInfo      = array_merge($matchData,$otherInfo);
             $matchModel->add_gps_data($fullMatchInfo);
-
         }
     }
 
@@ -94,51 +94,111 @@ class MatchController extends Controller
 
             $fullMatchInfo      = array_merge($matchData,$otherInfo);
             $matchModel->add_sensor_data($fullMatchInfo);
-
         }
     }
+
+
+    public function handle_data(Request $request)
+    {
+
+        $sourceId = $request->input('sourceId');
+        $data   = DB::table('match_source_data')->where('match_source_id',$sourceId)->first();
+        $type   = $data->type;
+        $datas  = explode(",",$data->data);
+        $str    = "";
+        $matchData  = [
+            'source_id' => $sourceId,
+            'match_id'  => $data->match_id,
+            'user_id'   => $data->user_id,
+            'device_sn' => $data->device_sn,
+        ];
+
+        foreach($datas  as $data)
+        {
+            //1.去掉前面的类型和数字  但是前面是不固定的，所以只有在第一条的时候切割掉前面的是数字
+            $str    .= $this->delete_head($data);
+        }
+
+
+        if($type == 'gps')
+        {
+            return $this->handle_gps_data($str,$matchData);
+
+        }elseif($type == 'sensor'){
+
+            return $this->hand_sensor_data($str,$matchData);
+        }
+    }
+
 
     /**
      * 从数据库读取数据并解析成想要的格式
      * */
-    public function read_gps_data()
+    public function handle_gps_data($dataSource,$matchData)
     {
+        $matchModel  = new MatchModel();
+        $dataList    = explode("23232323",$dataSource); //gps才有232323
+        $dataList    = array_filter($dataList);
 
-        $matchId= 1526625576;
+        $lat    = [];
+        $lon    = [];
+        $spe    = [];
+        $dir    = [];
 
-        $datas  = DB::table('match_gps')->where('match_id',$matchId)->get();
 
-        $str    = "";
-
-        foreach($datas as $key => $d)
+        foreach($dataList as $key =>  $single)
         {
-            //1.去掉前面的类型和数字  但是前面是不固定的，所以只有在第一条的时候切割掉前面的是数字
-
-            $str    .= $this->delete_head($d->source_data);
-        }
-
-        $arr    = explode("23232323",$str);
-        $arr    = array_filter($arr);
-
-        foreach($arr as $key =>  $single)
-        {
-            $data   = substr($single,16);
-
+            $data       = substr($single,16);
             $arr[$key]  = strToAscll($data);
+            $detailInfo = explode(",",$arr[$key]);
 
-            if(0) //返回切割后的
+            if(count($detailInfo)<15)
             {
-                $d = explode(",",$arr[$key]);
-                $d2 = [];
-                foreach($d as $k1 => $d1)
-                {
-                    $d2['i-'.$k1]= $d1;
-                }
-                return $d2;
+                continue;
+            }
+
+            $tlat       = $detailInfo[2];
+            $tlon       = $detailInfo[4];
+            $tspe       = $detailInfo[11];
+            $tdir       = $detailInfo[3]."/".$detailInfo[5];
+
+            array_push($lat,$tlat);
+            array_push($lon,$tlon);
+            array_push($spe,$tspe);
+            array_push($dir,$tdir);
+
+            if(0)
+            {
+                //将分解的数据写入数据库
+                $otherInfo  = [
+                    'source_data'   => $single,
+                    'latitude'      => $tlat,
+                    'longitude'     => $tlon,
+                    'speed'         => $tspe,
+                    'direction'     => $tdir,
+                    'status'        => $detailInfo[6],
+                    'data_key'      => 0,
+                    'data_time'     => $detailInfo[1],
+                ];
+                $fullMatchInfo      = array_merge($matchData,$otherInfo);
+                $matchModel->add_gps_data($fullMatchInfo);
             }
         }
-        return $arr;
+        //要获得两种数据 1是负责给matlab处理的，一种是负责给写入数据库的 同时写入会造成新能问题
+        $matlabData = [
+            'lat'   => $lat,
+            'lon'   => $lon,
+            'spe'   => $spe,
+            'dir'   => $dir
+        ];
+
+        file_put_contents(public_path('gps.json'),\GuzzleHttp\json_encode($matlabData));
+        return $matlabData;
     }
+
+
+
+
 
     /**
      * 去除头部
@@ -157,29 +217,10 @@ class MatchController extends Controller
     /**
      * 读取sensor数据
      * */
-    public function read_sensor_data()
+    public function hand_sensor_data($dataSource,$matchData)
     {
 
-        $str    = "00000000 99feffff 95010000 d5fcffff 55020000 01000000 99feffff 95010000 d5fcffff 55020000";
-
-        $str    = "";
-        $sensors= DB::table('match_sensor')->where('match_id','1526628259')->orderBy('sensor_id','asc')->get();
-        $arr    = [];
-        foreach($sensors as $str1)
-        {
-            //array_push($arr,$str1->source_data);
-            //array_push($arr,$this->delete_head($str1->source_data));
-
-            $str .= $this->delete_head($str1->source_data);
-        }
-
-
-        return $str;
-
-
-        $str    = str_replace(" ", "", $str);
-        $dataArr= str_split($str,40);
-
+        $dataArr= str_split($dataSource,40);
 
         $ax = $ay = $az = $gx = $gy = $gz = [];
         foreach($dataArr as $key => $d)
@@ -210,6 +251,7 @@ class MatchController extends Controller
             }
         }
 
+
         $data   = [
             'ax'    => $ax,
             'ay'    => $ay,
@@ -219,7 +261,7 @@ class MatchController extends Controller
             'gz'    => $gz
         ];
 
-
+        file_put_contents(public_path('sensor.json'),\GuzzleHttp\json_encode($data));
         return $data;
 
 
@@ -313,6 +355,12 @@ class MatchController extends Controller
     }
 
 }
+
+
+
+
+
+
 
 
 
