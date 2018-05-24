@@ -247,7 +247,9 @@ class MatchController extends Controller
         //exit($dataSource);
         $leng   = 42;
         $dataArr= str_split($dataSource,$leng);
+        //return count($dataArr);
         //return $dataArr;
+
         $ax = $ay = $az = $gx = $gy = $gz = [];
         $temparr = [];
         foreach($dataArr as $key => $d)
@@ -398,12 +400,16 @@ function hexToInt($hex){
     {
         return false;
     }
+    //mylogger('原始数据——'.$hex);
+
     $hexArr = str_split($hex,2);
     //将低位在前高位在后转换成 高位在前低位在后
     $hexArr = array_reverse($hexArr);
     $hex    = implode("",$hexArr);
-    return  hexdec($hex);
-    //return unpack("l", pack("l", hexdec($hex)))[1];
+    //mylogger('新数据——'.$hex);
+
+    //return  hexdec($hex);
+    return unpack("l", pack("l", hexdec($hex)))[1];
 }
 
 /*
