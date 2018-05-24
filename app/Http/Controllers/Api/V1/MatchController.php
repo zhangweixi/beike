@@ -15,6 +15,8 @@ use App\Jobs\AnalysisMatchData;
 class MatchController extends Controller
 {
 
+
+
     /**
      * 上传比赛数据
      * */
@@ -26,6 +28,7 @@ class MatchController extends Controller
         $deviceSn   = $request->input('deviceSn','');
         $deviceData = $request->input('deviceData','');
         $dataType   = $request->input('dataType');
+        $sourceId   = $request->input('sourceId',0);
 
 
         $matchId    = time();
@@ -38,16 +41,24 @@ class MatchController extends Controller
         ];
 
         $matchModel     = new MatchModel();
+        if($sourceId <=0 )
+        {
+            $sourceId       = $matchModel->add_match_source_data($matchData);
+            $request->offsetSet('sourceId',$sourceId);
+            $this->handle_data($request);
 
-        $sourceId       = $matchModel->add_match_source_data($matchData);
+        }else{
+
+            $request->offsetSet('sourceId',$sourceId);
+            return $this->handle_data($request);
+        }
 
         //数据存储完毕，调用MATLAB系统开始计算
 
-        $delayTime      = now()->addSecond(2);
-        AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
+        //$delayTime      = now()->addSecond(2);
+        //AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
 
-        $request->offsetSet('sourceId',$sourceId);
-        $this->handle_data($request);
+
         return apiData()->send(200,'ok');
     }
 
@@ -132,10 +143,28 @@ class MatchController extends Controller
 
 
     /**
+     * 去除头部
+     * */
+    private function delete_head($str)
+    {
+
+        $p      = strpos($str,"2c");
+        $str    = substr($str,$p+2);   //删除2c及以前
+        $p      = strpos($str,'2c');
+        //$key = substr($str,0,$p);
+        $str    = substr($str,$p+2);   //删除2c及以前
+        $str    = substr($str,2);//删除两个0
+
+        return  $str;
+    }
+
+
+    /**
      * 从数据库读取数据并解析成想要的格式
      * */
     public function handle_gps_data($dataSource,$matchData)
     {
+        //dd($dataSource);
         $matchModel  = new MatchModel();
         $dataList    = explode("23232323",$dataSource); //gps才有232323
         $dataList    = array_filter($dataList);
@@ -144,11 +173,17 @@ class MatchController extends Controller
         $lon    = [];
         $spe    = [];
         $dir    = [];
+        $arr    = [];
 
 
         foreach($dataList as $key =>  $single)
         {
-            $data       = substr($single,16);
+            $data       = substr($single,24);
+            $time       = substr($single,0,16);
+            $length     = substr(16,24);
+
+
+
             $arr[$key]  = strToAscll($data);
             $detailInfo = explode(",",$arr[$key]);
 
@@ -184,6 +219,8 @@ class MatchController extends Controller
                 $matchModel->add_gps_data($fullMatchInfo);
             }
         }
+
+
         //要获得两种数据 1是负责给matlab处理的，一种是负责给写入数据库的 同时写入会造成新能问题
         $matlabData = [
             'lat'   => $lat,
@@ -200,18 +237,6 @@ class MatchController extends Controller
 
 
 
-    /**
-     * 去除头部
-     * */
-    private function delete_head($str)
-    {
-        $p = strpos($str,"2c");
-        $str = substr($str,$p+2);
-        $p = strpos($str,'2c');
-        //$key = substr($str,0,$p);
-        $str = substr($str,$p+2);
-        return $str;
-    }
 
 
     /**
@@ -219,35 +244,44 @@ class MatchController extends Controller
      * */
     public function hand_sensor_data($dataSource,$matchData)
     {
-
-        $dataArr= str_split($dataSource,40);
-
+        //exit($dataSource);
+        $leng   = 42;
+        $dataArr= str_split($dataSource,$leng);
+        //return $dataArr;
         $ax = $ay = $az = $gx = $gy = $gz = [];
+        $temparr = [];
         foreach($dataArr as $key => $d)
         {
-            if(strlen($d)<40)
+            $d1 = $d;
+            if(strlen($d)<$leng)
             {
                 continue;
             }
 
+            $type       = substr($d,1,1);
+            $d          = substr($d,2);
+
             $single     = str_split($d,8);
+
             foreach($single as $key2 => $v2)
             {
                 $single[$key2]  = hexToInt($v2);
             }
 
-            $type   = $single[0];
+
             if ($type == 1)  //重力感应
             {
-                array_push($ax,$single[1]);
-                array_push($ay,$single[2]);
-                array_push($az,$single[3]);
+                array_push($ax,$single[0]);
+                array_push($ay,$single[1]);
+                array_push($az,$single[2]);
 
             } elseif ($type == 0) { //acc 加速度
 
-                array_push($gx,$single[1]);
-                array_push($gy,$single[2]);
-                array_push($gz,$single[3]);
+                array_push($gx,$single[0]);
+                array_push($gy,$single[1]);
+                array_push($gz,$single[2]);
+            }else{
+                mylogger("类型——————".$type);
             }
         }
 
@@ -305,6 +339,7 @@ class MatchController extends Controller
 
     }
 
+
     /**
      * 数据结构
      * */
@@ -357,25 +392,32 @@ class MatchController extends Controller
 }
 
 
+function hexToInt($hex){
 
+    if( strlen($hex) % 2 != 0)
+    {
+        return false;
+    }
+    $hexArr = str_split($hex,2);
+    //将低位在前高位在后转换成 高位在前低位在后
+    $hexArr = array_reverse($hexArr);
+    $hex    = implode("",$hexArr);
+    return  hexdec($hex);
+    //return unpack("l", pack("l", hexdec($hex)))[1];
+}
 
-
-
-
-
-
-
-
+/*
 function hexToInt($hex)
 {
-    if (strlen($hex) != 8)
+    if( strlen($hex) % 2 != 0)
     {
         return false;
     }
 
     //将低位在前高位在后转换成 高位在前低位在后
+
     $bHex = substr($hex, 6, 2) . substr($hex, 4, 2) . substr($hex, 2, 2) . substr($hex, 0, 2);
     return unpack("l", pack("l", hexdec($bHex)))[1];
-}
+}*/
 
 
