@@ -15,5 +15,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+
 Route::any('/code','Service\Mobile@get_code');//测试获取电话号码
 
