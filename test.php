@@ -9,4 +9,4 @@ exit;
 echo md5(md5(20180203));
 echo "\n\r";
 echo 1;
-
+echo 2;
