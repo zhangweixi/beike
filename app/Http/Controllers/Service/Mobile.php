@@ -68,5 +68,14 @@ class Mobile extends Controller{
         }
     }
 
+    /**
+     * 发送短信接口回调
+     * */
+    public function mobile_callback(Request $request)
+    {
+        mylogger($request->all());
+        return "";
+    }
+
 
 }
