@@ -74,7 +74,8 @@ class Mobile extends Controller{
     public function mobile_callback(Request $request)
     {
         mylogger($request->all());
-        return "";
+        return response()->json(['code'=>0,'msg'=>"成功"]);
+
     }
 
 
