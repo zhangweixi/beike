@@ -76,9 +76,12 @@ class Mobile extends Controller{
         $info   = $request->all();
         $info   = \GuzzleHttp\json_encode($info);
         $msgId  = $request->input('biz_id');
-
+        mylogger($msgId);
+        mylogger($info);
+        
         $messageModel   = new MobileMassege();
         $messageModel->recored_send_status($msgId,$info);
+
         return response()->json(['code'=>0,'msg'=>"成功"]);
 
     }
