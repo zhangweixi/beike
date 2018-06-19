@@ -280,4 +280,11 @@ class MobileMassege{
     }
 
 
+    /*
+     * 记录手机号发送状态
+     * */
+    public function recored_send_status($msgId,$info)
+    {
+        $this->db->where('msg_id',$msgId)->update(['data'=>$info]);
+    }
 }
