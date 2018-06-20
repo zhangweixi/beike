@@ -74,11 +74,16 @@ class Mobile extends Controller{
     public function mobile_callback(Request $request)
     {
         $info   = $request->all();
+        foreach($info as $key=>$v)
+        {
+            mylogger('key-'.$key);
+            mylogger($v);
+        }
+
+
         $info   = \GuzzleHttp\json_encode($info);
         $msgId  = $request->input('biz_id');
-        mylogger($msgId);
-        mylogger($info);
-        
+
         $messageModel   = new MobileMassege();
         $messageModel->recored_send_status($msgId,$info);
 
