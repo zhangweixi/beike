@@ -269,24 +269,6 @@ function object_to_array($array) {
 
 
 
-//获得用户的手机号码
-function change_member_mobile_to_city($userId=0){
-    $host = env('ADMIN_HOST');
-    if($host != "http://wx.laohoulundao.com"){
-        return true;
-    }
-
-    //$host = "http://test1.wx.laohoulundao.com";
-    $url = $host."/Tools/CreateData/methodPort?method=get_member_city&userId=".$userId;
-    $ch = curl_init($url);
-    curl_setopt($ch,CURLOPT_NOSIGNAL,true);
-    curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-    curl_setopt($ch,CURLOPT_TIMEOUT,1);//100MS
-    curl_exec($ch);
-    curl_close($ch);
-}
-
-
 //按值删除数组中的元素
 function array_unset_value(&$arr,$value,$all=false)
 {
@@ -393,37 +375,6 @@ class TableLog{
 }
 //====================表日志 end================
 
-
-
-
-/**
- * 压缩图片尺寸和质量
- * @param $path 要获取所有路径的图片
- * @param $maxwidth 允许最大的宽度
- * @param null $savePath 要保存的路经默认为覆盖
- * @param int $quality 图片的质量
- */
-function change_img_size($path, $maxwidth, $savePath = null, $quality = 20)
-{
-    $data = getfiles($path);
-    foreach ($data as $k => $v) {
-        $pos = substr($v, strrpos($v, '.') + 1);
-
-        if ($pos == 'png' || $pos == 'jpg' || $pos == 'jpeg') {
-            $pos = strrpos($v, '/');
-            $pos = substr($v, $pos + 1);
-            $img = Image::make($v);
-            if ($img->width() > $maxwidth) {
-                $width   = $img->width();
-                $height  = $img->height();
-                $n       = $width / $maxwidth;
-                $newPath = $savePath ? public_path() . '/' . $savePath . "/$pos" : $v;
-
-                $img->resize($maxwidth, $height / $n)->save($newPath, $quality);
-            }
-        }
-    }
-}
 
 
 /**
@@ -607,13 +558,121 @@ function strToAscll($str)
 
 /**
  * 驼峰转化成下划线
- * @param $str string
+ * @param $str string:array
  * */
 function tofeng_to_line($str)
 {
-    $str = preg_replace_callback("/[A-Z]/", function($ma){return "_".strtolower($ma[0]);}, $str);
+    if(gettype($str) == 'array')
+    {
+        foreach($str as $key=>$v)
+        {
+            $str[$key] = tofeng_to_line($v);
+        }
+        return $str;
 
-    return $str;
+    }else{
+
+        $str = preg_replace_callback("/[A-Z]/", function($ma){return "_".strtolower($ma[0]);}, $str);
+        return $str;
+    }
 }
+
+
+/**
+ * 创建token
+ * */
+function create_token($userId)
+{
+    $prev   = 10000000 + $userId;
+    $token  = $prev.md5(create_member_number());
+    return base64_encode($token);
+}
+
+class ParseToken{
+
+    public $userId;
+    public $token;
+}
+
+/**
+ * 解析token
+ * */
+function parse_token(\Illuminate\Http\Request $request)
+{
+    $token  = $request->header('token');
+    if($token)
+    {
+
+        $token  = base64_decode($token);
+        $userId = substr($token,0,8);
+        $userId = $userId - 10000000;
+        $tokenInfo = new ParseToken();
+        $tokenInfo->token   = $token;
+        $tokenInfo->userId  = $userId;
+        return $tokenInfo;
+    }
+
+    return false;
+}
+
+/**
+ * 十六进制转十进制 高位在前 低位在后
+ * @param $hex string 十六进制字符串
+ * @return string|boolean
+ * */
+function hexToInt($hex)
+{
+    $hex    = reverse_hex($hex);
+    //return  hexdec($hex);
+    return unpack("l", pack("l", hexdec($hex)))[1];
+}
+
+
+/**
+ * 反转十六进制
+ * @param $hex string  十六进制字符串
+ * @return string:boolean
+ * */
+function reverse_hex($hex)
+{
+    if( strlen($hex) % 2 != 0)
+    {
+        return false;
+    }
+
+    $hexArr = str_split($hex,2);
+    $hexArr = array_reverse($hexArr);//将低位在前高位在后转换成 高位在前低位在后
+    $hex    = implode("",$hexArr);
+    return $hex;
+}
+
+
+/*
+ * 创建随机图谱
+ * */
+function create_round_array($y,$x)
+{
+
+    $arr    = [];
+    for($i=0;$i<$y;$i++)
+    {
+        for($j=0;$j<$x;$j++)
+        {
+
+            $arr[$i][$j] = rand(0,10);
+        }
+    }
+    return $arr;
+}
+
+/*
+ * 获得毫秒
+ * */
+function getMillisecond()
+{
+    list($t1, $t2) = explode(' ', microtime());
+    return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
+}
+
 
 ?>

@@ -28,14 +28,14 @@ class SaveApiData
         if(!in_array($surl,$excepUrl))
         {
             $data   = $request->all();
-            $data['authorization']  = $request->header('Authorization') ? md5($request->header('Authorization')): '';
+            $data['token']  = $request->header('token') ? md5($request->header('token')): '';
             $data   = json_encode($data);
             $data   = [
                 'data'          =>$data,
                 'url'           =>$url,
                 'created_at'    =>date_time(),
             ];
-            DB::table('api_input_data')->insert($data);
+            DB::table('api_data')->insert($data);
         }
         return $next($request);
     }

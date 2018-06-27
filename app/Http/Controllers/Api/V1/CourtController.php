@@ -83,7 +83,11 @@ class CourtController extends Controller
 
     public function visualip(Request $request){
 
-        return apiData()->set_data('ip',$request->ip())->send(200,'ok');
+        $ip1 =  getenv('HTTP_CLIENT_IP');
+        $ip2 = getenv('HTTP_X_FORWARDED_FOR');
+        $ip3 = getenv('REMOTE_ADDR');
+
+        return apiData()->set_data('ip',$ip1."/".$ip2."/".$ip3)->send(200,'ok');
 
     }
 }

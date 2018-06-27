@@ -2,19 +2,26 @@
 namespace App\Common;
 
 class ApiData{
-    public $code    = "200";
+    public $code    = 200;
     public $data    = [];
     private $outData= [];
-    public $message = "";
+    public $message = "SUCCESS";
 
     public function set_data($key,$v){
         $this->data[$key] = $v;
         return $this;
     }
 
-    public function send($code = 0 , $msg = ''){
+    public function send($code = 0 , $msg = '')
+    {
         $code   = $code == 0 ? $this->code : $code;
         $message= $msg  == ""? $this->message : $msg;
+
+        if( count($this->data)== 0)
+        {
+            $this->data = null;
+        }
+
         $data = [
                 "code"      => $code,
                 "message"   => $message,
@@ -22,7 +29,9 @@ class ApiData{
         ];
 
         if(count($this->outData) > 0){
+
             foreach($this->outData as $k=> $v){
+
                 $data[$k] = $v;
             }
         }

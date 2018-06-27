@@ -8,13 +8,85 @@ use App\Models\V1\MatchModel;
 use Illuminate\Support\Facades\Redis;
 use DB;
 use App\Jobs\AnalysisMatchData;
-
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 
 
 class MatchController extends Controller
 {
 
+    public function create_table($userId,$type)
+    {
+
+        /*gps_id
+        match_id
+        latitude
+        longitude
+        speed
+        direction
+        status
+        data_key
+        source_data
+        created_at
+        source_id
+        timestamp*/
+
+        $table  = "user_".$userId."_".$type;
+
+        $hasTable = Schema::connection('matchdata')->hasTable($table);
+
+        if($hasTable)
+        {
+            return true;
+        }
+
+        if($type == 'gps')
+        {
+            Schema::connection('matchdata')->create($table,function (Blueprint $table){
+
+                $table->increments('id');
+                $table->integer('match_id');
+                $table->string('latitude');
+                $table->string('longitude');
+                $table->double('speed');
+                $table->string('direction');
+                $table->tinyInteger('status');
+                $table->string('source_data');
+                $table->bigInteger('timestamp');
+                $table->dateTime('created_at');
+            });
+
+        } else {
+
+            /*sensor_id
+            match_id
+            x
+            y
+            z
+            data_key
+            source_data
+            created_at
+            source_id
+            type
+            timestamp*/
+
+            Schema::connection("matchdata")->create($table,function(Blueprint $table){
+
+                $table->increments('id');
+                $table->integer('source_id');
+                $table->integer('match_id');
+                $table->double('x');
+                $table->double('y');
+                $table->double('z');
+                $table->string('type');
+                $table->string('source_data');
+                $table->bigInteger('timestamp');
+                $table->dateTime('created_at');
+            });
+        }
+    }
 
 
     /**
@@ -28,318 +100,91 @@ class MatchController extends Controller
         $deviceSn   = $request->input('deviceSn','');
         $deviceData = $request->input('deviceData','');
         $dataType   = $request->input('dataType');
-        $sourceId   = $request->input('sourceId',0);
 
+        //数据文件存储在磁盘中
+        $date   = date('Y-m-d');
+        $time   = date('His');
+        $file   = $date."/".$userId."-".$time.".txt";//文件格式
+        Storage::disk('local')->put($file,$deviceData);
 
-        $matchId    = time();
         $matchData  = [
             'match_id'  => $matchId,
             'user_id'   => $userId,
             'device_sn' => $deviceSn,
             'type'      => $dataType,
-            'data'      => $deviceData
+            'data'      => $file
         ];
 
+        //1.储存数据
         $matchModel     = new MatchModel();
-        if($sourceId <=0 )
-        {
-            $sourceId       = $matchModel->add_match_source_data($matchData);
-            $request->offsetSet('sourceId',$sourceId);
-            $this->handle_data($request);
+        $sourceId       = $matchModel->add_match_source_data($matchData);
 
-        }else{
 
-            $request->offsetSet('sourceId',$sourceId);
-            return $this->handle_data($request);
-        }
+        //如果是最后一条，判断是否结束
+        //$request->offsetSet('sourceId',$sourceId);
+        //$this->handle_data($request);
+
+
+        //2.开始解析数据
+        //$job    = new AnalysisMatchData($sourceId);
+        //$job->handle();
 
         //数据存储完毕，调用MATLAB系统开始计算
+        $delayTime      = now()->addSecond(2);
+        AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
 
-        //$delayTime      = now()->addSecond(2);
-        //AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
+        //创建json文件  请求matlab来读取分析
+        //$this->create_json($matchId);
 
 
         return apiData()->send(200,'ok');
     }
 
 
+
     /**
-     * 处理GPS信号
-     * 每组gps信号由4部分组成
-     * 1.类型（4位)
-     * 2.时间 (8位)
-     * 3.长度（8位)
-     * 4.数据 ，位数=3所得的长度
+     * 生产json文件
      * */
-    public function handle_gps($gps,$matchData)
+    public function create_json($matchId)
     {
-        $gps        = str_replace(" ","",$gps);
-        $matchModel     = new MatchModel();
-        $gpsArray       = explode(',',$gps);
-        foreach($gpsArray as $singleData)
-        {
-            $otherInfo  = [
-                'source_data'   => $singleData,
-                'status'        => 0,
-                'data_key'      => time(),
-            ];
-
-            $fullMatchInfo      = array_merge($matchData,$otherInfo);
-            $matchModel->add_gps_data($fullMatchInfo);
-        }
-    }
-
-
-    public function handle_sensor($sensor,array $matchData)
-    {
-        $sensor     = str_replace(" ","",$sensor);
-        $sensorArray= explode(',',$sensor);
-        $matchModel = new MatchModel();
-
-        foreach($sensorArray as $singleData)
-        {
-            $otherInfo  = [
-                'source_data'   => $singleData,
-                'data_key'      => time(),
-            ];
-
-            $fullMatchInfo      = array_merge($matchData,$otherInfo);
-            $matchModel->add_sensor_data($fullMatchInfo);
-        }
-    }
-
-
-    public function handle_data(Request $request)
-    {
-
-        $sourceId = $request->input('sourceId');
-        $data   = DB::table('match_source_data')->where('match_source_id',$sourceId)->first();
-        $type   = $data->type;
-        $datas  = explode(",",$data->data);
-        $str    = "";
-        $matchData  = [
-            'source_id' => $sourceId,
-            'match_id'  => $data->match_id,
-            'user_id'   => $data->user_id,
-            'device_sn' => $data->device_sn,
+        //将一定时间内的数据提取出来 生成json文件
+        $GLOBALS['sensorData']  = [
+            'ax'    => [],
+            'ay'    => [],
+            'az'    => [],
+            'gx'    => [],
+            'gy'    => [],
+            'gz'    => []
         ];
 
-        foreach($datas  as $data)
-        {
-            //1.去掉前面的类型和数字  但是前面是不固定的，所以只有在第一条的时候切割掉前面的是数字
-            $str    .= $this->delete_head($data);
-        }
+        DB::table('match_sensor')
+            ->where('match_id',$matchId)
+            ->where('data_key',1)
+            ->select('x','y','z','type')
+            ->orderBy('sensor_id')
+            ->chunk(1000,function($sensors)
+            {
+                foreach($sensors as $sensor)
+                {
+                    if($sensor->type == 'A')
+                    {
+                        array_push($GLOBALS['sensorData']['ax'],$sensor->x);
+                        array_push($GLOBALS['sensorData']['ay'],$sensor->y);
+                        array_push($GLOBALS['sensorData']['az'],$sensor->z);
 
+                    }else{
 
-        if($type == 'gps')
-        {
-            return $this->handle_gps_data($str,$matchData);
+                        array_push($GLOBALS['sensorData']['gx'],$sensor->x);
+                        array_push($GLOBALS['sensorData']['gy'],$sensor->y);
+                        array_push($GLOBALS['sensorData']['gz'],$sensor->z);
 
-        }elseif($type == 'sensor'){
+                    }
+                }
+            });
 
-            return $this->hand_sensor_data($str,$matchData);
-        }
+        file_put_contents('sensor.json',\GuzzleHttp\json_encode($GLOBALS['sensorData']));
     }
 
-
-    /**
-     * 去除头部
-     * */
-    private function delete_head($str)
-    {
-
-        $p      = strpos($str,"2c");
-        $str    = substr($str,$p+2);   //删除2c及以前
-        $p      = strpos($str,'2c');
-        //$key = substr($str,0,$p);
-        $str    = substr($str,$p+2);   //删除2c及以前
-        $str    = substr($str,2);//删除两个0
-
-        return  $str;
-    }
-
-
-    /**
-     * 从数据库读取数据并解析成想要的格式
-     * */
-    public function handle_gps_data($dataSource,$matchData)
-    {
-        //dd($dataSource);
-        $matchModel  = new MatchModel();
-        $dataList    = explode("23232323",$dataSource); //gps才有232323
-        $dataList    = array_filter($dataList);
-
-        $lat    = [];
-        $lon    = [];
-        $spe    = [];
-        $dir    = [];
-        $arr    = [];
-
-
-        foreach($dataList as $key =>  $single)
-        {
-            $data       = substr($single,24);
-            $time       = substr($single,0,16);
-            $length     = substr(16,24);
-
-
-
-            $arr[$key]  = strToAscll($data);
-            $detailInfo = explode(",",$arr[$key]);
-
-            if(count($detailInfo)<15)
-            {
-                continue;
-            }
-
-            $tlat       = $detailInfo[2];
-            $tlon       = $detailInfo[4];
-            $tspe       = $detailInfo[11];
-            $tdir       = $detailInfo[3]."/".$detailInfo[5];
-
-            array_push($lat,$tlat);
-            array_push($lon,$tlon);
-            array_push($spe,$tspe);
-            array_push($dir,$tdir);
-
-            if(0)
-            {
-                //将分解的数据写入数据库
-                $otherInfo  = [
-                    'source_data'   => $single,
-                    'latitude'      => $tlat,
-                    'longitude'     => $tlon,
-                    'speed'         => $tspe,
-                    'direction'     => $tdir,
-                    'status'        => $detailInfo[6],
-                    'data_key'      => 0,
-                    'data_time'     => $detailInfo[1],
-                ];
-                $fullMatchInfo      = array_merge($matchData,$otherInfo);
-                $matchModel->add_gps_data($fullMatchInfo);
-            }
-        }
-
-
-        //要获得两种数据 1是负责给matlab处理的，一种是负责给写入数据库的 同时写入会造成新能问题
-        $matlabData = [
-            'lat'   => $lat,
-            'lon'   => $lon,
-            'spe'   => $spe,
-            'dir'   => $dir
-        ];
-
-        file_put_contents(public_path('gps.json'),\GuzzleHttp\json_encode($matlabData));
-        return $matlabData;
-    }
-
-
-
-
-
-
-
-    /**
-     * 读取sensor数据
-     * */
-    public function hand_sensor_data($dataSource,$matchData)
-    {
-        //exit($dataSource);
-        $leng   = 42;
-        $dataArr= str_split($dataSource,$leng);
-        //return count($dataArr);
-        //return $dataArr;
-
-        $ax = $ay = $az = $gx = $gy = $gz = [];
-        $temparr = [];
-        foreach($dataArr as $key => $d)
-        {
-            $d1 = $d;
-            if(strlen($d)<$leng)
-            {
-                continue;
-            }
-
-            $type       = substr($d,1,1);
-            $d          = substr($d,2);
-
-            $single     = str_split($d,8);
-
-            foreach($single as $key2 => $v2)
-            {
-                $single[$key2]  = hexToInt($v2);
-            }
-
-
-            if ($type == 1)  //重力感应
-            {
-                array_push($ax,$single[0]);
-                array_push($ay,$single[1]);
-                array_push($az,$single[2]);
-
-            } elseif ($type == 0) { //acc 加速度
-
-                array_push($gx,$single[0]);
-                array_push($gy,$single[1]);
-                array_push($gz,$single[2]);
-            }else{
-                mylogger("类型——————".$type);
-            }
-        }
-
-
-        $data   = [
-            'ax'    => $ax,
-            'ay'    => $ay,
-            'az'    => $az,
-            'gx'    => $gx,
-            'gy'    => $gy,
-            'gz'    => $gz
-        ];
-
-        file_put_contents(public_path('sensor.json'),\GuzzleHttp\json_encode($data));
-        return $data;
-
-
-
-
-        $arr = str_split($str,8);
-
-        $hexStr = $str;
-        $data = [[],[],[],[],[],[]];
-        $offset = 0;
-        while (1)
-        {
-            $str = substr($hexStr, $offset, 40);
-            $offset += 40;
-            if (strlen($str) < 40)
-            {
-                break;
-            }
-
-
-            //type
-            $type = hexToInt(substr($str, 0, 8));
-
-            if ($type == 1)  //重力感应
-            {
-                $data[0][] = hexToInt(substr($str, 8, 8));
-                $data[1][] = hexToInt(substr($str, 16, 8));
-                $data[2][] = hexToInt(substr($str, 24, 8));
-
-            } elseif ($type == 0) { //acc 加速度
-
-                $data[3][] = hexToInt(substr($str, 8, 8));
-                $data[4][] = hexToInt(substr($str, 16, 8));
-                $data[5][] = hexToInt(substr($str, 24, 8));
-            }
-
-            //var_dump(hexToInt(substr($str, 32, 8)));
-        }
-        echo json_encode($data);
-
-
-    }
 
 
     /**
@@ -391,39 +236,200 @@ class MatchController extends Controller
         return "hello";
     }
 
+
+
+    /**
+     * 开始比赛
+     * */
+    public function add_match(Request $request)
+    {
+
+        $matchInfo  = [
+            'user_id'   => $request->input('userId'),
+            'court_id'  => $request->input('courtId'),
+        ];
+
+        $matchModel = new MatchModel();
+        $matchId    = $matchModel->add_match($matchInfo);
+        $timestamp  = getMillisecond();
+        return apiData()
+            ->set_data('matchId',$matchId)
+            ->set_data('timestamp',$timestamp)
+            ->send(200,'SUCCESS');
+    }
+
+
+    /*
+     * 结束比赛
+     * */
+    public function finish_match(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchModel->finish_match($matchId);
+
+        return apiData()->send(200,"success");
+    }
+
+
+    /**
+     * 添加心情
+     * */
+    public function add_mood(Request $request)
+    {
+        $data   = [
+            'mood'      => emoji_text_encode($request->input('mood')),
+            'weather'   => $request->input('weather'),
+            'message'   => emoji_text_encode($request->input('message')),
+        ];
+
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchModel->update_match($matchId,$data);
+
+        return apiData()->send(200,'添加成功');
+    }
+
+
+    /**
+     * 数据比赛
+     * */
+    public function match_list(Request $request)
+    {
+        $matchModel = new MatchModel();
+        $userId     = $request->input('userId');
+
+        $matchs     = $matchModel->get_match_list($userId);
+
+        return apiData()->set_data('matchs',$matchs)->send(200,'success');
+    }
+
+    /**
+     * 比赛详细基本信息
+     * */
+    public function match_detail_base(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+
+        $map        = create_round_array(20,32);
+        return apiData()
+            ->set_data('matchInfo',$matchInfo)
+            ->set_data('map',$map)
+            ->send(200,'success');
+    }
+
+
+
+    /**
+     * 比赛详细数据部分
+     * */
+    public function match_detail_data(Request $request)
+    {
+
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchResult= $matchModel->get_match_result($matchId);
+
+        $data   = [
+            'shoot'         => [
+                'speedMax'  => $matchResult->shoot_speed_max,
+                'speedAvg'  => $matchResult->shoot_spped_avg,
+                'disMax'    => $matchResult->shoot_dis_max,
+                'disAvg'    => $matchResult->shoot_dis_avg
+            ],
+            'passShort'    => [
+                'speedMax'  => $matchResult->pass_s_speed_max,
+                'speedAvg'  => $matchResult->pass_s_speed_vag,
+                'disMax'    => $matchResult->pass_s_dis_max,
+                'disAvg'    => $matchResult->pass_s_dis_avg,
+                'number'    => $matchResult->pass_s_num
+            ],
+            'passLength'    => [
+                'speedMax'  => $matchResult->pass_l_speed_max,
+                'speedAvg'  => $matchResult->pass_l_speed_vag,
+                'disMax'    => $matchResult->pass_l_dis_max,
+                'disAvg'    => $matchResult->pass_l_dis_avg,
+                'number'    => $matchResult->pass_l_num
+            ],
+
+            'run'        => [
+                'lowDis'       => $matchResult->run_low_dis,
+                'lowTime'      => $matchResult->run_low_time,
+                'midDis'       => $matchResult->run_mid_dis,
+                'midTime'      => $matchResult->run_mid_time,
+                'highDis'       => $matchResult->run_high_dis,
+                'highTime'      => $matchResult->run_high_time
+            ],
+        ];
+
+        return apiData()
+            ->set_data('matchResult',$data)
+            ->send(200,'success');
+
+    }
+
+    /**
+     * 比赛热点图
+     * */
+    public function match_detail_hotmap(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $midSpeed   = create_round_array(20,23);
+        $heighSpeed = create_round_array(20,23);
+        $sprint     = create_round_array(20,23);
+        $shortPass  = create_round_array(20,23);
+        $longPass   = create_round_array(20,23);
+        $rob        = create_round_array(20,23);
+        $dribble    = create_round_array(20,23);
+
+        $maps       = [
+            ['name'=>"中速跑动",'data'=>$midSpeed],
+            ['name'=>"高速跑动",'data'=>$heighSpeed],
+            ['name'=>'冲刺','data'=>$sprint],
+            ['name'=>'短运','data'=>$shortPass],
+            ['name'=>'长运','data'=>$longPass],
+            ['name'=>'抢断','data'=>$rob],
+            ['name'=>'带球','data'=>$dribble]
+        ];
+
+        return apiData()
+            ->set_data('maps',$maps)
+            ->send(200,'success');
+    }
+
+
+    /*
+     * 是否有未完成的比赛
+     *
+     * */
+    public function has_unfinished_match(Request $request)
+    {
+        $userId = intval($request->input('userId',0));
+        if($userId<=0)
+        {
+            return apiData()->send(4001,'用户ID小于0');
+        }
+
+        $matchInfo = DB::table('match')->where('user_id',$userId)
+            ->where('time_end')
+            ->where('time_begin')
+            ->orderBy('match_id','desc')
+            ->first();
+
+        $matchId        = 0;
+        if($matchInfo)
+        {
+            $matchId    = $matchInfo->match_id;
+        }
+        return apiData()->set_data('matchId',$matchId)->send(200,'SUCCESS');
+    }
+
 }
 
 
-function hexToInt($hex){
 
-    if( strlen($hex) % 2 != 0)
-    {
-        return false;
-    }
-    //mylogger('原始数据——'.$hex);
 
-    $hexArr = str_split($hex,2);
-    //将低位在前高位在后转换成 高位在前低位在后
-    $hexArr = array_reverse($hexArr);
-    $hex    = implode("",$hexArr);
-    //mylogger('新数据——'.$hex);
-
-    //return  hexdec($hex);
-    return unpack("l", pack("l", hexdec($hex)))[1];
-}
-
-/*
-function hexToInt($hex)
-{
-    if( strlen($hex) % 2 != 0)
-    {
-        return false;
-    }
-
-    //将低位在前高位在后转换成 高位在前低位在后
-
-    $bHex = substr($hex, 6, 2) . substr($hex, 4, 2) . substr($hex, 2, 2) . substr($hex, 0, 2);
-    return unpack("l", pack("l", hexdec($bHex)))[1];
-}*/
 
 
