@@ -90,7 +90,31 @@ class MatchModel extends Model
 
     }
 
+    /**
+     * 获得当前比赛
+     * @param $userId integer 用户ID
+     * */
+    public function get_current_match($userId)
+    {
 
+        $matchInfo = DB::table('match')
+            ->where('user_id',$userId)
+            ->orderBy('match_id','desc')
+            ->select('match_id','user_id','court_id','time_begin','time_end')
+            ->first();
+
+
+        if($matchInfo && empty($matchInfo->time_end) )
+        {
+            $matchInfo->time_begin = strtotime($matchInfo->time_begin)*1000;
+            unset($matchInfo->time_end);
+            return $matchInfo;
+
+        } else{
+
+            return null;
+        }
+    }
 
 
     /**
@@ -152,8 +176,19 @@ class MatchModel extends Model
         return $matchResult;
     }
 
-
-
+    /**
+     * @param $matchId integer 比赛ID
+     * @param $status string 状态
+     * */
+    public function log_match_status($matchId,$status)
+    {
+        $data   = [
+            'match_id'  => $matchId,
+            'status'    => $status,
+            'created_at'=> date_time(),
+        ];
+        DB::table('match_status')->insert($data);
+    }
 
 
 }

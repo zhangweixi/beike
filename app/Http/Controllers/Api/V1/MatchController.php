@@ -246,7 +246,7 @@ class MatchController extends Controller
 
         $matchInfo  = [
             'user_id'   => $request->input('userId'),
-            'court_id'  => $request->input('courtId'),
+            'court_id'  => $request->input('courtId',0),
         ];
 
         $matchModel = new MatchModel();
@@ -255,7 +255,7 @@ class MatchController extends Controller
         return apiData()
             ->set_data('matchId',$matchId)
             ->set_data('timestamp',$timestamp)
-            ->send(200,'SUCCESS');
+            ->send();
     }
 
 
@@ -284,6 +284,11 @@ class MatchController extends Controller
         ];
 
         $matchId    = $request->input('matchId');
+        if($matchId < 0)
+        {
+            return apiData()->send(4001,'比赛ID异常');
+        }
+
         $matchModel = new MatchModel();
         $matchModel->update_match($matchId,$data);
 
@@ -426,6 +431,39 @@ class MatchController extends Controller
         return apiData()->set_data('matchId',$matchId)->send(200,'SUCCESS');
     }
 
+    /**
+     * 当前比赛
+     * */
+    public function current_match(Request $request)
+    {
+        $userId         = $request->input('userId');
+        $matchModel     = new MatchModel();
+        $currentMatch   = $matchModel->get_current_match($userId);
+
+        return apiData()->set_data('matchInfo',$currentMatch)->send();
+    }
+
+
+    /**
+     * 记录比赛的状态
+     *
+     * */
+    public function log_match_status(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $status     = $request->input('status');
+
+        $allAtatus     = ['begin','pause','continue','stop'];
+
+        if(!in_array($status,$allAtatus))
+        {
+            return apiData()->send(3001,'不存在状态'.$status);
+        }
+        $matchModel = new MatchModel();
+        $matchModel->log_match_status($matchId,$status);
+
+        return apiData()->send();
+    }
 }
 
 
