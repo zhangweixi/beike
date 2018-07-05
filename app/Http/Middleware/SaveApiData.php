@@ -22,7 +22,8 @@ class SaveApiData
             'homelist',
             'home',
             'mediaPlayLog',
-            'memberOnlineLog'
+            'memberOnlineLog',
+            'match/uploadMatchData'
         ];
 
         if(!in_array($surl,$excepUrl))

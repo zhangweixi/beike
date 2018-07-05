@@ -95,6 +95,9 @@ class MatchController extends Controller
     public function upload_match_data(Request $request)
     {
 
+
+
+
         $matchId    = $request->input('matchId',0);
         $userId     = $request->input('userId',0);
         $deviceSn   = $request->input('deviceSn','');
@@ -105,6 +108,7 @@ class MatchController extends Controller
         $date   = date('Y-m-d');
         $time   = date('His');
         $file   = $date."/".$userId."-".$time.".txt";//文件格式
+
         Storage::disk('local')->put($file,$deviceData);
 
         $matchData  = [
@@ -126,12 +130,12 @@ class MatchController extends Controller
 
 
         //2.开始解析数据
-        //$job    = new AnalysisMatchData($sourceId);
-        //$job->handle();
+        $job    = new AnalysisMatchData($sourceId);
+        $job->handle();
 
         //数据存储完毕，调用MATLAB系统开始计算
-        $delayTime      = now()->addSecond(2);
-        AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
+        //$delayTime      = now()->addSecond(2);
+        //AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
 
         //创建json文件  请求matlab来读取分析
         //$this->create_json($matchId);
@@ -252,6 +256,8 @@ class MatchController extends Controller
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
         $timestamp  = getMillisecond();
+
+        $matchModel->log_match_status($matchId,'begin');
         return apiData()
             ->set_data('matchId',$matchId)
             ->set_data('timestamp',$timestamp)
@@ -267,7 +273,7 @@ class MatchController extends Controller
         $matchId    = $request->input('matchId');
         $matchModel = new MatchModel();
         $matchModel->finish_match($matchId);
-
+        $matchModel->log_match_status($matchId,'stop');
         return apiData()->send(200,"success");
     }
 

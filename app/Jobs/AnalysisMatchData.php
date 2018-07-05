@@ -165,8 +165,6 @@ class AnalysisMatchData implements ShouldQueue
 
             }elseif($data['timestamp'] != 0){
 
-
-
                 $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
 
                 if(!$matchTimeInfo)
@@ -201,6 +199,7 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function get_match_time($userId,$dataTime)
     {
+
         $dataTime  = substr($dataTime,0,10);
         $dataTime  = date('Y-m-d H:i:s',$dataTime);
         $matchInfo = DB::table('match')
@@ -234,7 +233,7 @@ class AnalysisMatchData implements ShouldQueue
             $p      = strpos($data,'2c');
             $data   = substr($data,$p+2);   //删除2c及以前
 
-            $data   = substr($data,2);//删除两个0
+            //$data   = substr($data,2);//删除两个0
 
             $datas[$key] = $data;
         }
@@ -319,6 +318,7 @@ class AnalysisMatchData implements ShouldQueue
                 }
 
                 $timeStr        = $single[3].$single[4];
+
                 $timestamp      = hexdec(reverse_hex($timeStr));
 
                 if ($type == 1)  //重力感应
