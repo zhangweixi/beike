@@ -3,7 +3,7 @@ namespace  App\Http\Controllers\Speed;
 use App\Http\Controllers\Controller;
 use Dingo\Api\Http\Request;
 //use EasyWeChat;
-use EasyWeChat\Factory;
+use \EasyWeChat\Factory;
 
 
 /**
