@@ -2,7 +2,7 @@
 namespace  App\Http\Controllers\Speed;
 use App\Http\Controllers\Controller;
 use Dingo\Api\Http\Request;
-//use EasyWeChat;
+use EasyWeChat;
 use \EasyWeChat\Factory;
 
 
@@ -17,12 +17,7 @@ class IndexController extends Controller{
 
     public function __construct()
     {
-        //$this->wx = EasyWeChat::work();
-
-        //$this->wx = Factory::officialAccount(config('wechat.work'));
-        dd(config('wechat.work'));exit;
-
-        $this->wx = Factory::work(config('wechat.work'));
+        $this->wx = EasyWeChat::work();
 
 
     }
@@ -32,6 +27,8 @@ class IndexController extends Controller{
     {
 
         $info  = $this->wx->department->list();
+
+
 
         return apiData()->set_data('list',$info)->send();
 
