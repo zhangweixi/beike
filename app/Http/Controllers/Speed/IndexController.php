@@ -87,7 +87,7 @@ class IndexController extends Controller{
                 $targetUrl = urldecode($request->input('targetUrl'));
                 echo $targetUrl;
                 print_r($userInfo);
-                header('Location:'.$targetUrl);
+                //header('Location:'.$targetUrl);
                 exit;
             }
         }
