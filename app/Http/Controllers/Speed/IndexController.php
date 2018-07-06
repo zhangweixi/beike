@@ -1,9 +1,15 @@
 <?php
 namespace  App\Http\Controllers\Speed;
 use App\Http\Controllers\Controller;
-use EasyWeChat;
+use Dingo\Api\Http\Request;
+//use EasyWeChat;
+use EasyWeChat\Factory;
 
 
+/**
+ * @property \EasyWeChat\Factory $wx
+ *
+ * */
 
 class IndexController extends Controller{
 
@@ -11,22 +17,37 @@ class IndexController extends Controller{
 
     public function __construct()
     {
-        $this->wx = EasyWeChat::work();
+        //$this->wx = EasyWeChat::work();
+
+        $this->wx = Factory::officialAccount(config('wechat.work'));
+
 
     }
 
 
     public function index()
     {
-
-        return ['ok1000'];
         $list = $this->wx->department->list();
+
 
 
         return apiData()->set_data('list',$list)->send();
 
     }
 
+
+    public function user(Request $request)
+    {
+
+        $this->wx->oauth->scopes(['snsapi_userinfo'])
+            ->setRequest($request)
+            ->redirect();
+
+        $users = $this->wx->oauth->setRequest($request)->user();
+
+        return apiData()->set_data('user',$users)->send();
+
+    }
 
 
 
