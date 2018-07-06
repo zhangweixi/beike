@@ -20,6 +20,7 @@ class IndexController extends Controller{
         //$this->wx = EasyWeChat::work();
 
         //$this->wx = Factory::officialAccount(config('wechat.work'));
+        dd(config('wechat.work'));
 
         $this->wx = Factory::work(config('wechat.work'));
 
