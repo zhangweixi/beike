@@ -62,7 +62,7 @@ class IndexController extends Controller{
         {
             $targetUrl = url($request->getRequestUri());
 
-            $directUrl = url('/api/speed/get_wx_info?getUrl='.urlencode($targetUrl));
+            $directUrl = url('/weixin/get_wx_info?getUrl='.urlencode($targetUrl));
 
 
             return $this->wx->oauth->scopes(['snsapi_userinfo'])

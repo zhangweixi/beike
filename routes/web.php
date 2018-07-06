@@ -16,8 +16,8 @@ Route::get('/', function () {
 });
 
 
-Route::get('/api/speed/index/user','App\Http\Controllers\Speed\IndexController@user');
-Route::get('/api/speed/index/get_wx_info','App\Http\Controllers\Speed\IndexController@get_wx_info');
+Route::get('/weixin/user','App\Http\Controllers\Speed\IndexController@user');
+Route::get('/weixin/get_wx_info','App\Http\Controllers\Speed\IndexController@get_wx_info');
 
 Route::any('/code','Service\Mobile@get_code');//测试获取电话号码
 
