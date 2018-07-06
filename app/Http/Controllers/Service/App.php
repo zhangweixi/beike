@@ -36,7 +36,7 @@ class App extends Controller{
         return apiData()
             ->set_data('versionIos',$versionIos)
             ->set_data('versionAndroid',$versionAndroid)
-            ->set_date('time',date('Y-m-d H:i:s'))
+            ->set_data('time',date('Y-m-d H:i:s'))
             ->send();
     }
 
