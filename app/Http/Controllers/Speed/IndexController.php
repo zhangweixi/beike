@@ -19,7 +19,9 @@ class IndexController extends Controller{
     {
         //$this->wx = EasyWeChat::work();
 
-        $this->wx = Factory::officialAccount(config('wechat.work'));
+        //$this->wx = Factory::officialAccount(config('wechat.work'));
+
+        $this->wx = Factory::work(config('wechat.work'));
 
 
     }
@@ -27,13 +29,14 @@ class IndexController extends Controller{
 
     public function index()
     {
-        $list = $this->wx->department->list();
 
+        $info  = $this->wx->department->list();
 
-
-        return apiData()->set_data('list',$list)->send();
+        return apiData()->set_data('list',$info)->send();
 
     }
+
+
 
 
     public function user(Request $request)
