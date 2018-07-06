@@ -83,6 +83,12 @@ class UserModel extends Model
         //$userInfo = $this->where('id',$id)->first();
 
         $userInfo   = $userInfo ? key_to_tuofeng($userInfo->toArray()) : $userInfo;
+        $age = date('Y')-(int)substr($userInfo['birthday'],0,4);
+        if($age > 200)
+        {
+            $age = 0;
+        }
+        $userInfo['age']    = $age;
 
         return $userInfo;
     }
