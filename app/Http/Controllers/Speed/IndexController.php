@@ -21,16 +21,16 @@ class IndexController extends Controller{
     public function index()
     {
 
-        return apiData()->set_data('file',__FILE__)->send();
         $list = $this->wx->department->list();
 
-        return config('wechat.work');
+
+
 
         //$work = EasyWeChat::work(); // 企业微信
 
         //EasyWeChat1::work()->config();
 
-        return $list;
+        return apiData()->set_data('list',$list)->set_data('config',config('wechat.work'))->send();
 
     }
 
