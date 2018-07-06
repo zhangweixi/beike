@@ -19,7 +19,7 @@ class IndexController extends Controller{
     public function index()
     {
 
-        return ['ok1'];
+        return ['ok190000'];
         $list = $this->wx->department->list();
 
 
