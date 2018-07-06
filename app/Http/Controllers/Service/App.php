@@ -11,8 +11,7 @@ use App\Common\Http;
 class App extends Controller{
 
     public function get_config(Request $request){
-        mylogger($request->all());
-        return $request->all();
+
 
         //1.APP版本
         $versionIos        = "0.0.1";
