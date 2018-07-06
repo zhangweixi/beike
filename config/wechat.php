@@ -120,12 +120,12 @@ return [
     /*
      * 企业微信
      */
-    // 'work' => [
-    //     'default' => [
-    //         'corp_id' => 'xxxxxxxxxxxxxxxxx',
-    ///        'agent_id' => 100020,
-    //         'secret'   => env('WECHAT_WORK_AGENT_CONTACTS_SECRET', ''),
-    //          //...
-    //      ],
-    // ],
+     'work' => [
+         'default' => [
+             'corp_id' => 'ww3b91f9627469056d',
+            'agent_id' => 1000008,
+             'secret'   => "DkDscLu6MdI8zm8_7BkEnfVUbvcouXSMjumm0PGsXkY",
+              //...
+          ],
+     ],
 ];

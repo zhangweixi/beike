@@ -107,6 +107,22 @@ class UserController extends Controller
         return $this->login_action($userInfo);
     }
 
+    public function login_out(Request $request){
+
+        $userID     = $request->input('userId');
+        $tokenInfo  = parse_token($request);
+
+        if($userID == $tokenInfo->userId)
+        {
+            $userModel  = new UserModel();
+            $userModel->update_user_info($userID,['token'=>'']);
+            return apiData()->send();
+
+        }else{
+
+            return apiData()->send(3001,'无法退出，您没有权限');
+        }
+    }
 
     /**
      * 获得用户信息

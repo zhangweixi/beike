@@ -40,6 +40,7 @@ class MatchModel extends Model
     public function finish_match($matchId)
     {
         $this->where('match_id',$matchId)->update(['time_end'=>$this->time]);
+
     }
 
     /**

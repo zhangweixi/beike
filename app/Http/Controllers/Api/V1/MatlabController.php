@@ -16,27 +16,30 @@ class MatlabController extends Controller
         $users  = [
             '广胜水泥制品厂',
             '张维喜',
-            '呼風喚雨小朋友',
-            '夏日冰淇淋',
-            '小斌',
-            '益力多',
             '聚农优品星河店',
             '李永谦快点快点开的快点快点开'
         ];
         $savefile   = public_path("www.jpg");
         $qrimg      = "erweima.png";
-        $type       = "bg";
+        $type       = "share";
+        $success    = false;
         if($type == 'share')
         {
             $bgImg      = public_path("share-bg.jpg");
         }else{
-            $bgImg      = public_path("detail-bg1.jpg");
+            if($success)
+            {
+                $bgImg      = public_path("detail-bg1.jpg");
+            }else{
+                $bgImg      = public_path("detail-bg.jpg");
+            }
+
             
         }
 
 
         $name = "张维喜";
-        $this->write_imgs($users,$name,$savefile,$qrimg,6,$type,$bgImg,true);
+        $this->write_imgs($users,$name,$savefile,$qrimg,4,$type,$bgImg,$success);
     }
 
     public function write_imgs($texts,$name,$savefile,$qrimg,$num,$type,$bgImg,$success= false)
@@ -68,13 +71,21 @@ class MatlabController extends Controller
         if($success == false)
         {
             $numtop = $margintop + 275;
-            $num = "还差{$num}人全团获超大额暑期出行券包";
+            $num = "还差{$num}人，全团可领取暑期红包";
 
             //写数字
             $wordsSpace = 3;
             //$numberText = $this->str_to_words($num);
             $numberText = preg_split('//u',$num);
-            $numberText = array_filter($numberText);
+            $uii = [];
+            foreach($numberText as $xx)
+            {
+                if(trim($xx) == '')
+                    continue;
+                array_push($uii, $xx);
+
+            }
+            $numberText = $uii;
 
             $numberTextInfo = $this->get_words_width($numberText,$size,$fontfile,$wordsSpace);//['width'=>20,'words'=>[]]
             $baseLeft   = (750 - $numberTextInfo['width'])/2;
@@ -107,14 +118,10 @@ class MatlabController extends Controller
 
         //写用户名字列表
         $users  = [
-            ['name'=>'','x'=>160,'y'=>650,'w'=>300],
-            ['name'=>'','x'=>185,'y'=>587,'w'=>290,'w'=>300],
-            ['name'=>'','x'=>130,'y'=>528,'w'=>300],
-            ['name'=>'','x'=>115,'y'=>475,'w'=>330],
-            ['name'=>'','x'=>150,'y'=>410,'w'=>300],
-            ['name'=>'','x'=>180,'y'=>350,'w'=>280],
-            ['name'=>'','x'=>140,'y'=>300,'w'=>310],
-            ['name'=>'','x'=>150,'y'=>230,'w'=>280],
+            ['name'=>'','x'=>160,'y'=>520,'w'=>300],
+            ['name'=>'','x'=>180,'y'=>445,'w'=>290,'w'=>300],
+            ['name'=>'','x'=>130,'y'=>395,'w'=>310],
+            ['name'=>'','x'=>150,'y'=>330,'w'=>280],
         ];
 
         foreach($texts as $k=>$n)
@@ -155,7 +162,7 @@ class MatlabController extends Controller
         {
             list($qrwidth,$qrheight) = getimagesize($qrimg);
             $padding = 36;
-            imagecopyresized($image,$erweima,165,1065,$padding,$padding,119,119,$qrwidth-$padding,$qrheight-$padding);
+            imagecopyresized($image,$erweima,175,975,$padding,$padding,119,119,$qrwidth-$padding,$qrheight-$padding);
         }
 
 

@@ -81,13 +81,5 @@ class CourtController extends Controller
         return rand(1000,10000).",".rand(1000,10000);
     }
 
-    public function visualip(Request $request){
 
-        $ip1 =  getenv('HTTP_CLIENT_IP');
-        $ip2 = getenv('HTTP_X_FORWARDED_FOR');
-        $ip3 = getenv('REMOTE_ADDR');
-
-        return apiData()->set_data('ip',$ip1."/".$ip2."/".$ip3)->send(200,'ok');
-
-    }
 }
