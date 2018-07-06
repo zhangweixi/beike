@@ -48,7 +48,7 @@ class IndexController extends Controller{
 
     public function get_wx_info(Request $request){
 
-        $userInfo   = $request->getSession();
+        $userInfo   = $request->session('wechat_user');
         $code       = $request->input('code');
 
         if($userInfo)
