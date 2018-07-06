@@ -38,7 +38,6 @@ class IndexController extends Controller{
 
     public function user(Request $request)
     {
-
         $userInfo = $this->get_wx_info($request);
 
         return [$userInfo];
@@ -48,8 +47,10 @@ class IndexController extends Controller{
 
     public function get_wx_info(Request $request){
 
-        $userInfo   = $request->session('wechat_user');
+        //$userInfo   = $request->session('wechat_user');
+        $userInfo   = '';
         $code       = $request->input('code');
+
 
         if($userInfo)
         {
@@ -84,6 +85,8 @@ class IndexController extends Controller{
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
                 $targetUrl = urldecode($request->input('targetUrl'));
+                echo $targetUrl;
+                print_r($userInfo);
                 header('Location:'.$targetUrl);
                 exit;
             }
