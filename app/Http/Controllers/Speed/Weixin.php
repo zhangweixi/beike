@@ -44,7 +44,7 @@ class Weixin extends Controller{
     {
 
         $url    = $request->input('url');
-
+        mylogger('登录');
         if(empty($url))
         {
             exit('缺少URL');
@@ -53,6 +53,7 @@ class Weixin extends Controller{
 
         $weixinInfo = $this->get_wx_info($request);
         $userId     = $weixinInfo->user_sn;
+        mylogger('用户ID'.$userId);
 
         if(preg_match('/\?/',$url))
         {
@@ -64,7 +65,7 @@ class Weixin extends Controller{
         }else{
             $url = $url."?userId=".$userId;
         }
-
+        mylogger('url'.$url);
         header('Location:'.$url);
 
     }
@@ -163,7 +164,7 @@ class Weixin extends Controller{
                 $request->session()->save();
                 $targetUrl = urldecode($request->input('targetUrl'));
 
-
+                mylogger('完成后:'.$targetUrl);
                 //print_r($userInfo);
                 header('Location:'.$targetUrl);
                 exit();
