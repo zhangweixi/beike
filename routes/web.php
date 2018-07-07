@@ -16,7 +16,7 @@ Route::get('/', function () {
 });
 
 
-Route::get('/weixin/{action}','Speed\IndexController@action');
+Route::get('/speed/weixin/{action}','Speed\Weixin@action');
 
 
 //Route::get('/weixin/user','Speed\IndexController@user');
