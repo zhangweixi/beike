@@ -17,7 +17,7 @@ myapp.config(["$routeProvider","$locationProvider",function($routeProvider,$loca
 myapp.controller('paperListController',function($scope,$location,$routeParams,$http,$timeout){
     setTitle("我的题库");
 
-	$scope.papers = new Array(1,2,3,4,5,6,7);
+	$scope.papers = new Array(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
 
 
 	/*题目详情页面*/
