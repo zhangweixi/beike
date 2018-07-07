@@ -139,7 +139,7 @@ class Weixin extends Controller{
                 //保存在数据库
                 $data = [
                     'user_sn'   => $userInfo['userid'],
-                    'nickname'  => $userInfo['name'],
+                    'nick_name'  => $userInfo['name'],
                     'real_name' => $userInfo['name'],
                     'head'      => $userInfo['avatar'],
                     'mobile'    => $userInfo['mobile'],
