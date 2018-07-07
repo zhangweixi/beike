@@ -72,7 +72,7 @@ class Weixin extends Controller{
     public function clean(Request $request)
     {
         $info = $request->session()->all();
-        $request->session()->flash();
+        $request->session()->flush();
         dd($info);
     }
 
@@ -173,7 +173,7 @@ class Weixin extends Controller{
     }
 
 
-   
+
 
 
     public function getwxinfobyuserid($userId)
