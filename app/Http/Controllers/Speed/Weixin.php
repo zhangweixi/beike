@@ -44,6 +44,11 @@ class Weixin extends Controller{
     {
 
         $url    = $request->input('url');
+
+        if(empty($url))
+        {
+            exit('缺少URL');
+        }
         $url    = urldecode($url);
 
         $weixinInfo = $this->get_wx_info($request);
