@@ -173,10 +173,7 @@ class Weixin extends Controller{
     }
 
 
-    public function clean(Request $request){
-
-        $request->session()->flush();
-    }
+   
 
 
     public function getwxinfobyuserid($userId)
