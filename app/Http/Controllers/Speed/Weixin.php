@@ -29,21 +29,16 @@ class Weixin extends Controller{
     public function index()
     {
 
+
+
+    }
+
+    public function get_department_list()
+    {
         $info  = $this->wx->department->list();
 
-        return apiData()->set_data('list',$info)->send();
-
+        return $info;
     }
-
-
-    public function user(Request $request)
-    {
-
-        $userInfo = $this->get_wx_info($request);
-
-        return apiData()->set_date('userinfo',$userInfo)->send();
-    }
-
 
 
     public function get_wx_info(Request $request){
@@ -51,7 +46,6 @@ class Weixin extends Controller{
         $userInfo   = $request->session()->get('wechat_user');
 
         $code       = $request->input('code');
-
 
         if($userInfo)
         {

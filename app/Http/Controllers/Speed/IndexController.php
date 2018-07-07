@@ -18,6 +18,8 @@ class IndexController extends Controller{
     public function index()
     {
 
+
+
         $info  = $this->wx->department->list();
 
         return apiData()->set_data('list',$info)->send();
