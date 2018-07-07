@@ -102,7 +102,7 @@ class Weixin extends Controller{
         {
             $targetUrl = url($request->getRequestUri());
 
-            $directUrl = url('/speed/weixin/get_wx_info?getUrl='.urlencode($targetUrl));
+            $directUrl = url('/speed/weixin/get_wx_info?targetUrl='.urlencode($targetUrl));
             $directUrl = urlencode($directUrl);
 
             /*return $this->wx->oauth->scopes(['snsapi_userinfo'])
