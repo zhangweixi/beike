@@ -3,6 +3,7 @@ namespace  App\Http\Controllers\Speed;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Speed\Weixin;
+use DB;
 
 
 class IndexController extends Controller{
@@ -31,8 +32,9 @@ class IndexController extends Controller{
 
     public function user(Request $request)
     {
-
-        dd($request->input());
+        $userId = $request->input('userId');
+        $userInfo = DB::table('user')->where('user_sn',$userId)->first();
+        return apiData()->set_data('userInfo',$userInfo)->send();
 
     }
 
