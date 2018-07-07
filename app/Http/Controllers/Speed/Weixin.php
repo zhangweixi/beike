@@ -4,7 +4,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use EasyWeChat;
 use \EasyWeChat\Factory;
-
+use DB;
 
 /**
  * @property \EasyWeChat\Factory $wx
