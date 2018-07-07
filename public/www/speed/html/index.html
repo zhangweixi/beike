@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html class="guding">
+<head>
+	<meta http-equiv="Content-type" content="text/html;charset=utf-8"/>
+	<meta http-equiv="pragma" content="no-cache"> 
+	<meta http-equiv="Cache-Control" content="no-cache, must-revalidate"> 
+	<meta http-equiv="expires" content="Wed, 26 Feb 1997 08:21:57 GMT">
+	<link rel="stylesheet" type="text/css" href="../css/index.css?k0">
+	<link rel="stylesheet"href="http://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+	<title>党建知识答题</title>
+	<meta name="viewport" content="width=width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0,minimum-scale=1.0">
+
+
+</head>
+<body ng-app="myapp">
+	<div ng-view>
+		
+
+	</div>
+</body>
+</html>
+
+<!--<script src="../js/jquery.min.js" language="JavaScript"></script>-->
+ <!--<script src="../js/angular.min.js" language="JavaScript"></script>-->
+ <!--<script src="../js/angular-route.min.js" language="JavaScript"></script>-->
+
+<!--<script src="http://cdn.bootcss.com/angular.js/1.5.0/angular.min.js" language="JavaScript"></script>-->
+<!--<script src="http://cdn.bootcss.com/angular.js/1.5.0/angular-route.min.js" language="JavaScript"></script>-->
+
+
+<!--<script src="./js/wx.config.js" language="JavaScript"></script>-->
+<!--<script src="./js/jweixin-1.0.0.js" language="JavaScript"></script>-->
+<!--<script src="../js/app.js" language="JavaScript"></script>-->
+<!--<script src="https://s22.cnzz.com/z_stat.php?id=1274038474&web_id=1274038474" language="JavaScript"></script>-->
+
+<script> 
+	
+	var scripts = new Array(
+		"http://cdn.bootcss.com/jquery/2.0.0/jquery.min.js",
+		"http://cdn.bootcss.com/angular.js/1.5.0/angular.min.js",
+		"http://cdn.bootcss.com/angular.js/1.5.0/angular-route.min.js",
+		//"./js/wx.config.js",
+		//"./js/jweixin-1.0.0.js",
+		"../js/app.js"
+		);
+
+	var jshtml = "";
+	var randown = Math.random();
+
+	for(var s of scripts)
+	{
+		s = s + "?time="+randown;
+		jshtml += '<script src="'+ s + '"><\/script>';
+	}
+	document.write(jshtml);
+</script>
+
+
