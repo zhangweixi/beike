@@ -86,7 +86,16 @@ class Weixin extends Controller{
 
         if($userInfo)
         {
-            return $userInfo;
+            $userInfo = DB::table('user')->where('user_sn',$userInfo->UserId)->first();
+            if($userInfo)
+            {
+                return $userInfo;
+
+            }else{
+
+                $userInfo = null;
+                
+            }
         }
 
         if(empty($userInfo) && empty($code))
