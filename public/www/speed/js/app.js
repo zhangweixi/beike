@@ -36,7 +36,7 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 	setTitle("关于19大的最新学习");
 
 
-	$scope.showbeginbtn = false;//显示答题按钮
+	$scope.showbeginbtn = true;//显示答题按钮
 
 	/*开始答题*/
 	$scope.begin_answer = function()
