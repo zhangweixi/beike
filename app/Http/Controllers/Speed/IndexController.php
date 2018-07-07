@@ -18,8 +18,6 @@ class IndexController extends Controller{
     public function index()
     {
 
-
-
         $info  = $this->wx->department->list();
 
         return apiData()->set_data('list',$info)->send();
@@ -27,14 +25,15 @@ class IndexController extends Controller{
     }
 
 
+
+
+
+
     public function user(Request $request)
     {
 
-        $weixin = new Weixin();
+        dd($request->input());
 
-        $userInfo = $weixin->get_wx_info($request);
-
-        return apiData()->set_date('userinfo',$userInfo)->send();
     }
 
 

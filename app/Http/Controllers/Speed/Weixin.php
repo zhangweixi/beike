@@ -40,6 +40,26 @@ class Weixin extends Controller{
         return $info;
     }
 
+    public function login(Request $request)
+    {
+
+        $url    = $request->input('url');
+        $url    = urldecode($url);
+
+        $weixinInfo = $this->get_wx_info($request);
+        $userId     = $weixinInfo['userid'];
+
+        if(preg_match('/\?/',$url))
+        {
+            $url = str_replace("?","?userId=".$userId."&",$url);
+        }elseif(preg_match('/#/',$url)){
+
+            $url  = str_replace("#","?userId=".$userId."#",$url);
+        }
+
+        header('Location:'.$url);
+
+    }
 
     public function get_wx_info(Request $request){
 
@@ -94,6 +114,15 @@ class Weixin extends Controller{
                 exit;
             }
 
+            //从数据库获取用户信息
+            $userInfo = DB::table('user')->where('user_sn',$info->UserId)->first();
+
+            if($userInfo)
+            {
+                $request->session()->put('wechat_user',$userInfo);
+                $request->session()->save();
+                return $userInfo;
+            }
 
             $userId     =  $info->UserId;
             $userInfo   = $this->getwxinfobyuserid($userId);
@@ -101,7 +130,21 @@ class Weixin extends Controller{
 
             if($userInfo)
             {
-                //$userInfo = $userInfo->toArray();
+
+                //保存在数据库
+                $data = [
+                    'user_sn'   => $userInfo['userid'],
+                    'nickname'  => $userInfo['name'],
+                    'real_name' => $userInfo['name'],
+                    'head'      => $userInfo['avatar'],
+                    'mobile'    => $userInfo['mobile'],
+                    'created_at'=> date_time(),
+                    'updated_at'=> date_time()
+                ];
+
+
+                DB::table('user')->insert($data);
+                $userInfo = DB::table('user')->where('user_sn',$userInfo['userid'])->first();
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
                 $targetUrl = urldecode($request->input('targetUrl'));

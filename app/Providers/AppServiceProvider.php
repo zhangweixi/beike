@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         DB::listen(function () {
-            $log = 10;
+            $log = 0;
             if ($log) {
 
                 $args = func_get_args();
