@@ -52,7 +52,7 @@ class Weixin extends Controller{
         $url    = urldecode($url);
 
         $weixinInfo = $this->get_wx_info($request);
-        $userId     = $weixinInfo['userid'];
+        $userId     = $weixinInfo->user_sn;
 
         if(preg_match('/\?/',$url))
         {
