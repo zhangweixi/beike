@@ -69,10 +69,16 @@ class Weixin extends Controller{
 
     }
 
+    public function clean(Request $request)
+    {
+        $info = $request->session()->all();
+        $request->session()->flash();
+        dd($info);
+    }
+
     public function get_wx_info(Request $request){
 
         $userInfo   = $request->session()->get('wechat_user');
-
         $code       = $request->input('code');
 
         if($userInfo)
