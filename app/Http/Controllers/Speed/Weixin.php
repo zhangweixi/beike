@@ -86,7 +86,7 @@ class Weixin extends Controller{
 
         if($userInfo)
         {
-            $userInfo = DB::table('user')->where('user_sn',$userInfo->UserId)->first();
+            $userInfo = DB::table('user')->where('user_sn',$userInfo->user_sn)->first();
             if($userInfo)
             {
                 return $userInfo;
@@ -94,7 +94,7 @@ class Weixin extends Controller{
             }else{
 
                 $userInfo = null;
-                
+
             }
         }
 
