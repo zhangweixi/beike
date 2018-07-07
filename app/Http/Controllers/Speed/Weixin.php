@@ -53,13 +53,16 @@ class Weixin extends Controller{
 
         $weixinInfo = $this->get_wx_info($request);
         $userId     = $weixinInfo->user_sn;
-
+        var_dump($weixinInfo);
         if(preg_match('/\?/',$url))
         {
             $url = str_replace("?","?userId=".$userId."&",$url);
         }elseif(preg_match('/#/',$url)){
 
             $url  = str_replace("#","?userId=".$userId."#",$url);
+
+        }else{
+            $url = $url."?userId=".$userId;
         }
         exit($url);
         header('Location:'.$url);
