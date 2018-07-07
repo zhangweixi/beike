@@ -117,7 +117,7 @@ class Weixin extends Controller{
 
             //        https://open.weixin.qq.com/connect/oauth2/authorize?appid=CORPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&agentid=AGENTID&state=STATE#wechat_redirect
             header("Location:".$url);
-            //exit;
+            exit;
         }
 
 
