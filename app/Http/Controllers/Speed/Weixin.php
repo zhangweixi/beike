@@ -107,7 +107,7 @@ class Weixin extends Controller{
 
             if($userInfo)
             {
-                $userInfo = $userInfo->toArray();
+                //$userInfo = $userInfo->toArray();
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
                 $targetUrl = urldecode($request->input('targetUrl'));
@@ -139,7 +139,7 @@ class Weixin extends Controller{
 
         mylogger('获取信息结果');
         mylogger($info);
-        $info = json_decode($info);
+        $info = json_decode($info,true);
 
         return $info;
 
