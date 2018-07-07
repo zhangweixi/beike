@@ -61,7 +61,7 @@ class Weixin extends Controller{
 
             $url  = str_replace("#","?userId=".$userId."#",$url);
         }
-
+        exit($url);
         header('Location:'.$url);
 
     }
