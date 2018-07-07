@@ -95,18 +95,14 @@ class IndexController extends Controller{
 
             if(!isset($info->UserId))
             {
-
-                exit('您还不是企业内部会');
-
+                $url = url('www/speed/html/focus-weipingtai.html');
+                header('Location:'.$url);
+                exit;
             }
 
 
             $userId     =  $info->UserId;
             $userInfo   = $this->getwxinfobyuserid($userId);
-
-            return $userInfo->userid;
-            dd($userInfo);
-
 
 
             if($userInfo)
