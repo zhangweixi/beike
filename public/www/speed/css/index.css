@@ -20,9 +20,20 @@ body > a {
 .hide {
   display: none !important;
 }
+.bg-full {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
 .full {
   width: 100%;
   display: block;
+}
+.min-full {
+  min-height: 100vh;
+  width: 100%;
+  display: block;
+  overflow: hidden;
 }
 .th1-title {
   font-size: 1.2rem;
@@ -50,12 +61,58 @@ body > a {
   color: #fff;
   font-size: 0.8rem;
 }
+.page-detail .container {
+  padding: 0 20px;
+}
+.page-detail .time-and-num {
+  border: 1px solid #666;
+  border-radius: 5px;
+  margin: auto;
+  overflow: hidden;
+  display: flex;
+  background: #9C3B3B;
+  color: #fff;
+}
+.page-detail .time-and-num > div {
+  width: 2px;
+  background: #fff;
+}
+.page-detail .time-and-num > p {
+  width: 50%;
+  display: block;
+  float: left;
+  flex: 1;
+}
+.page-detail .time-and-num span {
+  display: block;
+  text-align: center;
+  line-height: 1.7;
+}
+.page-detail .question-content {
+  border: 2px solid #9C3B3B;
+  margin-top: 20px;
+  padding: 5px;
+  border-radius: 5px;
+}
+.page-detail .question-content .title {
+  color: #9C3B3B;
+  font-weight: bold;
+}
+.page-detail .question-content ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 .begin-answer-btn {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100vw;
   background: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
 }
 .begin-answer-btn p {
   flex: 1;

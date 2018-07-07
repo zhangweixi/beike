@@ -28,11 +28,22 @@ body > a{
 }
 
 
-
+.bg-full{
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+}
 
 .full{
 	width:100%;
 	display: block;
+}
+
+.min-full{
+	min-height:100vh;
+	width:100%;
+	display: block;
+	overflow: hidden;
 }
 
 .th1-title{
@@ -70,6 +81,70 @@ body > a{
 	}
 }
 
+.page-detail{
+
+	.container{
+		padding:0 20px;
+
+	}
+
+
+	//时间和次数
+	.time-and-num{
+		border:1px solid #666;
+		border-radius: 5px;
+		margin:auto;
+
+
+		overflow: hidden;
+		display: flex;
+		background: #9C3B3B;
+		color:#fff;
+
+
+		>div{
+			width:2px;
+			background:#fff;
+		}
+		>p{
+			width:50%;
+			display: block;
+			float: left;
+			flex: 1;
+		}
+
+		span{
+			display: block;
+			text-align: center;
+			line-height:1.7;
+		}
+	}
+
+
+
+
+	//问题内容
+	.question-content{
+
+		border:2px solid #9C3B3B;
+		margin-top:20px;
+		padding:5px;
+		border-radius: 5px;
+
+		.title{
+			color:#9C3B3B;
+			font-weight: bold;
+		}
+
+		ul{
+			list-style:none;
+			margin:0;
+			padding:0;
+		}
+	}
+
+
+}
 
 .begin-answer-btn{
 	display: flex;
@@ -77,10 +152,12 @@ body > a{
 	height:100vh;
 	width:100vw;
 	background:rgba(0,0,0,.5);
+	.guding;
+
 	p{
 		flex:1;
-
 	}
+
 	div{
 
 		height:50vw;
@@ -96,3 +173,6 @@ body > a{
 		font-size:1.5rem;
 	}
 }
+
+
+
