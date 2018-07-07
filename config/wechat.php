@@ -125,7 +125,10 @@ return [
              'corp_id' => 'ww3b91f9627469056d',
             'agent_id' => 1000008,
              'secret'   => "DkDscLu6MdI8zm8_7BkEnfVUbvcouXSMjumm0PGsXkY",
-              //...
+             'oauth' => [
+                  'scopes'   => array_map('trim', explode(',', env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_SCOPES', 'snsapi_userinfo'))),
+                  'callback' => env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_CALLBACK', '/api/speed/index/callback'),
+              ],
           ],
      ],
 ];

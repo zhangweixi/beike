@@ -19,9 +19,14 @@ $api->version('v1',['prefix'=>"api/v1",'middleware'=>['apiSign','saveApiData'],'
     //球场
     $api->post('/court/{action}',       'CourtController@action');
 
+    //设备
     $api->post('/device/{action}',      'DeviceController@action');
 
+    //算法系统
     $api->post('/matlab/{action}',     'MatlabController@action');
+
+    //社区比赛
+    $api->post('/sqmatch/{action}',     'ShequMatchController@action');
 
 
 });

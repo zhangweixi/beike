@@ -16,8 +16,12 @@ Route::get('/', function () {
 });
 
 
-Route::get('/weixin/user','Speed\IndexController@user');
-Route::get('/weixin/get_wx_info','Speed\IndexController@get_wx_info');
+Route::get('/weixin/{action}','Speed\IndexController@action');
+
+
+//Route::get('/weixin/user','Speed\IndexController@user');
+
+//Route::get('/weixin/get_wx_info','Speed\IndexController@get_wx_info');
 
 Route::any('/code','Service\Mobile@get_code');//测试获取电话号码
 
