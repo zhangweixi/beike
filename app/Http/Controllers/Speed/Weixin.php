@@ -92,19 +92,20 @@ class Weixin extends Controller{
             $targetUrl = url($request->getRequestUri());
 
             $directUrl = url('/speed/weixin/get_wx_info?getUrl='.urlencode($targetUrl));
+            $directUrl = urlencode($directUrl);
 
-
-            return $this->wx->oauth->scopes(['snsapi_userinfo'])
+            /*return $this->wx->oauth->scopes(['snsapi_userinfo'])
                 ->setRedirectUrl($directUrl)
                 ->setRequest($request)
-                ->redirect()->send();
+                ->redirect()->send();*/
 
+            mylogger('请求URL'.$directUrl);
+            $config = config('wechat.work.default');
+            $url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$config['corp_id']."&redirect_uri=".$directUrl."&response_type=code&scope=snsapi_userinfo&agentid=".$config['agent_id']."&state=STATE#wechat_redirect";
 
-            //$config = config('wechat.work.default');
-            //$url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$config['corp_id']."&redirect_uri=".$directUrl."&response_type=code&scope=snsapi_userinfo&agentid=".$config['agent_id']."&state=STATE#wechat_redirect";
 
             //        https://open.weixin.qq.com/connect/oauth2/authorize?appid=CORPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&agentid=AGENTID&state=STATE#wechat_redirect
-            //header("Location:".$url);
+            header("Location:".$url);
             //exit;
         }
 
