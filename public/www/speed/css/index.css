@@ -59,7 +59,7 @@ body > a {
   border-radius: 2px;
   background: #ff6c29;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: .8rem;
 }
 .page-detail .container {
   padding: 0 20px;
@@ -103,10 +103,70 @@ body > a {
   margin: 0;
   padding: 0;
 }
-.begin-answer-btn {
+.page-detail .question-content ul li {
+  display: flex;
+  border: 1px solid #999;
+  margin-top: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 3px;
+}
+.page-detail .question-content ul li p {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.page-detail .question-content ul li .checkbox {
+  text-align: center;
+  width: 30px;
+  vertical-align: middle;
+  display: flex;
+}
+.page-detail .question-content ul li .checkbox span {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin: auto;
+}
+.page-detail .question-content ul li .checkbox .result-status {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px auto;
+}
+.page-detail .question-content ul li .checkbox .right {
+  background-image: url('../images/yes.png');
+}
+.page-detail .question-content ul li .checkbox .wrong {
+  background-image: url('../images/no.png');
+}
+.page-detail .question-content ul li .answer {
+  line-height: 1.5;
+  flex: 1;
+}
+.page-detail .question-content ul li.checked {
+  background: #30baad;
+}
+.page-detail .check-btn {
+  line-height: 2.5;
+  text-align: center;
+  border: 1px solid #999;
+  border-radius: 30px;
+  background: #ccc;
+  color: #999;
+}
+.page-detail .right-answer {
+  text-align: center;
+  margin-top: 20px;
+  color: #9C3B3B;
+}
+.page-detail .check-btn.active {
+  background: #30baad;
+  border: 1px solid #30baad;
+  color: #fff;
+}
+.zhezhao {
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(59, 59, 68, 0.7);
   width: 100vw;
   height: 100vh;
   position: fixed;
@@ -114,7 +174,7 @@ body > a {
   left: 0;
   overflow: hidden;
 }
-.begin-answer-btn p {
+.zhezhao p {
   flex: 1;
 }
 .begin-answer-btn div {
@@ -130,4 +190,38 @@ body > a {
   font-weight: bold;
   font-size: 1.5rem;
 }
-/*# sourceMappingURL=index.css.map */
+.finish-answer > div {
+  width: 75vw;
+  padding: 20px;
+  background: #fff;
+  border-radius: 5px;
+  margin: auto;
+}
+.finish-answer .text-info {
+  text-align: center;
+  display: flex;
+  border-radius: 5px;
+  background: rgba(19, 117, 37, 0.84);
+  color: #fff;
+  margin-bottom: 30px;
+}
+.finish-answer .text-info p {
+  flex: 1;
+}
+.finish-answer .text-info span {
+  width: 1px;
+  background: #fff;
+}
+.finish-answer .title {
+  text-align: center;
+  color: #801C1C;
+}
+.finish-answer .btn {
+  background: #801C1C;
+  color: #fff;
+  text-align: center;
+  line-height: 3;
+  border-radius: 5px;
+  display: block;
+  margin: 10px auto;
+}
