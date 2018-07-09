@@ -1,7 +1,7 @@
 <div class="sort-page">
 	<ul>
 		<li ng-repeat="paper in papers">
-			<span class="head"><img src="http://p.qlogo.cn/bizmail/ickficLxUF0c98890icfBZBQAn2TyZcgITMdh5oDiciatE5NgeA3a7kpuKw/0"></span>
+			<span class="head"><img ng-src="{{paper.head}}"></span>
 			<span class="flex">{{paper.nick_name}}</span>
 			<span class="time">{{paper.usedTime}}</span>
 			<span class="grade">{{paper.grade}}分</span>

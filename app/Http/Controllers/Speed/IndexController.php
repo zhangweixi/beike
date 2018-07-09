@@ -198,7 +198,7 @@ class IndexController extends Controller{
         $paperSn    = $request->input('paperSn');
         $papers     = DB::table('paper as a')
             ->leftJoin('user as b','b.user_sn','=','a.user_sn')
-            ->select('a.*','b.nick_name')
+            ->select('a.*','b.nick_name','b.head')
             ->where('a.paper_sn',$paperSn)
             ->orderBy('a.grade','desc')
             ->orderBy('a.used_time','asc')
