@@ -83,7 +83,7 @@ class Weixin extends Controller{
     public function sessioninfo(Request $request){
 
 
-        $session = $request->session()->all();
+        $session = session()->all();
 
         dd($session);
 
@@ -92,8 +92,12 @@ class Weixin extends Controller{
     public function savesession(Request $request)
     {
 
-        $request->session()->put('name','zhangweixi');
-        $request->session()->save();
+        session('name','zhangweixi');
+        session()->save();
+
+        //$request->session()->put('name','zhangweixi');
+        //$request->session()->save();
+        exit();
         return "ok";
     }
 
@@ -172,7 +176,8 @@ class Weixin extends Controller{
 
                 $targetUrl = urldecode($request->input('targetUrl'));
                 //header('Location:'.$targetUrl);
-                exit;
+                return redirect()->away($targetUrl);
+
             }
 
             $userId     =  $info->UserId;
