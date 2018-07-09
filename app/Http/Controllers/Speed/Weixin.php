@@ -57,13 +57,13 @@ class Weixin extends Controller{
 
         if(preg_match('/\?/',$url))
         {
-            $url = str_replace("?","?userId=".$userId."&",$url);
+            $url = str_replace("?","?userSn=".$userId."&",$url);
         }elseif(preg_match('/#/',$url)){
 
-            $url  = str_replace("#","?userId=".$userId."#",$url);
+            $url  = str_replace("#","?userSn=".$userId."#",$url);
 
         }else{
-            $url = $url."?userId=".$userId;
+            $url = $url."?userSn=".$userId;
         }
         mylogger('url'.$url);
         header('Location:'.$url);
