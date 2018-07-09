@@ -67,7 +67,7 @@ class Weixin extends Controller{
         }
         mylogger('url'.$url);
         header('Location:'.$url);
-
+        exit;
     }
 
     public function clean(Request $request)
@@ -128,11 +128,12 @@ class Weixin extends Controller{
         if(empty($userInfo) && $code)
         {
             //$userInfo = $this->wx->oauth->setRequest($request)->user();
+            mylogger('获取到code:'.$code);
 
             //获取微信基本信息
             $token = $this->get_token();
             $url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token={$token}&code={$code}";
-            $info = file_get_contents($url);
+            $info = file_get_contents($url); mylogger('获取到基本信息');
             $info = json_decode($info);
 
 
@@ -150,6 +151,7 @@ class Weixin extends Controller{
             {
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
+                mylogger('已存在用户信息');
                 return $userInfo;
             }
 
