@@ -299,7 +299,10 @@ class IndexController extends Controller{
 
     public function implot_quest(){
 
-        $quests = DB::table('quest_template')->get();
+        $quests = DB::table('quest_template')
+            ->where('id',"<",54)
+            ->get();
+
         $time   = date_time();
         $sns    = ['A','B','C','D','E','F'];
         foreach($quests as $q)
@@ -312,6 +315,7 @@ class IndexController extends Controller{
                 case "判断":$type = 'radio';break;
             }
 
+            mylogger($q->id);
 
             $question = [
                 'title'         => $q->question,
@@ -321,25 +325,38 @@ class IndexController extends Controller{
 
             //添加到题库
             $questionId = DB::table('question')->insertGetId($question);
+            //$questionId = 1;
 
-            $answers = explode("#\n",trim($q->answer,"#"));
+
+            $answers = explode("#",trim(trim(trim($q->answer,"　")),"#"));
+
+
 
             foreach($answers as $key => $ans)
             {
+                $ans            = trim($ans);
+                $ans            = trim($ans,"　");
+                $ans            = trim($ans,"\n");
+                $ans            = trim($ans);
+                $ans            = trim($ans,"　");
+
                 $temp           = explode('==',$ans);
+
                 $answers[$key]  = [
                     'question_id'=>$questionId,
                     'content'   => $temp[0],
                     'is_right'  => (int)$temp[1],
                     'sn'        => $sns[$key]
                 ];
+
+                //return $answers;
+                //if($key == 3) return $answers;
             }
+            //return $answers;
             DB::table('answers')->insert($answers);
         }
 
-
         return apiData()->send();
-
     }
 
 
