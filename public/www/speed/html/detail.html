@@ -1,12 +1,33 @@
 <div class="page page-detail bg-full min-full" id="pagedetail" style="background-image:url('../images/detail-bg.jpg');">
 	<p style="height:20px;margin:0;padding:0;"></p>
 	<!--显示答题按钮-->
-	<div class="begin-answer-btn" ng-if="showbeginbtn">
+	<div class="begin-answer-btn zhezhao" ng-if="showbeginbtn">
 		<p></p>
 		<div ng-click="begin_answer()">开始答题</div>
 		<p></p>
 	</div>
 
+
+	<div class="finish-answer zhezhao" ng-if="surplusTime < 0">
+
+		<p></p>
+		<div ng-click="begin_answer()">
+
+			<h3 class="title">{{finishTitle}}</h3>
+			<div>
+				<div class="text-info">
+					<p>用时：{{usedTime}}</p>
+					<span></span>
+					<p>得分：10</p>
+				</div>
+
+				<p class="btn" ng-click="page_result()">查看答题详情</p>
+				<p class="btn" ng-click="page_sort()">查看排行榜</p>
+			</div>
+		</div>
+		<p></p>
+
+	</div>
 
 
 	<!--答题部分-->
@@ -16,12 +37,12 @@
 
 			<p class="time">
 				<span>剩余时间</span>
-				<span>10分钟10秒</span>
+				<span>{{showSurplusTime}}</span>
 			</p>
 			<div></div>
 			<p class="num">
-				<span>总计:10题</span>
-				<span>已答:5题</span>
+				<span>总计:{{questionList.length}}题</span>
+				<span>已答:{{question.nth}}题</span>
 			</p>
 		</div>
 
@@ -29,22 +50,31 @@
 
 		<div class="question-content">
 
-
-
-			<p class="title">3.关于19大的最新学习</p>
+			<p class="title">3.{{question.title}}</p>
 			<ul>
 
-				<li>
-					<P>看的快点快点开看书看书看得开看的快点快点开开导开导打开快点快点快点肯定大口大口快点快点开</P>
-					<P></P>
+				<li ng-repeat="ans in question.answers" ng-click="select_answer(ans.sn)" ng-class="ans.selected == 1?'checked':''">
+					<P class="checkbox"><span>{{ans.sn}}</span></P>
+					<P class="answer">{{ans.content}}</P>
+					<P class="checkbox">
+
+						<span class="result-status right" ng-if="ans.result == 1"></span>
+						<span class="result-status wrong" ng-if="ans.result == 0"></span>
+					</P>
 				</li>
+
+				<!--<li class="checked">-->
+					<!--<P class="checkbox"><span>B</span></P>-->
+					<!--<P class="answer">看的快点快点开看书看书看得开看的快点大口快点快点开</P>-->
+					<!--<P class="checkbox"></P>-->
+				<!--</li>-->
 			</ul>
+
 		</div>
+
+		<div class="right-answer">{{rightNoticeText}}</div>
+		<p ng-class="activeCheckBtn == true ? 'check-btn active':'check-btn'" ng-click="check_answer()">{{checkBtnText}}</p>
 	</div>
-
-
-
-
 
 
 </div>

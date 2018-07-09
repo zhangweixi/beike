@@ -140,24 +140,105 @@ body > a{
 			list-style:none;
 			margin:0;
 			padding:0;
+
+			li{
+				display: flex;
+				border:1px solid #999;
+				margin-top:10px;
+				padding-top:5px;
+				padding-bottom:5px;
+				border-radius: 3px;
+
+				p{
+					margin-top:5px;
+					margin-bottom:5px;
+				}
+				.checkbox{
+					text-align: center;
+					width:30px;
+					//background:red;
+					vertical-align: middle;
+					display: flex;
+					span{
+						width:20px;
+						height:20px;
+						vertical-align: middle;
+						margin:auto;
+					}
+
+					.result-status{
+
+						background-position: center;
+						background-repeat: no-repeat;
+						background-size: 16px auto;
+					}
+
+					.right{
+
+						background-image:url('../images/yes.png');
+					}
+
+					.wrong{
+						background-image:url('../images/no.png');
+					}
+				}
+
+				.answer{
+					line-height:1.5;
+					flex: 1;
+				}
+
+				&.checked{
+
+					background: #30baad;
+				}
+			}
 		}
+	}
+
+
+	.check-btn{
+
+		line-height:2.5;
+		text-align: center;
+		border:1px solid #999;
+		border-radius: 30px;
+		background:#ccc;
+		color:#999;
+
+	}
+
+	.right-answer{
+
+		text-align: center;
+		margin-top:20px;
+		color:#9C3B3B;
+	}
+
+	.check-btn.active{
+
+		background:#30baad;
+		border:1px solid #30baad;
+		color:#fff;
 	}
 
 
 }
 
-.begin-answer-btn{
+.zhezhao{
 	display: flex;
 	flex-direction:column;
 	height:100vh;
 	width:100vw;
-	background:rgba(0,0,0,.5);
+	background: rgba(59, 59, 68, 0.7);
 	.guding;
-
 	p{
 		flex:1;
 	}
 
+}
+
+.begin-answer-btn{
 	div{
 
 		height:50vw;
@@ -174,5 +255,50 @@ body > a{
 	}
 }
 
+
+.finish-answer{
+
+	>div{
+		width:75vw;
+		padding:20px;
+		background:#fff;
+		border-radius: 5px;
+		margin:auto;
+	}
+
+	.text-info{
+		text-align: center;
+		display: flex;
+
+		border-radius: 5px;
+		background:rgba(19, 117, 37, 0.84);
+		color:#fff;
+		margin-bottom:30px;
+		p{
+			flex: 1;
+		}
+		span{
+			width:1px;
+			background:#fff;
+		}
+	}
+
+	.title{
+
+		text-align: center;
+		color:#801C1C;
+
+	}
+
+	.btn{
+		background:#801C1C;
+		color:#fff;
+		text-align: center;
+		line-height:3;
+		border-radius: 5px;
+		display: block;
+		margin:10px auto;
+	}
+}
 
 
