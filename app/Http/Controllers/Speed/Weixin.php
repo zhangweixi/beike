@@ -80,6 +80,14 @@ class Weixin extends Controller{
         dd($info);
     }
 
+    public function sessioninfo(Request $request){
+
+
+        $session = $request->session()->all();
+        dd($session);
+
+    }
+
     public function get_wx_info(Request $request){
 
         $userInfo   = $request->session()->get('wechat_user');
@@ -154,7 +162,7 @@ class Weixin extends Controller{
                 mylogger('已存在用户信息');
 
                 $targetUrl = urldecode($request->input('targetUrl'));
-                header('Location:'.$targetUrl);
+                //header('Location:'.$targetUrl);
                 exit;
             }
 
