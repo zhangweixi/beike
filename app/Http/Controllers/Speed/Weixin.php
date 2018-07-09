@@ -88,6 +88,14 @@ class Weixin extends Controller{
 
     }
 
+    public function savesession(Request $request)
+    {
+
+        $request->session()->put('name','zhangweixi');
+        $request->session()->save();
+        exit;
+    }
+
     public function get_wx_info(Request $request){
 
         $userInfo   = $request->session()->get('wechat_user');
