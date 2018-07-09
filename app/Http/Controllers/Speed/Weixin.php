@@ -84,6 +84,7 @@ class Weixin extends Controller{
 
 
         $session = $request->session()->all();
+
         dd($session);
 
     }
@@ -93,7 +94,7 @@ class Weixin extends Controller{
 
         $request->session()->put('name','zhangweixi');
         $request->session()->save();
-        exit;
+        return "ok";
     }
 
     public function get_wx_info(Request $request){
