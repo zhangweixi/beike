@@ -152,7 +152,10 @@ class Weixin extends Controller{
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
                 mylogger('已存在用户信息');
-                return $userInfo;
+
+                $targetUrl = urldecode($request->input('targetUrl'));
+                header('Location:'.$targetUrl);
+                exit;
             }
 
             $userId     =  $info->UserId;
@@ -178,6 +181,7 @@ class Weixin extends Controller{
                 $userInfo = DB::table('user')->where('user_sn',$userInfo['userid'])->first();
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
+
                 $targetUrl = urldecode($request->input('targetUrl'));
 
                 mylogger('完成后:'.$targetUrl);
