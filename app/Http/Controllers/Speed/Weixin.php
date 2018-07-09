@@ -111,14 +111,14 @@ class Weixin extends Controller{
                 ->setRequest($request)
                 ->redirect()->send();*/
 
-            mylogger('请求URL'.$directUrl);
+            mylogger('请求URL'.urldecode(urldecode($directUrl)));
             $config = config('wechat.work.default');
             $url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$config['corp_id']."&redirect_uri=".$directUrl."&response_type=code&scope=snsapi_userinfo&agentid=".$config['agent_id']."&state=STATE#wechat_redirect";
 
 
             //        https://open.weixin.qq.com/connect/oauth2/authorize?appid=CORPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&agentid=AGENTID&state=STATE#wechat_redirect
             header("Location:".$url);
-            mylogger('请求code');
+            mylogger('请求code'.urldecode(urldecode($url)));
             exit();
         }
 
