@@ -1,6 +1,5 @@
+var service = location.origin + "/api/speed/index/";
 var myapp 	= angular.module('myapp',["ngRoute"]);
-var service	= "http://www.yyclub.me/DidiQuanzhou/public/index/Didi_kaituan1/";
-var maxmember=2;
 
 myapp.config(["$routeProvider","$locationProvider",function($routeProvider,$locationProvider){
 
@@ -16,27 +15,61 @@ myapp.config(["$routeProvider","$locationProvider",function($routeProvider,$loca
 
 
 myapp.controller('paperListController',function($scope,$location,$routeParams,$http,$timeout){
+    
     setTitle("我的题库");
+    $scope.page     = 1;
+    $scope.userSn   = getQueryVariable('userSn');
 
-	$scope.papers = new Array(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15);
+
+	$scope.papers = new Array();
+
+
+    $scope.init = function(){
+
+        $scope.get_papers();
+    }
 
 
 	/*题目详情页面*/
-	$scope.detail = function()
+	$scope.detail = function(paperId,canAnswer)
 	{
 
+	    if(canAnswer == 1)
+        {
+            $location.path('detail/'+paperId);
+        }else{
 
-		$location.path('detail/12');
+            $location.path('result/'+paperId);
+        }
+
+
 	}
+
+
+    $scope.get_papers = function(){
+
+        var url = service + "papers";
+        $http.post(url,{userSn:$scope.userSn,page:$scope.page})
+        .success(function(res){
+
+            if(res.data.papers)
+            {
+                $scope.papers = res.data.papers.data;
+            }
+
+        })
+    }
+
+
+    $scope.init();
 });
 
 
 
 myapp.controller("detailController",function($scope,$http,$location,$routeParams,$timeout){
 
-	setTitle("关于19大的最新学习");
     $scope.activeCheckBtn = false;      //是否激活检查按钮
-    $scope.showbeginbtn = false;        //显示答题按钮
+    $scope.showbeginbtn = true;        //显示答题按钮
     $scope.rightNoticeText = "";        //正确答案文字提示
     $scope.checkBtnText = "检查";       //检查按钮文字提示
     $scope.canSelectAnswer    = true;   //是否可以选择答案
@@ -48,108 +81,33 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
     $scope.finishTitle = "测试完成";
     $scope.paperInfo = {paperId:12,paper_sn:"2015-05-06",surplusTime:60,total_time:72};
     $scope.usedTime = "";//答题所用时间
-    $scope.questionList = [
-
-        {
-            id:1,
-            title:"关于19大的最新学习",
-            type:"checkbox",
-            isAnswer:0,
-            nth:4,
-            answers:[
-                {
-                    sn:"A",
-                    content:"快点快点看的开导开导",
-                    selected:0,
-                    isRight:1,
-                    result:3
-                },
-                {
-                    sn:"B",
-                    content:"快点快点SSS看的开导开导",
-                    selected:0,
-                    isRight:0,
-                    result:3
-                },
-                {
-                    sn:"C",
-                    content:"快点快点看dd的d开导开导",
-                    selected:0,
-                    isRight:0,
-                    result:3
-                },
-                {
-                    sn:"D",
-                    content:"快点快点ddssdKkdkd看的开导开导",
-                    selected:0,
-                    isRight:0,
-                    result:3
-                }
-            ]
-        }, {
-            id:2,
-            isAnswer:0,
-            title:"你的名字",
-            type:"checkbox",
-            answers:[
-                {
-                    sn:"A",
-                    content:"快点快点看的开导开导",
-                    selected:0,
-                    isRight:1,
-                    result:3
-                },
-                {
-                    sn:"B",
-                    content:"快点快点SSS看的开导开导",
-                    selected:0,
-                    isRight:0,
-                    result:3
-                },
-                {
-                    sn:"C",
-                    content:"快点快点看dd的d开导开导",
-                    selected:0,
-                    isRight:0,
-                    result:3
-                },
-                {
-                    sn:"D",
-                    content:"快点快点ddssdKkdkd看的开导开导",
-                    selected:0,
-                    isRight:0,
-                    result:3
-                }
-            ]
-        }
-    ];
+    $scope.questionList = new Array();
     
+    $scope.userSn = getQueryVariable('userSn');
+ 
 
 
     $scope.init = function(){
 
         $scope.get_question_list();
-        $scope.get_next_question();
-        $scope.fresh_time();
+
+
+        //$scope.get_next_question();
+        //$scope.fresh_time();
     }
 
 
     $scope.fresh_time = function(){
 
             
-            $scope.showSurplusTime = $scope.second_to_str($scope.surplusTime);
-
-            console.log($scope.showSurplusTime);
+            $scope.showSurplusTime = second_to_str($scope.surplusTime);
 
             if($scope.surplusTime == 0)
             { 
                 $scope.surplusTime = $scope.surplusTime - 1;
-                var time = $scope.paperInfo.total_time - $scope.surplusTime;
-                console.log(time);
-                $scope.usedTime = $scope.second_to_str(time);
-
                 //向服务器记录完成
                 $scope.finishTitle = "测试时间结束";
+                $scope.finish_exam();
 
                 return;
             }
@@ -157,35 +115,48 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
             $timeout(function(){$scope.fresh_time();},1000);
     }
 
-    $scope.second_to_str = function(second){
+  
 
-        var h = parseInt(second/3600);
-        var m = parseInt((second%3600)/60);
-        var s = second%60;
-            h = $scope.getfull_time(h);
-            m = $scope.getfull_time(m);
-            s = $scope.getfull_time(s);
-        var str = h+":"+m+":"+s;
-
-        return str;
-
-    }
-
-    $scope.getfull_time = function(num){
-
-        if(num < 10)
-        {
-            return "0"+num;
-        }else{
-            return num;
-        }
-    }
+  
 
     //获得题目列表
     $scope.get_question_list = function()
     {
 
+        
+        var url = service + "paper_detail";
+        $http.post(url,{paperId:$scope.paperId})
+        .success(function(res){
 
+            for(var quest of res.data.questions)
+            {
+
+                for(var ans of quest.answers)
+                {
+                    ans.result = 2;
+                }
+            }
+
+            $scope.paperInfo =  res.data.paperInfo;
+            var paperInfo  =   res.data.paperInfo;
+
+            console.log($scope.paperInfo);
+
+            $scope.questionList = res.data.questions;
+
+            console.log( $scope.questionList);
+
+            $scope.surplusTime = paperInfo.total_time - paperInfo.used_time;
+
+            $scope.showSurplusTime = second_to_str($scope.surplusTime);
+            
+
+            setTitle(paperInfo.title+"测试");
+
+            $scope.get_next_question();
+           
+            //$scope.fresh_time();
+        })
 
     }
 
@@ -198,11 +169,12 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
         $scope.activeCheckBtn = false;
         $scope.answerList   = new Array();
 
+
         var isEnd           = true;
 
         for(var question of $scope.questionList)
         {
-            if(question.isAnswer == 0)
+            if(question.answer == null)
             {
                 $scope.question = question;
                 isEnd = false;
@@ -212,18 +184,55 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 
         if(isEnd == true)
         {
-            $location.path('result/0');
+
+            //结束答题
+            $scope.finishTitle = "恭喜，已完成答题";
+            $scope.finish_exam();
         }
     }
 
+
+    $scope.finish_exam = function()
+    {
+
+        var url = service + "finish_exam?paperId=" + $scope.paperId;
+        var data = {paperId:$scope.paperId,userSn:$scope.userSn};
+
+        $http.post(url,data)
+        .success(function(res)
+        {
+            $scope.paperInfo = res.data.paperInfo;
+            $scope.usedTime = second_to_str($scope.paperInfo.used_time);
+
+        });
+    }
 
 
 	/*开始答题*/
 	$scope.begin_answer = function()
 	{
 		$scope.showbeginbtn = false;
+        
+        //刷新前端时间
+        $scope.fresh_time();
 
+        //定时更新耗费时间
+        $timeout($scope.save_used_time,5000);
 	}
+
+    /*更新使用的时间*/
+    $scope.save_used_time = function()
+    {
+
+        var url = service + "fresh_exam_time?paperId="+$scope.paperId;
+        $http.get(url);
+        if($scope.surplusTime > 0)
+        {
+
+            $timeout($scope.save_used_time,5000);
+        }
+
+    }
 
 
     /*
@@ -309,7 +318,7 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 
         //冻结回答状态
         $scope.canSelectAnswer = false;
-        $scope.question.isAnswer = 1;
+        
 
          $timeout(function(){
             $scope.checkBtnText = "下一题";
@@ -319,35 +328,55 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 
         //检查正确答案
 
+        var userAnwers = [];
 
         for(var ans of $scope.question.answers)
         {
-            if(ans.isRight == 1 && ans.selected == true)
+            if(ans.is_right == 1 && ans.selected == true)
             {
                 ans.result = 1;
 
-            }else if(ans.isRight ==0 && ans.selected == true){
+            }else if(ans.is_right ==0 && ans.selected == true){
 
                 ans.result = 0;
 
-            }else if(ans.isRight == 1 && ans.selected == false) {
+            }else if(ans.is_right == 1 && ans.selected == false) {
 
                 //ans.result = 0;
             }
 
+            if(ans.selected == true)
+            {
+                userAnwers.push(ans.sn);
+            }
+            
 
-            if(ans.isRight == 1)
+            if(ans.is_right == 1)
             {
                 //$scope.rightNoticeText = $scope.rightNoticeText + ans.sn+",";
                 $scope.answerList.push(ans.sn);
             }
         }
 
-
-
+        $scope.question.answer = $scope.answerList;
         $scope.rightNoticeText = "正确答案:" + $scope.answerList.join(',');
 
+
         //向服务器提交答案
+
+        var url = service + "save_answer";
+        var data = {
+            answers:userAnwers.join(','),
+            paperId:$scope.paperId,
+            paperQuestionId:$scope.question.paper_question_id
+        };
+
+        $http.post(url,data)
+        .success(function(){
+
+
+
+        });
     }
 
 
@@ -371,7 +400,38 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 myapp.controller('resultController',function($scope,$http,$location,$routeParams){
 
 
+    $scope.usedTime     = "00:00:00";
 
+    $scope.paperInfo    = {};
+    $scope.paperId      = $routeParams.id;
+    $scope.questions    = [];
+
+
+    $scope.get_papger_info = function(){
+
+        var url = service + "paper_detail?paperId="+$scope.paperId;
+
+        $http.get(url)
+        .success(function(res){
+
+
+            $scope.paperInfo = res.data.paperInfo;
+            $scope.usedTime  = second_to_str($scope.paperInfo.used_time);
+
+            $scope.questions = res.data.questions;
+
+        });
+    }
+
+    $scope.get_papger_info();
+
+
+    /*前往排行榜*/
+    $scope.to_sort = function(){
+
+        $location.path('sort/'+$scope.paperInfo.paper_sn);
+
+    }
 
 
 })
@@ -379,6 +439,46 @@ myapp.controller('resultController',function($scope,$http,$location,$routeParams
 
 /*排行榜*/
 myapp.controller('sortController',function($scope,$http,$location,$routeParams){
+
+
+    setTitle('排行榜');
+    $scope.papers   = new Array();
+    $scope.paperSn  = $routeParams.sn;
+
+    $scope.get_papers = function(){
+
+        var url = service + "same_paper_sort?paperSn=" + $scope.paperSn;
+
+
+        $http.get(url)
+        .success(function(res){
+
+            $scope.papers = res.data.papers;
+
+            for(var paper of $scope.papers)
+            {
+                var str = "用时";
+                var usedTime = paper.used_time;
+
+                var h   = parseInt(usedTime/3600);
+                if(h > 0)
+                {
+                    usedTime = usedTime%3600;
+                    str = str + h + "小时";
+                }
+
+                var m = parseInt(usedTime/60);
+                var s = usedTime%60;
+
+                str = str + m + "分钟" + s + "秒";
+                paper.usedTime = str;
+                
+            }
+
+        });
+    }
+
+    $scope.get_papers();
 
 
 })
@@ -456,7 +556,7 @@ function setTitle(t) {
 
     document.title = t;
     var i = document.createElement('iframe');
-    i.src = '//m.baidu.com/favicon.ico';
+    i.src = '//m.baidu.com/favicon.ico?time='+Math.random();
     i.style.display = 'none';
     i.onload = function() {
         setTimeout(function(){
@@ -466,3 +566,25 @@ function setTitle(t) {
     document.body.appendChild(i);
 }
 
+function second_to_str(second){
+
+    var h = parseInt(second/3600);
+    var m = parseInt((second%3600)/60);
+    var s = second%60;
+        h = getfull_time(h);
+        m = getfull_time(m);
+        s = getfull_time(s);
+    var str = h+":"+m+":"+s;
+
+    return str;
+}
+
+function getfull_time(num){
+
+    if(num < 10)
+    {
+        return "0"+num;
+    }else{
+        return num;
+    }
+}

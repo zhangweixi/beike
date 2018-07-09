@@ -1,5 +1,7 @@
-<div class="page page-detail bg-full min-full" id="pagedetail" style="background-image:url('../images/detail-bg.jpg');">
+<div class="page page-detail bg-full min-full" id="pagedetail" style="background-image:url('../images/detail-bg.png');">
 	<p style="height:20px;margin:0;padding:0;"></p>
+
+
 	<!--显示答题按钮-->
 	<div class="begin-answer-btn zhezhao" ng-if="showbeginbtn">
 		<p></p>
@@ -8,7 +10,10 @@
 	</div>
 
 
-	<div class="finish-answer zhezhao" ng-if="surplusTime < 0">
+
+	<!-- 最终结果 -->
+
+	<div class="finish-answer zhezhao" ng-if="paperInfo.status == 2">
 
 		<p></p>
 		<div ng-click="begin_answer()">
@@ -18,7 +23,7 @@
 				<div class="text-info">
 					<p>用时：{{usedTime}}</p>
 					<span></span>
-					<p>得分：10</p>
+					<p>得分：{{paperInfo.grade}}</p>
 				</div>
 
 				<p class="btn" ng-click="page_result()">查看答题详情</p>
@@ -42,7 +47,7 @@
 			<div></div>
 			<p class="num">
 				<span>总计:{{questionList.length}}题</span>
-				<span>已答:{{question.nth}}题</span>
+				<span>当前第{{question.nth+1}}题</span>
 			</p>
 		</div>
 
@@ -69,7 +74,6 @@
 					<!--<P class="checkbox"></P>-->
 				<!--</li>-->
 			</ul>
-
 		</div>
 
 		<div class="right-answer">{{rightNoticeText}}</div>

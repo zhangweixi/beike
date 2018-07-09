@@ -9,8 +9,8 @@
 
         <ul class="paper-list">
             <li ng-repeat="paper in papers">
-                <span class="content">关于19大的最新学习</span>
-                <span class="status" ng-click="detail()">已完成</span>
+                <span class="content">{{paper.title}}</span>
+                <span ng-class="paper.status ==2 ? 'status finish':'status unfinish'" ng-click="detail(paper.paper_id,paper.canAnswer)">{{paper.statusText}}</span>
             </li>
         </ul>
     </div>

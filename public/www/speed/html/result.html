@@ -1,8 +1,25 @@
-<div>
-	
+<div class="paper-result">
 
-	
+	<div class="time-and-num">
 
-	
+			<p class="time">
+				<span>总计用时</span>
+				<span>{{usedTime}}</span>
+			</p>
+			<div></div>
+			<p class="num">
+				<span>测试得分</span>
+				<span>{{paperInfo.grade}}分</span>
+			</p>
+		</div>
 
-</div>
+
+	<div class="result-answer">
+
+		<div ng-repeat="quest in questions" class="question-box">
+			
+			<p class="title"><span class="quest-title">{{quest.nth+1}}.{{quest.title}}</span><span ng-class="quest.result == 1 ? 'status right':'status wrong'"></span></p>
+
+		</div>
+	</div>
+	<p class="view-btn" ng-click="to_sort()">查看排行榜</p>

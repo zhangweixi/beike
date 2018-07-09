@@ -27,10 +27,13 @@ class PaperModel extends Model{
 
         if($needAnswer == true)
         {
-            foreach($questions as $question)
+            foreach($questions as $key=> $question)
             {
+
                 $answers = $this->get_question_answer($question->question_id);
                 $question->answers = $answers;
+                $question->nth = $key;
+
             }
         }
         return $questions;
