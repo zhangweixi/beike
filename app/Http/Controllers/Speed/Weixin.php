@@ -76,6 +76,7 @@ class Weixin extends Controller{
         $request->session()->flush();
 
         $request->session()->forget('wechat_user');
+        $request->session()->save();
         dd($info);
     }
 
