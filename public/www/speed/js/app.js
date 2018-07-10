@@ -82,6 +82,7 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
     $scope.paperInfo = {paperId:12,paper_sn:"2015-05-06",surplusTime:60,total_time:72};
     $scope.usedTime = "";//答题所用时间
     $scope.questionList = new Array();
+    $scope.isStop   = false;
     
     $scope.userSn = getQueryVariable('userSn');
  
@@ -99,7 +100,7 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 
     $scope.fresh_time = function(){
 
-            
+            if($scope.isStop == true) return;
             $scope.showSurplusTime = second_to_str($scope.surplusTime);
 
             if($scope.surplusTime == 0)
@@ -194,7 +195,7 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 
     $scope.finish_exam = function()
     {
-
+        $scope.isStop = true;
         var url = service + "finish_exam?paperId=" + $scope.paperId;
         var data = {paperId:$scope.paperId,userSn:$scope.userSn};
 
@@ -223,6 +224,8 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
     /*更新使用的时间*/
     $scope.save_used_time = function()
     {
+        
+        if($scope.isStop == true) return;
 
         var url = service + "fresh_exam_time?paperId="+$scope.paperId;
         $http.get(url);
@@ -422,6 +425,7 @@ myapp.controller('resultController',function($scope,$http,$location,$routeParams
 
         });
     }
+
 
     $scope.get_papger_info();
 

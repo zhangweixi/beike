@@ -20,6 +20,23 @@
 			
 			<p class="title"><span class="quest-title">{{quest.nth+1}}.{{quest.title}}</span><span ng-class="quest.result == 1 ? 'status right':'status wrong'"></span></p>
 
+			<div class="answer-box">
+				<ul>
+					<li ng-repeat="ans in quest.answers" ng-class="ans.is_right == 1? 'right':'wrong' ">
+						
+						<span>{{ans.sn}}.{{ans.content}}</span>
+						<span></span>
+					</li>
+				</ul>
+				<div class="useranswer">
+					<p>
+						正确答案：
+						<span ng-repeat="ans in quest.answers"><em ng-if="ans.is_right == 1">{{ans.sn}}</em></span>	
+					</p>
+					
+					<p>您的答案：{{quest.answer}}</p>
+				</div>
+			</div>
 		</div>
 	</div>
 	<p class="view-btn" ng-click="to_sort()">查看排行榜</p>

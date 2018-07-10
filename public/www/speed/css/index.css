@@ -171,7 +171,7 @@ body > a {
 .zhezhao {
   display: flex;
   flex-direction: column;
-  background: rgba(59, 59, 68, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   width: 100vw;
   height: 100vh;
   position: fixed;
@@ -187,8 +187,8 @@ body > a {
   width: 50vw;
   margin: auto;
   line-height: 50vw;
-  border: 30px solid #965E26;
-  background: #801C1C;
+  border: 30px solid rgba(60, 148, 76, 0.84);
+  background: #9C3B3B;
   color: #fff;
   text-align: center;
   border-radius: 50%;
@@ -238,8 +238,9 @@ body > a {
   line-height: 1.6;
 }
 .paper-result .result-answer .question-box {
-  border: 1px solid #999;
-  margin-bottom: 10px;
+  border: 1px solid #9C3B3B;
+  margin-bottom: 20px;
+  border-radius: 5px;
 }
 .paper-result .result-answer .title {
   color: #9C3B3B;
@@ -258,13 +259,42 @@ body > a {
   background-size: 18px auto;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: rgba(184, 187, 184, 0.84);
 }
 .paper-result .result-answer .title .status.right {
   background-image: url('../images/yes.png');
 }
 .paper-result .result-answer .title .status.wrong {
   background-image: url('../images/no.png');
+}
+.paper-result .result-answer .answer-box {
+  padding: 10px;
+  margin: 10px;
+  background: #efefef;
+  border-radius: 5px;
+}
+.paper-result .result-answer .answer-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.paper-result .result-answer .answer-box .right {
+  color: #9C3B3B;
+}
+.paper-result .result-answer .answer-box .wrong {
+  color: #777;
+}
+.paper-result .result-answer .useranswer {
+  overflow: hidden;
+}
+.paper-result .result-answer .useranswer p {
+  display: inline-block;
+  width: 50%;
+  float: left;
+  margin: 5px 0;
+  color: #30baad;
+}
+.paper-result .result-answer .useranswer p span {
+  overflow: hidden;
 }
 .paper-result .view-btn {
   background: #9C3B3B;

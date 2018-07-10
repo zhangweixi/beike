@@ -47,7 +47,7 @@ class IndexController extends Controller{
         $today      = date('Y-m-d');
         $userSn     = $request->input('userSn');
         //DB::table('paper')->where('user_sn',$userId)->where('paper_sn',$today)->first();
-        $papers     = DB::table('paper')->where('user_sn',$userSn)->paginate(10);
+        $papers     = DB::table('paper')->where('user_sn',$userSn)->orderBy('paper_id','desc')->paginate(10);
 
         $time = time();
 
