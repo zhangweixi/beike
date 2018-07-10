@@ -7,8 +7,8 @@ $api = app('Dingo\Api\Routing\Router');
 
 $api->version('v1',['prefix'=>"api/speed",'middleware'=>['saveApiData'],'namespace'=>"App\Http\Controllers\Speed"],function ($api)
 {
-    $api->any('test',function(){return "helolo";});
     $api->any('index/{action}','IndexController@action');
+    $api->any('admin/{action}','AdminController@action');
 
 });
 

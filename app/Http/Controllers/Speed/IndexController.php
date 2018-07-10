@@ -211,11 +211,10 @@ class IndexController extends Controller{
      * */
     public function create_paper()
     {
+
         $allQuestions = DB::table('question')->pluck('question_id')->toArray();
 
         DB::table('user')->orderBy('id')->chunk(200,function($users)use($allQuestions){
-
-
 
             $today  = current_date();
             $current = date_time();
@@ -223,9 +222,18 @@ class IndexController extends Controller{
             $begin  = $today." 06:00:00";
             $end    = $today." 22:00:00";
 
+
             foreach($users as $user)
             {
                 $userSn     = $user->user_sn;
+
+                //检查用户有没有本题库
+                $hasPaper = DB::table('paper')->where('user_sn',$userSn)->where('paper_sn',$today)->first();
+                if($hasPaper)
+                {
+                    continue;
+                }
+
 
                 $paperInfo = [
                     'paper_sn'  => $today,
