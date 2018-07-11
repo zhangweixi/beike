@@ -329,6 +329,26 @@ class UserController extends Controller
     }
 
 
+    public function suggestion(Request $request)
+    {
+        $data   = [
+            'user_id'   => $request->input('userId',0),
+            'name'      => $request->input('name',''),
+            'type'      => $request->input('type',''),
+            'mobile'    => $request->input('mobile',''),
+            'content'   => emoji_text_encode($request->input('content','')),
+            'created_at'=> date_time()
+        ];
+
+        if(empty($data['content']))
+        {
+            return apiData()->send(2001,'反馈意见不能为空');
+        }
+
+        DB::table('user_suggestion')->insert($data);
+
+        return apiData()->send();
+    }
 }
 
 
