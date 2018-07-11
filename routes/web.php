@@ -18,6 +18,8 @@ Route::get('/', function () {
 
 Route::get('/speed/weixin/{action}','Speed\Weixin@action');
 
+Route::any('/service/upload',"Service\Upload@upload");
+
 
 //Route::get('/weixin/user','Speed\IndexController@user');
 

@@ -2,8 +2,14 @@
 namespace App\Http\Controllers\Speed;
 
 use App\Http\Controllers\Controller;
+use Cyberduck\LaravelExcel\Factory\ImporterFactory;
 use Illuminate\Http\Request;
 use DB;
+use Cyberduck\LaravelExcel\Exporter;
+use Cyberduck\LaravelExcel\Importer;
+
+
+
 
 
 class AdminController extends Controller{
@@ -55,7 +61,23 @@ class AdminController extends Controller{
         return apiData()->send();
     }
 
+    /**
+     * 上传EXCEL
+     *
+     * */
+    public function read_question(Request $request)
+    {
 
+
+        $file = "E:\phpstudy\PHPTutorial\WWW\launchever\api.launchever.cn\public\/uploads/speed/QG9sQv0LmkRDXRvfURmjfCJIyGwVQcwxlAb4PIGx.xlsx";
+
+
+        $fileInfo = Excel::load($file);
+        dd($fileInfo);
+
+
+
+    }
 
 
 

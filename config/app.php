@@ -164,6 +164,7 @@ return [
 
         Dingo\Api\Provider\LaravelServiceProvider::class,
         Overtrue\LaravelWeChat\ServiceProvider::class,
+        #Maatwebsite\Excel\ExcelServiceProvider::class,
 
 
     ],
@@ -215,6 +216,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'EasyWeChat' => Overtrue\LaravelWeChat\Facade::class,
+        #'Excel' => Maatwebsite\Excel\Facades\Excel::class,
 
     ],
 

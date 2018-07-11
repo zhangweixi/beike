@@ -79,21 +79,24 @@ mylogin.controller('loginController',function($scope,$http){
 })
 
 
-
-var myapp = angular.module('myapp',['ui.router'])
-    .config(function($stateProvider,$urlRouterProvider){
-        //$urlRouterProvider.otherwise('/index');
-
+var myapp = angular.module('myapp',['ui.router']);
+    myapp.config(function($stateProvider,$urlRouterProvider)
+    {
+        //$urlRouterProvider.otherwise('/');
         $stateProvider
             .state('fruit',{
                 url:'/fruit',
                 templateUrl:'fruit.html'
             })
-            .state('index',{
-                url:'/index',
-                template:'<h2>这是首页</h2><button ng-click="tiao()">跳转</button>',
-                controller:'indexController'
-
+            .state('question-list',{
+                url:'/question-list',
+                templateUrl:'question-list.html',
+                controller:'questionController'
+            })
+            .state('question-upload',{
+                url:'/question-upload',
+                templateUrl:'question-upload.html',
+                controller:'questionController'
             })
             .state('index1',{
                 url:'/index1',
@@ -106,15 +109,58 @@ var myapp = angular.module('myapp',['ui.router'])
     });
 
 
+
 myapp.controller('indexController',function($scope,$location){
 
+    $scope.admin = {name:'zhangweixi'};
 
+    //alert();
     $scope.tiao = function()
     {
         $location.path('index1');
     }
 
+
 });
+
+
+myapp.controller('questionController',function($scope,$http){
+
+    setTimeout(init_DataTables,1000);
+
+    $scope.upload_excel = function(){
+
+        var form = new FormData();
+        var file = document.getElementById("excel").files[0];
+        //var user =JSON.stringify($scope.user);
+
+        form.append('file', file);
+
+        //传递参数
+        //form.append('user',user);
+        //var url = server + "upload_excel";
+        var url = "/service/upload";
+
+        $http({
+            method: 'POST',
+            url: url,
+            data: form,
+            headers: {'Content-Type': undefined},
+            transformRequest: angular.identity
+        }).success(function (data) {
+            console.log('operation success');
+
+        }).error(function (data) {
+
+            console.log('operation fail');
+
+        })
+
+
+    }
+
+
+})
 
 
 
