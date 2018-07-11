@@ -58,7 +58,7 @@ body > a {
   padding: 5px 7px;
   border-radius: 2px;
   color: #fff;
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 .paper-list-page .paper-list li .unfinish {
   background: #9C3B3B;
@@ -335,3 +335,4 @@ body > a {
   height: 30px;
   vertical-align: middle;
 }
+/*# sourceMappingURL=index.css.map */
