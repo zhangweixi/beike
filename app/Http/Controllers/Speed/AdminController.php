@@ -5,8 +5,8 @@ use App\Http\Controllers\Controller;
 use Cyberduck\LaravelExcel\Factory\ImporterFactory;
 use Illuminate\Http\Request;
 use DB;
-use Cyberduck\LaravelExcel\Exporter;
-use Cyberduck\LaravelExcel\Importer;
+//use Maatwebsite\Excel;
+use Excel;
 
 
 
@@ -68,17 +68,130 @@ class AdminController extends Controller{
     public function read_question(Request $request)
     {
 
+        $filePath = "D:/www/tiku.xlsx";
+        $data   = [];
 
-        $file = "E:\phpstudy\PHPTutorial\WWW\launchever\api.launchever.cn\public\/uploads/speed/QG9sQv0LmkRDXRvfURmjfCJIyGwVQcwxlAb4PIGx.xlsx";
+        Excel::load($filePath, function($reader)use(&$data) {
+
+            $excel = $reader->all();
+
+            foreach($excel as $sheet)
+            {
+                foreach($sheet as $cell)
+                {
+
+                    $title      = $cell->question;
+                    $type       = $cell->type;
+                    $type       = trim($type);
+
+                    $answer     = $cell->answer;
+                    $id         = $cell->id;
 
 
-        $fileInfo = Excel::load($file);
-        dd($fileInfo);
+                    $time   = date_time();
+                    $sns    = ['A','B','C','D','E','F'];
 
 
+                    switch($type)
+                    {
+                        case "多选":$type = 'checkbox';break;
+                        case "单选":$type = 'radio';break;
+                        case "判断":$type = 'radio';break;
+                    }
+
+                    mylogger($id);
+
+                    $question = [
+                        'title'         => $title,
+                        'type'          => $type,
+                        'created_at'    => $time,
+                        //'id'            => (int)$id,
+                    ];
+                    //$question['ans']    = $answer;
+
+                    //array_push($data,$question);continue;
+
+
+                    //添加到题库
+                    $questionId = DB::table('question')->insertGetId($question);
+                    //$questionId = $id;
+
+                    $answer     = str_replace("\n","",$answer);
+                    $answer     = str_replace("　","",$answer);
+                    $answer     = str_replace(" ","",$answer);
+
+                    $answers = explode("#",trim($answer,"#"));
+
+                    foreach($answers as $key => $ans)
+                    {
+
+                        $temp           = explode('==',$ans);
+
+                        //$bm = mb_detect_encoding($temp[0], array("ASCII",'UTF-8',"GB2312","GBK",'BIG5'));
+//                        if($bm == 'ASCII')
+//                        {
+//                            $temp[0] = cp1251_utf8($temp[0]);
+//                        }
+
+                        $answers[$key]  = [
+                            'question_id'=>$questionId,
+                            'content'   => $temp[0],
+                            'is_right'  => (int)$temp[1],
+                            'sn'        => $sns[$key]
+                        ];
+
+
+                        //return $answers;
+                        //if($key == 3) return $answers;
+                    }
+                    //$question['answers']   = $answers;
+                    //dd($question);
+                    //array_push($data,$question);
+                    //return $data;
+                    //return $answers;
+                     DB::table('answers')->insert($answers);
+                }
+
+
+            }
+
+        });
+
+
+        return apiData()->send();
 
     }
 
 
+    public function gettoken()
+    {
+        $weixin = new Weixin();
+        $token = $weixin->get_token();
 
+        return $token;
+    }
+
+
+
+}
+
+function cp1251_utf8( $sInput )
+{
+    $sOutput = "";
+
+    for ( $i = 0; $i < strlen( $sInput ); $i++ )
+    {
+        $iAscii = ord( $sInput[$i] );
+
+        if ( $iAscii >= 192 && $iAscii <= 255 )
+            $sOutput .=  "&#".( 1040 + ( $iAscii - 192 ) ).";";
+        else if ( $iAscii == 168 )
+            $sOutput .= "&#".( 1025 ).";";
+        else if ( $iAscii == 184 )
+            $sOutput .= "&#".( 1105 ).";";
+        else
+            $sOutput .= $sInput[$i];
+    }
+
+    return $sOutput;
 }
