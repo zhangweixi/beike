@@ -172,6 +172,45 @@ class AdminController extends Controller{
     }
 
 
+    public function get_all_users()
+    {
+        //$weixin = new Weixin();
+        //$token = $weixin->get_token();
+        $token = "C4xHeo_-q1VA8MTxHUgM6JXJqRYNkXnEXCPis0adutZMlXAdv1TPLxSuHeBvkJW0uboZIIVoEcFzZKRaTZRzCsUdMzKAOx9zW5gavbmG4frnYZr0sd4KNVBPClBe375ngP-coMtWD7PMEHgF4vCwK9Gj5rcLqXhix6e70Br_w5cBYUr7_s6hAduhqswpwFP0qiCQ2RRaCMj6qW8Mh6b0EA";
+
+
+        $url = "https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token={$token}&department_id=1&fetch_child=1";
+
+        $users = file_get_contents($url);
+
+        $users = json_decode($users);
+
+        $arrUser = [];
+        $time = date_time();
+
+        foreach($users->userlist as $user)
+        {
+            array_push($arrUser,[
+                'user_sn'   => $user->userid,
+                'real_name' => $user->name,
+                'nick_name' => $user->name,
+                'head'      => $user->avatar,
+                'mobile'    => $user->mobile,
+                'created_at'=> $time,
+                'updated_at'=> $time,
+            ]);
+        }
+
+        DB::table('user')->delete();
+        $num = DB::table('user')->insert($arrUser);
+
+
+        return apiData()->send(200,'添加'.$num."个成员");
+
+
+    }
+
+
 
 }
 

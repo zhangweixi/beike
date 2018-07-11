@@ -219,7 +219,7 @@ class IndexController extends Controller{
             $today  = current_date();
             $current = date_time();
             $time   = 600;//总的时间
-            $begin  = $today." 06:00:00";
+            $begin  = $today." 07:00:00";
             $end    = $today." 22:00:00";
 
 
