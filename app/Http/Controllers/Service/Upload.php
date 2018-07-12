@@ -11,6 +11,9 @@ class Upload extends Controller{
 
     public function upload(Request $request)
     {
+
+        //return $request->file('file')->extension();
+
         $filename = Storage::disk('web')->putFile('speed',$request->file('file'));
         $filepath = public_path('/uploads/'.$filename);
 
