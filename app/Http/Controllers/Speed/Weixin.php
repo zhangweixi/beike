@@ -249,4 +249,8 @@ class Weixin extends Controller{
         }
         return $this->token;
     }
+
+
+
+
 }

@@ -203,6 +203,8 @@ class IndexController extends Controller{
             ->orderBy('a.grade','desc')
             ->orderBy('a.used_time','asc')
             ->get();
+
+
         return apiData()->set_data('papers',$papers)->send();
     }
 
@@ -234,7 +236,6 @@ class IndexController extends Controller{
                     continue;
                 }
 
-
                 $paperInfo = [
                     'paper_sn'  => $today,
                     'user_sn'   => $userSn,
@@ -256,7 +257,7 @@ class IndexController extends Controller{
 
 
                 //随机获取10条 注意获得的是下标
-                $quests     = array_rand($newQuestion,5);
+                $quests     = array_rand($newQuestion,10);
 
                 $paperQuest = [];
                 foreach($quests as $key)

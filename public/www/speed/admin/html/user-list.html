@@ -1,10 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>用户列表</h2>
+
+            <ul class="nav navbar-right panel_toolbox hide">
+                <li>
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        <i class="fa fa-wrench"></i>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="#">Settings 1</a></li>
+                        <li><a href="#">Settings 2</a></li>
+                    </ul>
+                </li>
+
+                <li><a class="close-link"><i class="fa fa-close"></i></a></li>
+
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content">
+
+            <!--<p>Add class <code>bulk_action</code> to table for bulk actions options on row select</p>-->
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered jambo_table bulk_action">
+                    <thead>
+                    <tr class="headings">
+                        <th class="column-title">#</th>
+                        <th class="column-title">头像</th>
+                        <th class="column-title">名字</th>
+                        <th class="column-title">编号</th>
+                        <th class="column-title">手机</th>
+                        <th class="column-title">部门</th>
+                        <th class="column-title">操作</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr class="even pointer" ng-repeat="user in users">
+                        <td>{{(paginationConf.currentPage-1) * paginationConf.itemsPerPage + $index +1}}</td>
+                        <td><img ng-src="{{user.head}}" style="height:30px;width:30px;"></td>
+                        <td>{{user.nick_name}}</td>
+                        <td>{{user.user_sn}}</td>
+                        <td>{{user.mobile}}</td>
+                        <td class=" ">
+                            <p ng-repeat="dep in user.departs"><span>{{dep.name}}</span> &nbsp;&nbsp;<span class="btn btn-xs btn-danger" ng-click="quit_department(user.user_sn,dep.id)">移出本部</span></p>
+
+                        </td>
+                        <td class=" last">
+                            <button class="btn btn-danger">删除</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <tm-pagination conf="paginationConf"></tm-pagination>
+
+    </div>
+</div>
+
+<script src="../build/js/custom.min.js"></script>

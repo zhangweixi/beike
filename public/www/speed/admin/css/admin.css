@@ -1,0 +1,33 @@
+.page-list {
+  overflow: hidden;
+  clear: both;
+}
+.page-list .am-pagination {
+  text-align: center;
+  list-style: none;
+  padding: 0;
+}
+.page-list .am-pagination li {
+  display: inline-block;
+  margin-left: 5px;
+}
+.page-list .am-pagination span {
+  cursor: pointer;
+  color: #2b88ff;
+  padding: 5px 8px;
+}
+.page-list .am-pagination .am-active span {
+  color: #999;
+  cursor: none;
+}
+.page-list .am-pagination .separate span {
+  cursor: default;
+  border-top: none;
+  border-bottom: none;
+  background: #fff;
+  color: #999;
+}
+.page-list .am-pagination .separate span:hover {
+  background: none;
+}
+/*# sourceMappingURL=admin.css.map */

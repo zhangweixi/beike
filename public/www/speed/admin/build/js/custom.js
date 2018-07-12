@@ -74,12 +74,20 @@ var setContentHeight = function () {
 	  console.log('clicked - sidebar_menu');
         var $li = $(this).parent();
 
-        if ($li.is('.active')) {
+        if ($li.is('.active')) {//激活状态
+
+			return ;
+
             $li.removeClass('active active-sm');
             $('ul:first', $li).slideUp(function() {
                 setContentHeight();
             });
+
         } else {
+
+        	//移除所有选中的菜单
+            $('.child_menu .active').removeClass('active');
+
             // prevent closing menu if we are on child menu
             if (!$li.parent().is('.child_menu')) {
                 $SIDEBAR_MENU.find('li').removeClass('active active-sm');
@@ -92,6 +100,7 @@ var setContentHeight = function () {
 					$SIDEBAR_MENU.find( "li ul" ).slideUp();
 				}
 			}
+
             $li.addClass('active');
 
             $('ul:first', $li).slideDown(function() {

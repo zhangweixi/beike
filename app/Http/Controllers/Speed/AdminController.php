@@ -2,14 +2,10 @@
 namespace App\Http\Controllers\Speed;
 
 use App\Http\Controllers\Controller;
-use Cyberduck\LaravelExcel\Factory\ImporterFactory;
+use App\Http\Controllers\Speed\Model\PaperModel;
 use Illuminate\Http\Request;
 use DB;
-//use Maatwebsite\Excel;
 use Excel;
-
-
-
 
 
 class AdminController extends Controller{
@@ -68,16 +64,19 @@ class AdminController extends Controller{
     public function read_question(Request $request)
     {
 
-        $filePath = "D:/www/tiku.xlsx";
+        $isSave   = $request->input('isSave',0);
+        $isSave   = $isSave == 1 ? true : false;
+        $filePath = $request->input('filepath');
+
         $data   = [];
 
-        Excel::load($filePath, function($reader)use(&$data) {
+        Excel::load($filePath, function($reader)use(&$data,$isSave) {
 
             $excel = $reader->all();
 
             foreach($excel as $sheet)
             {
-                foreach($sheet as $cell)
+                foreach($sheet as $key => $cell)
                 {
 
                     $title      = $cell->question;
@@ -85,7 +84,7 @@ class AdminController extends Controller{
                     $type       = trim($type);
 
                     $answer     = $cell->answer;
-                    $id         = $cell->id;
+                    $id         = $key + 2;
 
 
                     $time   = date_time();
@@ -99,22 +98,21 @@ class AdminController extends Controller{
                         case "判断":$type = 'radio';break;
                     }
 
-                    mylogger($id);
 
                     $question = [
                         'title'         => $title,
                         'type'          => $type,
                         'created_at'    => $time,
-                        //'id'            => (int)$id,
                     ];
+
                     //$question['ans']    = $answer;
 
                     //array_push($data,$question);continue;
 
 
                     //添加到题库
-                    $questionId = DB::table('question')->insertGetId($question);
-                    //$questionId = $id;
+                    $questionId = $isSave == true ? DB::table('question')->insertGetId($question) : $id;
+
 
                     $answer     = str_replace("\n","",$answer);
                     $answer     = str_replace("　","",$answer);
@@ -124,14 +122,14 @@ class AdminController extends Controller{
 
                     foreach($answers as $key => $ans)
                     {
-
                         $temp           = explode('==',$ans);
+                        if(count($temp) == 1)
+                        {
+                            exit("格式错误:第".$id."行,【".$ans."】");
+                        }
 
+                        //检查编码
                         //$bm = mb_detect_encoding($temp[0], array("ASCII",'UTF-8',"GB2312","GBK",'BIG5'));
-//                        if($bm == 'ASCII')
-//                        {
-//                            $temp[0] = cp1251_utf8($temp[0]);
-//                        }
 
                         $answers[$key]  = [
                             'question_id'=>$questionId,
@@ -139,44 +137,62 @@ class AdminController extends Controller{
                             'is_right'  => (int)$temp[1],
                             'sn'        => $sns[$key]
                         ];
-
-
-                        //return $answers;
-                        //if($key == 3) return $answers;
                     }
-                    //$question['answers']   = $answers;
-                    //dd($question);
-                    //array_push($data,$question);
-                    //return $data;
-                    //return $answers;
-                     DB::table('answers')->insert($answers);
+
+
+                    try{
+
+                        \GuzzleHttp\json_encode($answers);
+
+                    }catch(Exception $e){
+
+                        exit($id."条数据有异常");
+
+                    }
+
+                    $question['answer'] = $answers;
+                    $question['id'] = $id;
+
+                    if($isSave)
+                    {
+                        DB::table('answers')->insert($answers);
+
+                    }else{
+
+                        array_push($data,$question);
+
+                    }
                 }
-
-
             }
-
         });
-
-
-        return apiData()->send();
-
+        return apiData()->set_data('questions',$data)->send();
     }
 
 
-    public function gettoken()
+    /**
+     * 问题列表
+     * */
+    public function questions(Request $request)
     {
-        $weixin = new Weixin();
-        $token = $weixin->get_token();
 
-        return $token;
+        $question = DB::table('question')->paginate(10);
+        $paperModel = new PaperModel();
+
+        foreach($question as $q)
+        {
+            $answer   = $paperModel->get_question_answer($q->question_id);
+            $q->answer = $answer;
+        }
+        return apiData()->set_data('question',$question)->send();
     }
 
 
-    public function get_all_users()
+    /*同步更新所有用户*/
+    public function down_all_users()
     {
         //$weixin = new Weixin();
         //$token = $weixin->get_token();
-        $token = "C4xHeo_-q1VA8MTxHUgM6JXJqRYNkXnEXCPis0adutZMlXAdv1TPLxSuHeBvkJW0uboZIIVoEcFzZKRaTZRzCsUdMzKAOx9zW5gavbmG4frnYZr0sd4KNVBPClBe375ngP-coMtWD7PMEHgF4vCwK9Gj5rcLqXhix6e70Br_w5cBYUr7_s6hAduhqswpwFP0qiCQ2RRaCMj6qW8Mh6b0EA";
+        $token      = "0-SLn9ppjyszkWW0pvd5CQeOOg8e6A81tNA7Zm0YEcII8EH_avXxhu2m5F6uTXkzSM-Qxj2TwSQFWUoVnxupDeN0KuvPI4iGsINiHFJkkZ8as4NkAzrEMzQP7T6q7EsrcR1WyAKonLER4g5nBeiGiO9TV9zfHX8UWuAJBOvj1nzIVu1AG7kT7xX6BS65yMFzByoS0nu6gcigpnND4NhBTg";
 
 
         $url = "https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token={$token}&department_id=1&fetch_child=1";
@@ -185,52 +201,123 @@ class AdminController extends Controller{
 
         $users = json_decode($users);
 
-        $arrUser = [];
+        $newUser = [];
         $time = date_time();
 
         foreach($users->userlist as $user)
         {
-            array_push($arrUser,[
-                'user_sn'   => $user->userid,
-                'real_name' => $user->name,
-                'nick_name' => $user->name,
-                'head'      => $user->avatar,
-                'mobile'    => $user->mobile,
-                'created_at'=> $time,
-                'updated_at'=> $time,
-            ]);
+            //检查用户是否存在
+            $info = DB::table('user')->where('user_sn',$user->userid)->first();
+            if($info)
+            {
+                $updateInfo = [
+                    'real_name' => $user->name,
+                    'nick_name' => $user->name,
+                    'head'      => $user->avatar,
+                    'mobile'    => $user->mobile,
+                    'updated_at'=> $time,
+                ];
+                DB::table('user')->where('user_sn',$user->userid)->update($updateInfo);
+
+            }else{
+
+                array_push($newUser,[
+                    'user_sn'   => $user->userid,
+                    'real_name' => $user->name,
+                    'nick_name' => $user->name,
+                    'head'      => $user->avatar,
+                    'mobile'    => $user->mobile,
+                    'created_at'=> $time,
+                    'updated_at'=> $time,
+                ]);
+            }
+
+
+            //检查用户所在的部门
+            foreach($user->department as $did)
+            {
+                $has = DB::table('user_department')->where('user_sn',$user->userid)->where('department',$did)->first();
+
+                if(!$has)
+                {
+                    DB::table('user_department')->insert(['user_sn'=>$user->userid,'department'=>$did]);
+                }
+            }
         }
-
-        DB::table('user')->delete();
-        $num = DB::table('user')->insert($arrUser);
-
+        $num = count($newUser);
+        DB::table('user')->insert($newUser);
 
         return apiData()->send(200,'添加'.$num."个成员");
-
-
     }
 
-
-
-}
-
-function cp1251_utf8( $sInput )
-{
-    $sOutput = "";
-
-    for ( $i = 0; $i < strlen( $sInput ); $i++ )
+    /**
+     * 用户列表
+     * */
+    public function users(Request $request)
     {
-        $iAscii = ord( $sInput[$i] );
 
-        if ( $iAscii >= 192 && $iAscii <= 255 )
-            $sOutput .=  "&#".( 1040 + ( $iAscii - 192 ) ).";";
-        else if ( $iAscii == 168 )
-            $sOutput .= "&#".( 1025 ).";";
-        else if ( $iAscii == 184 )
-            $sOutput .= "&#".( 1105 ).";";
-        else
-            $sOutput .= $sInput[$i];
+        $users  = DB::table('user')->paginate(10);
+        foreach($users as $user)
+        {
+            $departs = DB::table('user_department as a')->leftJoin('department as b','b.id','=','a.department')
+                ->select('b.*')
+                ->where('a.user_sn',$user->user_sn)
+                ->where('a.is_delete',0)
+                ->get();
+            $user->departs = $departs;
+        }
+        return apiData()->set_data('users',$users)->send();
     }
 
-    return $sOutput;
+
+
+    /*移除部门*/
+    public function quit_department(Request $request)
+    {
+        $userSn     = $request->input('userSn');
+        $depId      = $request->input('depId');
+
+        DB::table('user_department')->where('user_sn',$userSn)->where('department',$depId)->update(['is_delete'=>1]);
+        return apiData()->send();
+    }
+
+    /*同步所有部门*/
+    public function down_department(Request $request)
+    {
+        $token      = "0-SLn9ppjyszkWW0pvd5CQeOOg8e6A81tNA7Zm0YEcII8EH_avXxhu2m5F6uTXkzSM-Qxj2TwSQFWUoVnxupDeN0KuvPI4iGsINiHFJkkZ8as4NkAzrEMzQP7T6q7EsrcR1WyAKonLER4g5nBeiGiO9TV9zfHX8UWuAJBOvj1nzIVu1AG7kT7xX6BS65yMFzByoS0nu6gcigpnND4NhBTg";
+        $url        = "https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token={$token}&id=0";
+        $departments= file_get_contents($url);
+        $departments= \GuzzleHttp\json_decode($departments,true);
+        $departments= $departments['department'];
+        foreach($departments as $part)
+        {
+             $info = DB::table('department')->where('id',$part['id'])->first();
+
+             if($info)
+             {
+                 DB::table('department')->where('id',$part['id'])->update($part);
+             }else{
+
+                 DB::table('department')->insert($part);
+             }
+        }
+        return apiData()->send();
+    }
+
+
+    public function departments()
+    {
+        $departments = DB::table('department')->get();
+        return apiData()->set_data('departments',$departments)->send();
+    }
+
+    public function change_pk_status(Request $request)
+    {
+        $id     = $request->input('id');
+        $status = $request->input('status');
+        DB::table('department')->where('id',$id)->update(['is_show'=>$status]);
+        return apiData()->send();
+    }
+
+
 }

@@ -21,11 +21,77 @@
                     <div class="ln_solid"></div>
                     <div class="form-group">
                         <div class="col-md-5 col-sm-5 col-xs-12 col-md-offset-4">
-                            <p class="btn btn-primary" ng-click="upload_excel()">提交<p/>
+                            <button class="btn btn-primary" ng-click="upload_excel()">上传表格</button>
+                            <button class="btn btn-danger" ng-click="add_question()" ng-if="hasQuestion">{{addBtnText}}</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
+
+    <div class="x_content">
+
+        <!--<p>Add class <code>bulk_action</code> to table for bulk actions options on row select</p>-->
+        <div class="table-responsive">
+            <div style="max-height:60vh;overflow: scroll;">
+                <table class="table table-striped jambo_table bulk_action table-bordered">
+                    <thead>
+                    <tr class="headings">
+                        <!--<th>-->
+                        <!--<input type="checkbox" id="check-all" class="flat">-->
+                        <!--</th>-->
+
+                        <th class="column-title">编号</th>
+                        <th class="column-title">问题</th>
+                        <th class="column-title">类型</th>
+                        <th class="column-title">答案</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr class="even pointer" ng-repeat="q in questions ">
+                        <!--<td class="a-center ">-->
+                        <!--<input type="checkbox" class="flat" name="table_records">-->
+                        <!--</td>-->
+                        <td class=" " style="width:50px;">{{q.id - 1}}</td>
+                        <td class="col-sm-8 ">{{q.title}}</td>
+
+                        <td class=" ">{{q.type}}</td>
+                        <td class=" ">
+
+                            <p ng-repeat="ans in q.answer">
+                                <span>{{ans.sn}}</span>
+                                <span>.</span>
+                                <span>{{ans.content}}</span>
+                                <span ng-if="ans.is_right == 1"><i class="fa fa-check" style="color:red;"></i></span>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!--<tr class="odd pointer">-->
+                    <!--<td class="a-center ">-->
+                    <!--<input type="checkbox" class="flat" name="table_records">-->
+                    <!--</td>-->
+                    <!--<td class=" ">121000039</td>-->
+                    <!--<td class=" ">May 23, 2014 11:30:12 PM</td>-->
+                    <!--<td class=" ">121000208 <i class="success fa fa-long-arrow-up"></i>-->
+                    <!--</td>-->
+                    <!--<td class=" ">John Blank L</td>-->
+                    <!--<td class=" ">Paid</td>-->
+                    <!--<td class="a-right a-right ">$741.20</td>-->
+                    <!--<td class=" last"><a href="#">View</a>-->
+                    <!--</td>-->
+                    <!--</tr>-->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
 </div>
