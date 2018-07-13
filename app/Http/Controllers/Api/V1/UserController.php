@@ -173,7 +173,7 @@ class UserController extends Controller
         foreach($tempInfo as $key => $v)
         {
             $key    = tofeng_to_line($key);
-            if(!in_array($key,$colums))
+            if(!in_array($key,$colums) || $v == null)
             {
                 continue;
             }
