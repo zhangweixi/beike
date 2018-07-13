@@ -89,7 +89,7 @@ class UserModel extends Model
             $age = 0;
         }
         $userInfo['age']        = $age;
-        $userInfo['headImg']    = $userInfo['headImg'] ? env("FILE_HOST")."/".$userInfo['headImg']:url("beike/images/default/head.png");
+        $userInfo['headImg']    = $userInfo['headImg'] ? env("FILE_HOST","http://file.launchever.cn")."/".$userInfo['headImg']:url("beike/images/default/head.png");
         return $userInfo;
     }
 

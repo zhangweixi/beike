@@ -6,7 +6,7 @@ use App\Http\Controllers\Speed\Model\PaperModel;
 use Illuminate\Http\Request;
 use DB;
 use Excel;
-
+use App;
 
 class AdminController extends Controller{
 
@@ -392,7 +392,7 @@ class AdminController extends Controller{
 
 
     public function count_user(Request $request){
-
+        
         $today      = current_date();
         $beginDate  = $request->input('beginDate',$today);
         $endDate    = $request->input('endDate',$today);
