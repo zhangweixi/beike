@@ -88,8 +88,8 @@ class UserModel extends Model
         {
             $age = 0;
         }
-        $userInfo['age']    = $age;
-        $userInfo['head_img']   = $userInfo['head_img'] ? "http://pbqrtg6tm.bkt.clouddn.com/".$userInfo['head_img']:url("beike/images/default/head.png");
+        $userInfo['age']        = $age;
+        $userInfo['headImg']    = $userInfo['head_img'] ? "http://pbqrtg6tm.bkt.clouddn.com/".$userInfo['headImg']:url("beike/images/default/head.png");
         return $userInfo;
     }
 
