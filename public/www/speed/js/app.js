@@ -41,9 +41,12 @@ myapp.controller('paperListController',function($scope,$location,$routeParams,$h
 
             $location.path('result/'+paperId);
         }
-
-
 	}
+
+    $scope.page_sort = function(sn)
+    {
+        $location.path('sort/'+sn);
+    }
 
 
     $scope.get_papers = function(){

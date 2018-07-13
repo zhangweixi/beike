@@ -157,7 +157,7 @@ class IndexController extends Controller{
         {
             //给总的记录加分
             $result = 1;
-            DB::table('paper')->where('paper_id',$paperId)->increment('grade',1);
+            DB::table('paper')->where('paper_id',$paperId)->increment('grade',10);
 
         }else{
 

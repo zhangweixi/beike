@@ -9,7 +9,7 @@
 
         <ul class="paper-list">
             <li ng-repeat="paper in papers">
-                <span class="content">{{paper.title}}</span>
+                <span class="content" ng-click="page_sort(paper.paper_sn)">{{paper.title}}</span>
                 <span ng-class="paper.status ==2 ? 'status finish':'status unfinish'" ng-click="detail(paper.paper_id,paper.canAnswer)">{{paper.statusText}}</span>
             </li>
         </ul>
