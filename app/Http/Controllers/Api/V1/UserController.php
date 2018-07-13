@@ -164,13 +164,8 @@ class UserController extends Controller
      * */
     public function update_user_info(Request $request)
     {
-        $tokenInfo  = parse_token($request);
-        if($tokenInfo == false)
-        {
-            return apiData()->send(4001,'用户不存在');
-        }
 
-        $userId     = $tokenInfo->userId;
+        $userId     = $request->input('userId');
         $tempInfo   = $request->all();
         $userInfo   = [];
         $colums     = Schema::getColumnListing('users');
