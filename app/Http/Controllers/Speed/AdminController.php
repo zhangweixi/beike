@@ -255,8 +255,16 @@ class AdminController extends Controller{
      * */
     public function users(Request $request)
     {
+        $keywords   = $request->input('keywords','');
+        $users      = DB::table('user')
+            ->orWhere(function($db)use($keywords)
+            {
+                $db->where('user_sn','like',"%".$keywords."%")
+                    ->orWhere('nick_name','like',"%".$keywords."%")
+                    ->orWhere('mobile','like',"%".$keywords."%");
+            })->paginate(10);
 
-        $users  = DB::table('user')->paginate(10);
+
         foreach($users as $user)
         {
             $departs = DB::table('user_department as a')->leftJoin('department as b','b.id','=','a.department')
@@ -319,5 +327,119 @@ class AdminController extends Controller{
         return apiData()->send();
     }
 
+
+    /**
+     * 部门统计
+     * */
+    public function count_department(Request $request)
+    {
+
+        $today      = current_date();
+        $beginDate  = $request->input('beginDate',$today);
+        $endDate    = $request->input('endDate',$today);
+        $beginDate  = $beginDate." 00:00:00";
+        $endDate    = $endDate." 23:59:59";
+
+
+        //1.获取PK的部门
+        $departments = DB::table('department')->where('is_show',1)->get()->toArray();
+
+        foreach($departments as $depart)
+        {
+            //2.获得平均分
+            $sql = "SELECT 
+                      IFNULL(AVG (a.grade),0) as avgGrade
+                    FROM paper as a
+                    LEFT JOIN user_department as b ON b.user_sn = a.user_sn 
+                    WHERE b.department = {$depart->id}
+                    AND a.created_at >= '{$beginDate}'
+                    AND a.created_at <= '{$endDate}' ";
+
+            $avgInfo = DB::select($sql);
+            $avgInfo = $avgInfo[0];
+            $depart->avgGrade = number_format($avgInfo->avgGrade,2);
+
+            //3.答题率
+
+
+            //获得未答题的
+            $finished = DB::table('paper as a')
+                ->leftJoin('user_department as b','b.user_sn','=','a.user_sn')
+                ->where('a.created_at',">=",$beginDate)
+                ->where('a.created_at','<=',$endDate)
+                ->where('b.department',$depart->id)
+                ->where('a.status',2)
+                ->count();
+
+            //3.1总是试卷
+            $total = DB::table('paper as a')
+                ->leftJoin('user_department as b','b.user_sn','=','a.user_sn')
+                ->where('a.created_at',">=",$beginDate)
+                ->where('a.created_at','<=',$endDate)
+                ->where('b.department',$depart->id)
+                ->count();
+
+            $percent = $total > 0 ? number_format($finished / $total * 100,2) : 0;
+            $depart->percent        = $percent;
+            $depart->totalNum       = $total;
+            $depart->finishedNum    = $finished;
+        }
+
+        array_multisort(array_column($departments,'avgGrade'),SORT_ASC,$departments);
+
+        return apiData()->set_data('departments',$departments)->send();
+    }
+
+
+    public function count_user(Request $request){
+
+        $today      = current_date();
+        $beginDate  = $request->input('beginDate',$today);
+        $endDate    = $request->input('endDate',$today);
+        $beginDate  = $beginDate." 00:00:00";
+        $endDate    = $endDate." 23:59:59";
+
+        //用户的总分
+        $users = DB::table('user as a')
+            ->leftJoin('paper as b','b.user_sn','=',DB::raw("a.user_sn and b.created_at >= '{$beginDate}' and b.created_at <= '{$endDate}'"))
+            ->select("a.*",DB::raw('IFNULL(sum(b.grade),0) as totalGrade,IFNULL(sum(b.used_time),0) as usedTime'))
+            ->groupBy('a.user_sn')
+            ->orderBy('totalGrade','desc')
+            ->orderBy('usedTime','asc')
+            ->paginate(10);
+
+        foreach($users as $user)
+        {
+            $finished = DB::table('paper')
+                ->where('user_sn',$user->user_sn)
+                ->where('status',2)
+                ->where('created_at',">=",$beginDate)
+                ->where('created_at',"<=",$endDate)
+                ->count();
+
+            $total    = DB::table('paper')
+                ->where('user_sn',$user->user_sn)
+                ->where('created_at',">=",$beginDate)
+                ->where('created_at',"<=",$endDate)
+                ->count();
+
+
+            if($total > 0)
+            {
+                $percent  = number_format($finished / $total * 100);
+
+            }else{
+
+                $percent = 0;
+            }
+
+            $user->finished = $finished;
+            $user->total    = $total;
+            $user->percent  = $percent;
+        }
+
+
+        return apiData()->set_data('users',$users)->send();
+    }
 
 }

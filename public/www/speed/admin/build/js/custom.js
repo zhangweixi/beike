@@ -2411,7 +2411,8 @@ if (typeof NProgress != 'undefined') {
 	   	/* CALENDAR */
 		  
 		    function  init_calendar() {
-					
+
+
 				if( typeof ($.fn.fullCalendar) === 'undefined'){ return; }
 				console.log('init_calendar');
 					

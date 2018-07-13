@@ -107,6 +107,16 @@ var myapp = angular.module('myapp',['ui.router','tm.pagination']);
                 url:"/department",
                 templateUrl:'department.html?t='+Math.random(),
                 controller:'userController'
+            })
+            .state('count-department',{
+                url:"/count-department",
+                templateUrl:'count-department.html?t='+Math.random(),
+                controller:'countController'
+            })
+            .state('count-user',{
+                url:'/count-user',
+                templateUrl:'count-user.html?t='+Math.random(),
+                controller:'countController'
             });
 
     });
@@ -303,7 +313,7 @@ myapp.controller('userController',function($scope,$http,$location){
 
     $scope.users        = [];
     $scope.departments  = [];
-
+    $scope.userKeyWrods = "";//搜索用户关键字
     $scope.paginationConf = {
         currentPage: 0,
         totalItems: 8000,
@@ -323,10 +333,10 @@ myapp.controller('userController',function($scope,$http,$location){
         {
             return;
         }
-        var url = server + 'users?page='+page;
-        $http.get(url).success(function(res){
+        var url = server + 'users?page=' + page + "&keywords="+$scope.userKeyWrods;
 
-
+        $http.get(url).success(function(res)
+        {
             if(res.code == 200)
             {
                 var users = res.data.users;
@@ -413,10 +423,175 @@ myapp.controller('userController',function($scope,$http,$location){
 
 })
 
+myapp.controller('countController',function($scope,$http,$location){
+
+    $scope.beginDate    = new Date()
+    $scope.endDate      = new Date();
+
+    $scope.avgChart = {};
+    $scope.percentChart = {};
+    $scope.departments = new Array();
+
+    $scope.paginationConf = {
+        currentPage: 0,
+        totalItems: 8000,
+        itemsPerPage: 15,
+        pagesLength: 15,
+        perPageOptions: [10, 20, 30, 40, 50],
+        onChange: function(){
+
+            $scope.get_user_data($scope.paginationConf.currentPage);
+
+        }
+    };
 
 
 
+    /*获取部门数据*/
+    $scope.get_department_data = function()
+    {
+        //myChart.title = '世界人口总量 - 条形图';
+        var url = server + "count_department";
+        var data = {
+            beginDate: GMTToStr($scope.beginDate,'date'),
+            endDate:GMTToStr($scope.endDate,'date')
+        };
+
+        $http.post(url,data).success(function(res){
+
+            var departNames = new Array();
+            var avgData     = new Array();
+            var percentData = new Array();
+            $scope.departments = res.data.departments;
+            for(var depart of res.data.departments)
+            {
+                departNames.push(depart.name);
+                avgData.push(depart.avgGrade);
+                percentData.push(depart.percent);
+            }
+            $scope.set_department_avg(departNames,avgData,percentData);
+        })
+    }
 
 
+    $scope.set_department_avg = function(yAxisData,avgData,percentData){
+
+        var option = {
+            title: {
+                text: '部门答题统计',
+                subtext: '数据来自后台统计'
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                }
+            },
+            legend: {
+                data: ['平均分','完成率']
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value',
+                boundaryGap: [0, 0.01]
+            },
+            yAxis: {
+                type: 'category',
+                data: yAxisData
+            },
+            series: [
+                {
+                    name: '平均分',
+                    type: 'bar',
+                    data: avgData
+                },
+                {
+                    name: '完成率',
+                    type: 'bar',
+                    data: percentData
+                }
+            ]
+        };
+        $scope.avgChart.setOption(option);
+    }
 
 
+    /*获取用户数据*/
+    $scope.get_user_data = function(page)
+    {
+        if(page == 0) return;
+        var url         = server + "count_user";
+        var beginDate   = GMTToStr($scope.beginDate,'date');
+        var endDate     = GMTToStr($scope.endDate,'date');
+        var data = {beginDate:beginDate,endDate:endDate,page:page};
+        $http.post(url,data).success(function(res)
+        {
+            var data    = res.data.users;
+            $scope.paginationConf.currentPage = data.current_page;
+            $scope.paginationConf.itemsPerPage= data.per_page;
+            $scope.paginationConf.totalItems  = data.total;
+            $scope.users = res.data.users.data;
+
+        })
+    }
+
+
+    $scope.init = function()
+    {
+        var path = $location.url();
+        if(path == "/count-department"){
+
+            $scope.avgChart     = echarts.init(document.getElementById('avggrade'));
+            $scope.get_department_data();
+
+        }else if(path == "/count-user") {
+
+            $scope.get_user_data(1);
+        }
+    }
+    $scope.init();
+
+})
+
+
+function GMTToStr(time,type){
+    var date    = new Date(time)
+
+    var year    = getfull_time(date.getFullYear());
+    var month   = getfull_time(date.getMonth()+1);
+    var day     = getfull_time(date.getDate());
+    var hour    = getfull_time(date.getHours());
+    var min     = getfull_time(date.getMinutes());
+    var sen     = getfull_time(date.getSeconds());
+
+        date    = year + "-" + month + "-" + day;
+        time    = hour + ":" + min   + ":" + sen;
+
+        if(type == 'date'){
+
+            return date;
+        }
+
+        if(type == 'time')
+        {
+            return time;
+        }
+
+        return date + " " + time;
+}
+
+
+function getfull_time(num){
+
+    if(num < 10)
+    {
+        return "0"+num;
+    }else{
+        return num;
+    }
+}
