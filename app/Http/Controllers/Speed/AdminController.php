@@ -442,4 +442,50 @@ class AdminController extends Controller{
         return apiData()->set_data('users',$users)->send();
     }
 
+
+    /*管理员列表*/
+    public function admin_list(Request $request)
+    {
+        $admins = DB::table('admin')->get();
+
+        return apiData()->set_data('admins',$admins)->send();
+    }
+
+
+    public function get_admin_info(Request $request)
+    {
+
+        $adminId = $request->input('adminId');
+        $adminInfo= DB::table('admin')->where('admin_id',$adminId)->first();
+
+        return apiData()->set_data('adminInfo',$adminInfo)->send();
+    }
+
+    public function edit_admin(Request $request)
+    {
+
+        $adminId    = $request->input('admin_id',0);
+        $name       = $request->input('name');
+        $password   = $request->input('password');
+        $data       = ['name'=>$name,'password'=>$password];
+
+        if($adminId > 0)
+        {
+            DB::table('admin')->where('admin_id',$adminId)->update($data);
+
+        }else{
+            $data['created_at'] = date_time();
+            DB::table('admin')->insert($data);
+        }
+
+        return apiData()->send();
+    }
+
+    public function delete_admin(Request $request)
+    {
+        $adminId = $request->input('adminId');
+        DB::table('admin')->where('admin_id',$adminId)->delete();
+        return apiData()->send();
+    }
+
 }

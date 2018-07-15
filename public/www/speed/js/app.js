@@ -59,7 +59,6 @@ myapp.controller('paperListController',function($scope,$location,$routeParams,$h
             {
                 $scope.papers = res.data.papers.data;
             }
-
         })
     }
 

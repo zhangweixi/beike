@@ -29,9 +29,12 @@
     <link href="../build/css/custom.min.css" rel="stylesheet">
     <link href="../css/admin.css" rel="stylesheet">
 
+    <link rel="stylesheet" type="text/css" href="../js/tm.pagination/css/pagination.css">
 
     <script src="../../js/angular.min.js"></script>
-    <script src="../js/pagination/src/pagination/tm.pagination.js"></script>
+    <!--<script src="../js/pagination/src/pagination/tm.pagination.js"></script>-->
+    <script src="../js/tm.pagination/js/tm.pagination.js"></script>
+
     <script src="https://unpkg.com/@uirouter/angularjs@1.0.18/release/angular-ui-router.js"></script>
 
 
@@ -71,7 +74,7 @@
                 <!-- sidebar menu -->
                 <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                     <div class="menu_section">
-                        <h3>General</h3>
+                        <h3>SYSTEM MENU</h3>
                         <ul class="nav side-menu">
 
                             <li><a><i class="fa fa-book"></i> 题库管理 <span class="fa fa-chevron-down"></span></a>
@@ -94,6 +97,14 @@
                                 <ul class="nav child_menu">
                                     <li><a href="#count-department">部门统计</a></li>
                                     <li><a href="#count-user">用户统计</a></li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a><i class="fa fa-user"></i> 管理员 <span class="fa fa-chevron-down"></span></a>
+                                <ul class="nav child_menu">
+                                    <li><a href="#admin-list">账户列表</a></li>
+                                    <li><a href="#admin-add/0">添加账户</a></li>
                                 </ul>
                             </li>
                         </ul>

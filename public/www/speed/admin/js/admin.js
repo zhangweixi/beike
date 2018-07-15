@@ -117,7 +117,18 @@ var myapp = angular.module('myapp',['ui.router','tm.pagination']);
                 url:'/count-user',
                 templateUrl:'count-user.html?t='+Math.random(),
                 controller:'countController'
+            })
+            .state('admin-list',{
+                url:'/admin-list',
+                templateUrl:'admin-list.html?m='+Math.random(),
+                controller:'adminController'
+            })
+            .state('admin-add/:id',{
+                url:"/admin-add/:id",
+                templateUrl:'admin-add.html?t=' + Math.random(),
+                controller:'adminController'
             });
+
 
     });
 
@@ -132,8 +143,6 @@ myapp.controller('indexController',function($scope,$location){
     {
         $location.path('index1');
     }
-
-
 });
 
 
@@ -150,7 +159,7 @@ myapp.controller('questionController',function($scope,$http,$location){
         currentPage: 0,
         totalItems: 8000,
         itemsPerPage: 15,
-        pagesLength: 15,
+        pagesLength: 10,
         perPageOptions: [10, 20, 30, 40, 50],
         onChange: function(){
             $scope.get_question_list($scope.paginationConf.currentPage);
@@ -558,6 +567,72 @@ myapp.controller('countController',function($scope,$http,$location){
 
 })
 
+myapp.controller('adminController',function($scope,$http,$location,$stateParams){
+
+    $scope.admins = new Array();
+    $scope.adminId= $stateParams.id;
+    $scope.adminInfo = {
+
+        admin_id:0,
+        name:"",
+        password:''
+    };
+
+    console.log($stateParams);
+
+    $scope.admin_list = function()
+    {
+        var url = server + "admin_list";
+
+        $http.get(url).success(function(res){
+
+            $scope.admins = res.data.admins;
+
+        });
+    }
+
+    $scope.delete_admin = function(adminId)
+    {
+        if(!confirm('确定删除吗')) return false;
+        var url = server + "delete_admin?adminId="+adminId;
+        $http.get(url).success(function(res){
+
+            $scope.admin_list();
+
+        });
+    }
+
+    $scope.get_admin_info = function(){
+
+
+        var url = server + "get_admin_info?adminId="+$scope.adminId;
+        if($scope.adminId  == 0) return false;
+        $http.post(url,$scope.adminInfo).success(function(res){
+
+            if(res.data.adminInfo)
+            {
+                $scope.adminInfo            = res.data.adminInfo;
+                $scope.adminInfo.password   = "";    
+            }
+        });
+    }
+
+    $scope.edit_admin = function()
+    {
+        var url = server + "edit_admin";
+        $http.post(url,$scope.adminInfo).success(function(res){
+
+            if(res.code == 200)
+            {
+                alert("添加成功");
+                $location.path('admin-list');
+            }
+
+        });
+
+    }
+
+})
 
 function GMTToStr(time,type){
     var date    = new Date(time)
