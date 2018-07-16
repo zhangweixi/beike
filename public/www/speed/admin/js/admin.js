@@ -134,15 +134,48 @@ var myapp = angular.module('myapp',['ui.router','tm.pagination']);
 
 
 
-myapp.controller('indexController',function($scope,$location){
+myapp.controller('indexController',function($scope,$location,$http){
 
-    $scope.admin = {name:'zhangweixi'};
+    $scope.admin = {};
 
-    //alert();
-    $scope.tiao = function()
+    //检查是否登录
+    var token   = getCookie('adminToken');
+    if(!token)
     {
-        $location.path('index1');
+        location.href = "./login.html";
+
+        return ;
     }
+
+
+    $scope.admin_info = function()
+    {
+        var url = server + "get_admin_info_by_token";
+
+        $http.post(url,{token:token}).success(function(res){
+
+            $scope.admin = res.data.adminInfo;
+
+        });
+    }
+
+
+
+    //退出
+    $scope.login_out = function(){
+
+        var token   = getCookie('adminToken');
+        var url     = server + "login_out";
+
+        $http.post(url,{token:token}).success(function(res){
+
+            setCookie('adminToken','',0);
+            location.href = "./login.html";
+
+        });
+    }
+
+    $scope.admin_info();
 });
 
 

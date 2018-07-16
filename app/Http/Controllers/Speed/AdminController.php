@@ -33,6 +33,14 @@ class AdminController extends Controller{
     }
 
 
+    public function login_out(Request $request){
+
+        $tokenAdmin     = $request->input('token');
+
+        DB::table('admin')->where('token',$tokenAdmin)->update(['token'=>'']);
+
+        return apiData()->send();
+    }
 
     /**
      * 创建管理员
@@ -190,10 +198,9 @@ class AdminController extends Controller{
     /*同步更新所有用户*/
     public function down_all_users()
     {
-        //$weixin = new Weixin();
-        //$token = $weixin->get_token();
-        $token      = "0-SLn9ppjyszkWW0pvd5CQeOOg8e6A81tNA7Zm0YEcII8EH_avXxhu2m5F6uTXkzSM-Qxj2TwSQFWUoVnxupDeN0KuvPI4iGsINiHFJkkZ8as4NkAzrEMzQP7T6q7EsrcR1WyAKonLER4g5nBeiGiO9TV9zfHX8UWuAJBOvj1nzIVu1AG7kT7xX6BS65yMFzByoS0nu6gcigpnND4NhBTg";
-
+        $weixin = new Weixin();
+        $token = $weixin->get_token();
+        //$token      = "0-SLn9ppjyszkWW0pvd5CQeOOg8e6A81tNA7Zm0YEcII8EH_avXxhu2m5F6uTXkzSM-Qxj2TwSQFWUoVnxupDeN0KuvPI4iGsINiHFJkkZ8as4NkAzrEMzQP7T6q7EsrcR1WyAKonLER4g5nBeiGiO9TV9zfHX8UWuAJBOvj1nzIVu1AG7kT7xX6BS65yMFzByoS0nu6gcigpnND4NhBTg";
 
         $url = "https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token={$token}&department_id=1&fetch_child=1";
 
@@ -292,7 +299,9 @@ class AdminController extends Controller{
     /*同步所有部门*/
     public function down_department(Request $request)
     {
-        $token      = "0-SLn9ppjyszkWW0pvd5CQeOOg8e6A81tNA7Zm0YEcII8EH_avXxhu2m5F6uTXkzSM-Qxj2TwSQFWUoVnxupDeN0KuvPI4iGsINiHFJkkZ8as4NkAzrEMzQP7T6q7EsrcR1WyAKonLER4g5nBeiGiO9TV9zfHX8UWuAJBOvj1nzIVu1AG7kT7xX6BS65yMFzByoS0nu6gcigpnND4NhBTg";
+        $weixin     = new Weixin();
+        $token      = $weixin->get_token();
+        //$token      = "0-SLn9ppjyszkWW0pvd5CQeOOg8e6A81tNA7Zm0YEcII8EH_avXxhu2m5F6uTXkzSM-Qxj2TwSQFWUoVnxupDeN0KuvPI4iGsINiHFJkkZ8as4NkAzrEMzQP7T6q7EsrcR1WyAKonLER4g5nBeiGiO9TV9zfHX8UWuAJBOvj1nzIVu1AG7kT7xX6BS65yMFzByoS0nu6gcigpnND4NhBTg";
         $url        = "https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token={$token}&id=0";
         $departments= file_get_contents($url);
         $departments= \GuzzleHttp\json_decode($departments,true);
@@ -461,13 +470,26 @@ class AdminController extends Controller{
         return apiData()->set_data('adminInfo',$adminInfo)->send();
     }
 
+    public function get_admin_info_by_token(Request $request)
+    {
+        $token  = $request->input('token');
+        $adminInfo = DB::table('admin')->where('token',$token)->first();
+
+        return apiData()->set_data('adminInfo',$adminInfo)->send();
+    }
+
     public function edit_admin(Request $request)
     {
 
         $adminId    = $request->input('admin_id',0);
         $name       = $request->input('name');
-        $password   = $request->input('password');
-        $data       = ['name'=>$name,'password'=>$password];
+        $password   = $request->input('password','');
+        $data       = ['name'=>$name];
+
+        if(!empty($password))
+        {
+            $data['password'] = sha1(md5($password));
+        }
 
         if($adminId > 0)
         {
