@@ -49,7 +49,7 @@
 
 		<div class="question-content">
 
-			<p class="title">3.{{question.title}}</p>
+			<p class="title">{{question.nth + 1}}.{{question.title}}</p>
 			<ul>
 
 				<li ng-repeat="ans in question.answers" ng-click="select_answer(ans.sn)" ng-class="ans.selected == 1?'checked':''">
