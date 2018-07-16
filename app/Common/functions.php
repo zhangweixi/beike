@@ -20,7 +20,7 @@ if(!function_exists('mylogger')){
         $logContent .= "------------------------ BEGIN -----------------------------"."\r\n";
         $logContent .= $content."\r\n";
         $logContent .= "-------------------------  END  ----------------------------"."\r\n";
-        $logfile =  public_path()."/".$file;
+        $logfile =  public_path()."/logs/".$file;
         $max_size = 50000000;
         if(file_exists($logfile) and (abs(filesize($logfile)) > $max_size)){
             unlink($logfile);
