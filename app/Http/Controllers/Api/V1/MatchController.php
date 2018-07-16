@@ -346,7 +346,7 @@ class MatchController extends Controller
         $data   = [
             'shoot'         => [
                 'speedMax'  => $matchResult->shoot_speed_max,
-                'speedAvg'  => $matchResult->shoot_spped_avg,
+                'speedAvg'  => $matchResult->shoot_speed_avg,
                 'disMax'    => $matchResult->shoot_dis_max,
                 'disAvg'    => $matchResult->shoot_dis_avg
             ],
