@@ -301,7 +301,6 @@ class AdminController extends Controller{
     {
         $weixin     = new Weixin();
         $token      = $weixin->get_token();
-        //$token      = "0-SLn9ppjyszkWW0pvd5CQeOOg8e6A81tNA7Zm0YEcII8EH_avXxhu2m5F6uTXkzSM-Qxj2TwSQFWUoVnxupDeN0KuvPI4iGsINiHFJkkZ8as4NkAzrEMzQP7T6q7EsrcR1WyAKonLER4g5nBeiGiO9TV9zfHX8UWuAJBOvj1nzIVu1AG7kT7xX6BS65yMFzByoS0nu6gcigpnND4NhBTg";
         $url        = "https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token={$token}&id=0";
         $departments= file_get_contents($url);
         $departments= \GuzzleHttp\json_decode($departments,true);
