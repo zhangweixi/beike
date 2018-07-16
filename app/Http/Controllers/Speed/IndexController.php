@@ -125,9 +125,15 @@ class IndexController extends Controller{
         $paperQuestionId    = $request->input('paperQuestionId');
         $paperId            = $request->input('paperId');
 
+        //检查这道题知否已经答过
+        $questionInfo       = DB::table('paper_question')->where('paper_question_id',$paperQuestionId)->first();
+        if($questionInfo->result != null){
+
+            return apiData()->send(2001,'已回答了本题');
+        }
+
+
         //1.检查题目是否正确
-
-
 
         $answers = DB::table('paper_question as a')
             ->leftJoin('answers as b','b.question_id','=','a.question_id')
