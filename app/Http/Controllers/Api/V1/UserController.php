@@ -324,6 +324,9 @@ class UserController extends Controller
     }
 
 
+    /**
+     * 用户反馈
+     * */
     public function suggestion(Request $request)
     {
         $data   = [

@@ -345,33 +345,33 @@ class MatchController extends Controller
 
         $data   = [
             'shoot'         => [
-                'speedMax'  => $matchResult->shoot_speed_max,
-                'speedAvg'  => $matchResult->shoot_speed_avg,
-                'disMax'    => $matchResult->shoot_dis_max,
-                'disAvg'    => $matchResult->shoot_dis_avg
+                'speedMax'  => $matchResult->shoot_speed_max ??0,
+                'speedAvg'  => $matchResult->shoot_speed_avg ??0,
+                'disMax'    => $matchResult->shoot_dis_max??0,
+                'disAvg'    => $matchResult->shoot_dis_avg??0
             ],
             'passShort'    => [
-                'speedMax'  => $matchResult->pass_s_speed_max,
-                'speedAvg'  => $matchResult->pass_s_speed_vag,
-                'disMax'    => $matchResult->pass_s_dis_max,
-                'disAvg'    => $matchResult->pass_s_dis_avg,
-                'number'    => $matchResult->pass_s_num
+                'speedMax'  => $matchResult->pass_s_speed_max??0,
+                'speedAvg'  => $matchResult->pass_s_speed_vag??0,
+                'disMax'    => $matchResult->pass_s_dis_max??0,
+                'disAvg'    => $matchResult->pass_s_dis_avg??0,
+                'number'    => $matchResult->pass_s_num??0
             ],
             'passLength'    => [
-                'speedMax'  => $matchResult->pass_l_speed_max,
-                'speedAvg'  => $matchResult->pass_l_speed_vag,
-                'disMax'    => $matchResult->pass_l_dis_max,
-                'disAvg'    => $matchResult->pass_l_dis_avg,
-                'number'    => $matchResult->pass_l_num
+                'speedMax'  => $matchResult->pass_l_speed_max??0,
+                'speedAvg'  => $matchResult->pass_l_speed_vag??0,
+                'disMax'    => $matchResult->pass_l_dis_max??0,
+                'disAvg'    => $matchResult->pass_l_dis_avg??0,
+                'number'    => $matchResult->pass_l_num??0
             ],
 
             'run'        => [
-                'lowDis'       => $matchResult->run_low_dis,
-                'lowTime'      => $matchResult->run_low_time,
-                'midDis'       => $matchResult->run_mid_dis,
-                'midTime'      => $matchResult->run_mid_time,
-                'highDis'       => $matchResult->run_high_dis,
-                'highTime'      => $matchResult->run_high_time
+                'lowDis'       => $matchResult->run_low_dis??0,
+                'lowTime'      => $matchResult->run_low_time??0,
+                'midDis'       => $matchResult->run_mid_dis??0,
+                'midTime'      => $matchResult->run_mid_time??0,
+                'highDis'       => $matchResult->run_high_dis??0,
+                'highTime'      => $matchResult->run_high_time??0
             ],
         ];
 
