@@ -392,6 +392,29 @@ myapp.controller('userController',function($scope,$http,$location){
     }
 
 
+    $scope.down_department = function(){
+
+
+        var url = server + "down_department";
+        $http.get(url).success(function(){
+
+            alert('同步完成');
+            $scope.get_department_list();
+        })
+
+    }
+
+    $scope.down_user = function()
+    {
+
+        var url = server + "down_all_users";
+
+        $http.get(url).success(function(){
+            alert('同步成功');
+            $scope.get_user_list(0);
+        })
+    }
+
     $scope.quit_department = function(userSn,depId)
     {
         if(!confirm('确定移出本部门吗？'))
