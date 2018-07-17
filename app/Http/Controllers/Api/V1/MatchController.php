@@ -287,6 +287,7 @@ class MatchController extends Controller
             'mood'      => emoji_text_encode($request->input('mood')),
             'weather'   => $request->input('weather'),
             'message'   => emoji_text_encode($request->input('message')),
+            'created_mood_at'   => date_time()
         ];
 
         $matchId    = $request->input('matchId');
