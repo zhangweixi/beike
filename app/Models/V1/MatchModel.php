@@ -153,11 +153,13 @@ class MatchModel extends Model
             "time_length",
             "time_begin",
             "time_end",
+            "created_mood_at"
         ];
         $matchDetail = DB::table('match')->select($columns)->where('match_id',$matchId)->first();
 
         return $matchDetail;
     }
+
 
     /**
      * 获得比赛基础结果

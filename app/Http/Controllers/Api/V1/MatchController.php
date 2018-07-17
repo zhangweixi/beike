@@ -334,6 +334,26 @@ class MatchController extends Controller
 
 
 
+    public function match_detail_mood(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+
+        $matchInfo  = [
+            'weather'       => $matchInfo->weather,
+            'temperature'   => $matchInfo->temperature,
+            'mood'          => $matchInfo->mood,
+            'message'       => $matchInfo->message,
+            'created_mood_at'=>$matchInfo->created_mood_at
+        ];
+
+        return apiData()
+            ->set_data('matchInfo',$matchInfo)
+            ->send();
+    }
+
     /**
      * 比赛详细数据部分
      * */
