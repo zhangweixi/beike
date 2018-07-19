@@ -292,11 +292,25 @@ class UserController extends Controller
             $userAbility->run       = 0;
         }
 
+        $grades = new \stdClass();
+        $grades->attack = 50;//攻击
+        $grades->control = 80;//控球
+        $grades->dribble = 30;//盘球
+        $grades->passGround = 30;//地面传球
+        $grades->passAir = 60;//空中传球
+        $grades->shoot   = 10;//射门
+        $grades->location = 30;//定位球
+        $grades->strength = 10;//强度
+        $grades->head = 30;//头球
+        $grades->defence = 60;//防守能力
+        $grades->grab = 30;//抢球
+
         $map            = create_round_array(2,3);
         return apiData()
             ->set_data('map',$map)
             ->set_data('userAbility',$userAbility)
-            ->send(200,'success');
+            ->set_data('grades',$grades)
+            ->send();
     }
 
 
