@@ -293,17 +293,17 @@ class UserController extends Controller
         }
 
         $grades = new \stdClass();
-        $grades->attack = 50;//攻击
-        $grades->control = 80;//控球
-        $grades->dribble = 30;//盘球
-        $grades->passGround = 30;//地面传球
-        $grades->passAir = 60;//空中传球
-        $grades->shoot   = 10;//射门
-        $grades->location = 30;//定位球
-        $grades->strength = 10;//强度
-        $grades->head = 30;//头球
-        $grades->defence = 60;//防守能力
-        $grades->grab = 30;//抢球
+        $grades->attack = ['self'=>50,'avg'=>100];//攻击
+        $grades->control = ['self'=>80,'avg'=>100];//控球
+        $grades->dribble = ['self'=>30,'avg'=>100];//盘球
+        $grades->passGround = ['self'=>30,'avg'=>100];//地面传球
+        $grades->passAir = ['self'=>60,'avg'=>100];//空中传球
+        $grades->shoot   = ['self'=>10,'avg'=>100];//射门
+        $grades->location = ['self'=>30,'avg'=>100];//定位球
+        $grades->strength = ['self'=>10,'avg'=>100];//强度
+        $grades->head = ['self'=>30,'avg'=>100];//头球
+        $grades->defence = ['self'=>60,'avg'=>100];//防守能力
+        $grades->grab = ['self'=>30,'avg'=>100];//抢球
 
         $map            = create_round_array(2,3);
         return apiData()
