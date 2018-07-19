@@ -449,6 +449,9 @@ class MatchController extends Controller
 
         //静止、慢跑、中速跑、高速跑
         $matches = [];
+        $totalPass  = 0;
+        $totalShoot = 0;
+        $totalRun   = 0;
 
         for($i =0;$i<$number;$i++)
         {
@@ -457,6 +460,10 @@ class MatchController extends Controller
                 'pass'  => rand(0,50),
                 'run'   => rand(0,100),
             ];
+            $totalPass += $match['pass'];
+            $totalRun  += $match['run'];
+            $totalShoot+= $match['shoot'];
+
             array_push($matches,$match);
         }
 
@@ -466,8 +473,14 @@ class MatchController extends Controller
             ["key"=>"middle","name"=>"中速","value"=>20],
             ["key"=>"heigh","name"=>"高速","value"=>10]
         ];
-        
-        return apiData()->set_data('runInfo',$runInfo)->set_data('matches',$matches)->send();
+        $matchInfo = [
+            'totalPass' => $totalPass,
+            'totalRun'  => $totalRun,
+            'totalShoot'=> $totalShoot,
+            'matches'   => $matches
+        ];
+
+        return apiData()->set_data('runInfo',$runInfo)->set_data('matchInfo',$matchInfo)->send();
     }
 
     /*
