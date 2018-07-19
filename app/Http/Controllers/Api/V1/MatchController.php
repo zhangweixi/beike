@@ -437,6 +437,39 @@ class MatchController extends Controller
     }
 
 
+    /**
+     * 历史比赛数据
+     * 1.近10场比赛
+     * 2.全部比赛
+     * */
+    public function match_history(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $number     = $request->input('matchNumber',2);
+
+        //静止、慢跑、中速跑、高速跑
+        $matches = [];
+
+        for($i =0;$i<$number;$i++)
+        {
+            $match = [
+                'shoot' => rand(0,20),
+                'pass'  => rand(0,50),
+                'run'   => rand(0,100),
+            ];
+            array_push($matches,$match);
+        }
+
+        $runInfo = [
+            ["key"=>"static","name"=>"静止","value"=>30],
+            ["key"=>"low","name"=>"低速","value"=>40],
+            ["key"=>"middle","name"=>"中速","value"=>20],
+            ["key"=>"heigh","name"=>"高速","value"=>10]
+        ];
+        
+        return apiData()->set_data('runInfo',$runInfo)->set_data('matches',$matches)->send();
+    }
+
     /*
      * 是否有未完成的比赛
      *
