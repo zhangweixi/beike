@@ -445,7 +445,7 @@ class MatchController extends Controller
     public function match_history(Request $request)
     {
         $userId     = $request->input('userId');
-        $number     = $request->input('matchNumber',2);
+        $number     = $request->input('matchNumber',20);
 
         //静止、慢跑、中速跑、高速跑
         $matches = [];
