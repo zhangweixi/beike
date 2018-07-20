@@ -459,7 +459,9 @@ class MatchController extends Controller
                 'shoot' => rand(0,20),
                 'pass'  => rand(0,50),
                 'run'   => rand(0,100),
+                'x'     => $i+1,
             ];
+
             $totalPass += $match['pass'];
             $totalRun  += $match['run'];
             $totalShoot+= $match['shoot'];
