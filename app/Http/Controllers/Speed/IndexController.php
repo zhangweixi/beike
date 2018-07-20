@@ -47,7 +47,11 @@ class IndexController extends Controller{
         $today      = date('Y-m-d');
         $userSn     = $request->input('userSn');
         //DB::table('paper')->where('user_sn',$userId)->where('paper_sn',$today)->first();
-        $papers     = DB::table('paper')->where('user_sn',$userSn)->orderBy('paper_id','desc')->paginate(10);
+        $papers     = DB::table('paper')
+            ->where('user_sn',$userSn)
+            ->where('begin_time',"<",date_time())
+            ->orderBy('paper_id','desc')
+            ->paginate(10);
 
         $time = time();
 
@@ -125,6 +129,9 @@ class IndexController extends Controller{
         $paperQuestionId    = $request->input('paperQuestionId');
         $paperId            = $request->input('paperId');
 
+
+
+
         //检查这道题知否已经答过
         $questionInfo       = DB::table('paper_question')->where('paper_question_id',$paperQuestionId)->first();
         if($questionInfo->result != null){
@@ -163,7 +170,11 @@ class IndexController extends Controller{
         {
             //给总的记录加分
             $result = 1;
-            DB::table('paper')->where('paper_id',$paperId)->increment('grade',10);
+            $paperModel         = new PaperModel();
+            $paperInfo          = $paperModel->get_paper_info($paperId);
+            $paperSnInfo        = $paperModel->get_paper_sn_info($paperInfo->paper_sn);
+            $grade              = $paperSnInfo->total_grade / $paperSnInfo->quest_num;
+            DB::table('paper')->where('paper_id',$paperId)->increment('grade',$grade);
 
         }else{
 
@@ -281,33 +292,6 @@ class IndexController extends Controller{
             return apiData()->send();
         });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
 
@@ -375,4 +359,16 @@ class IndexController extends Controller{
     }
 
 
+
+    //获取系统变量
+    public function system_variable($key){
+
+        $variableInfo = DB::table('system')->where('variable',$key)->first();
+        if($variableInfo)
+        {
+            return $variableInfo->value;
+        }
+
+        return null;
+    }
 }
