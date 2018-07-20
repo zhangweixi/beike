@@ -127,9 +127,22 @@ var myapp = angular.module('myapp',['ui.router','tm.pagination']);
                 url:"/admin-add/:id",
                 templateUrl:'admin-add.html?t=' + Math.random(),
                 controller:'adminController'
+            })
+            .state('paper-setting',{
+                url:"/paper-setting",
+                templateUrl:'paper-setting.html?t='+Math.random(),
+                controller:'paperController'
+            })
+            .state('paper-create',{
+                url:"/paper-create",
+                templateUrl:'paper-create.html?t='+Math.random(),
+                controller:'paperController'
+            })
+            .state('paper-list',{
+                url:'/paper-list',
+                templateUrl:'paper-list.html?t='+Math.random(),
+                controller:'paperController'
             });
-
-
     });
 
 
@@ -496,6 +509,8 @@ myapp.controller('countController',function($scope,$http,$location){
     $scope.avgChart = {};
     $scope.percentChart = {};
     $scope.departments = new Array();
+    $scope.departments1 = new Array();
+
 
     $scope.paginationConf = {
         currentPage: 0,
@@ -528,11 +543,14 @@ myapp.controller('countController',function($scope,$http,$location){
             var avgData     = new Array();
             var percentData = new Array();
             $scope.departments = res.data.departments;
+            
+            $scope.departments1 = new Array();
             for(var depart of res.data.departments)
             {
                 departNames.push(depart.name);
                 avgData.push(depart.avgGrade);
                 percentData.push(depart.percent);
+                $scope.departments1.splice(0,0,depart);
             }
             $scope.set_department_avg(departNames,avgData,percentData);
         })
@@ -573,11 +591,23 @@ myapp.controller('countController',function($scope,$http,$location){
                 {
                     name: '平均分',
                     type: 'bar',
+                    label:{ 
+                        normal:{ 
+                            show: true, 
+                            position: "right"
+                        } 
+                    },
                     data: avgData
                 },
                 {
                     name: '完成率',
                     type: 'bar',
+                    label:{ 
+                        normal:{ 
+                            show: true, 
+                            position: "right"
+                        } 
+                    },
                     data: percentData
                 }
             ]
@@ -690,6 +720,133 @@ myapp.controller('adminController',function($scope,$http,$location,$stateParams)
 
 })
 
+
+myapp.controller('paperController',function($scope,$http,$location){
+
+    $scope.variables        = {};
+    $scope.questionNumber   = 0;
+    $scope.beginDate        = new Date();
+    $scope.paperNumber      = 1;
+    $scope.papers           = new Array();
+    $scope.isFenfa          = false;
+
+    $scope.paginationConf = {
+        currentPage: 0,
+        totalItems: 8000,
+        itemsPerPage: 15,
+        pagesLength: 10,
+        perPageOptions: [10, 20, 30, 40, 50],
+        onChange: function(){
+            $scope.get_paper_list($scope.paginationConf.currentPage);
+        }
+    };
+
+    $scope.get_variable = function()
+    {
+        var url = server + "get_variable";
+
+        $http.get(url).success(function(res){
+
+
+            $scope.variables = res.data.variables;
+
+        });
+    }
+
+    /*修改信息*/
+    $scope.update_variable = function()
+    {
+
+        var data = {};
+
+        for(var obj in $scope.variables)
+        {
+            data[obj] = $scope.variables[obj].value;
+        }
+
+        var url = server + "update_variable";
+        $http.post(url,data).success(function(res){
+
+            alert(res.message);
+
+        });
+    }
+
+    //获取剩余数量
+    $scope.get_question_number = function()
+    {
+        var url = server + "get_surplus_question";
+        $http.get(url).success(function(res){
+
+            $scope.questionNumber = res.data.questionNumber;
+
+        });
+    }
+
+
+    //创建试卷
+    $scope.create_paper = function()
+    {
+        var data = {
+            'paperNumber':$scope.paperNumber,
+            'beginDate':GMTToStr($scope.beginDate)
+        };
+
+        var url = server + "create_paper";
+        $scope.isFenfa = true;
+        $http.post(url,data).success(function(res){
+            
+            $scope.isFenfa = false;
+            alert(res.message);
+            if(res.code == 200)
+            {
+                $scope.papers = res.data.papers;
+            }
+
+        });
+    }
+
+    $scope.get_paper_list = function(page)
+    {
+
+        if(page == 0) return;
+        var url = server + "get_paper_list?page="+page;
+        $http.get(url).success(function(res){
+
+            var paperData = res.data.papers;
+
+            $scope.paginationConf.currentPage   = paperData.current_page;
+            $scope.paginationConf.totalItems    = paperData.total;
+            $scope.paginationConf.itemsPerPage  = paperData.per_page;
+            $scope.papers                       = paperData.data;
+
+        });
+    }
+
+    $scope.init = function()
+    {
+        var path = $location.url();
+        if(path == "/paper-setting"){
+
+            $scope.get_variable();
+
+        }else if(path == "/paper-create") {
+
+            $scope.get_question_number();
+
+        }else if(path == '/paper-list'){
+
+            $scope.get_paper_list(1);
+        }
+    }
+
+
+
+
+    $scope.init();
+
+
+})
 function GMTToStr(time,type){
     var date    = new Date(time)
 

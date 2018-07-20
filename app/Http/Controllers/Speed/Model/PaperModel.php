@@ -50,4 +50,10 @@ class PaperModel extends Model{
         return $answers;
     }
 
+
+    public function get_paper_sn_info($paperSn)
+    {
+        return DB::table('papersn')->where('paper_sn',$paperSn)->first();
+
+    }
 }

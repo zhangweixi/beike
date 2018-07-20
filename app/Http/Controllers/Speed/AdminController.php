@@ -8,6 +8,7 @@ use DB;
 use Excel;
 use App;
 
+
 class AdminController extends Controller{
 
 
@@ -507,6 +508,224 @@ class AdminController extends Controller{
         $adminId = $request->input('adminId');
         DB::table('admin')->where('admin_id',$adminId)->delete();
         return apiData()->send();
+    }
+
+
+    public function get_variable()
+    {
+        $variables = DB::table('system')->get();
+
+        $data       = array();
+
+        foreach($variables as $var)
+        {
+            $data[$var->variable] = $var;
+        }
+        return apiData()->set_data('variables',$data)->send();
+
+    }
+
+    public function update_variable(Request $request)
+    {
+
+        //检查时长
+        $timelength = (int) $request->input('exam_time_length');
+        if($timelength<=0){
+
+            return apiData()->send(2001,"答题时长请输入大于0的整数");
+        }
+
+        //检查开始时间
+        $beginTime = $request->input('exam_begin_time');
+        $beginTime = str_replace("：",":",$beginTime);
+        if(!preg_match('/[0-2]\d:[0-5]\d:[0-5]\d/',$beginTime))
+        {
+            return apiData()->send(2001,'检查开始时间格式');
+        }
+
+        //检查结束时间
+        $endTime    = $request->input('exam_end_time');
+        $endTime    = str_replace("：",":",$endTime);
+        if(!preg_match('/[0-2]\d:[0-5]\d:[0-5]\d/',$endTime))
+        {
+            return apiData()->send(2001,'检查结束时间格式');
+        }
+
+        //分数
+        $grade  = (int)$request->input('total_grade');
+        if($grade <=0)
+        {
+            return apiData()->send(2001,'分数必须大于0');
+        }
+
+        //检查题目数量
+        $number = (int)$request->input('paper_question_number');
+        if($number <=0)
+        {
+            return apiData()->set_data('number',$number)->send(2001,'题目数量必须大于0');
+        }
+
+        if($grade%$number != 0)
+        {
+            return apiData()->send(2001,'总分不能被题目均分，请设置合理的数值');
+        }
+
+        $this->update_system_variable('exam_time_length',$timelength);
+        $this->update_system_variable('exam_begin_time',$beginTime);
+        $this->update_system_variable('exam_end_time',$endTime);
+        $this->update_system_variable('total_grade',$grade);
+        $this->update_system_variable('paper_question_number',$number);
+        $this->update_system_variable('auto_create_paper',$request->input('auto_create_paper'));
+        return apiData()->send(200,'修改成功');
+    }
+
+    public function update_system_variable($key,$value){
+        DB::table('system')->where('variable',$key)->update(['value'=>$value]);
+    }
+
+
+    public function create_paper(Request $request)
+    {
+        set_time_limit(0);
+        $beginDate  = $request->input('beginDate',current_date());
+        $beginDate  = substr($beginDate,0,10);
+        $number     = (int)$request->input('paperNumber',1);
+
+
+        //检查剩余的题是否够分配
+        $perPaperNumber = (int)$this->system_variable('paper_question_number');
+        $totalQuestion  = (int)$this->system_variable('surplus_question_number');
+
+        if( $totalQuestion < $number*$perPaperNumber)
+        {
+            return apiData()->send(2001,'剩余题目数量不够分配，请重新设置试卷数量');
+        }
+        $beginTime  = strtotime($beginDate." 00:00:00");
+        $dayTime    = 24*60*60;
+
+        $paperSns = [];
+        for($i=0;$i<$number;$i++)
+        {
+            //检查这个试卷序号的试题是否发送
+            $paperSn = date('Y-m-d',$beginTime + $i * $dayTime);
+            //检查是否已经创建了试卷
+            $info = DB::table('papersn')->where('paper_sn',$paperSn)->first();
+            if($info)
+            {
+                return apiData()->send(2001,$paperSn."的试卷已经分发了，请重新选择起始日期");
+            }
+            array_push($paperSns,$paperSn);
+        }
+
+
+        //获得所有题型
+        $allQuestions   = DB::table('question')->pluck('question_id')->toArray();
+        $beginTime      = $this->system_variable('exam_begin_time');
+        $endTime        = $this->system_variable('exam_end_time');
+        $timeLength     = $this->system_variable('exam_time_length');
+        $totalGrade     = $this->system_variable('total_grade');
+
+        //修改剩余题型数量
+        $surplusQuestion = $totalQuestion - $number * $perPaperNumber;
+        $this->update_system_variable('surplus_question_number',$surplusQuestion);
+
+        foreach($paperSns as $paperSn)
+        {
+            //创建papersn
+            $paperSnInfo = [
+                'paper_sn'      => $paperSn,
+                'publish_date'  => $paperSn,
+                'created_at'    => date_time(),
+                'title'         => $paperSn."的试卷",
+                'quest_num'     => $perPaperNumber,
+                'total_grade'   => $totalGrade
+            ];
+
+            DB::table('papersn')->insert($paperSnInfo);
+
+            DB::table('user')->orderBy('id')->chunk(200,function($users)use($allQuestions,$beginTime,$endTime,$paperSn,$timeLength,$perPaperNumber)
+            {
+
+                $current = date_time();
+
+                $begin  = $paperSn." ".$beginTime;
+                $end    = $paperSn." ".$endTime;
+
+                foreach($users as $user)
+                {
+                    $userSn     = $user->user_sn;
+
+                    //检查用户有没有本题库
+
+                    $paperInfo = [
+                        'paper_sn'  => $paperSn,
+                        'user_sn'   => $userSn,
+                        'total_time'=> $timeLength,
+                        'used_time' => 0,
+                        'begin_time'=> $begin,
+                        'end_time'  => $end,
+                        'created_at'=> $current,
+                        'title'     => $paperSn."的试题",
+                    ];
+
+                    $paperId = DB::table('paper')->insertGetId($paperInfo);
+                    //再获取用户所有的
+                    $userQuestions = DB::table('paper_question')->where('user_sn',$userSn)->pluck('question_id')->toArray();
+
+
+                    //去除已经分配过的题型
+                    $newQuestion = array_diff($allQuestions,$userQuestions);
+
+
+                    //随机获取10条 注意获得的是下标
+                    $quests     = array_rand($newQuestion,$perPaperNumber);
+
+                    $paperQuest = [];
+                    foreach($quests as $key)
+                    {
+                        $quest = [
+                            'question_id'   => $newQuestion[$key],
+                            'paper_id'      => $paperId,
+                            'user_sn'       => $userSn
+                        ];
+                        array_push($paperQuest,$quest);
+                    }
+                    DB::table('paper_question')->insert($paperQuest);
+                }
+            });
+        }
+
+        $papers = DB::table('papersn')->where('publish_date',">=",$beginDate)->limit($number)->get();
+        return apiData()->set_data('papers',$papers)->send(200,"试卷分发成功");
+    }
+
+
+    public function get_paper_list(Request $request)
+    {
+        $papers = DB::table('papersn')->orderBy('created_at','desc')->paginate(1);
+        return apiData()->set_data('papers',$papers)->send();
+    }
+
+
+    //获取剩余的题数量
+    public function get_surplus_question()
+    {
+        $questionNumber = $this->system_variable("surplus_question_number");
+
+        return apiData()->set_data('questionNumber',$questionNumber)->send();
+    }
+
+
+    //获取系统变量
+    public function system_variable($key){
+
+        $variableInfo = DB::table('system')->where('variable',$key)->first();
+        if($variableInfo)
+        {
+            return $variableInfo->value;
+        }
+
+        return null;
     }
 
 }

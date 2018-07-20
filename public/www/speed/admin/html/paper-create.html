@@ -1,0 +1,93 @@
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>分发试卷</h2>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="x_content">
+                <br/>
+                <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">剩余总题量</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input class="form-control col-md-7 col-xs-12" ng-model="questionNumber" disabled="">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">分发起始日期</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input class="form-control col-md-7 col-xs-12" type="date" ng-model="beginDate">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">试卷分发数量</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input  class="form-control col-md-7 col-xs-12" placeholder="默认1份" ng-model="paperNumber">
+                        </div>
+                    </div>
+
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-5 col-sm-5 col-xs-12 col-md-offset-4">
+                            <button class="btn btn-danger" ng-click="create_paper()">立即分发试卷</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="x_content">
+
+        <!--<p>Add class <code>bulk_action</code> to table for bulk actions options on row select</p>-->
+        <div class="table-responsive">
+            <div style="max-height:60vh;overflow: scroll;">
+                <table class="table table-striped jambo_table bulk_action table-bordered">
+                    <thead>
+                        <tr class="headings">
+                            <th class="column-title">标题</th>
+                            <th class="column-title">发布日期</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr class="even pointer" ng-repeat="paper in papers ">
+                            <td class="col-sm-8 ">{{paper.title}}</td>
+                            <td class=" ">{{paper.paper_sn}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+<div ng-if="isFenfa" class="zhezao">正在分发试卷····</div>
+
+<style>
+    .zhezao{
+        height:100vh;
+        width:100vw;
+        position:fixed;
+        top:0;
+        line-height:100vh;
+        text-align:center;
+        font-size:50px;
+        color:#fff;
+        background:rgba(0,0,0,.8);
+        left:0;
+        z-index:100;
+    }
+</style>

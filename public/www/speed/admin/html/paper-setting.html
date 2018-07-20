@@ -1,0 +1,75 @@
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>参数设置</h2>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="x_content">
+                <br/>
+                <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">答题时长：</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input id="excel" class="form-control col-md-7 col-xs-12" type="text" ng-model="variables.exam_time_length.value">
+                        </div>
+                        <label class="control-label">秒数</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">开始答题时间：</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input id="excel" class="form-control col-md-7 col-xs-12" type="text" ng-model="variables.exam_begin_time.value">
+                        </div>
+                        <label class="control-label">如：(07:20:00)</label>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">结束答题时间：</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input id="excel" class="form-control col-md-7 col-xs-12" type="text" ng-model="variables.exam_end_time.value">
+                        </div>
+                        <label class="control-label">如：(22:20:00)</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">总分数：</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input id="excel" class="form-control col-md-7 col-xs-12" type="text" ng-model="variables.total_grade.value">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">每份试卷题数：</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input id="excel" class="form-control col-md-7 col-xs-12" type="text" ng-model="variables.paper_question_number.value">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">系统自动分发：</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+
+                            <select class="form-control col-md-7 col-xs-12" ng-model="variables.auto_create_paper.value"> 
+                                <option value="0">关闭</option>
+                                <option value="1">开启</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="ln_solid"></div>
+                    <div class="form-group">
+                        <div class="col-md-5 col-sm-5 col-xs-12 col-md-offset-4">
+                            <button class="btn btn-primary" ng-click="update_variable()">保&nbsp;&nbsp;存</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

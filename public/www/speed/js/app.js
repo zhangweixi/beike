@@ -89,14 +89,13 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
     $scope.userSn = getQueryVariable('userSn');
  
 
+    
+
 
     $scope.init = function(){
 
         $scope.get_question_list();
 
-
-        //$scope.get_next_question();
-        //$scope.fresh_time();
     }
 
 
@@ -115,7 +114,15 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
                 return;
             }
             $scope.surplusTime = $scope.surplusTime - 1;
-            $timeout(function(){$scope.fresh_time();},1000);
+            var url = $location.url();
+                url = url.substring(0,7)
+                console.log(url);
+
+            if(url == '/detail')
+            {
+                $timeout(function(){$scope.fresh_time();},1000);    
+            }
+            
     }
 
   
@@ -143,11 +150,11 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
             $scope.paperInfo =  res.data.paperInfo;
             var paperInfo  =   res.data.paperInfo;
 
-            console.log($scope.paperInfo);
+            
 
             $scope.questionList = res.data.questions;
 
-            console.log( $scope.questionList);
+            
 
             $scope.surplusTime = paperInfo.total_time - paperInfo.used_time;
 
