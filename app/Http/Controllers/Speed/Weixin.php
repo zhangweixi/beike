@@ -44,7 +44,7 @@ class Weixin extends Controller{
     {
 
         $url    = $request->input('url');
-        mylogger('登录');
+        //mylogger('登录');
         if(empty($url))
         {
             exit('缺少URL');
@@ -53,7 +53,7 @@ class Weixin extends Controller{
 
         $weixinInfo = $this->get_wx_info($request);
         $userId     = $weixinInfo->user_sn;
-        mylogger('用户ID'.$userId);
+        //mylogger('用户ID'.$userId);
 
         if(preg_match('/\?/',$url))
         {
@@ -65,7 +65,7 @@ class Weixin extends Controller{
         }else{
             $url = $url."?userSn=".$userId;
         }
-        mylogger('url'.$url);
+        //mylogger('url'.$url);
         header('Location:'.$url);
         exit;
     }
@@ -132,14 +132,14 @@ class Weixin extends Controller{
                 ->setRequest($request)
                 ->redirect()->send();*/
 
-            mylogger('请求URL'.urldecode(urldecode($directUrl)));
+            //mylogger('请求URL'.urldecode(urldecode($directUrl)));
             $config = config('wechat.work.default');
             $url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$config['corp_id']."&redirect_uri=".$directUrl."&response_type=code&scope=snsapi_userinfo&agentid=".$config['agent_id']."&state=STATE#wechat_redirect";
 
 
             //        https://open.weixin.qq.com/connect/oauth2/authorize?appid=CORPID&redirect_uri=REDIRECT_URI&response_type=code&scope=SCOPE&agentid=AGENTID&state=STATE#wechat_redirect
             header("Location:".$url);
-            mylogger('请求code'.urldecode(urldecode($url)));
+            //mylogger('请求code'.urldecode(urldecode($url)));
             exit();
         }
 
@@ -149,12 +149,12 @@ class Weixin extends Controller{
         if(empty($userInfo) && $code)
         {
             //$userInfo = $this->wx->oauth->setRequest($request)->user();
-            mylogger('获取到code:'.$code);
+            //mylogger('获取到code:'.$code);
 
             //获取微信基本信息
             $token = $this->get_token();
             $url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token={$token}&code={$code}";
-            $info = file_get_contents($url); mylogger('获取到基本信息');
+            $info = file_get_contents($url); //mylogger('获取到基本信息');
             $info = json_decode($info);
 
 
@@ -172,7 +172,7 @@ class Weixin extends Controller{
             {
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
-                mylogger('已存在用户信息');
+                //mylogger('已存在用户信息');
 
                 $targetUrl = urldecode($request->input('targetUrl'));
                 //header('Location:'.$targetUrl);
@@ -211,7 +211,7 @@ class Weixin extends Controller{
 
                 $targetUrl = urldecode($request->input('targetUrl'));
 
-                mylogger('完成后:'.$targetUrl);
+                //mylogger('完成后:'.$targetUrl);
                 //print_r($userInfo);
                 header('Location:'.$targetUrl);
                 exit();
@@ -233,8 +233,8 @@ class Weixin extends Controller{
 
         $info = file_get_contents($url);
 
-        mylogger('获取信息结果');
-        mylogger($info);
+        //mylogger('获取信息结果');
+        //mylogger($info);
         $info = json_decode($info,true);
 
         return $info;
