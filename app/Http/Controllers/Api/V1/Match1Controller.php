@@ -12,7 +12,7 @@ use App\Jobs\AnalysisMatchData;
 
 
 
-class MatchController extends Controller
+class Match1Controller extends Controller
 {
 
 
