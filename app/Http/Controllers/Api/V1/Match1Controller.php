@@ -120,7 +120,8 @@ class Match1Controller extends Controller
         $matchData  = [
             'source_id' => $sourceId,
             'match_id'  => $data->match_id,
-            'user_id'   => $data->user_id,
+            //'user_id'   => $data->user_id,
+            'user_id'   => $request->input('userId'),
             'device_sn' => $data->device_sn,
         ];
 
