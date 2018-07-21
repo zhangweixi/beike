@@ -353,6 +353,10 @@ class MatchController extends Controller
 
     }
 
+    public function test()
+    {
+        return response('test');
+    }
     /**
      * 数据结构
      * */
