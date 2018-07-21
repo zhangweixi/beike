@@ -11,6 +11,7 @@ $api->version('v1',['prefix'=>"api/v1",'middleware'=>['saveApiData','apiSign'],'
 
     $api->post('/match/uploadMatchData','MatchController@upload_match_data');
     $api->post('/match/{action}',       'MatchController@action');
+    $api->post('/match1/{action}',      'Match1Controller@action');
 
 
     $api->post('/user/{action}',        'UserController@action');
