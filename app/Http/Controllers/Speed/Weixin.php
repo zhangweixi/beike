@@ -197,9 +197,14 @@ class Weixin extends Controller{
                     'created_at'=> date_time(),
                     'updated_at'=> date_time()
                 ];
-
-
                 DB::table('user')->insert($data);
+
+                //加入部门
+                foreach($userInfo['department'] as $depart)
+                {
+                    DB::table('user_department')->insert(['user_sn'=>$userInfo['userid'],'department'=>$depart]);
+                }
+
                 $userInfo = DB::table('user')->where('user_sn',$userInfo['userid'])->first();
                 $request->session()->put('wechat_user',$userInfo);
                 $request->session()->save();
