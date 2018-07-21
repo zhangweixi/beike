@@ -349,7 +349,39 @@ class Match1Controller extends Controller
 
     public function hand_compass_data($dataSource,$matchData)
     {
+        //exit($dataSource);
+        $leng   = 40;
+        $dataArr= str_split($dataSource,$leng);
+        //return count($dataArr);
+        //return $dataArr;
 
+        $x = $y = $z = [];
+        $temparr = [];
+        foreach($dataArr as $key => $d)
+        {
+            if(strlen($d)<$leng)
+            {
+                continue;
+            }
+
+            $single     = str_split($d,8);
+
+            foreach($single as $key2 => $v2)
+            {
+                $single[$key2]  = HexToFloat($v2);
+            }
+
+            array_push($x,$single[0]);
+            array_push($y,$single[1]);
+            array_push($z,$single[2]);
+        }
+
+        $data   = [
+            'x'    => $x,
+            'y'    => $y,
+            'z'    => $z
+        ];
+        file_put_contents(public_path('compass-'.$matchData['user_id'].'.json'),\GuzzleHttp\json_encode($data));
 
     }
 
@@ -426,6 +458,27 @@ function hexToInt($hex){
     //return  hexdec($hex);
     return unpack("l", pack("l", hexdec($hex)))[1];
 }
+
+
+function HexToFloat($hex){
+
+    //$hex = "0080a43e"; //0.3212890625 参考数据
+
+    if( strlen($hex) % 2 != 0)
+    {
+        return false;
+    }
+    //mylogger('原始数据——'.$hex);
+
+    $hexArr = str_split($hex,2);
+    //将低位在前高位在后转换成 高位在前低位在后
+    $hexArr = array_reverse($hexArr);
+    $hex    = implode("",$hexArr);
+
+    return unpack("f", pack("l", hexdec($hex)))[1];
+}
+
+
 
 /*
 function hexToInt($hex)
