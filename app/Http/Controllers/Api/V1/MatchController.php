@@ -104,7 +104,7 @@ class MatchController extends Controller
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
         $time   = date('His');
-        $file   = $date."/".$userId."-".$time.".txt";//文件格式
+        $file   = $date."/".$userId."-".$dataType.'-'.$time.".txt";//文件格式
 
         Storage::disk('local')->put($file,$deviceData);
 
