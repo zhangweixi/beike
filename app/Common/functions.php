@@ -162,30 +162,10 @@ function is_ios()
     }
 }
 
-if(function_exists('get_weixin_code')){
-    throw new Exception('function get_weixin_code is exists');
-}else{
-    //获取微信CODE
-    function get_weixin_code(){
-
-    }
-}
-
 
 /*获取当前url地址*/
 function get_current_url(){
     return "http://".$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
-}
-
-
-//转换用户的头像
-function change_member_head_img($headImg){
-    if((!preg_match('/http/',$headImg) && $headImg)){
-        $headImg = env('ADMIN_HOST').$headImg;
-    }elseif(empty($headImg)){
-        $headImg = env('ADMIN_HOST').'/images/default-images/default-head-img.jpg';
-    }
-    return  $headImg;
 }
 
 
@@ -286,6 +266,8 @@ function array_unset_value(&$arr,$value,$all=false)
         $i++;
     }
 }
+
+
 //====================表日志begin================
 /**
  * 记录表的操作日志
@@ -442,24 +424,6 @@ function prev_week_day_time($weekDay)
 }
 
 
-/**
- * 记录到数据库的日志
- * @param string $key 说明关键字
- * @param string $content 日志内容
- * */
-function debug_log($key,$content)
-{
-    if(is_array($content)){
-        $content = digui($content);
-    }
-
-    $data = [
-        'key'	=> $key,
-        'value'	=> $content,
-        'created_at'=> date_time()
-    ];
-    DB::table('debug_log')->insert($data);
-}
 
 /**
  * 根据key的数组删除元素
@@ -615,17 +579,6 @@ function parse_token(\Illuminate\Http\Request $request)
     return false;
 }
 
-/**
- * 十六进制转十进制 高位在前 低位在后
- * @param $hex string 十六进制字符串
- * @return string|boolean
- * */
-function hexToInt($hex)
-{
-    $hex    = reverse_hex($hex);
-    //return  hexdec($hex);
-    return unpack("l", pack("l", hexdec($hex)))[1];
-}
 
 
 /**
@@ -674,5 +627,40 @@ function getMillisecond()
     return (float)sprintf('%.0f',(floatval($t1)+floatval($t2))*1000);
 }
 
+
+
+/**
+ * 十六进制转十进制 高位在前 低位在后
+ * @param $hex string 十六进制字符串
+ * @return string|boolean
+ * */
+function hexToInt($hex)
+{
+    //反转16进制
+    $hex    = reverse_hex($hex);
+    if($hex == false)
+    {
+        return $hex;
+    }
+    return unpack("l", pack("l", hexdec($hex)))[1];
+}
+
+/**
+ * @param $hex string 十六进制字符串
+ * @return string
+ * */
+function HexToFloat($hex){
+
+    //$hex = "0080a43e"; //0.3212890625 参考数据
+
+    $hex = reverse_hex($hex);
+
+    if($hex == false)
+    {
+        return $hex;
+    }
+
+    return unpack("f", pack("l", hexdec($hex)))[1];
+}
 
 ?>

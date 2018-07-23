@@ -95,14 +95,11 @@ class MatchController extends Controller
     public function upload_match_data(Request $request)
     {
 
-
-
-
-        $matchId    = $request->input('matchId',0);
         $userId     = $request->input('userId',0);
         $deviceSn   = $request->input('deviceSn','');
         $deviceData = $request->input('deviceData','');
         $dataType   = $request->input('dataType');
+        $foot       = $request->input('foot');
 
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
@@ -112,11 +109,12 @@ class MatchController extends Controller
         Storage::disk('local')->put($file,$deviceData);
 
         $matchData  = [
-            'match_id'  => $matchId,
+            'match_id'  => 0,
             'user_id'   => $userId,
             'device_sn' => $deviceSn,
             'type'      => $dataType,
-            'data'      => $file
+            'data'      => $file,
+            'foot'      => $foot
         ];
 
         //1.储存数据

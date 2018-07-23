@@ -70,7 +70,7 @@ class AnalysisMatchData implements ShouldQueue
                 $table->dateTime('created_at');
             });
 
-        } else {
+        } elseif($type == 'sensor') {
 
             /*sensor_id
             match_id
@@ -93,6 +93,20 @@ class AnalysisMatchData implements ShouldQueue
                 $table->double('y');
                 $table->double('z');
                 $table->string('type');
+                $table->string('source_data');
+                $table->bigInteger('timestamp');
+                $table->dateTime('created_at');
+            });
+        } elseif($type == 'compass') {
+
+            Schema::connection("matchdata")->create($table, function (Blueprint $table) {
+
+                $table->increments('id');
+                $table->integer('source_id');
+                $table->integer('match_id');
+                $table->double('x');
+                $table->double('y');
+                $table->double('z');
                 $table->string('source_data');
                 $table->bigInteger('timestamp');
                 $table->dateTime('created_at');
@@ -132,9 +146,13 @@ class AnalysisMatchData implements ShouldQueue
         {
             $datas = $this->handle_sensor_data($datas);
 
-        }else{
+        }elseif($type == 'gps'){
 
             $datas = $this->handle_gps_data($datas);
+
+        }elseif($type == 'compass'){
+
+            $datas = $this->handle_compass_data($sourceData);
         }
 
         $createdAt      = date_time();
@@ -409,6 +427,42 @@ class AnalysisMatchData implements ShouldQueue
         return $insertData;
     }
 
+    private function handle_compass_data($dataSource)
+    {
+        //exit($dataSource);
+        $leng   = 40;
+        $dataArr= str_split($dataSource,$leng);
+
+
+        $insertData     = [];
+
+        foreach($dataArr as $key => $data)
+        {
+            $sourceData     = $data;
+            if(strlen($data) < $leng)
+            {
+                continue;
+            }
+
+
+            $data       = str_split($data,8);
+            $timestamp  = hexdec(reverse_hex($data[3].$data[4]));
+
+            foreach($data as $key2 => $v2)
+            {
+                $data[$key2]  = HexToFloat($v2);
+            }
+
+            array_push($insertData,[
+                'x' => $data[0],
+                'y' => $data[1],
+                'z' => $data[2],
+                'timestamp'     => $timestamp,
+                'source_data'   => $sourceData,
+            ]);
+        }
+        return $insertData;
+    }
 
 }
 
