@@ -151,6 +151,19 @@ class MatchController extends Controller
         return apiData()->send(200,'ok');
     }
 
+
+    public function jiexi(Request $request){
+        //数据存储完毕，调用MATLAB系统开始计算
+        $sourceId = $request->input('sourceId');
+
+        //2.开始解析数据
+        $job    = new AnalysisMatchData($sourceId);
+        $job->handle();
+
+        return apiData()->send(200,'ok');
+    }
+
+
     /**
      * 生产json文件
      * */
