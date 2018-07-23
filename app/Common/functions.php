@@ -593,7 +593,7 @@ function reverse_hex($hex)
         return false;
     }
 
-    $hexArr = str_split($hex,2);
+    $hexArr = str_split($hex,2);mylogger($hexArr);
     $hexArr = array_reverse($hexArr);//将低位在前高位在后转换成 高位在前低位在后
     $hex    = implode("",$hexArr);
     return $hex;
