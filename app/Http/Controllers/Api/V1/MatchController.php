@@ -18,7 +18,7 @@ class MatchController extends Controller
 {
     public function __construct()
     {
-        ini_set ('memory_limit', '128M');
+        ini_set ('memory_limit', '500M');
     }
 
 
@@ -158,13 +158,15 @@ class MatchController extends Controller
 
 
     public function jiexi(Request $request){
+        mylogger(time());
+
         //数据存储完毕，调用MATLAB系统开始计算
         $sourceId = $request->input('sourceId');
 
         //2.开始解析数据
         $job    = new AnalysisMatchData($sourceId);
         $job->handle();
-
+        mylogger(time());
         return apiData()->send(200,'ok');
     }
 
