@@ -152,7 +152,7 @@ class AnalysisMatchData implements ShouldQueue
 
         }elseif($type == 'compass'){
 
-            $datas = $this->handle_compass_data($sourceData);
+            $datas = $this->handle_compass_data($datas);
         }
 
         $createdAt      = date_time();
@@ -461,6 +461,7 @@ class AnalysisMatchData implements ShouldQueue
                 'source_data'   => $sourceData,
             ]);
         }
+
         return $insertData;
     }
 
