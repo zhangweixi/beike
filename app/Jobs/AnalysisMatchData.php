@@ -140,7 +140,7 @@ class AnalysisMatchData implements ShouldQueue
         //2.获取上一条的数据
         $prevData   = $this->get_prev_sensor_data($userId,$type);
         $datas      = $prevData.$datas;
-
+        $beginTime = time();
         //3.解析数据
         if($type == 'sensor')
         {
@@ -154,6 +154,9 @@ class AnalysisMatchData implements ShouldQueue
 
             $datas = $this->handle_compass_data($datas);
         }
+
+        $costTime = time() - $beginTime;
+        mylogger($costTime);
 
         $createdAt      = date_time();
         $dataBaseInfo   = [
