@@ -16,6 +16,11 @@ use Illuminate\Support\Facades\Storage;
 
 class MatchController extends Controller
 {
+    public function __construct()
+    {
+        ini_set ('memory_limit', '128M');
+    }
+
 
     public function create_table($userId,$type)
     {
