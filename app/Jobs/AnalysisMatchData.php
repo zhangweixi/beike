@@ -140,7 +140,7 @@ class AnalysisMatchData implements ShouldQueue
         //2.获取上一条的数据
         $prevData   = $this->get_prev_sensor_data($userId,$type);
         $datas      = $prevData.$datas;
-        $beginTime = time();
+        mylogger("开始解析:".time());
         //3.解析数据
         if($type == 'sensor')
         {
@@ -155,8 +155,7 @@ class AnalysisMatchData implements ShouldQueue
             $datas = $this->handle_compass_data($datas);
         }
 
-        $costTime = time() - $beginTime;
-        mylogger("解析时间：".$costTime);
+        mylogger("解析完毕:".time());
 
         $createdAt      = date_time();
         $dataBaseInfo   = [
@@ -207,14 +206,16 @@ class AnalysisMatchData implements ShouldQueue
             $data['match_id']   = $matchId;
             $datas[$key]        = array_merge($data,$dataBaseInfo);
         }
-        $costTime = time()-$beginTime;
-        mylogger("查询时间所消耗:".$costTime);
-        $multyData  = array_chunk($datas,100);
+
+        mylogger("查询时间所消耗:".time());
+        $multyData  = array_chunk($datas,1000);
 
         foreach($multyData as $data)
         {
             DB::connection('matchdata')->table($table)->insert($data);
         }
+
+        mylogger("插入数据完毕:".time());
     }
 
     /**
