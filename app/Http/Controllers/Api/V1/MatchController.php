@@ -128,12 +128,12 @@ class MatchController extends Controller
 
 
         //2.开始解析数据
-        //$job    = new AnalysisMatchData($sourceId);
-        //$job->handle();
+        $job    = new AnalysisMatchData($sourceId);
+        $job->handle();
 
         //数据存储完毕，调用MATLAB系统开始计算
-        $delayTime      = now()->addSecond(2);
-        AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
+        //$delayTime      = now()->addSecond(2);
+        //AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
 
         //创建json文件  请求matlab来读取分析
         //$this->create_json($matchId);

@@ -123,7 +123,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         //解析数据
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
-        return "ok";
+        //return "ok";
         $data       = Storage::disk('local')->get($sourceData->data);
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
