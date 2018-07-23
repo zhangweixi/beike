@@ -143,6 +143,13 @@ class MatchController extends Controller
     }
 
 
+    public function test_match(Request $request){
+        //数据存储完毕，调用MATLAB系统开始计算
+        $sourceId = $request->input('sourceId');
+        $delayTime      = now()->addSecond(2);
+        AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
+        return apiData()->send(200,'ok');
+    }
 
     /**
      * 生产json文件

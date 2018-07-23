@@ -123,7 +123,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         //解析数据
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
-
+        return "ok";
         $data       = Storage::disk('local')->get($sourceData->data);
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
@@ -444,9 +444,13 @@ class AnalysisMatchData implements ShouldQueue
                 continue;
             }
 
+            dd($data);
 
             $data       = str_split($data,8);
+            exit($data[3].$data[4]);
             $timestamp  = hexdec(reverse_hex($data[3].$data[4]));
+
+
 
             foreach($data as $key2 => $v2)
             {
