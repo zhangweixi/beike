@@ -156,7 +156,7 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         $costTime = time() - $beginTime;
-        mylogger($costTime);
+        mylogger("解析时间：".$costTime);
 
         $createdAt      = date_time();
         $dataBaseInfo   = [
@@ -172,6 +172,9 @@ class AnalysisMatchData implements ShouldQueue
         //获得最新一次比赛时间
         $matchTimeInfo  = "";
         $this->create_table($userId,$type);
+
+        $beginTime = time();
+
         foreach($datas as $key=>$data)
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
@@ -204,7 +207,8 @@ class AnalysisMatchData implements ShouldQueue
             $data['match_id']   = $matchId;
             $datas[$key]        = array_merge($data,$dataBaseInfo);
         }
-
+        $costTime = time()-$beginTime;
+        mylogger("查询时间所消耗:".$costTime);
         $multyData  = array_chunk($datas,100);
 
         foreach($multyData as $data)
