@@ -509,7 +509,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
             $data       = str_split($data,8);
-            exit($data[3].$data[4]);
+            
             $timestamp  = hexdec(reverse_hex($data[3].$data[4]));
 
 
