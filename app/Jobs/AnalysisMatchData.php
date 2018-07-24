@@ -240,12 +240,12 @@ class AnalysisMatchData implements ShouldQueue
         foreach($matches as $key => $matchData)
         {
             $resultFile = "match/".$key."-".$type.".json";
-
+            mylogger('创建json文件:'.$resultFile);
             Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
         }
 
 
-
+        mylogger('over');
         return true;
 
 
@@ -509,7 +509,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
             $data       = str_split($data,8);
-            
+
             $timestamp  = hexdec(reverse_hex($data[3].$data[4]));
 
 
