@@ -16,7 +16,7 @@ myapp.config(["$routeProvider","$locationProvider",function($routeProvider,$loca
 
 myapp.controller('paperListController',function($scope,$location,$routeParams,$http,$timeout){
     
-    setTitle("我的题库");
+    setTitle("贵瓮高速答题系统");
     $scope.page     = 1;
     $scope.userSn   = getQueryVariable('userSn');
 
