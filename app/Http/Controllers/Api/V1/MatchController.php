@@ -19,6 +19,7 @@ class MatchController extends Controller
     public function __construct()
     {
         ini_set ('memory_limit', '500M');
+        set_time_limit(300);
     }
 
 
@@ -158,7 +159,7 @@ class MatchController extends Controller
 
 
     public function jiexi(Request $request){
-        mylogger(time());
+
 
         //数据存储完毕，调用MATLAB系统开始计算
         $sourceId = $request->input('sourceId');
@@ -170,6 +171,47 @@ class MatchController extends Controller
         return apiData()->send(200,'ok');
     }
 
+    /**
+     *
+     * */
+    public function gps_to_bdmap(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $file       = "match/result-".$matchId."-gps.json";
+        $hasFile    = Storage::disk('web')->has($file);
+
+        if($hasFile == false)
+        {
+            exit('gps文件不存在');
+        }
+
+
+        $gpsList = Storage::disk('web')->get($file);
+        $gpsList = \GuzzleHttp\json_decode($gpsList);
+        $lats   = $gpsList->lat;
+        $lons   = $gpsList->lon;
+
+        $length = count($lats);
+        $points = [];
+
+        for($i=0;$i<$length;$i++)
+        {
+            if($lats[$i]== '') continue;
+            array_push($points,['lat'=>$this->gps_to_gps($lons[$i]),'lon'=>$this->gps_to_gps($lats[$i])]);
+        }
+
+
+        dd($points);
+
+
+
+
+    }
+
+    public function gps_to_gps($num)
+    {
+        return ((int)$num/100) + $num/100%1/60;
+    }
 
     /**
      * 生产json文件

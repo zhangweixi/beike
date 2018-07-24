@@ -177,11 +177,13 @@ class AnalysisMatchData implements ShouldQueue
 
         $validColum     = $this->validColum[$type];
 
+        //dd($datas);
+
         foreach($datas as $key=>$data)
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
             loopbegin:
-
+            mylogger('begin'.$key);
             if($matchTimeInfo
                 && $data['timestamp'] >= $matchTimeInfo->time_begin
                 && $data['timestamp'] <= $matchTimeInfo->time_end
@@ -199,13 +201,13 @@ class AnalysisMatchData implements ShouldQueue
 
                     return false;
                 }
+
                 goto loopbegin;
 
             }else{
 
                 $matchId    = 0 ;
             }
-
 
             $validData  = [];//有效数据
             foreach($validColum as $colum)
@@ -233,8 +235,10 @@ class AnalysisMatchData implements ShouldQueue
 
                 array_push($matches['result-'.$matchId][$validKey],$validValue);
             }
-
+            mylogger('end'.$key);
         }
+
+        mylogger("开始创建json");
 
 
         foreach($matches as $key => $matchData)
@@ -456,8 +460,8 @@ class AnalysisMatchData implements ShouldQueue
             {
                 $otherInfo  = [
                     'source_data'   => $single,
-                    'latitude'      => 0,
-                    'longitude'     => 0,
+                    'lat'      => 0,
+                    'lon'     => 0,
                     'speed'         => 0,
                     'direction'     => "",
                     'status'        => 0,
@@ -476,8 +480,8 @@ class AnalysisMatchData implements ShouldQueue
 
                 $otherInfo  = [
                     'source_data'   => $single,
-                    'latitude'      => $tlat,
-                    'longitude'     => $tlon,
+                    'lat'      => $tlat,
+                    'lon'     => $tlon,
                     'speed'         => $tspe?$tspe : 0,
                     'direction'     => $tdir,
                     'status'        => $detailInfo[6],
