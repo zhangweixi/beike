@@ -172,7 +172,10 @@ class AnalysisMatchData implements ShouldQueue
         $matchTimeInfo  = "";
         $this->create_table($userId,$type);
 
-        $beginTime = time();
+        $beginTime  = time();
+        $matches    = [];
+
+        $validColum     = $this->validColum[$type];
 
         foreach($datas as $key=>$data)
         {
@@ -203,9 +206,50 @@ class AnalysisMatchData implements ShouldQueue
                 $matchId    = 0 ;
             }
 
-            $data['match_id']   = $matchId;
-            $datas[$key]        = array_merge($data,$dataBaseInfo);
+
+            $validData  = [];//有效数据
+            foreach($validColum as $colum)
+            {
+                if(isset($data[$colum]))
+                {
+                    if($type == 'sensor'){
+
+                        $validData[strtolower($data['type']).$colum] = $data[$colum];
+
+                    }else{
+
+                        $validData[$colum] = $data[$colum];
+
+                    }
+
+                }
+            }
+
+
+            foreach($validData as $validKey => $validValue)
+            {
+                $matches['result-'.$matchId] ?? $matches['result-'.$matchId] = [];
+                $matches['result-'.$matchId][$validKey] ?? $matches['result-'.$matchId][$validKey] = [];
+
+                array_push($matches['result-'.$matchId][$validKey],$validValue);
+            }
+
         }
+
+
+        foreach($matches as $key => $matchData)
+        {
+            $resultFile = dirname($sourceData->data)."/".$key."-".$type.".json";
+
+            Storage::disk('local')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+        }
+
+
+
+        return true;
+
+
+
 
         mylogger("查询时间所消耗:".time());
         $multyData  = array_chunk($datas,10000);
@@ -220,6 +264,13 @@ class AnalysisMatchData implements ShouldQueue
 
         mylogger("插入数据完毕:".time());
     }
+
+    private $validColum     = [
+        'gps'       => ['lat','lon'],
+        'sensor'    => ['x','y','z'],
+        'compass'   => ['x','y','z']
+    ];
+
 
     /**
      * 获得比赛时间
