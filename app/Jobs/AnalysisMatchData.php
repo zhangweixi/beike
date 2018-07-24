@@ -210,9 +210,11 @@ class AnalysisMatchData implements ShouldQueue
         mylogger("查询时间所消耗:".time());
         $multyData  = array_chunk($datas,1000);
         mylogger("切割消耗时间:".time());
+        $db = DB::connection('matchdata')->table($table);
+
         foreach($multyData as $key => $data)
         {
-            DB::connection('matchdata')->table($table)->insert($data);
+            $db->insert($data);
             mylogger("插入-".$key.":".time());
         }
 
