@@ -239,9 +239,9 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($matches as $key => $matchData)
         {
-            $resultFile = dirname($sourceData->data)."/".$key."-".$type.".json";
+            $resultFile = "match/".$key."-".$type.".json";
 
-            Storage::disk('local')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
         }
 
 
@@ -506,7 +506,7 @@ class AnalysisMatchData implements ShouldQueue
                 continue;
             }
 
-            dd($data);
+
 
             $data       = str_split($data,8);
             exit($data[3].$data[4]);
