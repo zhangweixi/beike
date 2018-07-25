@@ -393,6 +393,7 @@ class AnalysisMatchData implements ShouldQueue
             }
 
             mylogger('end'.$key);
+            $datas[$key] = array_merge($dataBaseInfo,$data);
         }
 
         mylogger("开始创建json");
