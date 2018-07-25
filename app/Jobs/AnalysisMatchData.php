@@ -407,13 +407,14 @@ class AnalysisMatchData implements ShouldQueue
 
                 if ($type == 1)  //重力感应
                 {
-                    $type   = 'A';
+                    $type   = 'G';
 
                 } elseif ($type == 0) { //acc 加速度
 
-                    $type   = "G";
+                    $type   = "A";
 
                 }else{
+
                     mylogger("错误类型——————".$type);
                     continue;
                 }
