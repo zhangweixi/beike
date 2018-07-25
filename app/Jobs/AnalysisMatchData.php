@@ -209,6 +209,8 @@ class AnalysisMatchData implements ShouldQueue
                 $matchId    = 0 ;
             }
 
+
+
             $validData  = [];//有效数据
             foreach($validColum as $colum)
             {
@@ -269,6 +271,160 @@ class AnalysisMatchData implements ShouldQueue
         mylogger("插入数据完毕:".time());
     }
 
+
+    public function handle1()
+    {
+        //解析数据
+        $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
+        //return "ok";
+        $data       = Storage::disk('local')->get($sourceData->data);
+        $type       = $sourceData->type;
+        $userId     = $sourceData->user_id;
+
+        $this->create_table($userId,$type);
+
+        //1.切分成单组
+        $datas  = explode(",",$data);
+        $datas  = $this->delete_head($datas);
+        $datas  = implode('',$datas);
+
+
+
+        //2.获取上一条的数据
+        $prevData   = $this->get_prev_sensor_data($userId,$type);
+        $datas      = $prevData.$datas;
+        mylogger("开始解析:".time());
+        //3.解析数据
+        if($type == 'sensor')
+        {
+            $datas = $this->handle_sensor_data($datas);
+
+        }elseif($type == 'gps'){
+
+            $datas = $this->handle_gps_data($datas);
+
+        }elseif($type == 'compass'){
+
+            $datas = $this->handle_compass_data($datas);
+        }
+
+        mylogger("解析完毕:".time());
+
+        $createdAt      = date_time();
+        $dataBaseInfo   = [
+            'source_id'     => $this->sourceId,
+            'created_at'    => $createdAt,
+        ];
+
+        $table  = "user_".$userId."_".$type;
+
+        //获得最近的一场比赛
+        //4.存储数据 添加其他数据
+
+        //获得最新一次比赛时间
+        $matchTimeInfo  = "";
+        $this->create_table($userId,$type);
+
+        $beginTime  = time();
+        $matches    = [];
+
+        $validColum     = $this->validColum[$type];
+
+        //dd($datas);
+
+        foreach($datas as $key=>$data)
+        {
+            //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
+            loopbegin:
+            mylogger('begin'.$key);
+            if($matchTimeInfo
+                && $data['timestamp'] >= $matchTimeInfo->time_begin
+                && $data['timestamp'] <= $matchTimeInfo->time_end
+                && $data['timestamp'] != 0)
+            {
+                $matchId    = $matchTimeInfo->match_id;
+
+            }elseif($data['timestamp'] != 0){
+
+                $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
+
+                if(!$matchTimeInfo)
+                {
+                    mylogger('没有找到对应的比赛时间');
+
+                    return false;
+                }
+
+                goto loopbegin;
+
+            }else{
+
+                $matchId    = 0 ;
+            }
+
+
+            $data['match_id']   = $matchId;
+
+            $validData  = [];//有效数据
+            foreach($validColum as $colum)
+            {
+                if(isset($data[$colum]))
+                {
+                    if($type == 'sensor'){
+
+                        $validData[strtolower($data['type']).$colum] = $data[$colum];
+
+                    }else{
+
+                        $validData[$colum] = $data[$colum];
+
+                    }
+
+                }
+            }
+
+
+            foreach($validData as $validKey => $validValue)
+            {
+                $matches['result-'.$matchId] ?? $matches['result-'.$matchId] = [];
+                $matches['result-'.$matchId][$validKey] ?? $matches['result-'.$matchId][$validKey] = [];
+
+                array_push($matches['result-'.$matchId][$validKey],$validValue);
+            }
+
+            mylogger('end'.$key);
+        }
+
+        mylogger("开始创建json");
+
+
+        foreach($matches as $key => $matchData)
+        {
+            $resultFile = "match/".$key."-".$type.".json";
+            mylogger('创建json文件:'.$resultFile);
+            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+        }
+
+
+        mylogger('over');
+
+
+
+
+
+        mylogger("查询时间所消耗:".time());
+        $multyData  = array_chunk($datas,10000);
+        mylogger("切割消耗时间:".time());
+        $db = DB::connection('matchdata')->table($table);
+
+        foreach($multyData as $key => $data)
+        {
+            $db->insert($data);
+            mylogger("插入-".$key.":".time());
+        }
+
+        mylogger("插入数据完毕:".time());
+    }
     private $validColum     = [
         'gps'       => ['lat','lon'],
         'sensor'    => ['x','y','z'],
