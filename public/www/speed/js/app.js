@@ -87,9 +87,16 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
     $scope.isStop   = false;
     
     $scope.userSn = getQueryVariable('userSn');
- 
+    $scope.timer    = false;
 
-    
+    $scope.$on('destroy',function(){
+
+        console.log('kkk');
+        if($scope.timer != false)
+        {
+            $timeout.cancel($scope.timer);    
+        }
+    })  //在控制器里，添加$on函数
 
 
     $scope.init = function(){
@@ -120,7 +127,7 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
 
             if(url == '/detail')
             {
-                $timeout(function(){$scope.fresh_time();},1000);    
+                $scope.timer = $timeout(function(){$scope.fresh_time();},1000);    
             }
             
     }
@@ -241,7 +248,13 @@ myapp.controller("detailController",function($scope,$http,$location,$routeParams
         if($scope.surplusTime > 0)
         {
 
-            $timeout($scope.save_used_time,5000);
+            var url = $location.url();
+                url = url.substring(0,7)
+            
+            if(url == '/detail')
+            {
+                 $timeout($scope.save_used_time,5000);
+            }
         }
 
     }
