@@ -113,9 +113,19 @@ class IndexController extends Controller{
     {
         //5秒记录一次
         $paperId    = $request->input('paperId');
+        $paperInfo  = DB::table('paper')->where('paper_id',$paperId)->first();
+        $surplusTime = $paperInfo->total_time - $paperInfo->used_time;
 
-        DB::table('paper')->where('paper_id',$paperId)->increment('used_time',5);
+        if($surplusTime >= 5)
+        {
+            DB::table('paper')->where('paper_id',$paperId)->increment('used_time',5);
 
+        }elseif($surplusTime > 0){
+
+            DB::table('paper')->where('paper_id',$paperId)->increment('used_time',$surplusTime);
+
+        }
+        //DB::table('paper')->where('paper_id',$paperId)->increment('used_time',5);
         return apiData()->send();
     }
 
