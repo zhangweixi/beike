@@ -166,11 +166,22 @@ class MatchController extends Controller
 
         //2.开始解析数据
         $job    = new AnalysisMatchData($sourceId);
-        $job->handle();
+        $job->handle1();
         mylogger("相应前端".time());
         return apiData()->send(200,'ok');
     }
 
+    public function sensortest()
+    {
+        return hexToInt("a1000000");
+
+        $str = explode(',',$str);
+        foreach($str as $k => $s)
+        {
+            //dd(pack(bin2hex($s));
+        }
+        return hexToInt("a1000000");
+    }
     /**
      *
      * */
@@ -185,7 +196,6 @@ class MatchController extends Controller
             exit('gps文件不存在');
         }
 
-
         $gpsList = Storage::disk('web')->get($file);
         $gpsList = \GuzzleHttp\json_decode($gpsList);
         $lats   = $gpsList->lat;
@@ -197,21 +207,109 @@ class MatchController extends Controller
         for($i=0;$i<$length;$i++)
         {
             if($lats[$i]== '') continue;
+
             array_push($points,['lat'=>$this->gps_to_gps($lons[$i]),'lon'=>$this->gps_to_gps($lats[$i])]);
         }
 
+        //Storage::disk('web')->put("match/middle-".$matchId.".json",\GuzzleHttp\json_encode($points));
+
+
+        $points = array_chunk($points,100);
+        $ak     = "zZSGyxZgUytdiKG135BcnaP6";
+        foreach($points as $key => $pointArr)
+        {
+            $tempArr = [];
+            foreach($pointArr as $point)
+            {
+                array_push($tempArr,implode(',',$point));
+            }
+
+            $tempArr = implode(";",$tempArr);
+
+            $url = "http://api.map.baidu.com/geoconv/v1/?coords={$tempArr}&from=1&to=5&ak={$ak}";
+            $tempArr = file_get_contents($url);
+            $tempArr = \GuzzleHttp\json_decode($tempArr);
+
+            $points[$key] = $tempArr->result;
+
+        }
+
+        Storage::disk('web')->put('match/bd-'.$matchId.".json",\GuzzleHttp\json_encode($points));
+
+        return $points;
+
 
         dd($points);
-
-
-
-
     }
 
     public function gps_to_gps($num)
     {
-        return ((int)$num/100) + $num/100%1/60;
+        bcscale (8);
+        $num = bcdiv($num,100);
+        $int = (int)$num;
+        $flo = bcmul(bcdiv(bcmod($num,1),60),100);
+        return bcadd($int,$flo);
     }
+
+
+    public function find_gps()
+    {
+        $url = "http://dev.api.launchever.cn/uploads/match/result-99-gps.json";
+        $content = file_get_contents($url);
+        $content = \GuzzleHttp\json_decode($content);
+
+        $lats = $content->lat;
+        $lons = $content->lon;
+
+        $latArr = [];
+        $lonArr = [];
+
+        foreach($lats as $lat)
+        {
+            if($lat == '') continue;
+            $lat = $lat * 1;
+            array_push($latArr,$lat);
+        }
+
+
+        foreach ($lons as $lon){
+
+            if($lon == "") continue;
+            $lon = $lon * 1;
+            array_push($lonArr,$lon);
+        }
+
+        $maxLat = max($latArr);
+        $minLat = min($latArr);
+
+        $maxLon = max($lonArr);
+        $minLon = min($lonArr);
+
+
+        $minlon =0;
+        $maxlon = 0;
+
+        foreach($latArr as $key => $lat)
+        {
+            if($lat == $minLat)
+            {
+                $minlon = max($minlon,$lonArr[$key]);
+                mylogger('minlat:'.$lat.",".$minlon);
+            }
+
+            if($lat == $maxLat)
+            {
+                $maxlon = max($maxlon,$lonArr[$key]);
+                mylogger('maxlat:'.$lat.",".$maxlon);
+            }
+        }
+
+        $str = "lat:\nmin-".$minLat.";\nmax-".$maxLat.";\nlon:\nmin-".$minLon.";\nmax-".$maxLon;
+        exit($str);
+
+    }
+
+
 
     /**
      * 生产json文件
