@@ -752,7 +752,7 @@ class MatchController extends Controller
                 ];
 
                 $command = implode(" ",$info);
-
+                dd($command);
                 $result  = system($command);
                 var_dump($result);
             }
