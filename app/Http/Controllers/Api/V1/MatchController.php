@@ -753,6 +753,7 @@ class MatchController extends Controller
 
                 $command = implode(" ",$info);
                 //dd($command);
+                $command = "pwd";
                 $result  = system($command);
                 dd($result);
             }
