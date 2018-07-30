@@ -139,6 +139,7 @@ class MatchModel extends Model
     {
         $columns    = [
             "match_id",
+            "user_id",
             "address",
             "weather",
             "temperature",

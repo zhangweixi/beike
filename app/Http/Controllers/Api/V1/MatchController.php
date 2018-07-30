@@ -167,13 +167,13 @@ class MatchController extends Controller
         //2.开始解析数据
         $job    = new AnalysisMatchData($sourceId);
         $job->handle1();
-        mylogger("相应前端".time());
+        //mylogger("相应前端".time());
         return apiData()->send(200,'ok');
     }
 
     public function sensortest()
     {
-        return hexToInt("a1000000");
+        return hexToInt("f9ffffff");
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
@@ -710,6 +710,55 @@ class MatchController extends Controller
         $matchModel->log_match_status($matchId,$status);
 
         return apiData()->send();
+    }
+
+
+    public function get_pitch(Request $request)
+    {
+        $matchModel = new MatchModel();
+        $matchId    = $request->input('matchId');
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+
+        $compassTable   = "user_".$matchInfo->user_id."_compass";
+        $sensorTable    = "user_".$matchInfo->user_id."_sensor";
+
+
+        DB::connection('matchdata')
+            ->table($compassTable)
+            ->where('match_id',$matchId)
+            ->orderBy('id')
+            ->chunk(1000,function($compasses) use($sensorTable,$matchId)
+        {
+            foreach($compasses as $compass)
+            {
+                $timestamp = $compass->timestamp;
+
+                $sensor = DB::connection("matchdata")
+                    ->table($sensorTable)
+                    ->where("match_id",$matchId)
+                    ->where('timestamp',">=",$timestamp)
+                    ->where('type','A')
+                    ->orderBy('id')
+                    ->first();
+
+                $info = [
+                    "path"  => "/home/zhangweixi/compass_to_gps/app",
+                    "ax"    => $sensor->x,
+                    "ay"    => $sensor->y,
+                    "az"    => $sensor->x,
+                    "cx"    => $compass->x,
+                    "cy"    => $compass->y,
+                    "cz"    => $compass->x
+                ];
+
+                $command = implode(" ",$info);
+
+                $result  = system($command);
+                var_dump($result);
+            }
+
+
+        });
     }
 }
 
