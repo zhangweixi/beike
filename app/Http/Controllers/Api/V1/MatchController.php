@@ -751,7 +751,7 @@ class MatchController extends Controller
                     "cz"    => $compass->x
                 ];
 
-                system("/home/zhangweixi/compass_to_gps/app -88 -19 1009 -0.013671875 -0.26985546946525574 -0.32883575558662415");
+                system("compassapp -88 -19 1009 -0.013671875 -0.26985546946525574 -0.32883575558662415");
                 $command = implode(" ",$info);
                 //dd($command);
                 //$command = "pwd";
