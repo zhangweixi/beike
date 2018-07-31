@@ -4,154 +4,185 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<style type="text/css">
-		body, html{width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
-		#allmap{height:80vh;width:100%;}
-		#r-result{width:100%;}
+		body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+
+		#allmap{
+			height:90vh;
+		}
+
 	</style>
 	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=zZSGyxZgUytdiKG135BcnaP6"></script>
+	<title>折线上添加方向箭头</title>
 	<script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
-
-	<title>添加/删除覆盖物</title>
 </head>
 <body>
-	<div id="allmap"></div>
-	<div id="r-result">
-		<input type="button" onclick="add_overlay();" value="添加覆盖物" />
-		<input type="button" onclick="remove_overlay();" value="删除覆盖物" />
-	</div>
+<div id="allmap"></div>
+
+<button onclick="add_overlay();">添加图标</button>
 </body>
 </html>
 <script type="text/javascript">
-	// 百度地图API功能
-	var map = new BMap.Map("allmap");
-	map.enableScrollWheelZoom(true);
+    // 百度地图API功能
+    var map = new BMap.Map("allmap");    // 创建Map实例
+    map.centerAndZoom(new BMap.Point(121.41971366666668,31.147523000000003), 14);  // 初始化地图,设置中心点坐标和地图级别
+    map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+    var sy = new BMap.Symbol(BMap_Symbol_SHAPE_BACKWARD_OPEN_ARROW, {
+        scale: 0.6,//图标缩放大小
+        strokeColor:'#fff',//设置矢量图标的线填充颜色
+        strokeWeight: '2',//设置线宽
+    });
+    var icons = new BMap.IconSequence(sy, '10', '30');
 
-	//var point = new BMap.Point(116.404, 39.915);
-	var point = new BMap.Point(121.246246,31.091444);
-	
-	map.centerAndZoom(point, 20);
-	
-	var marker = new BMap.Marker(new BMap.Point(121.465864,31.227412)); // 创建点
-
-
-	var polyline = new BMap.Polyline([
-		new BMap.Point(116.399, 39.910),
-		new BMap.Point(116.405, 39.920),
-		new BMap.Point(116.425, 39.900)
-	], {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});   //创建折线
-	
-	var circle = new BMap.Circle(point,500,{strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5}); //创建圆
-	
-	var polygon = new BMap.Polygon([
-		new BMap.Point(116.387112,39.920977),
-		new BMap.Point(116.385243,39.913063),
-		new BMap.Point(116.394226,39.917988),
-		new BMap.Point(116.401772,39.921364),
-		new BMap.Point(116.41248,39.927893)
-	], {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});  //创建多边形
-	
-	var pStart = new BMap.Point(116.392214,39.918985);
-	var pEnd = new BMap.Point(116.41478,39.911901);
-	var rectangle = new BMap.Polygon([
-		new BMap.Point(pStart.lng,pStart.lat),
-		new BMap.Point(pEnd.lng,pStart.lat),
-		new BMap.Point(pEnd.lng,pEnd.lat),
-		new BMap.Point(pStart.lng,pEnd.lat)
-	], {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5});  //创建矩形
-	
-
-
-	var sy = new BMap.Symbol(BMap_Symbol_SHAPE_BACKWARD_OPEN_ARROW, {
-	    scale: 0.6,//图标缩放大小
-	    strokeColor:'#fff',//设置矢量图标的线填充颜色
-	    strokeWeight: '2',//设置线宽
-	});
-	var icons = new BMap.IconSequence(sy, '10', '30');
+    // 创建polyline对象
 
 
 
-	//添加覆盖物
-	function add_overlay(){
-		//map.addOverlay(marker);            //增加点
+
+    var pois = [
+        new BMap.Point(116.350658,39.938285),
+        new BMap.Point(116.386446,39.939281),
+        new BMap.Point(116.389034,39.913828),
+        new BMap.Point(116.442501,39.914603)
+    ];
 
 
-		//map.addOverlay(polyline);          //增加折线
-		//map.addOverlay(circle);            //增加圆
-		//map.addOverlay(polygon);           //增加多边形
-		//map.addOverlay(rectangle);         //增加矩形
-		var url = "/gps-111.json?callback=success";
 
-		// $.getJSON(url + "?jsoncallback=success", function(data) {
-    
-		//    console.log(data);
-		// });
+	console.log('pois=');
+    console.log(pois);
 
 
-		$.ajax({
-			url: url,	
-			type: "GET",
-			//dataType: "jsonp", //指定服务器返回的数据类型
-			success: function (data) {
-					
-				//console.log(data);
-				var length = data.lat.length;
+    //添加覆盖物
+    function add_overlay(){
 
-				var lats = data.lat;
-				var lons = data.lon;
-				var points = [];
-				
-				
-				for(var i =0;i<length ;i++){
+        var url = "/gps-111.json";
 
-					if(lons[i] == "") continue;
+        $.ajax({
+            url: url,
+            type: "GET",
+            success: function (data) {
 
-					points.push(new BMap.Point(lons[i]/100,lats[i]/100));
-				}
-			
+                data = JSON.parse(data);
+                var length = data.lat.length;
 
-			
-			var polyline =new BMap.Polyline(points, {
-				enableEditing: false,//是否启用线编辑，默认为false
-				enableClicking: true,//是否响应点击事件，默认为true
-			   	icons:[icons],
-				strokeWeight:'2',//折线的宽度，以像素为单位
-				strokeOpacity: 0.8,//折线的透明度，取值范围0 - 1
-				strokeColor:"#18a45b" //折线颜色
-			});
-			map.addOverlay(polyline);
-			
+                var lats = data.lat;
+                var lons = data.lon;
+                var points = [];
 
-			return ;
+                var templon = 0;
+                var templat = 0;
+				var str = "";
 
-				var j = 0;
+                for(var i =0;i<length ;i++){
 
-				var timer = setInterval(function(){
-						
-						if(j == points.length){
-							
-							clearInterval(timer);
-							return;
-						}
-						console.log(points[j]);
-						map.addOverlay(new BMap.Marker(points[j]));
-						j++;
+                    if(lons[i] == "") continue;
 
-				},200);
+                    templat = gps_to_gps(lats[i]);
+                    templon = gps_to_gps(lons[i]);
+                    //console.log(lats[i]+","+ lons[i]);
+                    //console.log(templat+","+templon);
+					str += templon+","+templat+";";
 
-				
-				
+					//map.addOverlay(new BMap.Marker(new BMap.Point(templon,templat)));
+
+					if(points.length % 100 == 0)
+					{
+
+                        var url = "http://api.map.baidu.com/geoconv/v1/?coords="+str+"&from=1&to=5&ak=zZSGyxZgUytdiKG135BcnaP6";
+                        str = "";
+
+                        $.get(url).success(function(res){
+                            console.log(data);
+						})
+					}
+
+                    points.push(new BMap.Point(templon,templat));
+                }
+
+
+                console.log(points.length);
+
+                var convertor = new BMap.Convertor();
+                var pointArr = [];
+					pointArr.push(points);
+
+                	convertor.translate(points, 1, 5, translateCallback)
+
+
+
+				console.log(points);
+                var polyline =new BMap.Polyline(pois, {
+                    enableEditing: false,//是否启用线编辑，默认为false
+                    enableClicking: true,//是否响应点击事件，默认为true
+                    icons:[icons],
+                    strokeWeight:'8',//折线的宽度，以像素为单位
+                    strokeOpacity: 0.8,//折线的透明度，取值范围0 - 1
+                    strokeColor:"#18a45b" //折线颜色
+                });
+
+
+                //map.addOverlay(polyline);          //增加折线
+
+            }
+        });
+    }
+
+    //坐标转换完之后的回调函数
+    translateCallback = function (data){
+        console.log(data);
+        if(data.status === 0) {
+            for(var p of data.points)
+			{
+			    console.log(p);
+                var marker = new BMap.Marker(p);
+                map.addOverlay(marker);
 			}
-		});
-	}
-
-	function success(){
-		alert();
-	}
 
 
+            //var label = new BMap.Label("转换后的百度坐标（正确）",{offset:new BMap.Size(20,-10)});
+            //marker.setLabel(label); //添加百度label
+            //map.setCenter(data.points[0]);
+        }
+    }
 
-	//清除覆盖物
-	function remove_overlay(){
-		map.clearOverlays();         
-	}
+
+/*
+    var polyline =new BMap.Polyline(pois, {
+        enableEditing: false,//是否启用线编辑，默认为false
+        enableClicking: true,//是否响应点击事件，默认为true
+        icons:[icons],
+        strokeWeight:'8',//折线的宽度，以像素为单位
+        strokeOpacity: 0.8,//折线的透明度，取值范围0 - 1
+        strokeColor:"#18a45b" //折线颜色
+    });*/
+
+    //map.addOverlay(polyline);          //增加折线
+
+    function gps_to_gps(gps)
+    {
+        var temp = gps/100;
+
+        return toDecimal2(parseInt(temp) + temp % 1/60*100,6);
+    }
+
+
+    function toDecimal2(val,len) {
+        //debugger;
+        var f = parseFloat(val);
+        if (isNaN(f)) {
+            return false;
+        }
+        var f = Math.round(val*Math.pow(10,len))/Math.pow(10,len);
+        var s = f.toString();
+        var rs = s.indexOf('.');
+        if (rs < 0) {
+            rs = s.length;
+            s += '.';
+        }
+        while (s.length <= rs + len) {
+            s += '0';
+        }
+        return s;
+    }
+
+    //1
 </script>
