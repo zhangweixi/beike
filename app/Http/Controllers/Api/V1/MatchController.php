@@ -115,7 +115,7 @@ class MatchController extends Controller
         Storage::disk('local')->put($file,$deviceData);
 
         $matchData  = [
-            'match_id'  => 0,
+            'match_id'  => $request->input('matchId',0),
             'user_id'   => $userId,
             'device_sn' => $deviceSn,
             'type'      => $dataType,
@@ -173,7 +173,9 @@ class MatchController extends Controller
 
     public function sensortest()
     {
-        return hexToInt("f9ffffff");
+        //return hexToInt("f9ffffff");
+
+        return hexdec(reverse_hex("eb0afdee64010000"));
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
@@ -751,7 +753,8 @@ class MatchController extends Controller
                     "cz"    => $compass->x
                 ];
 
-                system("/usr/bin/compassapp -88 -19 1009 -0.013671875 -0.26985546946525574 -0.32883575558662415");
+                //system("/usr/bin/compassapp -88 -19 1009 -0.013671875 -0.26985546946525574 -0.32883575558662415");
+		dd(system("./../../../../usr/bin/compassapp  -88 -19 1009 -0.013671875 -0.26985546946525574 -0.32883575558662415"));
                 $command = implode(" ",$info);
                 //dd($command);
                 //$command = "pwd";
@@ -763,6 +766,65 @@ class MatchController extends Controller
 
 
         });
+    }
+
+
+
+    public function create_compass_data(Request $request)
+    {
+        $matchModel = new MatchModel();
+        $matchId    = $request->input('matchId');
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+
+        $compassTable   = "user_".$matchInfo->user_id."_compass";
+        $sensorTable    = "user_".$matchInfo->user_id."_sensor";
+
+        $file = public_path("compass.txt");
+        if(file_exists($file))
+        {
+            unlink($file);
+        }
+        $id = 0;
+
+        DB::connection('matchdata')
+            ->table($compassTable)
+            ->where('match_id',$matchId)
+            ->orderBy('id')
+            ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id)
+        {
+            foreach($compasses as $compass)
+            {
+                $timestamp = $compass->timestamp;
+
+                $sensor = DB::connection("matchdata")
+                    ->table($sensorTable)
+                    ->where('id',">=",$id)
+                    ->where("match_id",$matchId)
+                    ->where('timestamp',">=",$timestamp)
+                    ->where('type','A')
+                    ->orderBy('id')
+                    ->first();
+
+
+                if($sensor == null)
+                    continue;
+                $id = $sensor->id;
+                $info = [
+                    "ax"    => $sensor->x,
+                    "ay"    => $sensor->y,
+                    "az"    => $sensor->z,
+                    "cx"    => $compass->x,
+                    "cy"    => $compass->y,
+                    "cz"    => $compass->z
+                ];
+                
+                file_put_contents(public_path("compass.txt"), implode(",",$info)."\n",FILE_APPEND);
+            }
+        });
+
+
+        return "success";
+
     }
 }
 

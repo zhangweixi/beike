@@ -60,8 +60,8 @@ class AnalysisMatchData implements ShouldQueue
                 $table->increments('id');
                 $table->integer('match_id');
                 $table->integer('source_id');
-                $table->string('latitude');
-                $table->string('longitude');
+                $table->string('lat');
+                $table->string('lon');
                 $table->double('speed');
                 $table->string('direction');
                 $table->tinyInteger('status');
@@ -183,7 +183,7 @@ class AnalysisMatchData implements ShouldQueue
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
             loopbegin:
-            mylogger('begin'.$key);
+
             if($matchTimeInfo
                 && $data['timestamp'] >= $matchTimeInfo->time_begin
                 && $data['timestamp'] <= $matchTimeInfo->time_end
@@ -197,8 +197,6 @@ class AnalysisMatchData implements ShouldQueue
 
                 if(!$matchTimeInfo)
                 {
-                    mylogger('没有找到对应的比赛时间');
-
                     return false;
                 }
 
@@ -237,25 +235,15 @@ class AnalysisMatchData implements ShouldQueue
 
                 array_push($matches['result-'.$matchId][$validKey],$validValue);
             }
-            mylogger('end'.$key);
         }
-
-        mylogger("开始创建json");
-
 
         foreach($matches as $key => $matchData)
         {
             $resultFile = "match/".$key."-".$type.".json";
-            mylogger('创建json文件:'.$resultFile);
             Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
         }
 
-
-        mylogger('over');
         return true;
-
-
-
 
         mylogger("查询时间所消耗:".time());
         $multyData  = array_chunk($datas,10000);
@@ -293,7 +281,7 @@ class AnalysisMatchData implements ShouldQueue
         //2.获取上一条的数据
         $prevData   = $this->get_prev_sensor_data($userId,$type);
         $datas      = $prevData.$datas;
-        mylogger("开始解析:".time());
+        //mylogger("开始解析:".time());
         //3.解析数据
         if($type == 'sensor')
         {
@@ -308,7 +296,7 @@ class AnalysisMatchData implements ShouldQueue
             $datas = $this->handle_compass_data($datas);
         }
 
-        mylogger("解析完毕:".time());
+        //mylogger("解析完毕:".time());
 
         $createdAt      = date_time();
         $dataBaseInfo   = [
@@ -330,13 +318,13 @@ class AnalysisMatchData implements ShouldQueue
 
         $validColum     = $this->validColum[$type];
 
-        //dd($datas);
+
 
         foreach($datas as $key=>$data)
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
             loopbegin:
-            mylogger('begin'.$key);
+            //mylogger('begin'.$key);
             if($matchTimeInfo
                 && $data['timestamp'] >= $matchTimeInfo->time_begin
                 && $data['timestamp'] <= $matchTimeInfo->time_end
@@ -351,7 +339,6 @@ class AnalysisMatchData implements ShouldQueue
                 if(!$matchTimeInfo)
                 {
                     mylogger('没有找到对应的比赛时间');
-
                     return false;
                 }
 
@@ -392,36 +379,32 @@ class AnalysisMatchData implements ShouldQueue
                 array_push($matches['result-'.$matchId][$validKey],$validValue);
             }
 
-            mylogger('end'.$key);
+           // mylogger('end'.$key);
             $datas[$key] = array_merge($dataBaseInfo,$data);
         }
 
-        mylogger("开始创建json");
+        //mylogger("开始创建json");
 
 
         foreach($matches as $key => $matchData)
         {
             $resultFile = "match/".$key."-".$type.".json";
-            mylogger('创建json文件:'.$resultFile);
+            //mylogger('创建json文件:'.$resultFile);
             Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
         }
 
 
-        mylogger('over');
+        //mylogger('over');
 
-
-
-
-
-        mylogger("查询时间所消耗:".time());
+        //mylogger("查询时间所消耗:".time());
         $multyData  = array_chunk($datas,1000);
-        mylogger("切割消耗时间:".time());
+        //mylogger("切割消耗时间:".time());
         $db = DB::connection('matchdata')->table($table);
 
         foreach($multyData as $key => $data)
         {
             $db->insert($data);
-            mylogger("插入-".$key.":".time());
+            //mylogger("插入-".$key.":".time());
         }
 
         mylogger("插入数据完毕:".time());
@@ -532,6 +515,12 @@ class AnalysisMatchData implements ShouldQueue
     {
         $leng       = 42;   //每一条数据的长度为42位 类型：2位 x:8,y:8,z:8,time:16
         $dataArr    = str_split($dataSource,$leng);
+//        foreach($dataArr as $key => $d)
+//        {
+//            $str = substr($d,0,2)."  ";
+//            $str .= implode('  ',str_split(substr($d,2,24),8))."  ".substr($d,26);
+//            $dataArr[$key] = $str;
+//        }
         $insertData = [];
 
         foreach($dataArr as $key => $d)
@@ -653,10 +642,9 @@ class AnalysisMatchData implements ShouldQueue
 
     private function handle_compass_data($dataSource)
     {
-        //exit($dataSource);
+
         $leng   = 40;
         $dataArr= str_split($dataSource,$leng);
-
 
         $insertData     = [];
 

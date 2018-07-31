@@ -39,7 +39,8 @@ class MatchModel extends Model
      * */
     public function finish_match($matchId)
     {
-        $this->where('match_id',$matchId)->update(['time_end'=>$this->time]);
+        $time = date('Y-m-d H:i:s',time() + 600);
+        $this->where('match_id',$matchId)->update(['time_end'=>$time]);
 
     }
 
