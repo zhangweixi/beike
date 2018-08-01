@@ -97,7 +97,7 @@ class AnalysisMatchData implements ShouldQueue
                 $table->increments('id');
                 $table->integer('source_id');
                 $table->integer('match_id');
-                $table->integer('foot');
+                $table->string('foot');
                 $table->double('x');
                 $table->double('y');
                 $table->double('z');
