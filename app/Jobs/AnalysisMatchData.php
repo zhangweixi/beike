@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use App\Models\V1\MatchModel;
+
 
 class AnalysisMatchData implements ShouldQueue
 {
@@ -25,18 +27,23 @@ class AnalysisMatchData implements ShouldQueue
     public $tries   = 3;
     public $sourceId= 0;    //要处理的比赛的数据
     public $timeout = 50;
+    public $saveToDB= false;
 
-    public function __construct($sourceId)
+
+    public function __construct($sourceId,$saveToDB = false)
     {
         $this->sourceId = $sourceId;
+        $this->saveToDB = $saveToDB;
+
     }
+
 
     public function create_table($userId,$type)
     {
         /*gps_id
         match_id
-        latitude
-        longitude
+        lat
+        lon
         speed
         direction
         status
@@ -123,7 +130,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         //解析数据
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
-        //return "ok";
+
         $data       = Storage::disk('local')->get($sourceData->data);
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
@@ -134,148 +141,6 @@ class AnalysisMatchData implements ShouldQueue
         $datas  = explode(",",$data);
         $datas  = $this->delete_head($datas);
         $datas  = implode('',$datas);
-
-
-
-        //2.获取上一条的数据
-        $prevData   = $this->get_prev_sensor_data($userId,$type);
-        $datas      = $prevData.$datas;
-        mylogger("开始解析:".time());
-        //3.解析数据
-        if($type == 'sensor')
-        {
-            $datas = $this->handle_sensor_data($datas);
-
-        }elseif($type == 'gps'){
-
-            $datas = $this->handle_gps_data($datas);
-
-        }elseif($type == 'compass'){
-
-            $datas = $this->handle_compass_data($datas);
-        }
-
-        mylogger("解析完毕:".time());
-
-        $createdAt      = date_time();
-        $dataBaseInfo   = [
-            'source_id'     => $this->sourceId,
-            'created_at'    => $createdAt,
-        ];
-
-        $table  = "user_".$userId."_".$type;
-
-        //获得最近的一场比赛
-        //4.存储数据 添加其他数据
-
-        //获得最新一次比赛时间
-        $matchTimeInfo  = "";
-        $this->create_table($userId,$type);
-
-        $beginTime  = time();
-        $matches    = [];
-
-        $validColum     = $this->validColum[$type];
-
-        //dd($datas);
-
-        foreach($datas as $key=>$data)
-        {
-            //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
-            loopbegin:
-
-            if($matchTimeInfo
-                && $data['timestamp'] >= $matchTimeInfo->time_begin
-                && $data['timestamp'] <= $matchTimeInfo->time_end
-                && $data['timestamp'] != 0)
-            {
-                $matchId    = $matchTimeInfo->match_id;
-
-            }elseif($data['timestamp'] != 0){
-
-                $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
-
-                if(!$matchTimeInfo)
-                {
-                    return false;
-                }
-
-                goto loopbegin;
-
-            }else{
-
-                $matchId    = 0 ;
-            }
-
-
-
-            $validData  = [];//有效数据
-            foreach($validColum as $colum)
-            {
-                if(isset($data[$colum]))
-                {
-                    if($type == 'sensor'){
-
-                        $validData[strtolower($data['type']).$colum] = $data[$colum];
-
-                    }else{
-
-                        $validData[$colum] = $data[$colum];
-
-                    }
-
-                }
-            }
-
-
-            foreach($validData as $validKey => $validValue)
-            {
-                $matches['result-'.$matchId] ?? $matches['result-'.$matchId] = [];
-                $matches['result-'.$matchId][$validKey] ?? $matches['result-'.$matchId][$validKey] = [];
-
-                array_push($matches['result-'.$matchId][$validKey],$validValue);
-            }
-        }
-
-        foreach($matches as $key => $matchData)
-        {
-            $resultFile = "match/".$key."-".$type.".json";
-            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
-        }
-
-        return true;
-
-        mylogger("查询时间所消耗:".time());
-        $multyData  = array_chunk($datas,10000);
-        mylogger("切割消耗时间:".time());
-        $db = DB::connection('matchdata')->table($table);
-
-        foreach($multyData as $key => $data)
-        {
-            $db->insert($data);
-            mylogger("插入-".$key.":".time());
-        }
-
-        mylogger("插入数据完毕:".time());
-    }
-
-
-    public function handle1()
-    {
-        //解析数据
-        $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
-        //return "ok";
-        $data       = Storage::disk('local')->get($sourceData->data);
-        $type       = $sourceData->type;
-        $userId     = $sourceData->user_id;
-
-        $this->create_table($userId,$type);
-
-        //1.切分成单组
-        $datas  = explode(",",$data);
-        $datas  = $this->delete_head($datas);
-        $datas  = implode('',$datas);
-
 
 
         //2.获取上一条的数据
@@ -319,12 +184,13 @@ class AnalysisMatchData implements ShouldQueue
         $validColum     = $this->validColum[$type];
 
 
+        //这里将数据产生了两份  一份是原始数据datas,一份是新的数据 $matches
 
         foreach($datas as $key=>$data)
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
             loopbegin:
-            //mylogger('begin'.$key);
+
             if($matchTimeInfo
                 && $data['timestamp'] >= $matchTimeInfo->time_begin
                 && $data['timestamp'] <= $matchTimeInfo->time_end
@@ -337,8 +203,10 @@ class AnalysisMatchData implements ShouldQueue
                 $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
 
                 if(!$matchTimeInfo)
-                {
-                    mylogger('没有找到对应的比赛时间');
+                {   echo $data['timestamp'];
+                    echo "====";
+                    echo $userId;
+                    dd('没有找到对应的比赛时间');
                     return false;
                 }
 
@@ -366,49 +234,51 @@ class AnalysisMatchData implements ShouldQueue
                         $validData[$colum] = $data[$colum];
 
                     }
-
                 }
             }
 
 
+            //将数据放入到不同类型中
             foreach($validData as $validKey => $validValue)
             {
-                $matches['result-'.$matchId] ?? $matches['result-'.$matchId] = [];
-                $matches['result-'.$matchId][$validKey] ?? $matches['result-'.$matchId][$validKey] = [];
+                $matches[$matchId] ?? $matches[$matchId] = [];
+                $matches[$matchId][$validKey] ?? $matches[$matchId][$validKey] = [];
 
-                array_push($matches['result-'.$matchId][$validKey],$validValue);
+                array_push($matches[$matchId][$validKey],$validValue);
             }
 
-           // mylogger('end'.$key);
             $datas[$key] = array_merge($dataBaseInfo,$data);
         }
 
-        //mylogger("开始创建json");
-
-
+        /*将不同类型的数据保存到json*/
         foreach($matches as $key => $matchData)
         {
             $resultFile = "match/".$key."-".$type.".json";
-            //mylogger('创建json文件:'.$resultFile);
             Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
         }
 
-
-        //mylogger('over');
-
-        //mylogger("查询时间所消耗:".time());
-        $multyData  = array_chunk($datas,1000);
-        //mylogger("切割消耗时间:".time());
-        $db = DB::connection('matchdata')->table($table);
-
-        foreach($multyData as $key => $data)
+        //将数据存入到数据库中
+        if($this->saveToDB == true)
         {
-            $db->insert($data);
-            //mylogger("插入-".$key.":".time());
+            $multyData  = array_chunk($datas,1000);
+            $db = DB::connection('matchdata')->table($table);
+
+            foreach($multyData as $key => $data)
+            {
+                $db->insert($data);
+            }
         }
 
-        mylogger("插入数据完毕:".time());
+        if($sourceData->is_finish == 1)
+        {
+            foreach ($matches as $matchId => $match)
+            {
+                $this->create_compass_data($matchId);
+            }
+        }
+        return true;
     }
+
     private $validColum     = [
         'gps'       => ['lat','lon'],
         'sensor'    => ['x','y','z'],
@@ -466,8 +336,6 @@ class AnalysisMatchData implements ShouldQueue
     }
 
 
-
-
     /**
      *
      * 连接上一条sensor数据
@@ -503,7 +371,6 @@ class AnalysisMatchData implements ShouldQueue
         $response   = $http->send($url);
         var_dump($response);
     }
-
 
 
     /**
@@ -640,12 +507,13 @@ class AnalysisMatchData implements ShouldQueue
         return $insertData;
     }
 
+
     private function handle_compass_data($dataSource)
     {
 
         $leng   = 40;
         $dataArr= str_split($dataSource,$leng);
-
+        //dd($dataArr);
         $insertData     = [];
 
         foreach($dataArr as $key => $data)
@@ -679,6 +547,98 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         return $insertData;
+    }
+
+
+
+    public function create_compass_data($matchId)
+    {
+        $matchModel = new MatchModel();
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+
+        $compassTable   = "user_".$matchInfo->user_id."_compass";
+        $sensorTable    = "user_".$matchInfo->user_id."_sensor";
+
+        mk_dir(public_path("uploads/temp"));
+        $infile         = public_path("uploads/temp/".$matchId.".txt");
+        $outfile        = public_path("uploads/match/result-".$matchId."-compass.json");
+
+        if(file_exists($infile))
+        {
+            unlink($infile);
+        }
+
+        $id = 0;
+        DB::connection('matchdata')
+            ->table($compassTable)
+            ->where('match_id',$matchId)
+            ->orderBy('id')
+            ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id,$infile)
+            {
+                foreach($compasses as $compass)
+                {
+                    $timestamp = $compass->timestamp;
+
+                    $sensor = DB::connection("matchdata")
+                        ->table($sensorTable)
+                        ->where('id',">=",$id)
+                        ->where("match_id",$matchId)
+                        ->where('timestamp',">=",$timestamp)
+                        ->where('type','A')
+                        ->orderBy('id')
+                        ->first();
+
+
+                    if($sensor == null)
+                        continue;
+                    $id = $sensor->id;
+                    $info = [
+                        "ax"    => $sensor->x,
+                        "ay"    => $sensor->y,
+                        "az"    => $sensor->z,
+                        "cx"    => $compass->x,
+                        "cy"    => $compass->y,
+                        "cz"    => $compass->z
+                    ];
+                    file_put_contents($infile, implode(",",$info)."\n",FILE_APPEND);
+                }
+            });
+
+        //由罗盘信息转换成航向角
+        $this->compass_translate($infile,$outfile);
+        return "success";
+    }
+
+
+    public function compass_translate($infile,$outfile)
+    {
+        if(file_exists($outfile))
+        {
+            file_put_contents($outfile,"");
+        }
+
+        $command    = "/usr/bin/compass $infile $outfile";
+        $res        = shell_exec($command);
+        $text       = file_get_contents($outfile);
+        $text       = substr($text,0,-2)."]";
+        $compass    = json_decode($text,true);
+
+        //转换成经纬度
+        $azimuth    = [];
+        $pitch      = [];
+        $roll       = [];
+
+        foreach($compass as $v)
+        {
+            array_push($azimuth,$v[0]);
+            array_push($pitch,$v[1]);
+            array_push($roll,$v[2]);
+        }
+
+        $compass    = \GuzzleHttp\json_encode(['azimuth'=>$azimuth,'pitch'=>$pitch,'roll'=>$roll]);
+        file_put_contents($outfile,$compass);
+
+        return true;
     }
 
 }

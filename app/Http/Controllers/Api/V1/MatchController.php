@@ -106,6 +106,7 @@ class MatchController extends Controller
         $deviceData = $request->input('deviceData','');
         $dataType   = $request->input('dataType');
         $foot       = $request->input('foot');
+        $isFinish   = $request->input('isFinish',0);
 
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
@@ -120,7 +121,8 @@ class MatchController extends Controller
             'device_sn' => $deviceSn,
             'type'      => $dataType,
             'data'      => $file,
-            'foot'      => $foot
+            'foot'      => $foot,
+            'is_finish' => $isFinish
         ];
 
         //1.储存数据
@@ -134,12 +136,12 @@ class MatchController extends Controller
 
 
         //2.开始解析数据
-        $job    = new AnalysisMatchData($sourceId);
-        $job->handle();
+        //$job    = new AnalysisMatchData($sourceId);
+        //$job->handle();
 
         //数据存储完毕，调用MATLAB系统开始计算
-        //$delayTime      = now()->addSecond(2);
-        //AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
+        $delayTime      = now()->addSecond(2);
+        AnalysisMatchData::dispatch($sourceId,true)->delay($delayTime);
 
         //创建json文件  请求matlab来读取分析
         //$this->create_json($matchId);
@@ -817,13 +819,37 @@ class MatchController extends Controller
                     "cy"    => $compass->y,
                     "cz"    => $compass->z
                 ];
-                
-                file_put_contents(public_path("compass.txt"), implode(",",$info)."\n",FILE_APPEND);
+
+                file_put_contents(public_path("uploads/match/".$matchId."-compass.txt"), implode(",",$info)."\n",FILE_APPEND);
             }
         });
 
+        //由罗盘信息转换成航向角
 
         return "success";
+    }
+
+
+    public function compass_translate($infile,$outfile)
+    {
+
+        $command = "/usr/bin/compass $infile $outfile";
+        shell_exec($command);
+
+        $text = file_get_contents($outfile);
+        $text = substr($text,0,-2)."]";
+
+        $json = json_decode($text,true);
+
+        //转换成经纬度
+
+
+        print_r($json);
+
+    }
+
+    public function zhangweixi(Request $request)
+    {
 
     }
 }
