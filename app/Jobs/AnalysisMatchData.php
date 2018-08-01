@@ -273,6 +273,7 @@ class AnalysisMatchData implements ShouldQueue
         {
             foreach ($matches as $matchId => $match)
             {
+
                 $this->create_compass_data($matchId);
             }
         }
@@ -561,7 +562,7 @@ class AnalysisMatchData implements ShouldQueue
 
         mk_dir(public_path("uploads/temp"));
         $infile         = public_path("uploads/temp/".$matchId.".txt");
-        $outfile        = public_path("uploads/match/result-".$matchId."-compass.json");
+        $outfile        = public_path("uploads/match/".$matchId."-compass.json");
 
         if(file_exists($infile))
         {
