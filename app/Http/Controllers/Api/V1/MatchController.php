@@ -167,8 +167,8 @@ class MatchController extends Controller
         $sourceId = $request->input('sourceId');
 
         //2.开始解析数据
-        $job    = new AnalysisMatchData($sourceId);
-        $job->handle1();
+        $job    = new AnalysisMatchData($sourceId,true);
+        $job->handle();
         //mylogger("相应前端".time());
         return apiData()->send(200,'ok');
     }
