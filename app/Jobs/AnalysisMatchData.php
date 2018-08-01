@@ -69,6 +69,7 @@ class AnalysisMatchData implements ShouldQueue
                 $table->integer('source_id');
                 $table->string('lat');
                 $table->string('lon');
+                $table->string('foot');
                 $table->double('speed');
                 $table->string('direction');
                 $table->tinyInteger('status');
@@ -96,6 +97,7 @@ class AnalysisMatchData implements ShouldQueue
                 $table->increments('id');
                 $table->integer('source_id');
                 $table->integer('match_id');
+                $table->integer('foot');
                 $table->double('x');
                 $table->double('y');
                 $table->double('z');
@@ -111,6 +113,7 @@ class AnalysisMatchData implements ShouldQueue
                 $table->increments('id');
                 $table->integer('source_id');
                 $table->integer('match_id');
+                $table->string('foot');
                 $table->double('x');
                 $table->double('y');
                 $table->double('z');
@@ -166,6 +169,7 @@ class AnalysisMatchData implements ShouldQueue
         $createdAt      = date_time();
         $dataBaseInfo   = [
             'source_id'     => $this->sourceId,
+            'foot'          => $sourceData->foot,
             'created_at'    => $createdAt,
         ];
 
@@ -202,12 +206,11 @@ class AnalysisMatchData implements ShouldQueue
 
                 $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
 
+                //正常情况上传的数据都是一定能够找到时间的，如果找不到时间则表示一定有异常，应该停止
                 if(!$matchTimeInfo)
-                {   echo $data['timestamp'];
-                    echo "====";
-                    echo $userId;
-                    dd('没有找到对应的比赛时间');
-                    return false;
+                {
+                    dd("数据".$sourceData->id.'没有找到对应的比赛,时间为:'.$data['timestamp']);
+
                 }
 
                 goto loopbegin;
@@ -253,7 +256,7 @@ class AnalysisMatchData implements ShouldQueue
         /*将不同类型的数据保存到json*/
         foreach($matches as $key => $matchData)
         {
-            $resultFile = "match/".$key."-".$type.".json";
+            $resultFile = "match/".$key."-".$type."-".$sourceData->foot.".json";
             Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
         }
 
@@ -269,6 +272,7 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
+        //上传的最后一条是数据，生成航向角
         if($sourceData->is_finish == 1)
         {
             foreach ($matches as $matchId => $match)
@@ -559,56 +563,70 @@ class AnalysisMatchData implements ShouldQueue
 
         $compassTable   = "user_".$matchInfo->user_id."_compass";
         $sensorTable    = "user_".$matchInfo->user_id."_sensor";
-
         mk_dir(public_path("uploads/temp"));
-        $infile         = public_path("uploads/temp/".$matchId.".txt");
-        $outfile        = public_path("uploads/match/".$matchId."-compass.json");
 
-        if(file_exists($infile))
+        //两只脚的数据
+        $foots  = ['R','L'];
+        foreach($foots as $foot)
         {
-            unlink($infile);
+            $infile         = public_path("uploads/temp/".$matchId."-".$foot.".txt");
+            $outfile        = public_path("uploads/match/".$matchId."-compass-".$foot.".json");
+
+            if(file_exists($infile))
+            {
+                unlink($infile);
+            }
+
+            $id = 0;
+            DB::connection('matchdata')
+                ->table($compassTable)
+                ->where('match_id',$matchId)
+                ->where('foot',$foot)
+                ->orderBy('id')
+                ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id,$infile,$foot)
+                {
+                    foreach($compasses as $compass)
+                    {
+                        $timestamp = $compass->timestamp;
+
+                        $sensor = DB::connection("matchdata")
+                            ->table($sensorTable)
+                            ->where('id',">=",$id)
+                            ->where("match_id",$matchId)
+                            ->where('foot',$foot)
+                            ->where('timestamp',">=",$timestamp)
+                            ->where('type','A')
+                            ->orderBy('id')
+                            ->first();
+
+
+                        //罗盘之后没有sensor了
+                        if($sensor == null)
+                        {
+                            break;
+                        }
+
+                        $id = $sensor->id;
+                        $info = [
+                            "ax"    => $sensor->x,
+                            "ay"    => $sensor->y,
+                            "az"    => $sensor->z,
+                            "cx"    => $compass->x,
+                            "cy"    => $compass->y,
+                            "cz"    => $compass->z
+                        ];
+                        file_put_contents($infile, implode(",",$info)."\n",FILE_APPEND);
+                    }
+                });
+
+            //由罗盘信息转换成航向角
+            $this->compass_translate($infile,$outfile);
+
         }
 
-        $id = 0;
-        DB::connection('matchdata')
-            ->table($compassTable)
-            ->where('match_id',$matchId)
-            ->orderBy('id')
-            ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id,$infile)
-            {
-                foreach($compasses as $compass)
-                {
-                    $timestamp = $compass->timestamp;
-
-                    $sensor = DB::connection("matchdata")
-                        ->table($sensorTable)
-                        ->where('id',">=",$id)
-                        ->where("match_id",$matchId)
-                        ->where('timestamp',">=",$timestamp)
-                        ->where('type','A')
-                        ->orderBy('id')
-                        ->first();
-
-
-                    if($sensor == null)
-                        continue;
-                    $id = $sensor->id;
-                    $info = [
-                        "ax"    => $sensor->x,
-                        "ay"    => $sensor->y,
-                        "az"    => $sensor->z,
-                        "cx"    => $compass->x,
-                        "cy"    => $compass->y,
-                        "cz"    => $compass->z
-                    ];
-                    file_put_contents($infile, implode(",",$info)."\n",FILE_APPEND);
-                }
-            });
-
-        //由罗盘信息转换成航向角
-        $this->compass_translate($infile,$outfile);
         return "success";
     }
+
 
 
     public function compass_translate($infile,$outfile)
