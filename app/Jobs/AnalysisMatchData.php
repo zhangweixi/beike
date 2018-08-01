@@ -209,7 +209,7 @@ class AnalysisMatchData implements ShouldQueue
                 //正常情况上传的数据都是一定能够找到时间的，如果找不到时间则表示一定有异常，应该停止
                 if(!$matchTimeInfo)
                 {
-                    dd("数据".$sourceData->id.'没有找到对应的比赛,时间为:'.$data['timestamp']);
+                    dd("数据".$sourceData->sourceId.'没有找到对应的比赛,时间为:'.$data['timestamp']);
 
                 }
 
@@ -637,6 +637,8 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         $command    = "/usr/bin/compass $infile $outfile";
+
+
         $res        = shell_exec($command);
         $text       = file_get_contents($outfile);
         $text       = substr($text,0,-2)."]";
