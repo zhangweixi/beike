@@ -671,10 +671,20 @@ function gps_to_gps($num)
     {
         return 0;
     }
+
     bcscale (8);
-    $int = (int)bcdiv($num,100);
-    $flo = bcdiv(bcmod($num,100),60);
-    return bcadd($int,$flo);
+    $num = explode(".",$num);
+    if(count($num) == 1)
+    {
+        $num[1]=0;
+    }
+
+    $int    = (int)bcdiv($num[0],100);
+    $fint   = (int)bcmod($num[0],100);
+    $fnum   = $fint.".".$num[1];
+    $fnum   = bcdiv($fnum,60);
+
+    return bcadd($int,$fnum);
 }
 
 ?>
