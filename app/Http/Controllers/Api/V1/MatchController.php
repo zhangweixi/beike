@@ -120,13 +120,13 @@ class MatchController extends Controller
     public function baidu_map(Request $request)
     {
         $matchId    = $request->input('matchId');
-        $baiduMap   = "match/result-".$matchId."-bd.json";
+        $baiduMap   = "match/".$matchId."-bd.json";
         $hasFile    = Storage::disk('web')->has($baiduMap);
 
         if(!$hasFile) //没有转换过的数据
         {
 
-            $file       = "match/result-".$matchId."-gps.json";
+            $file       = "match/".$matchId."-gps-L.json";
             $hasFile    = Storage::disk('web')->has($file);
 
             if($hasFile == false)
@@ -138,6 +138,7 @@ class MatchController extends Controller
             $gpsList = \GuzzleHttp\json_decode($gpsList);
             $lats   = $gpsList->lat;
             $lons   = $gpsList->lon;
+
 
 
             $length = count($lats);
@@ -156,6 +157,7 @@ class MatchController extends Controller
 
             $points = array_chunk($points,100);
             $ak     = "zZSGyxZgUytdiKG135BcnaP6";
+            $bdpoints= [];
             foreach($points as $key => $pointArr)
             {
                 $tempArr = [];
@@ -169,22 +171,21 @@ class MatchController extends Controller
                 $url = "http://api.map.baidu.com/geoconv/v1/?coords={$tempArr}&from=1&to=5&ak={$ak}";
                 $tempArr = file_get_contents($url);
                 $tempArr = \GuzzleHttp\json_decode($tempArr);
-
-                $points[$key] = $tempArr->result;
+                $bdpoints= array_merge($bdpoints,$tempArr->result);
             }
-            Storage::disk('web')->put($baiduMap,\GuzzleHttp\json_encode($points));
+
+            Storage::disk('web')->put($baiduMap,\GuzzleHttp\json_encode($bdpoints));
 
         }else{
 
-            $points = file_get_contents($baiduMap);
-
+            $bdpoints   = $gpsList = Storage::disk('web')->get($baiduMap);
+            $bdpoints   = \GuzzleHttp\json_decode($bdpoints);
         }
 
-
-
-
-        return $points;
+        return apiData()->set_data('points',$bdpoints)->send();
     }
+
+
 
     public function find_gps()
     {

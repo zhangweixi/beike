@@ -24,7 +24,7 @@
 <script type="text/javascript">
     // 百度地图API功能
     var map = new BMap.Map("allmap");    // 创建Map实例
-    map.centerAndZoom(new BMap.Point(121.41971366666668,31.147523000000003), 14);  // 初始化地图,设置中心点坐标和地图级别
+    map.centerAndZoom(new BMap.Point(121.409182,31.1736545), 16);  // 初始化地图,设置中心点坐标和地图级别
     map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
     var sy = new BMap.Symbol(BMap_Symbol_SHAPE_BACKWARD_OPEN_ARROW, {
         scale: 0.6,//图标缩放大小
@@ -36,81 +36,85 @@
     // 创建polyline对象
 
 
+	if(0)
+	{
+	    //正常
+		var pois = [
+			new BMap.Point(116.350658,39.938285),
+			new BMap.Point(116.386446,39.939281),
+			new BMap.Point(116.389034,39.913828),
+			new BMap.Point(116.442501,39.914603)
+		];
 
 
-    var pois = [
-        new BMap.Point(116.350658,39.938285),
-        new BMap.Point(116.386446,39.939281),
-        new BMap.Point(116.389034,39.913828),
-        new BMap.Point(116.442501,39.914603)
-    ];
+		//出错
+        var pois = [
+            new BMap.Point(120.409182,31.1736545),
+            new BMap.Point(120.409182,31.1736556),
+            new BMap.Point(120.409183,31.1736564),
+            new BMap.Point(120.409184,31.1736575)
+        ];
+        console.log('pois=');
+        console.log(pois);
+		var polyline =new BMap.Polyline(pois, {
+			enableEditing: false,//是否启用线编辑，默认为false
+			enableClicking: true,//是否响应点击事件，默认为true
+			icons:[icons],
+			strokeWeight:'8',//折线的宽度，以像素为单位
+			strokeOpacity: 0.8,//折线的透明度，取值范围0 - 1
+			strokeColor:"#18a45b" //折线颜色
+		});
+    	map.addOverlay(polyline);          //增加折线
+	}
 
 
-
-	console.log('pois=');
-    console.log(pois);
 
 
     //添加覆盖物
     function add_overlay(){
 
-        var url = "/gps-111.json";
+		var matchId	= getQueryVariable('matchId');
+		if(matchId < 0)
+		{
+		    alert('缺少matchId');
+		    return ;
+		}
+
+        var url = "/api/v1/match/baidu_map?matchId="+matchId;
+        //var url = "http://dev1.api.launchever.cn/www/html/map.html";
 
         $.ajax({
             url: url,
-            type: "GET",
-            success: function (data) {
+            type: "POST",
+            success: function (res) {
 
-                data = JSON.parse(data);
-                var length = data.lat.length;
+                //data = JSON.parse(data);
+				var data	= res.data.points;
 
-                var lats = data.lat;
-                var lons = data.lon;
                 var points = [];
 
-                var templon = 0;
-                var templat = 0;
-				var str = "";
+                for(var p in data){
 
-                for(var i =0;i<length ;i++){
+					var newp = new BMap.Point(data[p].x,data[p].y);
+                    points.push(newp);
 
-                    if(lons[i] == "") continue;
-
-                    templat = gps_to_gps(lats[i]);
-                    templon = gps_to_gps(lons[i]);
-                    //console.log(lats[i]+","+ lons[i]);
-                    //console.log(templat+","+templon);
-					str += templon+","+templat+";";
-
-					//map.addOverlay(new BMap.Marker(new BMap.Point(templon,templat)));
-
-					if(points.length % 100 == 0)
-					{
-
-                        var url = "http://api.map.baidu.com/geoconv/v1/?coords="+str+"&from=1&to=5&ak=zZSGyxZgUytdiKG135BcnaP6";
-                        str = "";
-
-                        $.get(url).success(function(res){
-                            console.log(data);
-						})
-					}
-
-                    points.push(new BMap.Point(templon,templat));
+                    //map.addOverlay(new BMap.Marker(newp));
                 }
 
+                var options = {
+                    size: BMAP_POINT_SIZE_SMALL,
+                    shape: BMAP_POINT_SHAPE_STAR,
+                    color: '#d340c3'
+                }
 
-                console.log(points.length);
+                var pointCollection = new BMap.PointCollection(points, options);  // 初始化PointCollection
+                //pointCollection.addEventListener('click', function (
 
-                var convertor = new BMap.Convertor();
-                var pointArr = [];
-					pointArr.push(points);
+                map.addOverlay(pointCollection);  // 添加Overlay
 
-                	convertor.translate(points, 1, 5, translateCallback)
+				//console.log(points);
 
-
-
-				console.log(points);
-                var polyline =new BMap.Polyline(pois, {
+                var polyline =new BMap.Polyline(points, {
                     enableEditing: false,//是否启用线编辑，默认为false
                     enableClicking: true,//是否响应点击事件，默认为true
                     icons:[icons],
@@ -126,62 +130,17 @@
         });
     }
 
-    //坐标转换完之后的回调函数
-    translateCallback = function (data){
-        console.log(data);
-        if(data.status === 0) {
-            for(var p of data.points)
-			{
-			    console.log(p);
-                var marker = new BMap.Marker(p);
-                map.addOverlay(marker);
-			}
 
-
-            //var label = new BMap.Label("转换后的百度坐标（正确）",{offset:new BMap.Size(20,-10)});
-            //marker.setLabel(label); //添加百度label
-            //map.setCenter(data.points[0]);
-        }
-    }
-
-
-/*
-    var polyline =new BMap.Polyline(pois, {
-        enableEditing: false,//是否启用线编辑，默认为false
-        enableClicking: true,//是否响应点击事件，默认为true
-        icons:[icons],
-        strokeWeight:'8',//折线的宽度，以像素为单位
-        strokeOpacity: 0.8,//折线的透明度，取值范围0 - 1
-        strokeColor:"#18a45b" //折线颜色
-    });*/
-
-    //map.addOverlay(polyline);          //增加折线
-
-    function gps_to_gps(gps)
+    function getQueryVariable(variable)
     {
-        var temp = gps/100;
-
-        return toDecimal2(parseInt(temp) + temp % 1/60*100,6);
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+        }
+        return(false);
     }
 
-
-    function toDecimal2(val,len) {
-        //debugger;
-        var f = parseFloat(val);
-        if (isNaN(f)) {
-            return false;
-        }
-        var f = Math.round(val*Math.pow(10,len))/Math.pow(10,len);
-        var s = f.toString();
-        var rs = s.indexOf('.');
-        if (rs < 0) {
-            rs = s.length;
-            s += '.';
-        }
-        while (s.length <= rs + len) {
-            s += '0';
-        }
-        return s;
-    }
 
 </script>

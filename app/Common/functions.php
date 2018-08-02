@@ -667,6 +667,10 @@ function HexToFloat($hex){
 //经纬度坐标转换
 function gps_to_gps($num)
 {
+    if(empty($num))
+    {
+        return 0;
+    }
     bcscale (8);
     $num = bcdiv($num,100);
     $int = (int)$num;

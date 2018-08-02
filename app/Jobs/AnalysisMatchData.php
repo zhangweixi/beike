@@ -70,10 +70,7 @@ class AnalysisMatchData implements ShouldQueue
                 $table->string('lat');
                 $table->string('lon');
                 $table->string('foot');
-                $table->double('speed');
-                $table->string('direction');
-                $table->tinyInteger('status');
-                $table->string('source_data');
+                $table->string('source_data',500);
                 $table->bigInteger('timestamp');
                 $table->dateTime('created_at');
             });
@@ -261,7 +258,7 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         //将数据存入到数据库中
-        if($this->saveToDB == true)
+        if($this->saveToDB == true && $type != "gps!")
         {
             $multyData  = array_chunk($datas,1000);
             $db = DB::connection('matchdata')->table($table);
@@ -271,6 +268,7 @@ class AnalysisMatchData implements ShouldQueue
                 $db->insert($data);
             }
         }
+
 
         //上传的最后一条是数据，生成航向角
         if($sourceData->is_finish == 1)
@@ -460,7 +458,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         $dataList    = explode("23232323",$dataSource); //gps才有232323
         $dataList    = array_filter($dataList);
-
+        //dd($dataList);
         $insertData     = [];
 
 
@@ -481,29 +479,17 @@ class AnalysisMatchData implements ShouldQueue
                     'source_data'   => $single,
                     'lat'           => 0,
                     'lon'           => 0,
-                    'speed'         => 0,
-                    'direction'     => "",
-                    'status'        => 0,
                     'timestamp'     => 0
                 ];
+
             }else{
-
-
                 $timestamp  = hexdec(reverse_hex($time));
-
-
                 $tlat       = $detailInfo[2];
                 $tlon       = $detailInfo[4];
-                $tspe       = $detailInfo[11];
-                $tdir       = $detailInfo[3]."/".$detailInfo[5];
-
                 $otherInfo  = [
-                    'source_data'   => "",//$single,
+                    'source_data'   => $single,
                     'lat'           => gps_to_gps($tlat),
                     'lon'           => gps_to_gps($tlon),
-                    'speed'         => $tspe?$tspe : 0,
-                    'direction'     => $tdir,
-                    'status'        => $detailInfo[6],
                     'timestamp'     => $timestamp
                 ];
             }
