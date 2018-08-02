@@ -479,8 +479,8 @@ class AnalysisMatchData implements ShouldQueue
             {
                 $otherInfo  = [
                     'source_data'   => $single,
-                    'lat'      => 0,
-                    'lon'     => 0,
+                    'lat'           => 0,
+                    'lon'           => 0,
                     'speed'         => 0,
                     'direction'     => "",
                     'status'        => 0,
