@@ -499,8 +499,8 @@ class AnalysisMatchData implements ShouldQueue
 
                 $otherInfo  = [
                     'source_data'   => $single,
-                    'lat'      => $tlat,
-                    'lon'     => $tlon,
+                    'lat'           => gps_to_gps($tlat),
+                    'lon'           => gps_to_gps($tlon),
                     'speed'         => $tspe?$tspe : 0,
                     'direction'     => $tdir,
                     'status'        => $detailInfo[6],

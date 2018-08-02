@@ -22,79 +22,6 @@ class MatchController extends Controller
         set_time_limit(300);
     }
 
-
-    public function create_table($userId,$type)
-    {
-
-        /*gps_id
-        match_id
-        latitude
-        longitude
-        speed
-        direction
-        status
-        data_key
-        source_data
-        created_at
-        source_id
-        timestamp*/
-
-        $table  = "user_".$userId."_".$type;
-
-        $hasTable = Schema::connection('matchdata')->hasTable($table);
-
-        if($hasTable)
-        {
-            return true;
-        }
-
-        if($type == 'gps')
-        {
-            Schema::connection('matchdata')->create($table,function (Blueprint $table){
-
-                $table->increments('id');
-                $table->integer('match_id');
-                $table->string('latitude');
-                $table->string('longitude');
-                $table->double('speed');
-                $table->string('direction');
-                $table->tinyInteger('status');
-                $table->string('source_data');
-                $table->bigInteger('timestamp');
-                $table->dateTime('created_at');
-            });
-
-        } else {
-
-            /*sensor_id
-            match_id
-            x
-            y
-            z
-            data_key
-            source_data
-            created_at
-            source_id
-            type
-            timestamp*/
-
-            Schema::connection("matchdata")->create($table,function(Blueprint $table){
-
-                $table->increments('id');
-                $table->integer('source_id');
-                $table->integer('match_id');
-                $table->double('x');
-                $table->double('y');
-                $table->double('z');
-                $table->string('type');
-                $table->string('source_data');
-                $table->bigInteger('timestamp');
-                $table->dateTime('created_at');
-            });
-        }
-    }
-
-
     /**
      * 上传比赛数据
      * */
@@ -186,75 +113,78 @@ class MatchController extends Controller
         }
         return hexToInt("a1000000");
     }
+
     /**
-     *
+     * 百度地图
      * */
-    public function gps_to_bdmap(Request $request)
+    public function baidu_map(Request $request)
     {
         $matchId    = $request->input('matchId');
-        $file       = "match/result-".$matchId."-gps.json";
-        $hasFile    = Storage::disk('web')->has($file);
+        $baiduMap   = "match/result-".$matchId."-bd.json";
+        $hasFile    = Storage::disk('web')->has($baiduMap);
 
-        if($hasFile == false)
+        if(!$hasFile) //没有转换过的数据
         {
-            exit('gps文件不存在');
-        }
 
-        $gpsList = Storage::disk('web')->get($file);
-        $gpsList = \GuzzleHttp\json_decode($gpsList);
-        $lats   = $gpsList->lat;
-        $lons   = $gpsList->lon;
+            $file       = "match/result-".$matchId."-gps.json";
+            $hasFile    = Storage::disk('web')->has($file);
 
-        $length = count($lats);
-        $points = [];
-
-        for($i=0;$i<$length;$i++)
-        {
-            if($lats[$i]== '') continue;
-
-            array_push($points,['lat'=>$this->gps_to_gps($lons[$i]),'lon'=>$this->gps_to_gps($lats[$i])]);
-        }
-
-        //Storage::disk('web')->put("match/middle-".$matchId.".json",\GuzzleHttp\json_encode($points));
-
-
-        $points = array_chunk($points,100);
-        $ak     = "zZSGyxZgUytdiKG135BcnaP6";
-        foreach($points as $key => $pointArr)
-        {
-            $tempArr = [];
-            foreach($pointArr as $point)
+            if($hasFile == false)
             {
-                array_push($tempArr,implode(',',$point));
+                exit('gps文件不存在');
             }
 
-            $tempArr = implode(";",$tempArr);
+            $gpsList = Storage::disk('web')->get($file);
+            $gpsList = \GuzzleHttp\json_decode($gpsList);
+            $lats   = $gpsList->lat;
+            $lons   = $gpsList->lon;
 
-            $url = "http://api.map.baidu.com/geoconv/v1/?coords={$tempArr}&from=1&to=5&ak={$ak}";
-            $tempArr = file_get_contents($url);
-            $tempArr = \GuzzleHttp\json_decode($tempArr);
 
-            $points[$key] = $tempArr->result;
+            $length = count($lats);
+            $points = [];
+
+            for($i=0;$i<$length;$i++)
+            {
+                if($lats[$i]== '') continue;
+                $p = [
+                    'lat'   => $lons[$i],
+                    'lon'   => $lats[$i]
+                ];
+                array_push($points,$p);
+            }
+
+
+            $points = array_chunk($points,100);
+            $ak     = "zZSGyxZgUytdiKG135BcnaP6";
+            foreach($points as $key => $pointArr)
+            {
+                $tempArr = [];
+                foreach($pointArr as $point)
+                {
+                    array_push($tempArr,implode(',',$point));
+                }
+
+                $tempArr = implode(";",$tempArr);
+
+                $url = "http://api.map.baidu.com/geoconv/v1/?coords={$tempArr}&from=1&to=5&ak={$ak}";
+                $tempArr = file_get_contents($url);
+                $tempArr = \GuzzleHttp\json_decode($tempArr);
+
+                $points[$key] = $tempArr->result;
+            }
+            Storage::disk('web')->put($baiduMap,\GuzzleHttp\json_encode($points));
+
+        }else{
+
+            $points = file_get_contents($baiduMap);
 
         }
 
-        Storage::disk('web')->put('match/bd-'.$matchId.".json",\GuzzleHttp\json_encode($points));
+
+
 
         return $points;
-
-
-        dd($points);
     }
-
-    public function gps_to_gps($num)
-    {
-        bcscale (8);
-        $num = bcdiv($num,100);
-        $int = (int)$num;
-        $flo = bcmul(bcdiv(bcmod($num,1),60),100);
-        return bcadd($int,$flo);
-    }
-
 
     public function find_gps()
     {
@@ -850,7 +780,10 @@ class MatchController extends Controller
 
     public function zhangweixi(Request $request)
     {
+        //如果是最后一条，判断是否结束
 
+        $job    = new AnalysisMatchData(0);
+        $job->create_compass_data(318);
     }
 }
 

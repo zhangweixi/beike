@@ -663,4 +663,15 @@ function HexToFloat($hex){
     return unpack("f", pack("l", hexdec($hex)))[1];
 }
 
+
+//经纬度坐标转换
+function gps_to_gps($num)
+{
+    bcscale (8);
+    $num = bcdiv($num,100);
+    $int = (int)$num;
+    $flo = bcmul(bcdiv(bcmod($num,1),60),100);
+    return bcadd($int,$flo);
+}
+
 ?>
