@@ -782,7 +782,8 @@ class MatchController extends Controller
     public function zhangweixi(Request $request)
     {
         //如果是最后一条，判断是否结束
-
+        $num = "12156.9032234";
+        return gps_to_gps($num);
         $job    = new AnalysisMatchData(0);
         $job->create_compass_data(318);
     }

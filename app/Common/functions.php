@@ -672,9 +672,8 @@ function gps_to_gps($num)
         return 0;
     }
     bcscale (8);
-    $num = bcdiv($num,100);
-    $int = (int)$num;
-    $flo = bcmul(bcdiv(bcmod($num,1),60),100);
+    $int = (int)bcdiv($num,100);
+    $flo = bcdiv(bcmod($num,100),60);
     return bcadd($int,$flo);
 }
 
