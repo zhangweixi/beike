@@ -475,11 +475,12 @@ class AnalysisMatchData implements ShouldQueue
 
             if(count($detailInfo)<15) //数据即便不合格，也不能丢弃
             {
+
                 $otherInfo  = [
                     'source_data'   => $single,
                     'lat'           => 0,
                     'lon'           => 0,
-                    'timestamp'     => 0
+                    'timestamp'     => strlen($time) == 16 ? hexdec(reverse_hex($time)) : 0
                 ];
 
             }else{
