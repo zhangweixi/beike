@@ -787,6 +787,33 @@ class MatchController extends Controller
         $job    = new AnalysisMatchData(0);
         $job->create_compass_data(318);
     }
+
+    public function gps(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+        $data       = [];
+
+        DB::connection('matchdata')
+            ->table('user_'.$matchInfo->user_id."_gps")
+            ->where('match_id',$matchId)
+            ->orderBy('id')
+            ->chunk(1000,function($gpsList) use (&$data)
+            {
+                foreach($gpsList as $key =>  $single)
+                {
+                    //时间（16）长度（8）数据部分（n）
+                    $single     = $single->source_data;//dd($single);
+                    //$time       = substr($single,0,16);
+                    $gps        = substr($single,24);   //数据部分起始
+                    $gps        = strToAscll($gps);
+                    array_push($data,$gps);
+                }
+            });
+        dd($data);
+        return $data;
+    }
 }
 
 
