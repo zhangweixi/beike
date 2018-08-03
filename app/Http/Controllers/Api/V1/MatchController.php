@@ -794,22 +794,34 @@ class MatchController extends Controller
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
         $data       = [];
+        $type       = $request->input('type','gps');
 
         DB::connection('matchdata')
             ->table('user_'.$matchInfo->user_id."_gps")
             ->where('match_id',$matchId)
             ->orderBy('id')
-            ->chunk(1000,function($gpsList) use (&$data)
+            ->chunk(1000,function($gpsList) use (&$data,$type)
             {
-                foreach($gpsList as $key =>  $single)
+                if($type == 'data')
                 {
-                    //时间（16）长度（8）数据部分（n）
-                    $single     = $single->source_data;//dd($single);
-                    //$time       = substr($single,0,16);
-                    $gps        = substr($single,24);   //数据部分起始
-                    $gps        = strToAscll($gps);
-                    array_push($data,$gps);
+                    foreach($gpsList as $gps)
+                    {
+                        array_push($data,$gps->source_data);
+                    }
+
+                }else{
+
+                    foreach($gpsList as $key =>  $single)
+                    {
+                        //时间（16）长度（8）数据部分（n）
+                        $single     = $single->source_data;//dd($single);
+                        //$time       = substr($single,0,16);
+                        $gps        = substr($single,24);   //数据部分起始
+                        $gps        = strToAscll($gps);
+                        array_push($data,$gps);
+                    }
                 }
+
             });
         dd($data);
         return $data;
