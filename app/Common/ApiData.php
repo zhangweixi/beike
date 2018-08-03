@@ -12,6 +12,12 @@ class ApiData{
         return $this;
     }
 
+    public function add($key,$v)
+    {
+        $this->data[$key] = $v;
+        return $this;
+    }
+
     public function send($code = 0 , $msg = '')
     {
         $code   = $code == 0 ? $this->code : $code;
