@@ -204,13 +204,9 @@ class AnalysisMatchData implements ShouldQueue
                 $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
 
                 //正常情况上传的数据都是一定能够找到时间的，如果找不到时间则表示一定有异常，应该停止
-                if(!$matchTimeInfo && $data['lat'] != 0)
+                if(!$matchTimeInfo)
                 {
                     dd("数据".$sourceData->match_source_id.'没有找到对应的比赛,时间为:'.$data['timestamp']);
-
-                }elseif($data['lat'] == 0){
-
-                    $matchId    = 0;
 
                 }else{
 
