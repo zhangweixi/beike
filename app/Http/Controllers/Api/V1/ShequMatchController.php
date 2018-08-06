@@ -46,13 +46,7 @@ class ShequMatchController extends Controller
         $signFee = $request->input('signFee');
 
 
-        switch ($credit)
-        {
-            case "不限":       $credit = 0;break;
-            case "中等以上":    $credit = 60;break;
-            case "良好以上":    $credit = 80;break;
-            case "优秀以上":    $credit = 90;break;
-        }
+        $credit = text_to_credit($credit);
 
         $shequModel = new BaseShequMatchModel();
         $shequModel->user_id = $userId;

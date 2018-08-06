@@ -79,12 +79,19 @@ class FriendController extends Controller
      * */
     public function my_friends(Request $request)
     {
-
         $userId     = $request->input('userId');
         $keywords   = $request->input('keywords','');
         $friends    = FriendModel::my_friend($userId,$keywords);
-
         return apiData()->add('friends',$friends)->send();
+    }
+
+
+    /**
+     * 推荐朋友
+     * */
+    public function recomment_friend(Request $request)
+    {
+
 
     }
 

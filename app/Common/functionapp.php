@@ -28,3 +28,30 @@ function birthday_to_age($birthday)
 
     return $yearn - $year1;
 }
+
+
+function credit_to_text($credit)
+{
+    switch ($credit)
+    {
+        case 0:     $text = "不限";break;
+        case 60:    $text = "中等以上";break;
+        case 80:    $text = "良好以上";break;
+        case 90:    $text = "优秀以上";break;
+    }
+    return $text;
+}
+
+
+function text_to_credit($text)
+{
+    switch ($text)
+    {
+        case "不限":       $credit = 0;break;
+        case "中等以上":    $credit = 60;break;
+        case "良好以上":    $credit = 80;break;
+        case "优秀以上":    $credit = 90;break;
+        default: $credit = 0;
+    }
+    return $credit;
+}
