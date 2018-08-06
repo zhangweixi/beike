@@ -687,4 +687,58 @@ function gps_to_gps($num)
     return bcadd($int,$fnum);
 }
 
+
+/**
+ * 判断某年的某月有多少天
+ * @param $year string
+ * @param $month string
+ * @return days Integer
+ */
+function daysInmonth($year='',$month='')
+{
+    if (empty($year)) $year = date('Y');
+    if (empty($month)) $month = date('m');
+    $day = '01';
+
+    //检测日期是否合法
+    if (!checkdate($month, $day, $year)) return '输入的时间有误';
+
+    //获取当年当月第一天的时间戳(时,分,秒,月,日,年)
+    $timestamp = mktime(0, 0, 0, $month, $day, $year);
+    $result = date('t', $timestamp);
+    return $result;
+}
+
+/*填充数据的长度*/
+function full_str_length($str,$length,$fullstr)
+{
+    $strleng = mb_strlen($str);
+
+    for($i=$strleng; $i<$length; $i++)
+    {
+        $str = $fullstr.$str;
+    }
+    return $str;
+}
+
+/* *
+ * 二维数组根据字段进行排序
+ * @params array $array 需要排序的数组
+ * @params string $field 排序的字段
+ * @params string $sort 排序顺序标志 SORT_DESC 降序；SORT_ASC 升序
+ * @return Array
+ */
+function arraySequence($array, $field, $sort = 'SORT_DESC')
+{
+    $arrSort = array();
+    foreach ($array as $uniqid => $row) {
+        foreach ($row as $key => $value) {
+            $arrSort[$key][$uniqid] = $value;
+        }
+    }
+    array_multisort($arrSort[$field], constant($sort), $array);
+    return $array;
+}
+
+
 ?>

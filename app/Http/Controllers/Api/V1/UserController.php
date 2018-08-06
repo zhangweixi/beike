@@ -265,10 +265,6 @@ class UserController extends Controller
 
 
 
-
-
-
-
     /**
      * 用户整体能力
      * */
@@ -361,6 +357,9 @@ class UserController extends Controller
 
         return apiData()->send();
     }
+
+
+
 }
 
 

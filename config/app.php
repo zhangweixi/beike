@@ -109,6 +109,7 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    'filehost'  => env('FILE_HOST'),
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers

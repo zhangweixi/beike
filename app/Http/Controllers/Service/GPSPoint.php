@@ -11,24 +11,13 @@ class GPSPoint{
     {
         if($lat != "")
         {
-            $this->lat = self::gps_to_gps($lat);
+            $this->lat = $lat;
         }
-
 
         if($lon != ""){
 
-            $this->lon = self::gps_to_gps($lon);
+            $this->lon = $lon;
 
         }
-    }
-
-
-    static function gps_to_gps($gps)
-    {
-        bcscale (8);
-        $num = bcdiv($gps,100);
-        $int = (int)$num;
-        $flo = bcmul(bcdiv(bcmod($num,1),60),100);
-        return bcadd($int,$flo);
     }
 }

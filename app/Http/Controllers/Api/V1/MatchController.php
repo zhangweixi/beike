@@ -122,8 +122,9 @@ class MatchController extends Controller
         $matchId    = $request->input('matchId');
         $baiduMap   = "match/".$matchId."-bd.json";
         $hasFile    = Storage::disk('web')->has($baiduMap);
+        $fresh      = $request->input('fresh',0);
 
-        if(!$hasFile) //没有转换过的数据
+        if(!$hasFile || $fresh == 1) //没有转换过的数据
         {
 
             $file       = "match/".$matchId."-gps-L.json";
@@ -154,24 +155,34 @@ class MatchController extends Controller
                 array_push($points,$p);
             }
 
-
-            $points = array_chunk($points,100);
-            $ak     = "zZSGyxZgUytdiKG135BcnaP6";
-            $bdpoints= [];
-            foreach($points as $key => $pointArr)
+            if(true)
             {
-                $tempArr = [];
-                foreach($pointArr as $point)
+                $points = array_chunk($points,100);
+
+                $bdpoints= [];
+                foreach($points as $key => $pointArr)
                 {
-                    array_push($tempArr,implode(',',$point));
+                    $tempArr = [];
+                    foreach($pointArr as $point)
+                    {
+                        array_push($tempArr,implode(',',$point));
+                    }
+
+                    $tempArr = implode(";",$tempArr);
+
+                    $url = "http://api.map.baidu.com/geoconv/v1/?coords={$tempArr}&from=1&to=5&ak=zZSGyxZgUytdiKG135BcnaP6";
+
+                    $tempArr = file_get_contents($url);
+                    $tempArr = \GuzzleHttp\json_decode($tempArr);
+                    $bdpoints= array_merge($bdpoints,$tempArr->result);
                 }
+            }else{
 
-                $tempArr = implode(";",$tempArr);
-
-                $url = "http://api.map.baidu.com/geoconv/v1/?coords={$tempArr}&from=1&to=5&ak={$ak}";
-                $tempArr = file_get_contents($url);
-                $tempArr = \GuzzleHttp\json_decode($tempArr);
-                $bdpoints= array_merge($bdpoints,$tempArr->result);
+                $bdpoints   = [];
+                foreach($points as $key => $point)
+                {
+                    array_push($bdpoints,['y'=>$point['lon'],'x'=>$point['lat']]);
+                }
             }
 
             Storage::disk('web')->put($baiduMap,\GuzzleHttp\json_encode($bdpoints));
@@ -329,15 +340,6 @@ class MatchController extends Controller
 
         //file_put_contents(public_path('json.json'),\GuzzleHttp\json_encode($data));
         return $data;
-    }
-
-
-
-    public function job()
-    {
-        $delayTime  = now()->addSecond(3);
-        AnalysisMatchData::dispatch(900)->delay($delayTime);
-        return "hello";
     }
 
 

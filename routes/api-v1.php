@@ -28,5 +28,12 @@ $api->version('v1',['prefix'=>"api/v1",'middleware'=>['saveApiData'],'namespace'
     //社区比赛
     $api->post('/sqmatch/{action}',     'ShequMatchController@action');
 
+    //朋友
+    $api->post('/friend/{action}',      'FriendController@action');
+
+
+    $api->any('/test/{action}',         'TestController@action');
+
+
 
 });

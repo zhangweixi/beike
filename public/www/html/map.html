@@ -18,14 +18,22 @@
 <body>
 <div id="allmap"></div>
 
-<button onclick="add_overlay();">添加图标</button>
+
+<div>
+	<button onclick="add_overlay();">显示所有点</button>
+	<button onclick="show_distance()">显示最大点</button>
+	<label for="">纬度距离：<span id="wei"></span></label>
+	<label for="">经度距离：<span id="jin"></span></label>
+</div>
+
 </body>
 </html>
 <script type="text/javascript">
     // 百度地图API功能
     var map = new BMap.Map("allmap");    // 创建Map实例
-    map.centerAndZoom(new BMap.Point(121.409182,31.1736545), 16);  // 初始化地图,设置中心点坐标和地图级别
+    map.centerAndZoom("上海",16);  //初始化地图,设置城市和地图级别。
     map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+
     var sy = new BMap.Symbol(BMap_Symbol_SHAPE_BACKWARD_OPEN_ARROW, {
         scale: 0.6,//图标缩放大小
         strokeColor:'#fff',//设置矢量图标的线填充颜色
@@ -80,7 +88,7 @@
 		    return ;
 		}
 
-        var url = "/api/v1/match/baidu_map?matchId="+matchId;
+        var url = "/api/v1/match/baidu_map?matchId="+matchId+"&fresh="+getQueryVariable('fresh');
         //var url = "http://dev1.api.launchever.cn/www/html/map.html";
 
         $.ajax({
@@ -140,6 +148,85 @@
             if(pair[0] == variable){return pair[1];}
         }
         return(false);
+    }
+
+
+
+    function show_distance()
+    {
+        var matchId = getQueryVariable('matchId');
+        if(!matchId)
+        {
+            alert('缺少matchId');
+            return ;
+        }
+        var url = "/api/v1/test/maxDistance?matchId="+matchId+"&isgps="+getQueryVariable('isgps');
+
+        $.get(url).success(function(res){
+
+            if(res.code != 200)
+            {
+                alert(res.message);
+                return ;
+            }
+
+            var points  = res.data.points;
+
+            for(var p in points)
+            {
+
+                console.log(points[p].lon+","+points[p].lat);
+            }
+            //最大最小维度
+            var minLat  = points.minLat;
+            var maxLat  = points.maxLat;
+
+            minLat      = getpoint(minLat.lat,minLat.lon);
+            maxLat      = getpoint(maxLat.lat,maxLat.lon);
+
+            map.centerAndZoom(minLat,20);  //初始化地图,设置城市和地图级别。
+
+            //最大最小经度
+
+            var minLon  = points.minLon;
+            var maxLon  = points.maxLon;
+
+            minLon      = getpoint(minLon.lat,minLon.lon);
+            maxLon      = getpoint(maxLon.lat,maxLon.lon);
+
+            drawline(minLat,maxLat);
+
+            console.log('最大最小维度:');
+            var dis = get_distance(minLat,maxLat);
+            $('#wei').text(dis);
+
+
+            drawline(minLon,maxLon);
+            console.log('最大最小经度:');
+            dis = get_distance(minLon,maxLon);
+            $('#jin').text(dis);
+
+        });
+    }
+
+    function drawline(pointA,pointB)
+    {
+        var polyline = new BMap.Polyline([pointA,pointB], {strokeColor:"green", strokeWeight:6, strokeOpacity:0.5});  //定义折线
+        map.addOverlay(polyline);     //添加折线到地图上
+    }
+
+
+
+    function get_distance(pointA,pointB)
+    {
+
+        var dis = map.getDistance(pointA,pointB);
+        return dis;
+    }
+
+    function getpoint(lat,lon)
+    {
+        return new BMap.Point(lon,lat);
     }
 
 

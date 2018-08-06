@@ -34,7 +34,8 @@
             "App\\": "app/"
         },
         "files":[
-            "app/Common/functions.php"
+            "app/Common/functions.php",
+            "app/Common/functionapp.php"
         ]
     },
     "autoload-dev": {

@@ -184,7 +184,7 @@ class AnalysisMatchData implements ShouldQueue
 
         $validColum     = $this->validColum[$type];
 
-
+        //print_r($datas);
         //这里将数据产生了两份  一份是原始数据datas,一份是新的数据 $matches
 
         foreach($datas as $key=>$data)
@@ -204,13 +204,18 @@ class AnalysisMatchData implements ShouldQueue
                 $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
 
                 //正常情况上传的数据都是一定能够找到时间的，如果找不到时间则表示一定有异常，应该停止
-                if(!$matchTimeInfo)
+                if(!$matchTimeInfo && $data['lat'] != 0)
                 {
-                    dd("数据".$sourceData->sourceId.'没有找到对应的比赛,时间为:'.$data['timestamp']);
+                    dd("数据".$sourceData->match_source_id.'没有找到对应的比赛,时间为:'.$data['timestamp']);
 
+                }elseif($data['lat'] == 0){
+
+                    $matchId    = 0;
+
+                }else{
+
+                    goto loopbegin;
                 }
-
-                goto loopbegin;
 
             }else{
 
@@ -458,7 +463,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         $dataList    = explode("23232323",$dataSource); //gps才有232323
         $dataList    = array_filter($dataList);
-        //dd($dataList);
+
         $insertData     = [];
 
 
@@ -484,13 +489,14 @@ class AnalysisMatchData implements ShouldQueue
                 ];
 
             }else{
+
                 $timestamp  = hexdec(reverse_hex($time));
                 $tlat       = $detailInfo[2];
                 $tlon       = $detailInfo[4];
                 $otherInfo  = [
                     'source_data'   => $single,
-                    'lat'           => gps_to_gps($tlat)*1,
-                    'lon'           => gps_to_gps($tlon)*1,
+                    'lat'           => gps_to_gps($tlat),
+                    'lon'           => gps_to_gps($tlon),
                     'timestamp'     => $timestamp
                 ];
             }
