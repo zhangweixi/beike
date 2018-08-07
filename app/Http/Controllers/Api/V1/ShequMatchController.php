@@ -36,14 +36,14 @@ class ShequMatchController extends Controller
      * */
     public function create_match(Request $request)
     {
-        $userId = $request->input('userId');
-        $matchDate = $request->input("date");
-        $matchTime = $request->input('time');
-        $number = $request->input('number');
-        $address = $request->input('address');
-        $grade = $request->input('grade');
-        $credit = $request->input('credit');
-        $signFee = $request->input('signFee');
+        $userId     = $request->input('userId');
+        $matchDate  = $request->input("date");
+        $matchTime  = $request->input('time');
+        $number     = $request->input('number');
+        $address    = $request->input('address');
+        $grade      = $request->input('grade');
+        $credit     = $request->input('credit');
+        $signFee    = $request->input('signFee');
 
 
         $credit = text_to_credit($credit);
@@ -100,8 +100,28 @@ class ShequMatchController extends Controller
         $matchUserModel->sq_match_id = $matchId;
         $matchUserModel->save();
 
+        //修改参与人员数量
+        BaseShequMatchModel::where('sq_match_id',$matchId)->increment('joined_num');
+
         return apiData()->send(200, '成功加入比赛');
     }
+
+    /**
+     * 退出比赛
+     * */
+    public function quit_match(Request $request)
+    {
+        $userId    = $request->input('userId');
+        $matchId   = $request->input('matchId');
+
+        //减去申请列表中的用户
+        BaseShequUserMatchModel::where('sq_match_id',$matchId)->where('user_id',$userId)->delete();
+
+        BaseShequMatchModel::where('sq_match_id',$matchId)->decrement('joined_num');
+
+        return apiData()->send(200,'已退出该场比赛');
+    }
+
 
     /**
      * 社区首页
@@ -181,22 +201,12 @@ class ShequMatchController extends Controller
         {
             $match->isCreater   = $userId == $match->user_id ? 1 : 0;
 
-            $match->credit      = $this->get_credit_text();
+            $match->credit      = credit_to_text($match->credit);
         }
         return apiData()->add('matches',$matches)->send();
     }
 
 
-    public function get_credit_text($credit)
-    {
-        if($credit == 0) {
-            return "不限";
-        }elseif($credit == 60) {
-            return "一般";
-        }elseif($credit == ""){
-
-        }
-    }
 
 
     /**
@@ -208,33 +218,21 @@ class ShequMatchController extends Controller
         $date   = $request->input('date');
         $userId = $request->input('userId');
 
-
-        $sqMatchModel   = new ShequMatchModel();
-
-        //当前月份的数据
-        $monthMatch     = $sqMatchModel->count_month_match($userId,$year,$month,true);
-
         //当日的比赛数据
-        $date           = $year . "-" . $month . "-" . $day;
+
         $beginTime      = $date . " 00:00:01";
         $endtime        = $date . " 23:59:59";
 
+        $sqMatchModel   = new ShequMatchModel();
         $dayMatch       = $sqMatchModel->user_match_list($userId,$beginTime,$endtime);
 
         foreach($dayMatch as $match)
         {
-
             $match->members = $sqMatchModel->get_match_user($match->sq_match_id);
         }
 
-        $msgNum = 20;
-
         return apiData()
-            ->add('year',(int)$year)
-            ->add('month',(int)$month)
-            ->add('msgNum',$msgNum)
-            ->add('monthMatch',$monthMatch)
-            ->add('dayMatch',$dayMatch)
+            ->add('matches',$dayMatch)
             ->send();
     }
 

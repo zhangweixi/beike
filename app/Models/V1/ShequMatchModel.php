@@ -22,20 +22,21 @@ class ShequMatchModel extends Model{
 
     public function count_month_match($userId,$year,$month,$fullMonth=false)
     {
-        $monthDays  = daysInmonth($year,$month);
+
 
         $month      = full_str_length($month,2,0);
         $month      = $year."-".$month;
 
-        $sql = "SELECT RIGHT(LEFT(begin_time,10),2) as `day` ,count(*) as matchNum 
+        $sql = "SELECT LEFT(begin_time,10) as `day` ,count(*) as matchNum 
                 FROM shequ_match 
                 WHERE user_id = $userId 
                 AND LEFT(begin_time,7) = '{$month}'
                 GROUP BY `day` ";
         $matches = DB::select($sql);
 
+        return $matches;
 
-
+        $monthDays  = daysInmonth($year,$month);
         if($fullMonth == true)
         {
             $hasDays    = [];

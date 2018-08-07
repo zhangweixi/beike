@@ -20,13 +20,15 @@ function birthday_to_age($birthday)
     }
 
     $year1  =  substr($birthday,0,4);
-    $yearn  =   date('Y');
-    if($year1 > $yearn)
+    $yearn  =  date('Y');
+    $age    =  $yearn - $year1;
+    if($age < 0 || $age > 100)
     {
         return 0;
     }
 
-    return $yearn - $year1;
+    return $age;
+
 }
 
 
