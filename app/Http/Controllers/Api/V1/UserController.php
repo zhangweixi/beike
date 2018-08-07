@@ -395,7 +395,16 @@ class UserController extends Controller
         return apiData()->send();
     }
 
+    /**
+     * 未读消息数量
+     * */
+    public function unread_message_num(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $unreadNum  = MessageModel::count_unread_msg($userId);
 
+        return apiData()->add('unreadNum',$unreadNum)->send();
+    }
 }
 
 

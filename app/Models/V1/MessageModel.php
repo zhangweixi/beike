@@ -3,6 +3,7 @@
 namespace App\Models\V1;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class MessageModel extends Model
 {
@@ -51,5 +52,18 @@ class MessageModel extends Model
         return $msgInfo->save();
     }
 
+    /**
+     * 统计未读消息数量
+     * */
+    static function count_unread_msg($userId)
+    {
+        $sql    = "SELECT COUNT(*) AS total 
+                    FROM  user_message 
+                    WHERE (user_id = $userId OR user_id = 0) 
+                    AND   (FIND_IN_SET('{$userId}',readed_users) = 0 OR FIND_IN_SET('{$userId}',readed_users) IS NULL )";
+        $countInfo = DB::select($sql);
+
+        return $countInfo[0]->total;
+    }
 
 }

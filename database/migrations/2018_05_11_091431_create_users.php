@@ -30,6 +30,7 @@ class CreateUsers extends Migration
             $table->string("role2")->nullable()->comment('场上角色2');
             $table->enum('foot',['R','L'])->default('R')->comment('习惯用脚');
             $table->string('device_sn')->nullable()->comment('设备编号');
+            $table->integer('credit')->default(0)->comment('信用度');
 
             $table->timestamps();
         });
