@@ -22,14 +22,21 @@ class TestController extends Controller
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
 
+        //略去开头一分钟的数据
+
+
         $table      = "user_".$matchInfo->user_id."_gps";
         $colum      = ['lat','lon'];
         $db         = DB::connection('matchdata');
-        $minlat     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lat',"<>",0)->orderBy('lat','asc')->first();
-        $maxlat     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lat','<>',0)->orderBy('lat','desc')->first();
+        //略去开头一分钟的数据
+        $firstInfo  = $db->table($table)->where('match_id',$matchId)->first();
+        //$beginTime  = $firstInfo->timestamp + 5000;
+        $beginTime  = 0;
 
-        $minlon     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lon','<>',0)->orderBy('lon','asc')->first();
-        $maxlon     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lon','<>',0)->orderBy('lon','desc')->first();
+        $minlat     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lat',"<>",0)->where('timestamp','>',$beginTime)->orderBy('lat','asc')->first();
+        $maxlat     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lat','<>',0)->where('timestamp','>',$beginTime)->orderBy('lat','desc')->first();
+        $minlon     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lon','<>',0)->where('timestamp','>',$beginTime)->orderBy('lon','asc')->first();
+        $maxlon     = $db->table($table)->select($colum)->where('match_id',$matchId)->where('lon','<>',0)->where('timestamp','>',$beginTime)->orderBy('lon','desc')->first();
 
         if($minlat == null)
         {

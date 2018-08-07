@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\V1\DeviceModel;
+use App\Models\V1\MessageModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\UserModel;
@@ -358,6 +359,41 @@ class UserController extends Controller
         return apiData()->send();
     }
 
+
+    /**
+     * 用户信息列表
+     * */
+    public function message(Request $request)
+    {
+        $userId = $request->input('userId');
+
+        $isRead = DB::raw("IF(FIND_IN_SET('{$userId}',readed_users) > 0,1,0) AS is_readed");
+        $message = DB::table('user_message')
+            ->where('user_id',$userId)
+            ->orWhere('user_id',0)
+            ->select('msg_id','title','content','content_id','type','thumb_img','created_at',$isRead)
+            ->paginate(20);
+
+        foreach($message as $msg)
+        {
+            $msg->thumb_img = url($msg->thumb_img);
+        }
+        return apiData()->add('message',$message)->send();
+    }
+
+    /**
+     * 阅读消息
+     * */
+    public function read_message(Request $request)
+    {
+        $userId = $request->input('userId');
+        $msgId  = $request->input('msgId');
+
+        $msgModel   = new MessageModel();
+        $msgModel->read_message($msgId,$userId);
+
+        return apiData()->send();
+    }
 
 
 }

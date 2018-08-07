@@ -2,6 +2,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Base\BaseFriendModel;
+use App\Models\Base\BaseUserModel;
+use App\Models\V1\MessageModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\FriendModel;
@@ -34,8 +36,13 @@ class FriendController extends Controller
         $newFriend                  = new BaseFriendApplyModel();
         $newFriend->user_id         = $userId;
         $newFriend->friend_user_id  = $friendUserId;
-
         $newFriend->save();
+
+        $userInfo     = BaseUserModel::find($userId);
+
+        //添加消息
+        $messageModel   = new MessageModel();
+        $messageModel->add_message("好友请求",$userInfo->nick_name."请求加您为好友",'apply_friend',$friendUserId,$newFriend->apply_id);
 
         return apiData()->send(200,'已发送，请等待同意吧');
     }
@@ -65,12 +72,19 @@ class FriendController extends Controller
         //同意：添加到好友列表
         if($result == 1)
         {
+            FriendModel::add_friend($applyInfo->user_id,$applyInfo->friend_user_id);
+            $result     = "同意";
 
-            $friendId   = FriendModel::add_friend($applyInfo->user_id,$applyInfo->friend_user_id);
+        }else{
+
+            $result     = "拒绝";
+
         }
 
+        $userInfo       = BaseUserModel::find($applyInfo->friend_user_id);
         //通知申请人处理情况
-
+        $messageModel   = new MessageModel();
+        $messageModel->add_message("关注好友通知",$userInfo->nick_name.$result."了您的好友请求",'',$applyInfo->user_id);
 
         return apiData()->send(200,'操作成功');
     }
