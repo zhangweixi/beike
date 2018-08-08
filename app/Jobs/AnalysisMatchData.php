@@ -491,8 +491,8 @@ class AnalysisMatchData implements ShouldQueue
                 $tlon       = $detailInfo[4];
                 $otherInfo  = [
                     'source_data'   => $single,
-                    'lat'           => $tlat*1,//gps_to_gps($tlat)*1,
-                    'lon'           => $tlon*1,//gps_to_gps($tlon)*1,
+                    'lat'           => floatval($tlat),//gps_to_gps($tlat)*1,
+                    'lon'           => floatval($tlon),//gps_to_gps($tlon)*1,
                     'timestamp'     => $timestamp
                 ];
             }
