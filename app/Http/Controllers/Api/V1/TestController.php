@@ -61,9 +61,6 @@ class TestController extends Controller
         {
             foreach($points as $point)
             {
-                $point->lat = bcmul($point->lat,100);
-                $point->lon = bcmul($point->lon,100);
-
                 $point->lat = gps_to_gps($point->lat);
                 $point->lon = gps_to_gps($point->lon);
             }
