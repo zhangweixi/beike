@@ -147,10 +147,10 @@ class MatchController extends Controller
 
             for($i=0;$i<$length;$i++)
             {
-                if($lats[$i]== '') continue;
+                if($lats[$i]== '' || $lats[$i] == 0) continue;
                 $p = [
-                    'lat'   => $lons[$i],
-                    'lon'   => $lats[$i]
+                    'lat'   => gps_to_gps($lons[$i]),
+                    'lon'   => gps_to_gps($lats[$i])
                 ];
                 array_push($points,$p);
             }
