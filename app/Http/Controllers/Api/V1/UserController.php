@@ -405,6 +405,38 @@ class UserController extends Controller
 
         return apiData()->add('unreadNum',$unreadNum)->send();
     }
+
+
+    /**
+     * 球队
+     * */
+    public function ball_tamp(Request $request)
+    {
+        $unions = DB::table('football_union')->select('union_id','union_name')->where('is_show',1)->orderBy('sort')->get();
+
+        $teamUnions = [];
+        foreach($unions as $union)
+        {
+            $union->teams                   = [];
+            $teamUnions[$union->union_id]   = $union;
+        }
+
+        $teams = DB::table('football_team')->select('team_id','union_id','team_name','logo')->get();
+
+        foreach($teams as $team)
+        {
+            $team->logo     = url($team->logo);
+            array_push($teamUnions[$team->union_id]->teams,$team);
+        }
+
+        $unions = [];
+        foreach($teamUnions as $union)
+        {
+            array_push($unions,$union);
+        }
+
+        return $unions;
+    }
 }
 
 

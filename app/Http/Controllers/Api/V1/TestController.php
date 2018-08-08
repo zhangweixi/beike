@@ -4,6 +4,9 @@ use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
 use Dingo\Api\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Common\Geohash;
+
+
 
 class TestController extends Controller
 {
@@ -85,4 +88,26 @@ class TestController extends Controller
         return apiData()->add('points',$points)->send();
     }
 
+    public function gpstest()
+    {
+
+        $geohash    = new Geohash();
+
+        //$hash = $geohash->encode(39.98123848, 116.30683690);
+
+        $hash = $geohash->encode(31.1852000000,121.3658720000);
+
+        return $hash;
+
+        //取前缀，前缀约长范围越小
+        $prefix = substr($hash, 0, 6);
+
+
+        //取出相邻八个区域
+        $neighbors = $geohash->neighbors($prefix);
+        array_push($neighbors, $prefix);
+
+        return $neighbors;
+        print_r($neighbors);
+    }
 }

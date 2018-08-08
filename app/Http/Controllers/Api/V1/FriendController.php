@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Common\Geohash;
 use App\Models\Base\BaseFriendModel;
 use App\Models\Base\BaseUserModel;
 use App\Models\V1\MessageModel;
@@ -118,7 +119,8 @@ class FriendController extends Controller
                     IFNULL(b.grade,0) as grade 
                 FROM users a 
                 LEFT JOIN user_global_ability b ON b.user_id = a.id 
-                WHERE a.id NOT IN (SELECT friend_user_id FROM friend WHERE user_id = $userId) 
+                WHERE a.id <> $userId 
+                AND a.id NOT IN (SELECT friend_user_id FROM friend WHERE user_id = $userId) 
                 LIMIT 20";
 
         $friends    = DB::select($sql);
@@ -204,27 +206,65 @@ class FriendController extends Controller
 
     /**
      * 附近朋友
+     * 根据用户的经纬度来推荐用户
      * */
     public function nearby_friends(Request $request)
     {
-        $userId = $request->input('userId');
-        $lat    = $request->input('latitude');
-        $lon    = $request->input('longitude');
-        $keywords = $request->input('keywords');
+        $userId     = $request->input('userId');
+        $lat        = $request->input('latitude',0);
+        $lon        = $request->input('longitude',0);
+        $keywords   = $request->input('keywords','');
 
+        //如果没有传递经纬度，获取用户平时的经纬度
+        if($lat == 0 || $lon == 0)
+        {
+            $userInfo   = DB::table('users')->where('id',$userId)->first();
+            $lat        = $userInfo->lat;
+            $lon        = $userInfo->lon;
+
+            if($lat == 0 || $lon == 0){
+
+                return apiData()->send(2001,'无法获知您的位置');
+            }
+        }
+
+        //搜索附近20公里范围的人
+        $geohash    = new Geohash();
+        $gpsStr     = $geohash->encode($lat,$lon);
+        $gpslength  = 4;
+
+        begin:
+
+        $nearPrifix = substr($gpsStr,0,$gpslength);
+        $nearbyStrs = $geohash->neighbors($nearPrifix);
 
         //已注册的用户
         $nearbyFriends  = DB::table('users as a')
             ->leftJoin('friend as b','b.friend_user_id','=',DB::raw('a.id AND b.user_id='.$userId))
             ->leftJoin('user_global_ability as d','d.user_id','=','a.id')
             ->select('a.id','a.nick_name','a.birthday as age','role1 as role','a.mobile','a.head_img','d.grade')
-            ->where('b.friend_id');
+            ->where('b.friend_id')
+            ->where('a.id',"<>",$userId)
+            ->where(function($db) use ($nearbyStrs,$nearPrifix)
+            {
+                $db->where('geohash','like',$nearPrifix."%");
+                foreach($nearbyStrs as $str)
+                {
+                    $db->orWhere('geohash','like',$str."%");
+                }
+            });
+
         if($keywords)
         {
             $nearbyFriends = $nearbyFriends->where('a.nick_name','like',"%{$keywords}%");
         }
         $nearbyFriends = $nearbyFriends->paginate(20);
 
+        if($request->input('page',0) <= 1 && count($nearbyFriends) == 0 && $gpslength > 1)
+        {
+            $gpslength--;
+            goto begin;
+        }
 
         foreach($nearbyFriends as $user)
         {

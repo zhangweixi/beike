@@ -31,7 +31,9 @@ class CreateUsers extends Migration
             $table->enum('foot',['R','L'])->default('R')->comment('习惯用脚');
             $table->string('device_sn')->nullable()->comment('设备编号');
             $table->integer('credit')->default(0)->comment('信用度');
-
+            $table->double('lat')->default(0)->comment('纬度');
+            $table->double('lon')->default(0)->comment('经度');
+            $table->string('geohash')->default('')->comment('经纬度的hash值');
             $table->timestamps();
         });
     }

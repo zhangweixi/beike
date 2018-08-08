@@ -54,6 +54,7 @@ class MessageModel extends Model
 
     /**
      * 统计未读消息数量
+     * @param $userId integer 用户ID
      * */
     static function count_unread_msg($userId)
     {
@@ -65,5 +66,7 @@ class MessageModel extends Model
 
         return $countInfo[0]->total;
     }
+
+
 
 }
