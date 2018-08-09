@@ -129,7 +129,7 @@ class MatchModel extends Model
         $matchs = DB::table('match')
             ->select($colums)
             ->where('user_id',$userId)
-            ->orderBy('match_id')
+            ->orderBy('match_id','desc')
             ->paginate(10);
         return $matchs;
     }
