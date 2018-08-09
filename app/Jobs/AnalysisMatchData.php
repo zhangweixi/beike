@@ -276,10 +276,16 @@ class AnalysisMatchData implements ShouldQueue
         }
 
 
+        if($sourceData->is_finish == 1 && $type == 'gps')
+        {
+            unset($datas[count($datas)-1]);
+        }
+
         //将数据存入到数据库中
         //如果是分批传输，则解析后的内容必须存储在数据库
         if($this->saveToDB == true || $this->fenpi == true)
         {
+
             $multyData  = array_chunk($datas,1000);
             $db = DB::connection('matchdata')->table($table);
 
