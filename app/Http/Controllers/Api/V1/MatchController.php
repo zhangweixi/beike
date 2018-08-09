@@ -436,6 +436,30 @@ class MatchController extends Controller
             $map        = $result->gps_map;
             $map        = \GuzzleHttp\json_decode($map);
 
+            $allp       = [];
+            foreach($map as $line)
+            {
+
+                $allp   = array_merge($allp,$line);
+            }
+
+
+            $max        = max($allp);
+            $avg        = $max/10;
+
+            //把数据调节到十个等级
+            if($avg > 0)
+            {
+                foreach($map as $lk => $line)
+                {
+                    foreach($line as $pk =>$p)
+                    {
+                        $map[$lk][$pk] = (int)$p/$avg;
+                    }
+                }
+            }
+
+
         }else{//默认值
 
             $map        = create_round_array(20,32,true,0);
