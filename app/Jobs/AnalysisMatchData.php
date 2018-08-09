@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Base\BaseMatchResultModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -13,6 +14,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use App\Models\V1\MatchModel;
+use App\Models\V1\CourtModel;
+use App\Http\Controllers\Service\Court;
+
 
 
 class AnalysisMatchData implements ShouldQueue
@@ -28,6 +32,7 @@ class AnalysisMatchData implements ShouldQueue
     public $sourceId= 0;    //要处理的比赛的数据
     public $timeout = 50;
     public $saveToDB= false;
+    public $fenpi   = true;
 
 
     public function __construct($sourceId,$saveToDB = false)
@@ -218,48 +223,62 @@ class AnalysisMatchData implements ShouldQueue
                 $matchId    = 0 ;
             }
 
-
             $data['match_id']   = $matchId;
-
-            $validData  = [];//有效数据
-            foreach($validColum as $colum)
+            if(!isset($matches[$matchId]))
             {
-                if(isset($data[$colum]))
-                {
-                    if($type == 'sensor'){
-
-                        $validData[strtolower($data['type']).$colum] = $data[$colum];
-
-                    }else{
-
-                        $validData[$colum] = $data[$colum];
-
-                    }
-                }
+                $matches[$matchId] = ['isFinish'=>0];
             }
 
 
-            //将数据放入到不同类型中
-            foreach($validData as $validKey => $validValue)
+            //从很多数据中筛选json格式需要的数据
+            if($this->fenpi == false)
             {
-                $matches[$matchId] ?? $matches[$matchId] = [];
-                $matches[$matchId][$validKey] ?? $matches[$matchId][$validKey] = [];
+                $validData  = [];//有效数据
+                foreach($validColum as $colum)
+                {
+                    if(isset($data[$colum]))
+                    {
+                        if($type == 'sensor'){
 
-                array_push($matches[$matchId][$validKey],$validValue);
+                            $validData[strtolower($data['type']).$colum] = $data[$colum];
+
+                        }else{
+
+                            $validData[$colum] = $data[$colum];
+
+                        }
+                    }
+                }
+
+
+                //将数据放入到不同类型中
+                foreach($validData as $validKey => $validValue)
+                {
+
+                    $matches[$matchId][$validKey] ?? $matches[$matchId][$validKey] = [];
+
+                    array_push($matches[$matchId][$validKey],$validValue);
+                }
             }
 
             $datas[$key] = array_merge($dataBaseInfo,$data);
         }
 
-        /*将不同类型的数据保存到json*/
-        foreach($matches as $key => $matchData)
+        //将不同类型的数据保存到json
+        //如果是分批传输，则结果只能最终一次性获取
+        if($this->fenpi == false)
         {
-            $resultFile = "match/".$key."-".$type."-".$sourceData->foot.".json";
-            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+            foreach($matches as $key => $matchData)
+            {
+                $resultFile = "match/".$key."-".$type."-".$sourceData->foot.".json";
+                Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+            }
         }
 
+
         //将数据存入到数据库中
-        if($this->saveToDB == true && $type != "gps!")
+        //如果是分批传输，则解析后的内容必须存储在数据库
+        if($this->saveToDB == true || $this->fenpi == true)
         {
             $multyData  = array_chunk($datas,1000);
             $db = DB::connection('matchdata')->table($table);
@@ -270,16 +289,35 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
+        //如何判断一场数据是否传完
+        //下一条数据的时间已经大于当前时间
+
 
         //上传的最后一条是数据，生成航向角
-        if($sourceData->is_finish == 1)
+        if($sourceData->is_finish == 1 && $type != "gps")
         {
             foreach ($matches as $matchId => $match)
             {
-
                 $this->create_compass_data($matchId);
             }
         }
+
+        //如果GPS传输完毕,根据解析的数据生成热点图
+        if($sourceData->is_finish == 1 && $type == 'gps' )
+        {
+            foreach($matches as $matchId => $isFinish)
+            {
+                $this->create_gps_map($matchId);
+                if($isFinish == 1)
+                {
+                    mylogger('计算热点图');
+                    $this->create_gps_map($matchId);
+                }
+            }
+
+            //$this->create_gps_map($sourceData->,$datas);
+        }
+
         return true;
     }
 
@@ -288,6 +326,7 @@ class AnalysisMatchData implements ShouldQueue
         'sensor'    => ['x','y','z'],
         'compass'   => ['x','y','z']
     ];
+
 
 
     /**
@@ -358,11 +397,19 @@ class AnalysisMatchData implements ShouldQueue
             ->orderBy('id','desc')
             ->first();
 
-        if($lastData && $lastData->timestamp == 0)
+        if($lastData && $lastData->timestamp == 0 && $type!= 'gps')
         {
             DB::connection('matchdata')->table($table)->where('id',$lastData->id)->delete();
             $prevStr =  $lastData->source_data;
         }
+
+
+        if($lastData && $type == 'gps')
+        {
+            DB::connection('matchdata')->table($table)->where('id',$lastData->id)->delete();
+            $prevStr =  $lastData->source_data;
+        }
+
         return $prevStr;
     }
 
@@ -647,6 +694,62 @@ class AnalysisMatchData implements ShouldQueue
 
         $compass    = \GuzzleHttp\json_encode(['azimuth'=>$azimuth,'pitch'=>$pitch,'roll'=>$roll]);
         file_put_contents($outfile,$compass);
+
+        return true;
+    }
+
+
+    /**
+     * 生成GPS热点图
+     * @param $matchId integer 比赛ID
+     * @param $gpsData  array GPS数据
+     * */
+    public function create_gps_map($matchId,array $gpsData = [])
+    {
+
+        $matchInfo  = MatchModel::find($matchId);
+        $courtInfo  = CourtModel::find($matchInfo->court_id);
+
+        $points     = $courtInfo->boxs;
+        $points     =  \GuzzleHttp\json_decode($points);
+
+        $court      = new Court();
+        $court->set_centers($points->center);
+
+        //没有数据,从数据库获取
+        if(count($gpsData) == 0)
+        {
+            DB::connection('matchdata')
+                ->table('user_'.$matchInfo->user_id."_gps")
+                ->where('match_id',$matchId)
+                ->where('lat','>',0)
+                ->where('lon','>',0)
+                ->orderBy('id')
+                ->chunk(1000,function($gpsList) use(&$gpsData)
+                {
+                    foreach($gpsList as $gps)
+                    {
+                        array_push($gpsData,['lat'=>$gps->lat,'lon'=>$gps->lon]);
+                    }
+                });
+        }
+
+        $mapData= $court->court_hot_map($gpsData);
+        //把结果存储到比赛结果表中
+        $resultInfo = BaseMatchResultModel::find($matchId);
+
+        if($resultInfo) {
+
+            $resultInfo->gps_map    = \GuzzleHttp\json_encode($mapData);
+            $resultInfo->save();
+
+        }else{
+
+            $resultInfo     = new BaseMatchResultModel();
+            $resultInfo->match_id   = $matchId;
+            $resultInfo->gps_map    = \GuzzleHttp\json_encode($mapData);
+            $resultInfo->save();
+        }
 
         return true;
     }
