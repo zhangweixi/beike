@@ -454,7 +454,7 @@ class MatchController extends Controller
                 {
                     foreach($line as $pk =>$p)
                     {
-                        $map[$lk][$pk] = (int)$p/$avg;
+                        $map[$lk][$pk] = (int)($p/$avg);
                     }
                 }
             }
