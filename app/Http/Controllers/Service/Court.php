@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Service;
 
 use App\Http\Controllers\Service\GPSPoint;
+use function foo\func;
 use phpDocumentor\Reflection\Types\Integer;
 
 /*
@@ -36,14 +37,14 @@ class Court{
 
     private $A,$B,$C,$D,$E,$F,$AF,$DE;
 
-    private $lonNum = 5;
-    private $latNum = 10;
+    private $lonNum = 20;
+    private $latNum = 32;
 
     private $centerPoints = [];
 
     public function __construct()
     {
-        bcscale (8);
+        bcscale (10);
     }
 
     /**
@@ -80,7 +81,6 @@ class Court{
         $this->DE->lat = $DElat;
         $this->DE->lon = $DElon;
 
-
         return $this->cut_court();
 
     }
@@ -103,7 +103,11 @@ class Court{
         #$AF_DE_Points       = $this->cut_line($this->DE,$this->AF,$this->lonNum);
         $AF_DE_Points       = $this->cut_line($this->AF,$this->DE,$this->lonNum);
         $courtMap['AF_DE']  = $AF_DE_Points;
+
         $AF_DE_Points       = self::array_cycle($AF_DE_Points,2);
+
+        $courtMap['F_E']    = [$this->F,$this->E];
+
 
         //左右两边连线再切割 只需要偶数的点
         $length     = count($A_D_Points);
@@ -120,6 +124,7 @@ class Court{
             $linePoints     = self::array_cycle($linePoints,2);
 
             array_push($boxPoints,$linePoints);
+
         }
 
         $courtMap['center']     = $boxPoints;
@@ -127,8 +132,13 @@ class Court{
         return $courtMap;
     }
 
-    /*间隔获得数组内容*/
-    static function array_cycle($arr,$cycle)
+    /**
+     * 间隔获得数组内容
+     * @param $arr array 数组
+     * @param $cycle integer 下标
+     * @return array
+     * */
+    static function array_cycle($arr, $cycle)
     {
         if($cycle<2)
         {
@@ -180,28 +190,35 @@ class Court{
      * */
     public function set_centers(array $points)
     {
-        $this->centerPoints = array_chunk($points,$this->lonNum);
+        $this->centerPoints = $points;
     }
 
     /**
      * 找到最近的点
      * @param $point GPSPoint 要找的点
+     * @return array
      * */
     public function find_nearest_point(GPSPoint $point)
     {
-        $minDis = 100000000;
+        $minDis     = 100000000;
+
+        $position   = [0,0];
 
         foreach($this->centerPoints as $key1 => $line)
         {
             $preDis = 100000000;
             foreach($line as $key2 => $p)
             {
-
                 $a = bcsub($point->lat,$p->lat);
                 $b = bcsub($point->lon,$p->lon);
                 $dis = bcadd(bcmul($a,$a),bcmul($b,$b));
 
-                $minDis = $dis < $minDis ?? $dis;
+                if($dis < $minDis)
+                {
+                    $minDis = $dis;
+                    $position = [$key1,$key2];
+                }
+
                 //如果当前距离大于上一个点的距离，说明越来越远，则不用计算后面的点了
                 if($dis > $preDis)
                 {
@@ -210,6 +227,34 @@ class Court{
                 $preDis = $dis;
             }
         }
+
+        return $position;
+    }
+
+    /**
+     * 球场热点图
+     * */
+    public function court_hot_map($points)
+    {
+        $result   = [];
+
+        for($i=0;$i<$this->lonNum;$i++)
+        {
+            for($j=0;$j<$this->latNum;$j++)
+            {
+               $result[$i][$j] = 0;
+            }
+        }
+
+        foreach($points as $point)
+        {
+            if(intval($point['lat']) == 0 )  continue;
+
+            $position   = $this->find_nearest_point(new GPSPoint($point['lat'],$point['lon']));
+
+            $result[$position[0]][$position[1]]++;
+        }
+        return $result;
     }
 
 

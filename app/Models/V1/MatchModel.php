@@ -10,6 +10,7 @@ class MatchModel extends Model
 
     private $time;
     protected $table = "match";
+    protected $primaryKey = "match_id";
     public $timestamps = false;
 
     public function __construct()

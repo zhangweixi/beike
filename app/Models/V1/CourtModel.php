@@ -7,8 +7,9 @@ use DB;
 class CourtModel extends Model
 {
 
-    protected $table = "football_court";
-
+    protected $table        = "football_court";
+    protected $primaryKey   = "court_id";
+    public  $timestamps = false;//关闭自动维护
 
     /*
      * 添加足球场

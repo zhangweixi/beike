@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\Base\BaseMatchResultModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
@@ -427,7 +428,20 @@ class MatchController extends Controller
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
 
-        $map        = create_round_array(20,32);
+
+        $result     = BaseMatchResultModel::find($matchId);
+
+        if($result) {
+
+            $map        = $result->gps_map;
+            $map        = \GuzzleHttp\json_decode($map);
+
+        }else{//默认值
+
+            $map        = create_round_array(20,32,true,0);
+        }
+
+
         return apiData()
             ->set_data('matchInfo',$matchInfo)
             ->set_data('map',$map)

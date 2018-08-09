@@ -603,7 +603,7 @@ function reverse_hex($hex)
 /*
  * 创建随机图谱
  * */
-function create_round_array($y,$x)
+function create_round_array($y,$x,$default=false,$defaultNum=0)
 {
 
     $arr    = [];
@@ -611,8 +611,14 @@ function create_round_array($y,$x)
     {
         for($j=0;$j<$x;$j++)
         {
+            if($default == true) {
 
-            $arr[$i][$j] = rand(0,10);
+                $arr[$i][$j] = 0;
+
+            }else{
+
+                $arr[$i][$j] = rand(0,10);
+            }
         }
     }
     return $arr;
