@@ -209,10 +209,14 @@ class Court{
             $preDis = 100000000;
             foreach($line as $key2 => $p)
             {
-                $a = bcsub($point->lat,$p->lat);
-                $b = bcsub($point->lon,$p->lon);
-                $dis = bcadd(bcmul($a,$a),bcmul($b,$b));
+                $a      = bcmul(bcsub($point->lat,$p->lat),10000);
+                $b      = bcmul(bcsub($point->lon,$p->lon),10000);
+                //mylogger($a);
+                //mylogger($b);
 
+
+                $dis    = bcadd(bcmul($a,$a),bcmul($b,$b));
+                //mylogger("===".$dis);
                 if($dis < $minDis)
                 {
                     $minDis = $dis;
@@ -236,8 +240,10 @@ class Court{
      * */
     public function court_hot_map($points)
     {
+        set_time_limit(120);
         $result   = [];
 
+        //初始化一个二维数组
         for($i=0;$i<$this->lonNum;$i++)
         {
             for($j=0;$j<$this->latNum;$j++)
@@ -251,10 +257,13 @@ class Court{
             if(intval($point['lat']) == 0 )  continue;
 
             $position   = $this->find_nearest_point(new GPSPoint($point['lat'],$point['lon']));
-
+            //dd($position);
             $result[$position[0]][$position[1]]++;
         }
+
+
         return $result;
+
     }
 
 
