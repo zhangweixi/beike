@@ -57,3 +57,35 @@ function text_to_credit($text)
     }
     return $credit;
 }
+
+
+function gps_to_bdgps($gpsArr)
+{
+    $gpsArr = json_encode($gpsArr);
+    $gpsArr = json_decode($gpsArr,true);
+
+    $gpsArr = array_chunk($gpsArr,100);
+
+    $result = [];
+
+    foreach($gpsArr as $points)
+    {
+        $tempArr    = [];
+        foreach($points as $key => $p)
+        {
+            array_push($tempArr,$p['lon'].",".$p['lat']);
+        }
+
+        $str    = implode(";",$tempArr);
+        $url    = "http://api.map.baidu.com/geoconv/v1/?coords={$str}&from=1&to=5&ak=zZSGyxZgUytdiKG135BcnaP6";
+
+        $bdgps  = file_get_contents($url);
+        $bdgps  = \GuzzleHttp\json_decode($bdgps,true);
+        $bdgps  = $bdgps['result'];
+        foreach ($bdgps as $gps)
+        {
+            array_push($result,['lat'=>$gps['y'],'lon'=>$gps['x']]);
+        }
+    }
+    return $result;
+}

@@ -32,7 +32,7 @@ class AnalysisMatchData implements ShouldQueue
     public $sourceId= 0;    //要处理的比赛的数据
     public $timeout = 50;
     public $saveToDB= false;
-    public $fenpi   = true;
+    public $fenpi   = false;
 
 
     public function __construct($sourceId,$saveToDB = false)
@@ -709,6 +709,7 @@ class AnalysisMatchData implements ShouldQueue
      * 生成GPS热点图
      * @param $matchId integer 比赛ID
      * @param $gpsData  array GPS数据
+     * @return boolean
      * */
     public function create_gps_map($matchId,array $gpsData = [])
     {
@@ -735,11 +736,11 @@ class AnalysisMatchData implements ShouldQueue
                 {
                     foreach($gpsList as $gps)
                     {
-                        array_push($gpsData,['lat'=>$gps->lat,'lon'=>$gps->lon]);
+                        array_push($gpsData,['lat'=>gps_to_gps($gps->lat),'lon'=>gps_to_gps($gps->lon)]);
                     }
                 });
         }
-
+        //dd($gpsData);
         $mapData= $court->court_hot_map($gpsData);
         //把结果存储到比赛结果表中
         $resultInfo = BaseMatchResultModel::find($matchId);
