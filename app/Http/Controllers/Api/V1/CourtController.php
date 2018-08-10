@@ -38,7 +38,7 @@ class CourtController extends Controller
         {
             $courtData["p_".$key]   = implode(",",$this->str_to_gps($p));
         }
-        return $courtData;
+        
         $courtModel = new CourtModel();
         $courtId    = $courtModel->add_court($courtData);
 
