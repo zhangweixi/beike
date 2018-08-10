@@ -32,7 +32,7 @@ class AnalysisMatchData implements ShouldQueue
     public $sourceId= 0;    //要处理的比赛的数据
     public $timeout = 50;
     public $saveToDB= false;
-    public $fenpi   = false;
+    public $fenpi   = true;
 
 
     public function __construct($sourceId,$saveToDB = false)
