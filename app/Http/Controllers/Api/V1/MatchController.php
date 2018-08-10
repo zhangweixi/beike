@@ -105,7 +105,7 @@ class MatchController extends Controller
     {
         //return hexToInt("f9ffffff");
 
-        return hexdec(reverse_hex("eb0afdee64010000"));
+        return hexdec(reverse_hex("6511741e65010000"));
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
@@ -445,7 +445,7 @@ class MatchController extends Controller
 
 
             $max        = max($allp);
-            $avg        = $max/10;
+            $avg        = $max/13;
 
             //把数据调节到十个等级
             if($avg > 0)
@@ -454,11 +454,10 @@ class MatchController extends Controller
                 {
                     foreach($line as $pk =>$p)
                     {
-                        $map[$lk][$pk] = (int)($p/$avg);
+                        $map[$lk][$pk] = (int)ceil($p/$avg);
                     }
                 }
             }
-
 
         }else{//默认值
 
