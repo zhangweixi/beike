@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Jobs\AnalysisMatchData;
 use App\Models\Base\BaseMatchResultModel;
+use App\Models\V1\MatchModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\CourtModel;
 use App\Http\Controllers\Service\Court;
 use App\Http\Controllers\Service\GPSPoint;
-
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 
 class CourtController extends Controller
@@ -37,7 +38,7 @@ class CourtController extends Controller
         {
             $courtData["p_".$key]   = implode(",",$this->str_to_gps($p));
         }
-
+        return $courtData;
         $courtModel = new CourtModel();
         $courtId    = $courtModel->add_court($courtData);
 
@@ -68,6 +69,85 @@ class CourtController extends Controller
     }
 
 
+    //显示足球场地图
+    public function court_border(Request $request)
+    {
+        $matchId        = $request->input('matchId');
+
+        $courtFile      = "match/court-".$matchId.".json";
+        $has            = Storage::disk('web')->has($courtFile);
+        if(!$has) {
+
+            $matchInfo      = MatchModel::find($matchId);
+            $info           = CourtModel::find($matchInfo->court_id);
+
+            $points         = \GuzzleHttp\json_decode($info->boxs);
+
+            $points->A_D    = gps_to_bdgps($points->A_D);
+            $points->AF_DE  = gps_to_bdgps($points->AF_DE);
+            $points->F_E    = gps_to_bdgps($points->F_E);
+
+
+            $arr            = [];
+            foreach($points->center as $center)
+            {
+                foreach($center as $p)
+                {
+                    array_push($arr,$p);
+                }
+            }
+            $points->center  = gps_to_bdgps($arr);
+
+            Storage::disk('web')->put($courtFile,\GuzzleHttp\json_encode($points));
+
+        }else{
+
+            $points         = Storage::disk('web')->get($courtFile);
+            $points         = \GuzzleHttp\json_decode($points);
+
+        }
+        return apiData()->add('points',$points)->send();
+    }
+
+    public function court_content(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+
+        $matchInfo  = MatchModel::find($matchId);
+        $gpsFile    = "match/".$matchId."-bd-gps.json";
+
+        $has        = Storage::disk('web')->has($gpsFile);
+        if(!$has) {
+
+            $allGps     = [];
+            $table      = "user_".$matchInfo->user_id."_gps";
+            DB::connection('matchdata')
+                ->table($table)
+                ->where('match_id',$matchId)
+                ->orderBy('id')
+                ->select('lat','lon')
+                ->chunk(1000,function($gpsList) use (&$allGps)
+                {
+                    foreach($gpsList as $gps)
+                    {
+                        if($gps->lat == 0) continue;
+
+                        $gps->lat   = gps_to_gps($gps->lat);
+                        $gps->lon   = gps_to_gps($gps->lon);
+                        array_push($allGps,$gps);
+                    }
+                });
+
+            $allGps = gps_to_bdgps($allGps);
+
+            Storage::disk('web')->put($gpsFile,\GuzzleHttp\json_encode($allGps));
+
+        }
+        $points = Storage::disk('web')->get($gpsFile);
+        $points = \GuzzleHttp\json_decode($points);
+
+        return apiData()->set_data('points',$points)->send();
+    }
     /**
      * 计算足球场数据
      * */
@@ -127,6 +207,11 @@ class CourtController extends Controller
     public function find_gps(Request $request)
     {
         set_time_limit(120);
+
+
+
+
+
         $courtId    = $request->input('courtId');
 
         $courtInfo  = CourtModel::find($courtId);
@@ -187,4 +272,11 @@ class CourtController extends Controller
         $job->create_gps_map($matchId,$gpsData);
     }
 
+
+    public function temp()
+    {
+        $ana    = new AnalysisMatchData(0);
+        $ana->create_gps_map(364);
+        return "ok";
+    }
 }

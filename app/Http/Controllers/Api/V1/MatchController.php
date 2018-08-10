@@ -96,6 +96,7 @@ class MatchController extends Controller
 
         //2.开始解析数据
         $job    = new AnalysisMatchData($sourceId,true);
+
         $job->handle();
         //mylogger("相应前端".time());
         return apiData()->send(200,'ok');
@@ -105,7 +106,7 @@ class MatchController extends Controller
     {
         //return hexToInt("f9ffffff");
 
-        return hexdec(reverse_hex("6511741e65010000"));
+        return hexdec(reverse_hex("155f722265010000"));
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
@@ -261,8 +262,14 @@ class MatchController extends Controller
     /**
      * 生产json文件
      * */
-    public function create_json($matchId)
+    public function create_json($matchId=0)
     {
+        $matchId =364;
+        $job    = new AnalysisMatchData(0,true);
+        $job->create_json_data($matchId);
+
+        exit;
+
         //将一定时间内的数据提取出来 生成json文件
         $GLOBALS['sensorData']  = [
             'ax'    => [],

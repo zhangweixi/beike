@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\V1\MatchModel;
 use App\Models\V1\CourtModel;
 use App\Http\Controllers\Service\Court;
-
+use Exception;
 
 
 class AnalysisMatchData implements ShouldQueue
@@ -28,9 +28,9 @@ class AnalysisMatchData implements ShouldQueue
      *
      * @return void
      */
-    public $tries   = 3;
+    public $tries   = 1;
     public $sourceId= 0;    //要处理的比赛的数据
-    public $timeout = 50;
+    public $timeout = 80;
     public $saveToDB= false;
     public $fenpi   = true;
 
@@ -182,14 +182,12 @@ class AnalysisMatchData implements ShouldQueue
 
         //获得最新一次比赛时间
         $matchTimeInfo  = "";
-        $this->create_table($userId,$type);
 
-        $beginTime  = time();
-        $matches    = [];
 
-        $validColum     = $this->validColum[$type];
+        //多场数据
+        $matchResult    = [];
 
-        //print_r($datas);
+        //dd($datas);
         //这里将数据产生了两份  一份是原始数据datas,一份是新的数据 $matches
 
         foreach($datas as $key=>$data)
@@ -203,6 +201,7 @@ class AnalysisMatchData implements ShouldQueue
                 && $data['timestamp'] != 0)
             {
                 $matchId    = $matchTimeInfo->match_id;
+                $matchResult[$matchId]  = 0;
 
             }elseif($data['timestamp'] != 0){
 
@@ -211,71 +210,25 @@ class AnalysisMatchData implements ShouldQueue
                 //正常情况上传的数据都是一定能够找到时间的，如果找不到时间则表示一定有异常，应该停止
                 if(!$matchTimeInfo)
                 {
+                    echo "时间发生错误:";
+                    dd($data);
                     dd("数据".$sourceData->match_source_id.'没有找到对应的比赛,时间为:'.$data['timestamp']);
 
                 }else{
 
                     goto loopbegin;
                 }
-
             }else{
 
                 $matchId    = 0 ;
             }
 
             $data['match_id']   = $matchId;
-            if(!isset($matches[$matchId]))
-            {
-                $matches[$matchId] = ['isFinish'=>0];
-            }
-
-
-            //从很多数据中筛选json格式需要的数据
-            if($this->fenpi == false)
-            {
-                $validData  = [];//有效数据
-                foreach($validColum as $colum)
-                {
-                    if(isset($data[$colum]))
-                    {
-                        if($type == 'sensor'){
-
-                            $validData[strtolower($data['type']).$colum] = $data[$colum];
-
-                        }else{
-
-                            $validData[$colum] = $data[$colum];
-
-                        }
-                    }
-                }
-
-
-                //将数据放入到不同类型中
-                foreach($validData as $validKey => $validValue)
-                {
-
-                    $matches[$matchId][$validKey] ?? $matches[$matchId][$validKey] = [];
-
-                    array_push($matches[$matchId][$validKey],$validValue);
-                }
-            }
-
-            $datas[$key] = array_merge($dataBaseInfo,$data);
-        }
-
-        //将不同类型的数据保存到json
-        //如果是分批传输，则结果只能最终一次性获取
-        if($this->fenpi == false)
-        {
-            foreach($matches as $key => $matchData)
-            {
-                $resultFile = "match/".$key."-".$type."-".$sourceData->foot.".json";
-                Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
-            }
+            $datas[$key]         = array_merge($data,$dataBaseInfo);
         }
 
 
+        //删除GPS最后一条数据,因为这条数据是不合格的
         if($sourceData->is_finish == 1 && $type == 'gps')
         {
             unset($datas[count($datas)-1]);
@@ -283,56 +236,127 @@ class AnalysisMatchData implements ShouldQueue
 
         //将数据存入到数据库中
         //如果是分批传输，则解析后的内容必须存储在数据库
-        if($this->saveToDB == true || $this->fenpi == true)
+
+        //创建数据表
+        $this->create_table($userId,$type);
+        $db = DB::connection('matchdata')->table($table);
+
+        //分批插入
+        $multyData  = array_chunk($datas,1000);
+        foreach($multyData as $key => $data)
         {
-
-            $multyData  = array_chunk($datas,1000);
-            $db = DB::connection('matchdata')->table($table);
-
-            foreach($multyData as $key => $data)
-            {
-                $db->insert($data);
-            }
+            $db->insert($data);
         }
 
         //如何判断一场数据是否传完
         //下一条数据的时间已经大于当前时间
 
 
-        //上传的最后一条是数据，生成航向角
+        //上传的最后一条是数据，生成航向角 生成json文件
+
         if($sourceData->is_finish == 1 && $type != "gps")
         {
-            foreach ($matches as $matchId => $match)
+            foreach ($matchResult as $matchId => $isFinish)
             {
-                $this->create_compass_data($matchId);
+                if($matchId != 0)
+                {
+                    //生成所有json文件
+                    //$this->create_compass_data($matchId);
+
+                    $this->create_json_data($matchId);
+                }
             }
         }
+
 
         //如果GPS传输完毕,根据解析的数据生成热点图
         if($sourceData->is_finish == 1 && $type == 'gps' )
         {
-            foreach($matches as $matchId => $isFinish)
+            foreach($matchResult as $matchId => $isFinish)
             {
-                $this->create_gps_map($matchId);
-                if($isFinish == 1)
+                if($isFinish == 1 && $matchId != 0)
                 {
-                    mylogger('计算热点图');
                     $this->create_gps_map($matchId);
                 }
             }
-
-            //$this->create_gps_map($sourceData->,$datas);
         }
 
         return true;
     }
 
-    private $validColum     = [
-        'gps'       => ['lat','lon'],
-        'sensor'    => ['x','y','z'],
-        'compass'   => ['x','y','z']
-    ];
+    /**
+     * 所有传输完毕，创建json文件
+     * @param $matchId integer 比赛ID
+     * */
+    public function create_json_data($matchId)
+    {
+        //将不同类型的数据保存到json
+        //如果是分批传输，则结果只能最终一次性获取
+        $matchInfo  = MatchModel::find($matchId);
+        $userId     = $matchInfo->user_id;
 
+        $foots      = ['R','L'];
+
+        //1.sensor
+        $type       = "sensor";
+        $table      = "user_".$userId."_".$type;
+        foreach($foots as $foot)
+        {
+            $matchData  = [
+                'ax'    => [],
+                'ay'    => [],
+                'az'    => []
+            ];
+            DB::connection('matchdata')
+                ->table($table)
+                ->select('x','y','z')
+                ->where('type','A')
+                ->where('foot',$foot)
+                ->where('match_id',$matchId)
+                ->orderBy('id')
+                ->chunk(1000,function($data)use(&$matchData)
+                {
+                    foreach($data as $d)
+                    {
+                        array_push($matchData['ax'],$d->x);
+                        array_push($matchData['ay'],$d->y);
+                        array_push($matchData['az'],$d->z);
+                    }
+                });
+
+            $resultFile = "match/".$matchId."-".$type."-".$foot.".json";
+            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+        }
+
+
+        //2.gps
+        $type       = "gps";
+        $table      = "user_".$userId."_".$type;
+        $matchData  = [
+            'lat'    => [],
+            'lon'    => [],
+        ];
+
+        DB::connection('matchdata')
+            ->table($table)
+            ->select("lat","lon")
+            ->where('match_id',$matchId)
+            ->orderBy('id')
+            ->chunk(1000,function($data)use(&$matchData)
+            {
+                foreach($data as $d)
+                {
+                    array_push($matchData['ax'],$d->x);
+                    array_push($matchData['ay'],$d->y);
+                    array_push($matchData['az'],$d->z);
+                }
+            });
+
+        $resultFile = "match/".$matchId."-".$type.".json";
+        Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+
+        return true;
+    }
 
 
     /**
@@ -761,5 +785,10 @@ class AnalysisMatchData implements ShouldQueue
         return true;
     }
 
+
+    public function failed(Exception $e)
+    {
+
+    }
 }
 
