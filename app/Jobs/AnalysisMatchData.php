@@ -341,7 +341,7 @@ class AnalysisMatchData implements ShouldQueue
             //sensor，罗盘都上传完毕，开始计算方向角
             if($type == 'compass')
             {
-                $this->create_compass_data($matchId);
+                $this->create_compass_data($matchId,$foot);
 
                 //如果上传了两个已经结束的罗盘，则发起调用算法系统
                 $this->call_matlab($matchId);
@@ -763,10 +763,10 @@ class AnalysisMatchData implements ShouldQueue
 
                     $id = $sensor->id;
                     $info = [
-                        "ax"    => $sensor->x,
+                        "ax"    => $sensor->x,//加速度
                         "ay"    => $sensor->y,
                         "az"    => $sensor->z,
-                        "cx"    => $compass->x,
+                        "cx"    => $compass->x,//罗盘
                         "cy"    => $compass->y,
                         "cz"    => $compass->z
                     ];
@@ -831,8 +831,7 @@ class AnalysisMatchData implements ShouldQueue
         $points     = $courtInfo->boxs;
         $points     =  \GuzzleHttp\json_decode($points);
 
-        $court      = new Court();
-        $court->set_centers($points->center);
+
 
         //没有数据,从数据库获取
         if(count($gpsData) == 0)
@@ -852,7 +851,10 @@ class AnalysisMatchData implements ShouldQueue
                 });
         }
         //dd($gpsData);
-        $mapData= $court->court_hot_map($gpsData);
+        $court      = new Court();
+        $court->set_centers($points->center);
+        $mapData    = $court->court_hot_map($gpsData);
+
         //把结果存储到比赛结果表中
         $resultInfo = BaseMatchResultModel::find($matchId);
 
