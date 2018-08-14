@@ -133,8 +133,9 @@ class AnalysisMatchData implements ShouldQueue
      */
     public function handle()
     {
-        //解析数据
+        //获得数据信息
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
+
         //检查本信息是否处理过
         if($sourceData->status == 1)
         {
@@ -148,7 +149,7 @@ class AnalysisMatchData implements ShouldQueue
         //判断同类型的上一条数据是否解析完毕
         $prevSourceDataId   = 0;
 
-        do{
+        while (true){
 
             if($prevSourceDataId > 0){
 
@@ -168,34 +169,32 @@ class AnalysisMatchData implements ShouldQueue
                     ->first();
             }
 
-            //var_dump($prevSourceData);return true;
-            if($prevSourceData == null || $prevSourceData->status == 1)
-            {
-                $hasUnfinishedData = false;
+            //在此之前没有未处理的数据
+            if($prevSourceData == null || $prevSourceData->status == 1) {
+
+                break;
 
             }else{
 
-                $hasUnfinishedData  = true;
                 $prevSourceDataId   = $prevSourceData->match_source_id;
-                sleep(1);
             }
-
-        }while($hasUnfinishedData);
+            sleep(1);
+        }
 
 
         //1.切分成单组
-        $data   = Storage::disk('local')->get($sourceData->data);
-        $datas  = explode(",",$data);
-        $datas  = $this->delete_head($datas);
-        $datas  = implode('',$datas);
-
+        $dataStr    = Storage::disk('local')->get($sourceData->data);
+        $dataArr    = explode(",",$dataStr);
+        $dataArr    = $this->delete_head($dataArr);
+        $dataStr    = implode('',$dataArr);
 
         //0.创建数据表
         $this->create_table($userId,$type);
 
-        //2.获取上一条的数据
-        $prevData   = $this->get_prev_sensor_data($userId,$type);
-        $datas      = $prevData.$datas;
+        //2.连接之前不完整的数据
+        $prevData   = $this->get_prev_sensor_data($userId,$type,$foot);
+        $datas      = $prevData.$dataStr;
+
         //mylogger("开始解析:".time());
         //3.解析数据
         if($type == 'sensor')
@@ -230,8 +229,6 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //多场数据
-        $matchResult    = [];
-
         $matchesData    = [];
 
         //dd($datas);
@@ -307,7 +304,6 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
-
         //将数据存入到数据库中
         //如果是分批传输，则解析后的内容必须存储在数据库
 
@@ -335,29 +331,29 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($matchesData as $key => $matchData)
         {
-            if($matchData['isFinish'] == 1 && $matchData['matchId'] != 0)
-            {
-                if($type == 'compass')
-                {
-                    $this->create_compass_data($matchId);
-                }
+            $matchId = $matchData['matchId'];
 
-                //生成所有json文件
-                $this->create_json_data($matchId,[$type],$foot);
+            if($matchData['isFinish'] == 0 || $matchId == 0)
+            {
+               continue;
             }
-        }
 
-
-
-        //如果GPS传输完毕,根据解析的数据生成热点图
-        if($sourceData->is_finish == 1 && $type == 'gps' )
-        {
-            foreach($matchResult as $matchId => $isFinish)
+            //sensor，罗盘都上传完毕，开始计算方向角
+            if($type == 'compass')
             {
-                if($isFinish == 1 && $matchId != 0)
-                {
-                    $this->create_gps_map($matchId);
-                }
+                $this->create_compass_data($matchId);
+
+                //如果上传了两个已经结束的罗盘，则发起调用算法系统
+                $this->call_matlab($matchId);
+            }
+
+            //生成对应的json文件
+            $this->create_json_data($matchId,[$type],$foot);
+
+            //如果GPS传输完毕,根据解析的数据生成热点图
+            if($type == 'gps')
+            {
+                $this->create_gps_map($matchId);
             }
         }
 
@@ -442,6 +438,8 @@ class AnalysisMatchData implements ShouldQueue
         }
 
 
+
+
         return true;
     }
 
@@ -501,9 +499,10 @@ class AnalysisMatchData implements ShouldQueue
      * 连接上一条sensor数据
      * @param $userId integer 用户ID
      * @param $type string 数据类型
+     * @param $foot string 脚
      * @return string
      * */
-    private function get_prev_sensor_data($userId,$type)
+    private function get_prev_sensor_data($userId,$type,$foot)
     {
         $table  = "user_".$userId."_".$type;
 
@@ -511,6 +510,7 @@ class AnalysisMatchData implements ShouldQueue
         $prevStr    = "";
         $lastData   = DB::connection('matchdata')
             ->table($table)
+            ->where('foot',$foot)
             ->orderBy('id','desc')
             ->first();
 
@@ -532,9 +532,13 @@ class AnalysisMatchData implements ShouldQueue
 
 
 
-    private function call_matlab()
+    private function call_matlab($matchId)
     {
-        $url        = "http://matlab.launchever.cn/api/caculate?matchId=".$this->sourceId;
+        $url        = "http://matlab.launchever.cn/api/caculate?matchId=".$matchId;
+
+        mylogger('callmatlab:'.$matchId);
+        return true;
+
         $http       = new Http();
         $response   = $http->send($url);
         var_dump($response);
