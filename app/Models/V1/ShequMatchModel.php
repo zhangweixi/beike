@@ -125,6 +125,8 @@ class ShequMatchModel extends Model{
             $timeInfo           = explode(" ",$match->begin_time);
             $match->begin_date  = $timeInfo[0];
             $match->begin_time  = $timeInfo[1];
+            $match->distance    = 0.3;
+
             if($needMember)
             {
                 $match->members     = $shequModel->get_match_user($match->sq_match_id);
