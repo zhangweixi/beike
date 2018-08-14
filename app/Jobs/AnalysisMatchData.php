@@ -133,6 +133,19 @@ class AnalysisMatchData implements ShouldQueue
      */
     public function handle()
     {
+       /* if(true)
+        {
+            set_time_limit(70);
+            $i=1;
+            while(true)
+            {
+                sleep(1);
+                mylogger($i);
+                $i++;
+            }
+        }*/
+
+
         //获得数据信息
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
 
@@ -164,10 +177,12 @@ class AnalysisMatchData implements ShouldQueue
                     ->where('match_source_id',"<",$this->sourceId)
                     ->where('user_id',$userId)
                     ->where('foot',$foot)
+                    ->where('type',$type)
                     ->where('device_sn',$sourceData->device_sn)
                     ->orderBy('match_source_id','desc')
                     ->first();
             }
+
 
             //在此之前没有未处理的数据
             if($prevSourceData == null || $prevSourceData->status == 1) {
