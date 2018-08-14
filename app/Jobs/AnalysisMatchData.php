@@ -135,18 +135,63 @@ class AnalysisMatchData implements ShouldQueue
     {
         //解析数据
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
+        //检查本信息是否处理过
+        if($sourceData->status == 1)
+        {
+            return true;
+        }
 
-        $data       = Storage::disk('local')->get($sourceData->data);
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
+        $foot       = $sourceData->foot;
 
-        $this->create_table($userId,$type);
+        //判断同类型的上一条数据是否解析完毕
+        $prevSourceDataId   = 0;
+
+        do{
+
+            if($prevSourceDataId > 0){
+
+                $prevSourceData = DB::table('match_source_data')
+                    ->select('match_source_id','status')
+                    ->where('match_source_id',$prevSourceDataId)
+                    ->first();
+            }else{
+
+                $prevSourceData = DB::table('match_source_data')
+                    ->select('match_source_id','status')
+                    ->where('match_source_id',"<",$this->sourceId)
+                    ->where('user_id',$userId)
+                    ->where('foot',$foot)
+                    ->where('device_sn',$sourceData->device_sn)
+                    ->orderBy('match_source_id','desc')
+                    ->first();
+            }
+
+            //var_dump($prevSourceData);return true;
+            if($prevSourceData == null || $prevSourceData->status == 1)
+            {
+                $hasUnfinishedData = false;
+
+            }else{
+
+                $hasUnfinishedData  = true;
+                $prevSourceDataId   = $prevSourceData->match_source_id;
+                sleep(1);
+            }
+
+        }while($hasUnfinishedData);
+
 
         //1.切分成单组
+        $data   = Storage::disk('local')->get($sourceData->data);
         $datas  = explode(",",$data);
         $datas  = $this->delete_head($datas);
         $datas  = implode('',$datas);
 
+
+        //0.创建数据表
+        $this->create_table($userId,$type);
 
         //2.获取上一条的数据
         $prevData   = $this->get_prev_sensor_data($userId,$type);
@@ -187,6 +232,8 @@ class AnalysisMatchData implements ShouldQueue
         //多场数据
         $matchResult    = [];
 
+        $matchesData    = [];
+
         //dd($datas);
         //这里将数据产生了两份  一份是原始数据datas,一份是新的数据 $matches
 
@@ -200,8 +247,20 @@ class AnalysisMatchData implements ShouldQueue
                 && $data['timestamp'] <= $matchTimeInfo->time_end
                 && $data['timestamp'] != 0)
             {
+
                 $matchId    = $matchTimeInfo->match_id;
-                $matchResult[$matchId]  = 0;
+
+                if(!isset($matchesData[$matchId]))
+                {
+
+                    $matchesData[$matchId]  = [
+                        'isFinish'  => $sourceData->is_finish,
+                        'matchId'   => $matchId,
+                        'data'      => []
+                    ];
+
+                    $sourceData->is_finish = 0; //本标记只能使用一次
+                }
 
             }elseif($data['timestamp'] != 0){
 
@@ -221,32 +280,52 @@ class AnalysisMatchData implements ShouldQueue
             }else{
 
                 $matchId    = 0 ;
+                if(!isset($matchesData[0]))
+                {
+                    $matchesData[0]  = [
+                        'isFinish'  => 0,
+                        'matchId'   => 0,
+                        'data'      => []
+                    ];
+                }
             }
 
             $data['match_id']   = $matchId;
-            $datas[$key]         = array_merge($data,$dataBaseInfo);
+            array_push($matchesData[$matchId]['data'],array_merge($data,$dataBaseInfo));
         }
 
+
+        //一条数据中的isFinish只能使用一次,如果AB两次比赛，A结束了，产生了isFinish,那么这个标记是A的，而不是B的
 
         //删除GPS最后一条数据,因为这条数据是不合格的
-        if($sourceData->is_finish == 1 && $type == 'gps')
+        foreach($matchesData as $key => $matchData)
         {
-            unset($datas[count($datas)-1]);
+            if($matchData['isFinish'] == 1 && $type == 'gps')
+            {
+                $len    = count($matchData['data']) - 1;
+                unset($matchesData[$key]['data'][$len]);
+            }
         }
+
 
         //将数据存入到数据库中
         //如果是分批传输，则解析后的内容必须存储在数据库
 
-        //创建数据表
-        $this->create_table($userId,$type);
         $db = DB::connection('matchdata')->table($table);
 
         //分批插入
-        $multyData  = array_chunk($datas,1000);
-        foreach($multyData as $key => $data)
+        foreach($matchesData as $key => $matchData)
         {
-            $db->insert($data);
+            $multyData  = array_chunk($matchData['data'],1000);
+            foreach($multyData as $key => $data)
+            {
+                $db->insert($data);
+            }
         }
+
+        //数据解析完毕，修改标记
+        DB::table('match_source_data')->where('match_source_id',$this->sourceId)->update(['status'=>1]);
+
 
         //如何判断一场数据是否传完
         //下一条数据的时间已经大于当前时间
@@ -254,19 +333,20 @@ class AnalysisMatchData implements ShouldQueue
 
         //上传的最后一条是数据，生成航向角 生成json文件
 
-        if($sourceData->is_finish == 1 && $type != "gps")
+        foreach($matchesData as $key => $matchData)
         {
-            foreach ($matchResult as $matchId => $isFinish)
+            if($matchData['isFinish'] == 1 && $matchData['matchId'] != 0)
             {
-                if($matchId != 0)
+                if($type == 'compass')
                 {
-                    //生成所有json文件
-                    //$this->create_compass_data($matchId);
-
-                    $this->create_json_data($matchId);
+                    $this->create_compass_data($matchId);
                 }
+
+                //生成所有json文件
+                $this->create_json_data($matchId,[$type],$foot);
             }
         }
+
 
 
         //如果GPS传输完毕,根据解析的数据生成热点图
@@ -286,22 +366,24 @@ class AnalysisMatchData implements ShouldQueue
 
     /**
      * 所有传输完毕，创建json文件
-     * @param $matchId integer 比赛ID
+     * @param $matchId  integer 比赛ID
+     * @param $types    array   类型
+     * @param $foot     string  脚
+     * @return boolean
      * */
-    public function create_json_data($matchId)
+    public function create_json_data($matchId,Array $types,$foot)
     {
         //将不同类型的数据保存到json
         //如果是分批传输，则结果只能最终一次性获取
         $matchInfo  = MatchModel::find($matchId);
         $userId     = $matchInfo->user_id;
 
-        $foots      = ['R','L'];
-
         //1.sensor
-        $type       = "sensor";
-        $table      = "user_".$userId."_".$type;
-        foreach($foots as $foot)
+        if(in_array('sensor',$types))
         {
+            $type       = "sensor";
+            $table      = "user_".$userId."_".$type;
+
             $matchData  = [
                 'ax'    => [],
                 'ay'    => [],
@@ -326,34 +408,39 @@ class AnalysisMatchData implements ShouldQueue
 
             $resultFile = "match/".$matchId."-".$type."-".$foot.".json";
             Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+
         }
 
 
+
         //2.gps
-        $type       = "gps";
-        $table      = "user_".$userId."_".$type;
-        $matchData  = [
-            'lat'    => [],
-            'lon'    => [],
-        ];
+        if(in_array('gps',$types))
+        {
+            $type       = "gps";
+            $table      = "user_".$userId."_".$type;
+            $matchData  = [
+                'lat'    => [],
+                'lon'    => [],
+            ];
 
-        DB::connection('matchdata')
-            ->table($table)
-            ->select("lat","lon")
-            ->where('match_id',$matchId)
-            ->orderBy('id')
-            ->chunk(1000,function($data)use(&$matchData)
-            {
-                foreach($data as $d)
+            DB::connection('matchdata')
+                ->table($table)
+                ->select("lat","lon")
+                ->where('match_id',$matchId)
+                ->orderBy('id')
+                ->chunk(1000,function($data)use(&$matchData)
                 {
-                    array_push($matchData['ax'],$d->x);
-                    array_push($matchData['ay'],$d->y);
-                    array_push($matchData['az'],$d->z);
-                }
-            });
+                    foreach($data as $d)
+                    {
+                        array_push($matchData['ax'],$d->x);
+                        array_push($matchData['ay'],$d->y);
+                        array_push($matchData['az'],$d->z);
+                    }
+                });
+            $resultFile = "match/".$matchId."-".$type.".json";
+            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
+        }
 
-        $resultFile = "match/".$matchId."-".$type.".json";
-        Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
 
         return true;
     }
@@ -622,7 +709,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
 
-    public function create_compass_data($matchId)
+    public function create_compass_data($matchId,$foot)
     {
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
@@ -632,63 +719,59 @@ class AnalysisMatchData implements ShouldQueue
         mk_dir(public_path("uploads/temp"));
 
         //两只脚的数据
-        $foots  = ['R','L'];
-        foreach($foots as $foot)
+
+        $infile         = public_path("uploads/temp/".$matchId."-".$foot.".txt");
+        $outfile        = public_path("uploads/match/".$matchId."-compass-".$foot.".json");
+
+        if(file_exists($infile))
         {
-            $infile         = public_path("uploads/temp/".$matchId."-".$foot.".txt");
-            $outfile        = public_path("uploads/match/".$matchId."-compass-".$foot.".json");
-
-            if(file_exists($infile))
-            {
-                unlink($infile);
-            }
-
-            $id = 0;
-            DB::connection('matchdata')
-                ->table($compassTable)
-                ->where('match_id',$matchId)
-                ->where('foot',$foot)
-                ->orderBy('id')
-                ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id,$infile,$foot)
-                {
-                    foreach($compasses as $compass)
-                    {
-                        $timestamp = $compass->timestamp;
-
-                        $sensor = DB::connection("matchdata")
-                            ->table($sensorTable)
-                            ->where('id',">=",$id)
-                            ->where("match_id",$matchId)
-                            ->where('foot',$foot)
-                            ->where('timestamp',">=",$timestamp)
-                            ->where('type','A')
-                            ->orderBy('id')
-                            ->first();
-
-
-                        //罗盘之后没有sensor了
-                        if($sensor == null)
-                        {
-                            break;
-                        }
-
-                        $id = $sensor->id;
-                        $info = [
-                            "ax"    => $sensor->x,
-                            "ay"    => $sensor->y,
-                            "az"    => $sensor->z,
-                            "cx"    => $compass->x,
-                            "cy"    => $compass->y,
-                            "cz"    => $compass->z
-                        ];
-                        file_put_contents($infile, implode(",",$info)."\n",FILE_APPEND);
-                    }
-                });
-
-            //由罗盘信息转换成航向角
-            $this->compass_translate($infile,$outfile);
-
+            unlink($infile);
         }
+
+        $id = 0;
+        DB::connection('matchdata')
+            ->table($compassTable)
+            ->where('match_id',$matchId)
+            ->where('foot',$foot)
+            ->orderBy('id')
+            ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id,$infile,$foot)
+            {
+                foreach($compasses as $compass)
+                {
+                    $timestamp = $compass->timestamp;
+
+                    $sensor = DB::connection("matchdata")
+                        ->table($sensorTable)
+                        ->where('id',">=",$id)
+                        ->where("match_id",$matchId)
+                        ->where('foot',$foot)
+                        ->where('timestamp',">=",$timestamp)
+                        ->where('type','A')
+                        ->orderBy('id')
+                        ->first();
+
+
+                    //罗盘之后没有sensor了
+                    if($sensor == null)
+                    {
+                        break;
+                    }
+
+                    $id = $sensor->id;
+                    $info = [
+                        "ax"    => $sensor->x,
+                        "ay"    => $sensor->y,
+                        "az"    => $sensor->z,
+                        "cx"    => $compass->x,
+                        "cy"    => $compass->y,
+                        "cz"    => $compass->z
+                    ];
+                    file_put_contents($infile, implode(",",$info)."\n",FILE_APPEND);
+                }
+            });
+
+        //由罗盘信息转换成航向角
+        $this->compass_translate($infile,$outfile);
 
         return "success";
     }
