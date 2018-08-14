@@ -181,13 +181,13 @@ class AnalysisMatchData implements ShouldQueue
             sleep(1);
         }
 
-
+        mylogger('file1:'.$type);
         //1.切分成单组
         $dataStr    = Storage::disk('local')->get($sourceData->data);
         $dataArr    = explode(",",$dataStr);
         $dataArr    = $this->delete_head($dataArr);
         $dataStr    = implode('',$dataArr);
-
+        mylogger('file2:'.$type);
         //0.创建数据表
         $this->create_table($userId,$type);
 
