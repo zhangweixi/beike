@@ -161,7 +161,7 @@ class AnalysisMatchData implements ShouldQueue
 
         //判断同类型的上一条数据是否解析完毕
         $prevSourceDataId   = 0;
-
+        mylogger($this->sourceId);
         while (true){
 
             if($prevSourceDataId > 0){
@@ -196,13 +196,12 @@ class AnalysisMatchData implements ShouldQueue
             sleep(1);
         }
 
-        mylogger('file1:'.$type);
         //1.切分成单组
         $dataStr    = Storage::disk('local')->get($sourceData->data);
         $dataArr    = explode(",",$dataStr);
         $dataArr    = $this->delete_head($dataArr);
         $dataStr    = implode('',$dataArr);
-        mylogger('file2:'.$type);
+
         //0.创建数据表
         $this->create_table($userId,$type);
 
@@ -388,6 +387,8 @@ class AnalysisMatchData implements ShouldQueue
         //如果是分批传输，则结果只能最终一次性获取
         $matchInfo  = MatchModel::find($matchId);
         $userId     = $matchInfo->user_id;
+
+        //如果是sensor的最后一条数据，那么需要等待同一只脚的sensor数据解析完毕后才能解析
 
         //1.sensor
         if(in_array('sensor',$types))
