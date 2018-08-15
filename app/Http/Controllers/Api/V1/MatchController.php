@@ -86,11 +86,11 @@ class MatchController extends Controller
     {
         $matchId    = $request->input('matchId');
         $dataes     = DB::table('match_source_data')->where('match_id',$matchId)->get();
-        foreach($dataes as $data)
+        $url            = url('api/v1/match/jiexi_single_data');
+        foreach($dataes as $key=> $data)
         {
-            $delayTime      = now()->addSecond(2);
-            AnalysisMatchData::dispatch($data->match_source_id,true)->delay($delayTime);
-            sleep(1);
+            $delayTime      = now()->addSecond(3*$key);
+            AnalysisMatchData::dispatch($data->match_source_id,true,$url)->delay($delayTime);
         }
 
         return apiData()->send();
