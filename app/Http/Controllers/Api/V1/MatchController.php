@@ -79,7 +79,22 @@ class MatchController extends Controller
     }
 
 
+    public function jiexi_match(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $dataes     = DB::table('match_source_data')->where('match_id',$matchId)->get();
+        foreach($dataes as $data)
+        {
+            $delayTime      = now()->addSecond(2);
+            AnalysisMatchData::dispatch($data->match_source_id,true)->delay($delayTime);
+            sleep(1);
+        }
+
+        return apiData()->send();
+    }
+
     public function test_match(Request $request){
+        //return (new AnalysisMatchData(1))->create_json_data(407,['sensor'],'R');
         //数据存储完毕，调用MATLAB系统开始计算
         $sourceId       = $request->input('sourceId');
         $delayTime      = now()->addSecond(2);
