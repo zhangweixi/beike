@@ -53,14 +53,6 @@ class MatchController extends Controller
             'is_finish' => $isFinish
         ];
 
-        //1.储存数据
-        $matchModel     = new MatchModel();
-        $sourceId       = $matchModel->add_match_source_data($matchData);
-
-        //数据存储完毕，调用MATLAB系统开始计算
-
-
-
         //之前是否有 未完成解析的数据  正在解析  不要加入队列
         $hasData = DB::table('match_source_data')
             ->where('user_id',$userId)
@@ -68,13 +60,21 @@ class MatchController extends Controller
             ->where('foot',$foot)
             ->where('status',"<",2)
             ->first();
-        
+
+
+        //1.储存数据
+        $matchModel     = new MatchModel();
+        $sourceId       = $matchModel->add_match_source_data($matchData);
+
         if($hasData == null)
         {
             $url            = url('api/v1/match/jiexi_single_data');
             $delayTime      = now()->addSecond(2);
             AnalysisMatchData::dispatch($sourceId,true,$url)->delay($delayTime);
         }
+
+
+        //数据存储完毕，调用MATLAB系统开始计算
 
         return apiData()->send(200,'ok');
     }
