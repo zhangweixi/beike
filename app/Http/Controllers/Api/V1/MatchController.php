@@ -59,9 +59,22 @@ class MatchController extends Controller
 
         //数据存储完毕，调用MATLAB系统开始计算
 
-        $url            = url('api/v1/match/jiexi_single_data');
-        $delayTime      = now()->addSecond(2);
-        AnalysisMatchData::dispatch($sourceId,true,$url)->delay($delayTime);
+
+
+        //之前是否有 未完成解析的数据  正在解析  不要加入队列
+        $hasData = DB::table('match_source_data')
+            ->where('user_id',$userId)
+            ->where('type',$dataType)
+            ->where('foot',$foot)
+            ->where('status',"<",2)
+            ->first();
+        
+        if($hasData == null)
+        {
+            $url            = url('api/v1/match/jiexi_single_data');
+            $delayTime      = now()->addSecond(2);
+            AnalysisMatchData::dispatch($sourceId,true,$url)->delay($delayTime);
+        }
 
         return apiData()->send(200,'ok');
     }

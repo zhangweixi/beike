@@ -187,6 +187,7 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
+
         //1.切分成单组
         $dataStr    = Storage::disk('local')->get($sourceData->data);
         $dataArr    = explode(",",$dataStr);
@@ -459,9 +460,8 @@ class AnalysisMatchData implements ShouldQueue
                 {
                     foreach($data as $d)
                     {
-                        array_push($matchData['ax'],$d->x);
-                        array_push($matchData['ay'],$d->y);
-                        array_push($matchData['az'],$d->z);
+                        array_push($matchData['lat'],$d->lat);
+                        array_push($matchData['lon'],$d->lon);
                     }
                 });
             $resultFile = "match/".$matchId."-".$type.".json";
