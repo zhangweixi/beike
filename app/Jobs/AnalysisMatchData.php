@@ -33,13 +33,13 @@ class AnalysisMatchData implements ShouldQueue
     public $timeout = 80;
     public $saveToDB= false;
     public $fenpi   = true;
+    public $jiexiUrl= "";
 
-
-    public function __construct($sourceId,$saveToDB = false)
+    public function __construct($sourceId,$saveToDB = false,$jiexiUrl='')
     {
         $this->sourceId = $sourceId;
         $this->saveToDB = $saveToDB;
-
+        $this->jiexiUrl= $jiexiUrl;
     }
 
 
@@ -133,26 +133,17 @@ class AnalysisMatchData implements ShouldQueue
      */
     public function handle()
     {
-       /* if(true)
-        {
-            set_time_limit(70);
-            $i=1;
-            while(true)
-            {
-                sleep(1);
-                mylogger($i);
-                $i++;
-            }
-        }*/
-
-
         //获得数据信息
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
 
         //检查本信息是否处理过
-        if($sourceData->status == 1)
-        {
+        if($sourceData->status != 0) {
+
             return true;
+
+        }else{
+            //标记处于解析状态中
+            MatchModel::update_match_data($this->sourceId,['status'=>1]);
         }
 
         $type       = $sourceData->type;
@@ -161,7 +152,7 @@ class AnalysisMatchData implements ShouldQueue
 
         //判断同类型的上一条数据是否解析完毕
         $prevSourceDataId   = 0;
-        mylogger($this->sourceId);
+
         while (true){
 
             if($prevSourceDataId > 0){
@@ -185,15 +176,15 @@ class AnalysisMatchData implements ShouldQueue
 
 
             //在此之前没有未处理的数据
-            if($prevSourceData == null || $prevSourceData->status == 1) {
+            if($prevSourceData == null || $prevSourceData->status == 2) {
 
                 break;
 
             }else{
 
                 $prevSourceDataId   = $prevSourceData->match_source_id;
+                sleep(1);
             }
-            sleep(1);
         }
 
         //1.切分成单组
@@ -334,7 +325,31 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         //数据解析完毕，修改标记
-        DB::table('match_source_data')->where('match_source_id',$this->sourceId)->update(['status'=>1]);
+        MatchModel::update_match_data($this->sourceId,['status'=>2]);
+
+        /*========本条数据解析完毕，请求解析下一条数据 begin ===*/
+
+
+        if($this->jiexiUrl != "")
+        {
+            $nextData = DB::table('match_source_data')
+                ->where('user_id',$userId)
+                ->where('foot',$foot)
+                ->where('type',$type)
+                ->where('status',0)
+                ->where('match_source_id','>',$this->sourceId)
+                ->orderBy('match_source_id')
+                ->first();
+
+            if($nextData)
+            {
+                $url = $this->jiexiUrl."?matchSourceId=" . $nextData->match_source_id;
+                file_get_contents($url);
+            }
+        }
+
+        /*========本条数据解析完毕，请求解析下一条数据 end =====*/
+
 
 
         //如何判断一场数据是否传完

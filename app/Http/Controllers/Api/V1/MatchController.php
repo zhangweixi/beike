@@ -57,34 +57,30 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
-
-        //如果是最后一条，判断是否结束
-        //$request->offsetSet('sourceId',$sourceId);
-        //$this->handle_data($request);
-
-
-        //2.开始解析数据
-        //$job    = new AnalysisMatchData($sourceId);
-        //$job->handle();
-
         //数据存储完毕，调用MATLAB系统开始计算
-        //根据未解析的数据量来设定延时
-        $num = DB::table('match_source_data')
-            ->where('user_id',$userId)
-            ->where('foot',$foot)
-            ->where('type',$dataType)
-            ->where('status',0)
-            ->count();
 
-        $delayTime      = now()->addSecond(3 * $num);
-        AnalysisMatchData::dispatch($sourceId,true)->delay($delayTime);
-
-        //创建json文件  请求matlab来读取分析
-        //$this->create_json($matchId);
+        $url            = url('api/v1/match/jiexi_single_data');
+        $delayTime      = now()->addSecond(2);
+        AnalysisMatchData::dispatch($sourceId,true,$url)->delay($delayTime);
 
         return apiData()->send(200,'ok');
     }
 
+
+    public function jiexi_single_data(Request $request)
+    {
+        $matchSourceId  = $request->input('matchSourceId',0);
+        $dataInfo       = DB::table('match_source_data')->where('match_source_id',$matchSourceId)->first();
+
+        if($dataInfo->status == 0)
+        {
+            $delayTime      = now()->addSecond(1);
+            $url            = url('api/v1/match/jiexi_single_data');
+            AnalysisMatchData::dispatch($matchSourceId,true,$url)->delay($delayTime);
+        }
+
+        return apiData()->send();
+    }
 
     public function jiexi_match(Request $request)
     {

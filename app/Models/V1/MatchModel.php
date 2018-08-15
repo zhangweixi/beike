@@ -197,4 +197,16 @@ class MatchModel extends Model
     }
 
 
+    /**
+     * 修改原始数据
+     * */
+    public static function update_match_data($dataId,array $data)
+    {
+        $res = DB::table('match_source_data')
+            ->where('match_source_id',$dataId)
+            ->update($data);
+
+        return $res;
+    }
+
 }
