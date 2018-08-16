@@ -137,7 +137,7 @@ class MatchController extends Controller
     {
         //return hexToInt("f9ffffff");
 
-        return hexdec(reverse_hex("155f722265010000"));
+        return hexdec(reverse_hex("c40a713d65010000"));
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
@@ -782,59 +782,11 @@ class MatchController extends Controller
 
     public function create_compass_data(Request $request)
     {
-        $matchModel = new MatchModel();
-        $matchId    = $request->input('matchId');
-        $matchInfo  = $matchModel->get_match_detail($matchId);
-
-        $compassTable   = "user_".$matchInfo->user_id."_compass";
-        $sensorTable    = "user_".$matchInfo->user_id."_sensor";
-
-        $file = public_path("compass.txt");
-        if(file_exists($file))
-        {
-            unlink($file);
-        }
-        $id = 0;
-
-        DB::connection('matchdata')
-            ->table($compassTable)
-            ->where('match_id',$matchId)
-            ->orderBy('id')
-            ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id)
-        {
-            foreach($compasses as $compass)
-            {
-                $timestamp = $compass->timestamp;
-
-                $sensor = DB::connection("matchdata")
-                    ->table($sensorTable)
-                    ->where('id',">=",$id)
-                    ->where("match_id",$matchId)
-                    ->where('timestamp',">=",$timestamp)
-                    ->where('type','A')
-                    ->orderBy('id')
-                    ->first();
-
-
-                if($sensor == null)
-                    continue;
-                $id = $sensor->id;
-                $info = [
-                    "ax"    => $sensor->x,
-                    "ay"    => $sensor->y,
-                    "az"    => $sensor->z,
-                    "cx"    => $compass->x,
-                    "cy"    => $compass->y,
-                    "cz"    => $compass->z
-                ];
-
-                file_put_contents(public_path("uploads/match/".$matchId."-compass.txt"), implode(",",$info)."\n",FILE_APPEND);
-            }
-        });
-
-        //由罗盘信息转换成航向角
-
-        return "success";
+        $matchId    = $request->input('matchId',0);
+        $foot       = $request->input('foot','');
+        $job        = new AnalysisMatchData();
+        $res        = $job->create_compass_data($matchId,$foot);
+        return apiData()->send();
     }
 
 

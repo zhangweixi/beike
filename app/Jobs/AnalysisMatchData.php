@@ -35,7 +35,7 @@ class AnalysisMatchData implements ShouldQueue
     public $fenpi   = true;
     public $jiexiUrl= "";
 
-    public function __construct($sourceId,$saveToDB = false,$jiexiUrl='')
+    public function __construct($sourceId=0,$saveToDB = false,$jiexiUrl='')
     {
         $this->sourceId = $sourceId;
         $this->saveToDB = $saveToDB;
@@ -840,7 +840,7 @@ class AnalysisMatchData implements ShouldQueue
         //由罗盘信息转换成航向角
         $this->compass_translate($infile,$outfile);
 
-        return "success";
+        return true;
     }
 
 
