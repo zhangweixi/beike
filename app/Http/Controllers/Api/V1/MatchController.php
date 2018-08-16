@@ -35,6 +35,7 @@ class MatchController extends Controller
         $dataType   = $request->input('dataType');
         $foot       = $request->input('foot');
         $isFinish   = $request->input('isFinish',0);
+        $isAll      = $request->input('isAll',0);
 
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
@@ -50,7 +51,8 @@ class MatchController extends Controller
             'type'      => $dataType,
             'data'      => $file,
             'foot'      => $foot,
-            'is_finish' => $isFinish
+            'is_finish' => $isFinish,
+            'status'    => $isAll == 1 ? 2 : 0
         ];
 
         //之前是否有 未完成解析的数据  正在解析  不要加入队列
@@ -65,6 +67,11 @@ class MatchController extends Controller
         //1.储存数据
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
+
+        if($isAll == 1)
+        {
+            return apiData()->send();
+        }
 
         if($hasData == null)
         {
@@ -137,7 +144,7 @@ class MatchController extends Controller
     {
         //return hexToInt("f9ffffff");
 
-        return hexdec(reverse_hex("c40a713d65010000"));
+        return hexdec(reverse_hex("50fccb4065010000"));
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
@@ -787,7 +794,7 @@ class MatchController extends Controller
         $foot       = $request->input('foot','');
         $job        = new AnalysisMatchData();
         $res        = $job->create_compass_data($matchId,$foot);
-        
+
         mylogger('end');
         return apiData()->send();
     }
