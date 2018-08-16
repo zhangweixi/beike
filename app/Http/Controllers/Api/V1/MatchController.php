@@ -39,7 +39,7 @@ class MatchController extends Controller
 
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
-        $time   = date('His');
+        $time   = create_member_number();
         $file   = $date."/".$userId."-".$dataType.'-'.$time.".txt";//文件格式
 
         Storage::disk('local')->put($file,$deviceData);
