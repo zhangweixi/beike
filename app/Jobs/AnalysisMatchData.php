@@ -140,15 +140,31 @@ class AnalysisMatchData implements ShouldQueue
         if($sourceData->status != 0) {
 
             return true;
-
-        }else{
-            //标记处于解析状态中
-            MatchModel::update_match_data($this->sourceId,['status'=>1]);
         }
+
 
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
         $foot       = $sourceData->foot;
+
+        //如果是最后一条罗盘数据，判断sensor是否解析完毕，只有sensor解析完毕后才能计算角度
+        if($type == 'compass' && $sourceData->is_finish == 1) {
+
+            $hasFile    = DB::table('match_source_data')
+                ->where('user_id',$userId)
+                ->where('foot',$foot)
+                ->where('type','sensor')
+                ->where('status','<',2)
+                ->first();
+
+            if($hasFile)
+            {
+                return true;
+            }
+        }
+
+        //标记处于解析状态中
+        MatchModel::update_match_data($this->sourceId,['status'=>1]);
 
         //判断同类型的上一条数据是否解析完毕
         $prevSourceDataId   = 0;
@@ -346,6 +362,22 @@ class AnalysisMatchData implements ShouldQueue
             {
                 $url = $this->jiexiUrl."?matchSourceId=" . $nextData->match_source_id;
                 file_get_contents($url);
+
+            }else{ //解析最后一条罗盘
+
+                $compassData = DB::table('match_source_data')
+                    ->where('user_id',$userId)
+                    ->where('foot',$foot)
+                    ->where('type','compass')
+                    ->where('status',0)
+                    ->orderBy('match_source_id','desc')
+                    ->first();
+
+                if($compassData)
+                {
+                    $url = $this->jiexiUrl."?matchSourceId=" . $compassData->match_source_id;
+                    file_get_contents($url);
+                }
             }
         }
 
