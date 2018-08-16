@@ -782,10 +782,13 @@ class MatchController extends Controller
 
     public function create_compass_data(Request $request)
     {
+        mylogger('begin');
         $matchId    = $request->input('matchId',0);
         $foot       = $request->input('foot','');
         $job        = new AnalysisMatchData();
         $res        = $job->create_compass_data($matchId,$foot);
+        
+        mylogger('end');
         return apiData()->send();
     }
 
