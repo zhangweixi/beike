@@ -68,7 +68,7 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
-        if($isAll == 1)
+        if($isAll == 1 || $foot == 'L')
         {
             return apiData()->send();
         }
