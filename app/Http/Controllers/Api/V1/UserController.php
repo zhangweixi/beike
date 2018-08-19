@@ -361,6 +361,40 @@ class UserController extends Controller
 
 
     /**
+     * 消息分类
+     * */
+    public function message_type(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $msgTypes   = [
+            [
+                "msgType"   => 'focus',
+                "typeTitle" => "关注信息",
+                "icon"      => url('beike/images/icon/msg-focus.png'),
+                'msgNum'    => 0,
+                'newMsg'    => "一只小小龟请求关注你"
+            ],
+            [
+                "msgType"   => 'invite',
+                "typeTitle" => "邀请信息",
+                "icon"      => url('beike/images/icon/msg-invite.png'),
+                'msgNum'    => 0,
+                'newMsg'    => "11-09  14:00-16:00  虹口足球场"
+            ],
+            [
+                "msgType"   => 'system',
+                "typeTitle" => "系统信息",
+                "icon"      => url('beike/images/icon/msg-system.png'),
+                'msgNum'    => 0,
+                'newMsg'    => "一只小小龟请求关注你"
+            ]
+        ];
+
+        return apiData()->add('msgType',$msgTypes)->send();
+    }
+
+
+    /**
      * 用户信息列表
      * */
     public function message(Request $request)
@@ -380,6 +414,8 @@ class UserController extends Controller
         }
         return apiData()->add('message',$message)->send();
     }
+
+
 
     /**
      * 阅读消息
