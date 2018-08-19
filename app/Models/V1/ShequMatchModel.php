@@ -144,13 +144,14 @@ class ShequMatchModel extends Model{
     {
         $matchUsers = DB::table('shequ_user_match as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
-            ->select('b.nick_name',DB::raw('LEFT(b.birthday,4) as age'),'a.grade','b.role1 as role')
+            ->select('b.nick_name',DB::raw('LEFT(b.birthday,4) as age'),'a.grade','b.role1 as role','b.head_img')
             ->where('a.sq_match_id',$matchId)
             ->get();
 
         $year   = date('Y');
         foreach($matchUsers as $user)
         {
+            $user->head_img = get_default_head($user->head_img);
             $age        = $year - $user->age;
             $age        = $age > 200 ? "未知":(string)$age;
             $user->age  = $age;
