@@ -151,8 +151,8 @@ class FriendController extends Controller
 
         foreach($users as $user)
         {
-            array_push($mobiles,$user[0]);
-            $names["i".$user[0]] = $user[1];
+            array_push($mobiles,$user->mobile);
+            $names["i".$user->mobile] = $user->name;
         }
 
         //已注册的用户
@@ -180,11 +180,11 @@ class FriendController extends Controller
         $unregisteredUsers    = [];
         foreach($users as $user)
         {
-            $mobile     = $user[0];
+            $mobile     = $user->mobile;
 
             if(!in_array($mobile,$registedMobiles))
             {
-                array_push($unregisteredUsers,['mobile'=>$mobile,'nick_name'=>$user[1]]);
+                array_push($unregisteredUsers,['mobile'=>$mobile,'nick_name'=>$user->name]);
             }
         }
         return apiData()->add('registeredUsers',$registeredUsers)->add('unregisteredUsers',$unregisteredUsers)->send();
