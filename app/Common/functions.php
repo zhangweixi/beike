@@ -638,9 +638,10 @@ function getMillisecond()
 /**
  * 十六进制转十进制 高位在前 低位在后
  * @param $hex string 十六进制字符串
+ * @param $leng string 解出来的类型
  * @return string|boolean
  * */
-function hexToInt($hex)
+function hexToInt($hex,$leng = "l")
 {
     //反转16进制
     $hex    = reverse_hex($hex);
@@ -648,8 +649,9 @@ function hexToInt($hex)
     {
         return $hex;
     }
-    return unpack("l", pack("l", hexdec($hex)))[1];
+    return unpack($leng, pack("l", hexdec($hex)))[1];
 }
+
 
 /**
  * @param $hex string 十六进制字符串
@@ -667,6 +669,15 @@ function HexToFloat($hex){
     }
 
     return unpack("f", pack("l", hexdec($hex)))[1];
+}
+
+
+/*
+ * 十六进制转时间戳
+ * */
+function HexToTime($hexTime)
+{
+    return hexdec(reverse_hex($hexTime));
 }
 
 

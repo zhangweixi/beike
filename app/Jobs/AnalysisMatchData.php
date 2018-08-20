@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchResultModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -34,6 +35,8 @@ class AnalysisMatchData implements ShouldQueue
     public $saveToDB= false;
     public $fenpi   = true;
     public $jiexiUrl= "";
+    public $userId  = 0;
+
 
     public function __construct($sourceId=0,$saveToDB = false,$jiexiUrl='')
     {
@@ -45,19 +48,6 @@ class AnalysisMatchData implements ShouldQueue
 
     public function create_table($userId,$type)
     {
-        /*gps_id
-        match_id
-        lat
-        lon
-        speed
-        direction
-        status
-        data_key
-        source_data
-        created_at
-        source_id
-        timestamp*/
-
         $table = "user_" . $userId . "_" . $type;
 
         $hasTable = Schema::connection('matchdata')->hasTable($table);
@@ -67,11 +57,13 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         if ($type == 'gps') {
-            Schema::connection('matchdata')->create($table, function (Blueprint $table) {
 
+            Schema::connection('matchdata')->create($table, function (Blueprint $table)
+            {
                 $table->increments('id');
                 $table->integer('match_id');
                 $table->integer('source_id');
+                $table->string('type');
                 $table->string('lat');
                 $table->string('lon');
                 $table->string('foot');
@@ -82,27 +74,18 @@ class AnalysisMatchData implements ShouldQueue
 
         } elseif($type == 'sensor') {
 
-            /*sensor_id
-            match_id
-            x
-            y
-            z
-            data_key
-            source_data
-            created_at
-            source_id
-            type
-            timestamp*/
-
-            Schema::connection("matchdata")->create($table, function (Blueprint $table) {
-
+            Schema::connection("matchdata")->create($table, function (Blueprint $table)
+            {
                 $table->increments('id');
                 $table->integer('source_id');
                 $table->integer('match_id');
                 $table->string('foot');
-                $table->double('x');
-                $table->double('y');
-                $table->double('z');
+                $table->double('ax');
+                $table->double('ay');
+                $table->double('az');
+                $table->double('gx');
+                $table->double('gy');
+                $table->double('gz');
                 $table->string('type');
                 $table->string('source_data');
                 $table->bigInteger('timestamp');
@@ -110,11 +93,12 @@ class AnalysisMatchData implements ShouldQueue
             });
         } elseif($type == 'compass') {
 
-            Schema::connection("matchdata")->create($table, function (Blueprint $table) {
-
+            Schema::connection("matchdata")->create($table, function (Blueprint $table)
+            {
                 $table->increments('id');
                 $table->integer('source_id');
                 $table->integer('match_id');
+                $table->string('type');
                 $table->string('foot');
                 $table->double('x');
                 $table->double('y');
@@ -146,22 +130,8 @@ class AnalysisMatchData implements ShouldQueue
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
         $foot       = $sourceData->foot;
+        $this->userId = $userId;
 
-        //如果是最后一条罗盘数据，判断sensor是否解析完毕，只有sensor解析完毕后才能计算角度
-        if($type == 'compass' && $sourceData->is_finish == 1) {
-
-            $hasFile    = DB::table('match_source_data')
-                ->where('user_id',$userId)
-                ->where('foot',$foot)
-                ->where('type','sensor')
-                ->where('status','<',2)
-                ->first();
-
-            if($hasFile)
-            {
-                return true;
-            }
-        }
 
         //标记处于解析状态中
         MatchModel::update_match_data($this->sourceId,['status'=>1]);
@@ -169,7 +139,7 @@ class AnalysisMatchData implements ShouldQueue
         //判断同类型的上一条数据是否解析完毕
         $prevSourceDataId   = 0;
 
-        while (true){
+        while (false){
 
             if($prevSourceDataId > 0){
 
@@ -212,25 +182,44 @@ class AnalysisMatchData implements ShouldQueue
 
         //0.创建数据表
         $this->create_table($userId,$type);
+        $table      = "user_".$userId."_".$type;
+        $db         = DB::connection('matchdata')->table($table);
+
+
+        //从最后一条数据获得历史最新时间和比赛ID
+        $lastData   = $db->orderBy('id','desc')->first();
+
+        if($lastData){
+
+            $matchId    = $lastData->match_id;
+            $syncTime   = $lastData->timestamp;
+
+        }else{
+
+            $matchId    = 0;
+            $syncTime   = 0;
+        }
 
         //2.连接之前不完整的数据
-        $prevData   = $this->get_prev_sensor_data($userId,$type,$foot);
-        $datas      = $prevData.$dataStr;
+        //$prevData   = $this->get_prev_data($userId,$type,$foot);
+        //$datas      = $prevData.$dataStr;
+
 
         //mylogger("开始解析:".time());
         //3.解析数据
         if($type == 'sensor')
         {
-            $datas = $this->handle_sensor_data($datas);
+            $datas = $this->handle_sensor_data($dataStr,$matchId,$syncTime);
 
         }elseif($type == 'gps'){
 
-            $datas = $this->handle_gps_data($datas);
+            $datas = $this->handle_gps_data($dataStr,$matchId);
 
         }elseif($type == 'compass'){
 
-            $datas = $this->handle_compass_data($datas);
+            $datas = $this->handle_compass_data($dataStr,$matchId,$syncTime);
         }
+
 
         //mylogger("解析完毕:".time());
 
@@ -241,82 +230,37 @@ class AnalysisMatchData implements ShouldQueue
             'created_at'    => $createdAt,
         ];
 
-        $table  = "user_".$userId."_".$type;
 
-        //获得最近的一场比赛
-        //4.存储数据 添加其他数据
-
-        //获得最新一次比赛时间
-        $matchTimeInfo  = "";
-
-
+        //这里将数据产生了两份  一份是原始数据datas,一份是新的数据 $matchesData
         //多场数据
         $matchesData    = [];
 
-        //dd($datas);
-        //这里将数据产生了两份  一份是原始数据datas,一份是新的数据 $matches
 
         foreach($datas as $key=>$data)
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
-            loopbegin:
-
-            if($matchTimeInfo
-                && $data['timestamp'] >= $matchTimeInfo->time_begin
-                && $data['timestamp'] <= $matchTimeInfo->time_end
-                && $data['timestamp'] != 0)
+            $matchId    = $data['match_id'];
+            if(!isset($matchesData[$matchId]))
             {
+                $matchesData[$matchId]  = [
 
-                $matchId    = $matchTimeInfo->match_id;
-
-                if(!isset($matchesData[$matchId]))
-                {
-
-                    $matchesData[$matchId]  = [
-                        'isFinish'  => $sourceData->is_finish,
-                        'matchId'   => $matchId,
-                        'data'      => []
-                    ];
-
-                    $sourceData->is_finish = 0; //本标记只能使用一次
-                }
-
-            }elseif($data['timestamp'] != 0){
-
-                $matchTimeInfo = $this->get_match_time($userId,$data['timestamp']);
-
-                //正常情况上传的数据都是一定能够找到时间的，如果找不到时间则表示一定有异常，应该停止
-                if(!$matchTimeInfo)
-                {
-                    echo "时间发生错误:";
-                    dd($data);
-                    dd("数据".$sourceData->match_source_id.'没有找到对应的比赛,时间为:'.$data['timestamp']);
-
-                }else{
-
-                    goto loopbegin;
-                }
-            }else{
-
-                $matchId    = 0 ;
-                if(!isset($matchesData[0]))
-                {
-                    $matchesData[0]  = [
-                        'isFinish'  => 0,
-                        'matchId'   => 0,
-                        'data'      => []
-                    ];
-                }
+                    'isFinish'  => 0,
+                    'matchId'   => $matchId,
+                    'data'      => []
+                ];
             }
 
-            $data['match_id']   = $matchId;
+            if($data['type'] == "E")
+            {
+                $matchesData[$matchId]['isFinish']  = 1;
+            }
+
             array_push($matchesData[$matchId]['data'],array_merge($data,$dataBaseInfo));
         }
 
 
-        //一条数据中的isFinish只能使用一次,如果AB两次比赛，A结束了，产生了isFinish,那么这个标记是A的，而不是B的
-
         //删除GPS最后一条数据,因为这条数据是不合格的
+        /*
         foreach($matchesData as $key => $matchData)
         {
             if($matchData['isFinish'] == 1 && $type == 'gps')
@@ -324,22 +268,23 @@ class AnalysisMatchData implements ShouldQueue
                 $len    = count($matchData['data']) - 1;
                 unset($matchesData[$key]['data'][$len]);
             }
-        }
+        }*/
 
         //将数据存入到数据库中
         //如果是分批传输，则解析后的内容必须存储在数据库
 
-        $db = DB::connection('matchdata')->table($table);
 
         //分批插入
         foreach($matchesData as $key => $matchData)
         {
             $multyData  = array_chunk($matchData['data'],1000);
+
             foreach($multyData as $key => $data)
             {
                 $db->insert($data);
             }
         }
+
 
         //数据解析完毕，修改标记
         MatchModel::update_match_data($this->sourceId,['status'=>2]);
@@ -363,26 +308,11 @@ class AnalysisMatchData implements ShouldQueue
                 $url = $this->jiexiUrl."?matchSourceId=" . $nextData->match_source_id;
                 file_get_contents($url);
 
-            }else{ //解析最后一条罗盘
-
-                $compassData = DB::table('match_source_data')
-                    ->where('user_id',$userId)
-                    ->where('foot',$foot)
-                    ->where('type','compass')
-                    ->where('status',0)
-                    ->orderBy('match_source_id','desc')
-                    ->first();
-
-                if($compassData)
-                {
-                    $url = $this->jiexiUrl."?matchSourceId=" . $compassData->match_source_id;
-                    file_get_contents($url);
-                }
             }
         }
 
-        /*========本条数据解析完毕，请求解析下一条数据 end =====*/
 
+        /*========本条数据解析完毕，请求解析下一条数据 end =====*/
 
 
         //如何判断一场数据是否传完
@@ -401,13 +331,15 @@ class AnalysisMatchData implements ShouldQueue
             }
 
             //sensor，罗盘都上传完毕，开始计算方向角
-            if($type == 'compass')
-            {
-                $this->create_compass_data($matchId,$foot);
 
-                //如果上传了两个已经结束的罗盘，则发起调用算法系统
-                $this->call_matlab($matchId);
-            }
+
+            //$this->create_compass_data($matchId,$foot);
+
+
+            //如果已经生成了航向角的文件，则发起调用算法系统
+
+            //$this->call_matlab($matchId);
+
 
             //生成对应的json文件
             $this->create_json_data($matchId,[$type],$foot);
@@ -415,7 +347,7 @@ class AnalysisMatchData implements ShouldQueue
             //如果GPS传输完毕,根据解析的数据生成热点图
             if($type == 'gps')
             {
-                $this->create_gps_map($matchId);
+                //$this->create_gps_map($matchId);
             }
         }
 
@@ -449,10 +381,12 @@ class AnalysisMatchData implements ShouldQueue
                 'ay'    => [],
                 'az'    => []
             ];
+
+
             DB::connection('matchdata')
                 ->table($table)
-                ->select('x','y','z')
-                ->where('type','A')
+                ->select('ax','ay','az')
+                ->where('type','')
                 ->where('foot',$foot)
                 ->where('match_id',$matchId)
                 ->orderBy('id')
@@ -460,9 +394,9 @@ class AnalysisMatchData implements ShouldQueue
                 {
                     foreach($data as $d)
                     {
-                        array_push($matchData['ax'],$d->x);
-                        array_push($matchData['ay'],$d->y);
-                        array_push($matchData['az'],$d->z);
+                        array_push($matchData['ax'],$d->ax);
+                        array_push($matchData['ay'],$d->ay);
+                        array_push($matchData['az'],$d->az);
                     }
                 });
 
@@ -507,38 +441,14 @@ class AnalysisMatchData implements ShouldQueue
     }
 
 
-    /**
-     * 获得比赛时间
-     * @param $userId integer 用户ID
-     * @param $dataTime string 往后一次的比赛时间
-     * */
-    public function get_match_time($userId,$dataTime)
-    {
 
-        $dataTime  = substr($dataTime,0,10);
-        $dataTime  = date('Y-m-d H:i:s',$dataTime);
-        $matchInfo = DB::table('match')
-            ->where('user_id',$userId)
-            ->where('time_begin',"<=",$dataTime)
-            ->where('time_end',">=",$dataTime)
-            ->where('deleted_at')
-            ->orderBy('match_id','desc')
-            ->first();
-
-        if($matchInfo)
-        {
-            $matchInfo->time_begin = strtotime($matchInfo->time_begin)*1000;
-            $matchInfo->time_end   = strtotime($matchInfo->time_end)*1000;
-        }
-        return $matchInfo;
-    }
 
     /**
      * 删除头部数据
      * @param $datas array 要处理的数据
      * @return array
      * */
-    private function delete_head(array $datas)
+    public function delete_head(array $datas)
     {
         foreach($datas as $key => $data)
         {
@@ -565,7 +475,7 @@ class AnalysisMatchData implements ShouldQueue
      * @param $foot string 脚
      * @return string
      * */
-    private function get_prev_sensor_data($userId,$type,$foot)
+    private function get_prev_data($userId,$type,$foot)
     {
         $table  = "user_".$userId."_".$type;
 
@@ -577,7 +487,7 @@ class AnalysisMatchData implements ShouldQueue
             ->orderBy('id','desc')
             ->first();
 
-        if($lastData && $lastData->timestamp == 0 && $type!= 'gps')
+        if($lastData && $lastData->timestamp == "" && $type!= 'gps')
         {
             DB::connection('matchdata')->table($table)->where('id',$lastData->id)->delete();
             $prevStr =  $lastData->source_data;
@@ -607,171 +517,342 @@ class AnalysisMatchData implements ShouldQueue
         var_dump($response);
     }
 
+    //通用类型
+    public $types   = [
+        '99'    => "B",
+        '88'    => "T",
+        'aa'    => "P",
+        'bb'    => "C",
+        'cc'    => "E"
+    ];
+
 
     /**
      * 读取sensor数据
      * @param $dataSource string 要解析的json数据
+     * @param $matchId integer 比赛ID
+     * @param $syncTime integer 同步时间
      * @return array
      * */
-    private function handle_sensor_data($dataSource)
+    private function handle_sensor_data($dataSource,$matchId,$syncTime=0)
     {
-        $leng       = 42;   //每一条数据的长度为42位 类型：2位 x:8,y:8,z:8,time:16
+        //每一条数据的长度为20位 类型：2位 x:4,y:4,z:4, 预览:4,校验:2
+
+        $leng       = 20;
         $dataArr    = str_split($dataSource,$leng);
-//        foreach($dataArr as $key => $d)
-//        {
-//            $str = substr($d,0,2)."  ";
-//            $str .= implode('  ',str_split(substr($d,2,24),8))."  ".substr($d,26);
-//            $dataArr[$key] = $str;
-//        }
+
         $insertData = [];
+
+
+
+        $invalidData   = [
+            'ax'            => 0,
+            'ay'            => 0,
+            'az'            => 0,
+            'gx'            => 0,
+            'gy'            => 0,
+            'gz'            => 0,
+            'type'          => "",
+            'timestamp'     => 0,
+            'source_data'   => 0,
+            "match_id"      => 0
+        ];
+
+        $validDataNum       = 0;
+
+        $content            = [
+            'ax'            => 0,
+            'ay'            => 0,
+            'az'            => 0,
+            'gx'            => 0,
+            'gy'            => 0,
+            'gz'            => 0,
+            'data'          => ''
+        ];
+
+        $perTime    = 1000/104;
+        $syncTime   = $perTime - $perTime;
 
         foreach($dataArr as $key => $d)
         {
-            if(strlen($d)<$leng)
-            {
-                $singleInsertData = [
-                    'x'             => 0,
-                    'y'             => 0,
-                    'z'             => 0,
-                    'type'          => "",
-                    'timestamp'     => 0,
-                    'source_data'   => $d,
-                ];
+            //if($key == 300) break;
+
+            $singleInsertData                   = $invalidData;
+            $singleInsertData['source_data']    = $d;
+            $singleInsertData['match_id']       = $matchId;
+
+            if(strlen($d)<$leng) {
+
 
             } else {
 
-                $type       = substr($d,1,1);
+                $type       = substr($d,0,2);
                 $d          = substr($d,2);
-                $single     = str_split($d,8);
 
-                for($i=0;$i<3;$i++)
-                {
-                    $single[$i] = hexToInt($single[$i]);
-                }
+                if($type == "01" || $type == "00"){ //正文数据
 
-                $timeStr        = $single[3].$single[4];
+                    $d          = substr($d,0,12);
+                    $single     = str_split($d,4);
 
-                $timestamp      = hexdec(reverse_hex($timeStr));
+                    for($i=0;$i<3;$i++)
+                    {
+                        $single[$i] = hexToInt($single[$i],'s');
+                    }
 
-                if ($type == 1)  //重力感应
-                {
-                    $type   = 'G';
+                    list($x,$y,$z)  = $single;
 
-                } elseif ($type == 0) { //acc 加速度
 
-                    $type   = "A";
+                    if($type == "00"){ //后出现 $type   = "A";
+
+                        $content['ax']      = bcdiv(bcadd(bcmul($x,488),500),1000);
+                        $content['ay']      = bcdiv(bcadd(bcmul($y,488),500),1000);
+                        $content['az']      = bcdiv(bcadd(bcmul($z,488),500),1000);
+                        $content['data']   .= ",".$singleInsertData['source_data'];
+
+
+                    }elseif($type == "01"){ //先出现 $type   = "G";
+
+                        $content['gx']      = bcadd(bcmul($x,70),0x55);
+                        $content['gy']      = bcadd(bcmul($y,70),0x1d);
+                        $content['gz']      = bcadd(bcmul($z,70),0x1c);
+                        $content['data']    = $singleInsertData['source_data'];
+                        continue;
+                    }
+
+                    $timestamp                  = bcadd($syncTime ,$validDataNum*$perTime);
+                    $validDataNum++;
+
+                    $singleInsertData['ax']     = $content['ax'];
+                    $singleInsertData['ay']     = $content['ay'];
+                    $singleInsertData['az']     = $content['az'];
+                    $singleInsertData['gx']     = $content['gx'];
+                    $singleInsertData['gy']     = $content['gy'];
+                    $singleInsertData['gz']     = $content['gz'];
+                    $singleInsertData['source_data']    = $content['data'];
+                    $singleInsertData['timestamp']      =$timestamp;
+
+                }elseif($type == "88" || $type == "99" || $type == 'aa' || $type == 'bb' || $type == 'cc' ) {
+
+                    // 同步 开始 暂停 继续 结束
+
+                    $timestamp  = substr($d,0,16);
+                    $timestamp  = HexToTime($timestamp);
+
+                    $syncTime                       = $timestamp;
+                    $type                           = $this->types[$type];
+                    $singleInsertData['type']       = $type;
+                    $singleInsertData['timestamp']  = $timestamp;
+
+                    if($type == 'B' ){   //开始比赛
+
+                        $matchId    = $this->find_match_by_time($timestamp);
+                        $singleInsertData['match_id']   = $matchId;
+                    }
+
 
                 }else{
 
-                    mylogger("错误类型——————".$type);
-                    continue;
+                    dd('数据类型错误:'.$d);
                 }
-
-                $singleInsertData = [
-                    'x'             => $single[0],
-                    'y'             => $single[1],
-                    'z'             => $single[2],
-                    'type'          => $type,
-                    'timestamp'     => $timestamp,
-                    'source_data'   => $d,
-                ];
             }
+
+            //array_push($insertData, $timestamp);
             array_push($insertData,$singleInsertData);
         }
+
         return $insertData;
     }
 
 
 
+
     /**
      * 从数据库读取数据并解析成想要的格式
+     * @param $dataSource string 原始数据
+     * @param $matchId integer 比赛ID
+     * @return Array
      * */
-    private function handle_gps_data($dataSource)
+    private function handle_gps_data($dataSource,$matchId)
     {
         $dataList    = explode("23232323",$dataSource); //gps才有232323
         $dataList    = array_filter($dataList);
 
         $insertData     = [];
 
-
         foreach($dataList as $key =>  $single)
         {
-
             //时间（16）长度（8）数据部分（n）
-            $time       = substr($single,0,16);
-            //$length     = substr(16,24);
+            $timestamp  = substr($single,0,16);
+            $length     = substr($single,16,8);
+            $timestamp  = HexToTime($timestamp);
 
-            $data       = substr($single,24);   //数据部分起始
-            $data       = strToAscll($data);
-            $detailInfo = explode(",",$data);
 
-            if(count($detailInfo)<15) //数据即便不合格，也不能丢弃
-            {
+            if($length == "00000000" || $length == "01000000" || $length == "02000000" || $length == "03000000"){
 
-                $otherInfo  = [
-                    'source_data'   => $single,
-                    'lat'           => 0,
-                    'lon'           => 0,
-                    'timestamp'     => strlen($time) == 16 ? hexdec(reverse_hex($time)) : 0
-                ];
+                if($length == "00000000"){
+
+                    $matchId    = $this->find_match_by_time($timestamp);
+                }
+
+                switch ($length)
+                {
+                    case "00000000": $type = "B";break;
+                    case "01000000": $type = "P";break;
+                    case "02000000": $type = "C";break;
+                    case "03000000": $type = "E";break;
+                }
+
+                $lon    = 0;
+                $lat    = 0;
 
             }else{
 
-                $timestamp  = hexdec(reverse_hex($time));
-                $tlat       = $detailInfo[2];
-                $tlon       = $detailInfo[4];
-                $otherInfo  = [
-                    'source_data'   => $single,
-                    'lat'           => floatval($tlat),//gps_to_gps($tlat)*1,
-                    'lon'           => floatval($tlon),//gps_to_gps($tlon)*1,
-                    'timestamp'     => $timestamp
-                ];
+                $data       = substr($single,24);   //数据部分起始
+                $data       = strToAscll($data);
+                $detailInfo = explode(",",$data);
+                $type       = "";
+
+                //数据即便不合格，也不能丢弃
+                if(count($detailInfo)<15) {
+
+                    $lat    = 0;
+                    $lon    = 0;
+
+                }else{
+
+                    $lat       = floatval($detailInfo[2]);
+                    $lon       = floatval($detailInfo[4]);
+                }
+
             }
+
+            $otherInfo  = [
+                'source_data'   => $single,
+                'lat'           => $lat,
+                'lon'           => $lon,
+                'timestamp'     => $timestamp,
+                'match_id'      => $matchId,
+                'type'          => $type
+            ];
+
             array_push($insertData,$otherInfo);
         }
+
         return $insertData;
     }
 
 
-    private function handle_compass_data($dataSource)
-    {
 
-        $leng   = 40;
-        $dataArr= str_split($dataSource,$leng);
-        //dd($dataArr);
+    /**
+     * 解压罗盘数据
+     * @param $dataSource string 原始数据
+     * @param $matchId integer 比赛ID
+     * @param $syncTime integer 同步时间
+     * @return array
+     * */
+    private function handle_compass_data($dataSource,$matchId,$syncTime=0)
+    {
+        $syncTime   = $syncTime + 40;
+        $leng       = 28;
+        $dataArr    = str_split($dataSource,$leng);
+
         $insertData     = [];
+        $invalidData    = [
+            'x' => 0,
+            'y' => 0,
+            'z' => 0,
+            'timestamp'     => 0,
+            'source_data'   => 0,
+        ];
+
+        $validDataNum       = 0;
 
         foreach($dataArr as $key => $data)
         {
-            $sourceData     = $data;
+            $singleData     = $invalidData;
+            $singleData['source_data']  = $data;
+            $singleData['match_id']     = $matchId;
+
             if(strlen($data) < $leng)
             {
+                dd("数据长度不够".$data);
                 continue;
             }
 
-
-
+            $type       = substr($data,0,2);
+            $data       = substr($data,2,24);
             $data       = str_split($data,8);
 
-            $timestamp  = hexdec(reverse_hex($data[3].$data[4]));
+            if($type == "00"){
 
+                foreach($data as $key2 => $v2)
+                {
+                    $data[$key2]  = HexToFloat($v2);
+                }
 
+                $timestamp          = $syncTime + $validDataNum*40;
+                $singleData['x']    = $data[0];
+                $singleData['y']    = $data[1];
+                $singleData['z']    = $data[2];
+                $singleData['type'] = "";
+                $singleData['timestamp'] = $timestamp;
 
-            foreach($data as $key2 => $v2)
-            {
-                $data[$key2]  = HexToFloat($v2);
+                $validDataNum++;
+
+            }elseif($type == '88' || $type == '99' || $type == 'aa' || $type == 'bb' || $type == 'cc'){
+
+                $timestamp  = $data[0].$data[1];
+                $timestamp  = HexToTime($timestamp);
+                $syncTime   = $timestamp;
+                $validDataNum = 0;
+
+                if($type == "99"){
+
+                    $matchId    = $this->find_match_by_time($timestamp);
+                }
+
+                $type       = $this->types[$type];
+                $singleData['type']     = $type;
+                $singleData['timestamp']= $timestamp;
+                $singleData['match_id'] = $matchId;
+
+            }else{
+
+                dd('类型错误'. $singleData['source_data']);
             }
 
-            array_push($insertData,[
-                'x' => $data[0],
-                'y' => $data[1],
-                'z' => $data[2],
-                'timestamp'     => $timestamp,
-                'source_data'   => $sourceData,
-            ]);
+            array_push($insertData,$singleData);
         }
 
+
         return $insertData;
+    }
+
+
+
+    /**
+     * 根据开始时间查找比赛
+     * @param $beginTime string 比赛开始时间
+     * */
+    public function find_match_by_time($beginTime)
+    {
+        $beginTime  = substr($beginTime,0,10);
+        $beginTime  = date('Y-m-d H:i:s',$beginTime);
+        $matchInfo = DB::table('match')
+            ->where('user_id',$this->userId)
+            ->where('time_begin',"<=",$beginTime)
+            ->where('time_end',">=",$beginTime)
+            ->where('deleted_at')
+            ->orderBy('match_id','desc')
+            ->first();
+
+
+        if($matchInfo)
+        {
+            return $matchInfo->match_id;
+        }
+
+        dd('无法找到比赛ID,userId:'.$this->userId.",time:".$beginTime);
     }
 
 

@@ -68,7 +68,7 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
-        if($isAll == 1 || $foot == 'L')
+        if($isAll == 1 || $foot == 'R')
         {
             return apiData()->send();
         }
@@ -128,7 +128,6 @@ class MatchController extends Controller
 
     public function jiexi(Request $request){
 
-
         //数据存储完毕，调用MATLAB系统开始计算
         $sourceId = $request->input('sourceId');
 
@@ -144,7 +143,7 @@ class MatchController extends Controller
     {
         //return hexToInt("f9ffffff");
 
-        return hexdec(reverse_hex("50fccb4065010000"));
+        return hexdec(reverse_hex("00874c5565010000"));
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
