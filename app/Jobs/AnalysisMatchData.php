@@ -336,12 +336,11 @@ class AnalysisMatchData implements ShouldQueue
             $matchProcess   = BaseMatchDataProcessModel::find($matchId);
             if($matchProcess){
 
-                $matchProcess->update([$type."_".$foot => 1]);
+                BaseMatchDataProcessModel::where('match_id',$matchId)->update([$type."_".$foot => 1]);
 
             }else{
 
                 BaseMatchDataProcessModel::insert(['match_id'=>$matchId,$type."_".$foot=>1]);
-
             }
 
 
