@@ -588,7 +588,7 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($dataArr as $key => $d)
         {
-            //if($key == 300) break;
+            if($key == 300)
 
             $singleInsertData                   = $invalidData;
             $singleInsertData['source_data']    = $d;
@@ -632,6 +632,7 @@ class AnalysisMatchData implements ShouldQueue
                         continue;
                     }
 
+                    //mylogger($syncTime."-".$validDataNum."*".$perTime);
                     $timestamp                  = bcadd($syncTime ,$validDataNum*$perTime);
                     $validDataNum++;
 
@@ -647,11 +648,14 @@ class AnalysisMatchData implements ShouldQueue
                 }elseif($type == "88" || $type == "99" || $type == 'aa' || $type == 'bb' || $type == 'cc' ) {
 
                     // 同步 开始 暂停 继续 结束
-
+                    $validDataNum= 0;
                     $timestamp  = substr($d,0,16);
                     $timestamp  = HexToTime($timestamp);
 
                     $syncTime                       = $timestamp;
+
+                    //mylogger("同步时间:".$syncTime);
+
                     $type                           = $this->types[$type];
                     $singleInsertData['type']       = $type;
                     $singleInsertData['timestamp']  = $timestamp;
