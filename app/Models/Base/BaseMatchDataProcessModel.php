@@ -7,4 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class BaseMatchDataProcessModel extends Model
 {
     protected $table        = "match_data_process";
+    protected $primaryKey   = "match_id";
 }

@@ -332,8 +332,21 @@ class AnalysisMatchData implements ShouldQueue
 
             //sensor，罗盘都上传完毕，开始计算方向角
 
+            //更新数据解析进度
+            $matchProcess   = BaseMatchDataProcessModel::find($matchId);
+            if($matchProcess){
+
+                $matchProcess->update([$type."_".$foot => 1]);
+
+            }else{
+                BaseMatchDataProcessModel::insert(['match_id'=>$matchId,$type."_".$foot=>1]);
+            }
+
+            //$matchProcess   = BaseMatchDataProcessModel::find($matchId);
+
 
             //$this->create_compass_data($matchId,$foot);
+
 
 
             //如果已经生成了航向角的文件，则发起调用算法系统
@@ -571,7 +584,7 @@ class AnalysisMatchData implements ShouldQueue
         ];
 
         $perTime    = 1000/104;
-        $syncTime   = $perTime - $perTime;
+        $syncTime   = $syncTime - $perTime;
 
         foreach($dataArr as $key => $d)
         {
