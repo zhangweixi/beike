@@ -339,12 +339,13 @@ class AnalysisMatchData implements ShouldQueue
                 $matchProcess->update([$type."_".$foot => 1]);
 
             }else{
+
                 BaseMatchDataProcessModel::insert(['match_id'=>$matchId,$type."_".$foot=>1]);
+
             }
 
-            //$matchProcess   = BaseMatchDataProcessModel::find($matchId);
 
-
+            //生成匹配文件耗时太多，不能在一个线程里单独完成
             //$this->create_compass_data($matchId,$foot);
 
 
@@ -872,14 +873,33 @@ class AnalysisMatchData implements ShouldQueue
     }
 
 
-
+    /**
+     * 生成计算角度的罗盘和sensor数据
+     * @param $matchId integer 比赛ID
+     * @param $foot string 脚
+     * @return boolean
+     * */
     public function create_compass_data($matchId,$foot)
     {
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
 
+        //检查sensor和compass是否都解析完毕
+        $matchProcess   = BaseMatchDataProcessModel::find($matchId);
+        $sensorColum    = "sensor_".$foot;
+        $compassColum   = "compass_".$foot;
+
+        if($matchProcess == null ||
+            $matchProcess->$sensorColum == 0 ||
+            $matchProcess->$compassColum == 0)
+        {
+
+            return true;
+        }
+
         $compassTable   = "user_".$matchInfo->user_id."_compass";
         $sensorTable    = "user_".$matchInfo->user_id."_sensor";
+
         mk_dir(public_path("uploads/temp"));
 
         //两只脚的数据
