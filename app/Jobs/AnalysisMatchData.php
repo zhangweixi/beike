@@ -121,7 +121,7 @@ class AnalysisMatchData implements ShouldQueue
         $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
 
         //检查本信息是否处理过
-        if($sourceData->status != 0) {
+        if($sourceData->status != 0 ) {
 
             return true;
         }
@@ -588,7 +588,6 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($dataArr as $key => $d)
         {
-            if($key == 300)
 
             $singleInsertData                   = $invalidData;
             $singleInsertData['source_data']    = $d;
