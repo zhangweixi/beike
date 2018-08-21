@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Base\BaseMatchResultModel;
+use App\Models\Base\BaseMatchSourceDataModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
@@ -36,6 +37,15 @@ class MatchController extends Controller
         $foot       = $request->input('foot');
         $isFinish   = $request->input('isFinish',0);
         $isAll      = $request->input('isAll',0);
+
+        //数据校验  以防客户端网络异常导致数据上传重复
+        $checkCode  = crc32($deviceData);
+        $hasFile    = BaseMatchSourceDataModel::check_has_save_data($userId,$checkCode);
+
+        if($hasFile){
+
+            return apiData()->send(2001,'数据重复上传');
+        }
 
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
@@ -79,7 +89,6 @@ class MatchController extends Controller
             $delayTime      = now()->addSecond(2);
             AnalysisMatchData::dispatch($sourceId,true,$url)->delay($delayTime);
         }
-
 
         //数据存储完毕，调用MATLAB系统开始计算
 
@@ -788,13 +797,13 @@ class MatchController extends Controller
 
     public function create_compass_data(Request $request)
     {
-        mylogger('begin');
+        logbug('begin');
         $matchId    = $request->input('matchId',0);
         $foot       = $request->input('foot','');
         $job        = new AnalysisMatchData();
         $res        = $job->create_compass_data($matchId,$foot);
 
-        mylogger('end');
+        logbug('end');
         return apiData()->send();
     }
 

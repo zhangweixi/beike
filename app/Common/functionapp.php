@@ -1,4 +1,6 @@
 <?php
+use Illuminate\Support\Facades\DB;
+
 /**
  * 获得默认头像
  * @param $head string 头像
@@ -88,4 +90,10 @@ function gps_to_bdgps($gpsArr)
         }
     }
     return $result;
+}
+
+
+function logbug($content)
+{
+    DB::table('debug')->insert(['debuginfo'=>$content,'created_at'=>date_time()]);
 }

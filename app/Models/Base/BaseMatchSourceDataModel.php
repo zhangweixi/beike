@@ -8,4 +8,13 @@ class BaseMatchSourceDataModel extends Model
 {
     protected $primaryKey   = "match_source_id";
     protected $table        = "match_source_data";
+
+    static function check_has_save_data($userId,$checkCode)
+    {
+        $hasFile    = self::where('user_id',$userId)->where('check_code',$checkCode)->first();
+
+        return $hasFile ? $hasFile : false;
+    }
+
+
 }
