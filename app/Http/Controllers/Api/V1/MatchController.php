@@ -62,7 +62,8 @@ class MatchController extends Controller
             'data'      => $file,
             'foot'      => $foot,
             'is_finish' => $isFinish,
-            'status'    => $isAll == 1 ? 2 : 0
+            'status'    => $isAll == 1 ? 2 : 0,
+            'check_code'=> $checkCode
         ];
 
         //之前是否有 未完成解析的数据  正在解析  不要加入队列
@@ -78,7 +79,7 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
-        if($isAll == 1)
+        if($isAll == 1 || true)
         {
             return apiData()->send();
         }
@@ -872,6 +873,58 @@ class MatchController extends Controller
             });
         dd($data);
         return $data;
+    }
+
+    /*
+     * 检查同步时间
+     *
+     * */
+    public function check_t_time(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $matchId    = $request->input('matchId');
+        $foot       = $request->input('foot');
+        $type       = $request->input('type');
+
+        $data       = [];
+        $table      = "user_".$userId."_".$type;
+
+        DB::connection('matchdata')->table($table)
+            ->select('id','timestamp')
+            ->where('foot',$foot)
+            ->where('match_id',$matchId)
+            ->where('type',"T")
+            ->orderBy('id')
+            ->chunk(1000,function($res) use($table,$matchId,$foot,&$data) {
+                $f = public_path('logs/my.txt');
+
+               //获取前一条数据
+               foreach($res as $d)
+               {
+                    $prev = DB::connection('matchdata')
+                        ->table($table)
+                        ->select('timestamp')
+                        ->where('match_id',$matchId)
+                        ->where('foot',$foot)
+                        ->where('id',"<",$d->id)
+                        ->where('type',"")
+                        ->orderBy('id','desc')
+                        ->first();
+
+                    if($prev)
+                    {
+                        $dis    = $d->timestamp-$prev->timestamp;
+                        file_put_contents($f,$d->timestamp."-".$prev->timestamp."=".$dis."\n",FILE_APPEND);
+
+                    }else{
+                        file_put_contents($f,$d->timestamp."\n",FILE_APPEND);
+
+                    }
+               }
+        });
+
+        return 'ok';
+        //return $data;
     }
 }
 
