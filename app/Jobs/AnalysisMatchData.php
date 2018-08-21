@@ -628,7 +628,9 @@ class AnalysisMatchData implements ShouldQueue
                         $content['ax']      = bcdiv(bcadd(bcmul($x,488),500),1000);
                         $content['ay']      = bcdiv(bcadd(bcmul($y,488),500),1000);
                         $content['az']      = bcdiv(bcadd(bcmul($z,488),500),1000);
-                        $content['data']   .= ",".$singleInsertData['source_data'];
+                        //$content['data']   .= ",".$singleInsertData['source_data'];
+
+                        $content['data']    = $singleInsertData['source_data'];
 
 
                     }elseif($type == "01"){ //先出现 $type   = "G";
