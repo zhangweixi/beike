@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchResultModel;
+use App\Models\Base\BaseMatchSourceDataModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -118,7 +119,7 @@ class AnalysisMatchData implements ShouldQueue
     public function handle()
     {
         //获得数据信息
-        $sourceData = DB::table('match_source_data')->where('match_source_id',$this->sourceId)->first();
+        $sourceData = BaseMatchSourceDataModel::find($this->sourceId);
 
         //检查本信息是否处理过
         if($sourceData->status != 0 ) {
@@ -143,10 +144,8 @@ class AnalysisMatchData implements ShouldQueue
 
             if($prevSourceDataId > 0){
 
-                $prevSourceData = DB::table('match_source_data')
-                    ->select('match_source_id','status')
-                    ->where('match_source_id',$prevSourceDataId)
-                    ->first();
+                $prevSourceData = BaseMatchSourceDataModel::find($prevSourceDataId);
+
             }else{
 
                 $prevSourceData = DB::table('match_source_data')
@@ -159,7 +158,6 @@ class AnalysisMatchData implements ShouldQueue
                     ->orderBy('match_source_id','desc')
                     ->first();
             }
-
 
             //在此之前没有未处理的数据
             if($prevSourceData == null || $prevSourceData->status == 2) {
@@ -194,6 +192,7 @@ class AnalysisMatchData implements ShouldQueue
             $matchId    = $lastData->match_id;
             $syncTime   = $lastData->timestamp;
 
+
         }else{
 
             $matchId    = 0;
@@ -201,7 +200,7 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         //2.连接之前不完整的数据
-        $prevData   = $this->get_prev_data($userId,$type,$foot);
+        $prevData   = $this->get_prev_data($userId,$type,$foot,$matchId);
         $dataStr      = $prevData.$dataStr;
 
 
@@ -248,11 +247,18 @@ class AnalysisMatchData implements ShouldQueue
                     'matchId'   => $matchId,
                     'data'      => []
                 ];
+                $file   = public_path('uploads/match/temp/'.$matchId."-".$type."-".$foot.".txt");
             }
 
             if($data['type'] == "E")
             {
                 $matchesData[$matchId]['isFinish']  = 1;
+            }
+
+            if($data['type'] == '')
+            {
+                file_put_contents($file,implode(" ",$data));
+                continue;
             }
 
             array_push($matchesData[$matchId]['data'],array_merge($data,$dataBaseInfo));
@@ -499,6 +505,7 @@ class AnalysisMatchData implements ShouldQueue
             ->where('foot',$foot)
             ->orderBy('id','desc')
             ->first();
+
 
         if($lastData && $lastData->type == "OLD" && $type != 'gps')
         {
