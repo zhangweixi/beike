@@ -248,6 +248,7 @@ class AnalysisMatchData implements ShouldQueue
                     'data'      => []
                 ];
                 $file   = public_path('uploads/match/temp/'.$matchId."-".$type."-".$foot.".txt");
+                mk_dir($file);
             }
 
             if($data['type'] == "E")
@@ -257,7 +258,7 @@ class AnalysisMatchData implements ShouldQueue
 
             if($data['type'] == '')
             {
-                file_put_contents($file,implode(" ",$data));
+                file_put_contents($file,implode(" ",$data),FILE_APPEND);
                 continue;
             }
 
