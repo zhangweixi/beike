@@ -247,8 +247,8 @@ class AnalysisMatchData implements ShouldQueue
                     'matchId'   => $matchId,
                     'data'      => []
                 ];
-                $file   = public_path('uploads/match/temp/'.$matchId."-".$type."-".$foot.".txt");
-                mk_dir($file);
+                $file   = public_path('uploads/temp/'.$matchId."-".$type."-".$foot.".txt");
+
             }
 
             if($data['type'] == "E")
