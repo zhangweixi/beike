@@ -256,9 +256,9 @@ class AnalysisMatchData implements ShouldQueue
                 $matchesData[$matchId]['isFinish']  = 1;
             }
 
-            if(false && $data['type'] == '')
+            if($data['type'] == '' && false)
             {
-                file_put_contents($file,implode(" ",$data),FILE_APPEND);
+                file_put_contents($file,implode(" ",$data)."\n",FILE_APPEND);
                 continue;
             }
 
