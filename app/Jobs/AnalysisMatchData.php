@@ -139,7 +139,7 @@ class AnalysisMatchData implements ShouldQueue
         //判断同类型的上一条数据是否解析完毕
         $prevSourceDataId   = 0;
 
-        while (false){
+        while (true){
 
             if($prevSourceDataId > 0){
 
@@ -201,8 +201,8 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         //2.连接之前不完整的数据
-        //$prevData   = $this->get_prev_data($userId,$type,$foot);
-        //$datas      = $prevData.$dataStr;
+        $prevData   = $this->get_prev_data($userId,$type,$foot);
+        $dataStr      = $prevData.$dataStr;
 
 
         //mylogger("开始解析:".time());
@@ -500,7 +500,7 @@ class AnalysisMatchData implements ShouldQueue
             ->orderBy('id','desc')
             ->first();
 
-        if($lastData && $lastData->timestamp == "" && $type!= 'gps')
+        if($lastData && $lastData->type == "OLD" && $type != 'gps')
         {
             DB::connection('matchdata')->table($table)->where('id',$lastData->id)->delete();
             $prevStr =  $lastData->source_data;
@@ -585,6 +585,7 @@ class AnalysisMatchData implements ShouldQueue
 
         $perTime    = 1000/104;
         $syncTime   = $syncTime - $perTime;
+        $dataLength = count($dataArr)-1;
 
         foreach($dataArr as $key => $d)
         {
@@ -624,11 +625,22 @@ class AnalysisMatchData implements ShouldQueue
 
                     }elseif($type == "01"){ //先出现 $type   = "G";
 
+                        $content['data']    = $singleInsertData['source_data'];
                         $content['gx']      = bcadd(bcmul($x,70),0x55);
                         $content['gy']      = bcadd(bcmul($y,70),0x1d);
                         $content['gz']      = bcadd(bcmul($z,70),0x1c);
-                        $content['data']    = $singleInsertData['source_data'];
-                        continue;
+
+                        if($key < $dataLength){ //如果不是最后一条数据
+
+                            continue;
+
+                        }else{      //最后一条数据要保留
+
+                            $content['ax']      = 0;
+                            $content['ay']      = 0;
+                            $content['az']      = 0;
+                            $singleInsertData['type']   = "OLD";
+                        }
                     }
 
                     //mylogger($syncTime."-".$validDataNum."*".$perTime);
@@ -911,11 +923,14 @@ class AnalysisMatchData implements ShouldQueue
             unlink($infile);
         }
 
+        logbug($matchId."-".$foot."-匹配罗盘begin");
         $id = 0;
         DB::connection('matchdata')
             ->table($compassTable)
+            ->select('x','y','z','timestamp')
             ->where('match_id',$matchId)
             ->where('foot',$foot)
+            ->where('type','')
             ->orderBy('id')
             ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id,$infile,$foot)
             {
@@ -925,11 +940,12 @@ class AnalysisMatchData implements ShouldQueue
 
                     $sensor = DB::connection("matchdata")
                         ->table($sensorTable)
+                        ->select('id','ax','ay','az')
                         ->where('id',">=",$id)
                         ->where("match_id",$matchId)
                         ->where('foot',$foot)
+                        ->where('type','')
                         ->where('timestamp',">=",$timestamp)
-                        ->where('type','A')
                         ->orderBy('id')
                         ->first();
 
@@ -942,9 +958,9 @@ class AnalysisMatchData implements ShouldQueue
 
                     $id = $sensor->id;
                     $info = [
-                        "ax"    => $sensor->x,//加速度
-                        "ay"    => $sensor->y,
-                        "az"    => $sensor->z,
+                        "ax"    => $sensor->ax,//加速度
+                        "ay"    => $sensor->ay,
+                        "az"    => $sensor->az,
                         "cx"    => $compass->x,//罗盘
                         "cy"    => $compass->y,
                         "cz"    => $compass->z
@@ -954,8 +970,8 @@ class AnalysisMatchData implements ShouldQueue
             });
 
         //由罗盘信息转换成航向角
-        $this->compass_translate($infile,$outfile);
-
+        //$this->compass_translate($infile,$outfile);
+        logbug($matchId."-".$foot."-匹配罗盘begin");
         return true;
     }
 
