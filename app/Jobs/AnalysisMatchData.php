@@ -256,7 +256,7 @@ class AnalysisMatchData implements ShouldQueue
                 $matchesData[$matchId]['isFinish']  = 1;
             }
 
-            if($data['type'] == '')
+            if($data['type'] == '' && false)
             {
                 unset($data['source_data']);
                 unset($data['timestamp']);
