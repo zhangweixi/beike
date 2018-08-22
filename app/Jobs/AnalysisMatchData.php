@@ -269,7 +269,7 @@ class AnalysisMatchData implements ShouldQueue
                     unset($data['gz']);
                 }
 
-                file_put_contents($file,implode(" ",$data)."\n",FILE_APPEND);
+                file_put_contents($file,trim(implode(",",$data),",")."\n",FILE_APPEND);
                 continue;
             }
 
@@ -1010,7 +1010,7 @@ class AnalysisMatchData implements ShouldQueue
 
         $res        = shell_exec($command);
         $text       = file_get_contents($outfile);
-        $text       = substr($text,0,-2)."]";
+        //$text       = substr($text,0,-2)."]";
         $compass    = json_decode($text,true);
 
         //转换成经纬度
