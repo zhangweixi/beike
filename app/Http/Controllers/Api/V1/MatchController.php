@@ -107,6 +107,7 @@ class MatchController extends Controller
             $delayTime      = now()->addSecond(1);
             $url            = url('api/v1/match/jiexi_single_data');
             AnalysisMatchData::dispatch($matchSourceId,true,$url)->delay($delayTime);
+
         }
 
         return apiData()->send();
@@ -149,11 +150,11 @@ class MatchController extends Controller
         return apiData()->send(200,'ok');
     }
 
-    public function sensortest()
+    public function sensortest(Request $request)
     {
         //return hexToInt("f9ffffff");
-
-        return hexdec(reverse_hex("00874c5565010000"));
+        $time   = $request->input('time');
+        return hexdec(reverse_hex($time));
 
         $str = explode(',',$str);
         foreach($str as $k => $s)
@@ -799,8 +800,73 @@ class MatchController extends Controller
     public function create_compass_data(Request $request)
     {
         logbug('begin');
+
         $matchId    = $request->input('matchId',0);
         $foot       = $request->input('foot','');
+        $fsensor    = fopen(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"),'r');
+        $fcompass   = fopen(public_path('uploads/temp/'.$matchId."-compass-".$foot.".txt"),'r');
+
+        $result     = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
+        $fresult    = fopen($result,'a+');
+
+        $sensors    = file(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"));
+        $maxlength  = count($sensors)-1;
+        $p=1;
+
+        while(!feof($fcompass)){
+
+
+
+            $linecompass    = fgets($fcompass);
+
+            //移动三条 读一条
+
+            $newp = intval($p*4.07621);
+
+
+            if($newp > $maxlength){
+
+                break;
+
+            }
+
+
+//            for($i=0;$i<3;$i++){
+//
+//                if(!feof($fsensor))
+//                {
+//                    fgets($fsensor);
+//                }
+//            }
+//
+//            if(feof($fsensor)){
+//
+//                break;
+//            }
+
+            //$linesensor = fgets($fsensor);
+            $linesensor   = $sensors[$newp];
+
+            //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
+
+            $str = trim(trim($linecompass,"\n"))." ".trim(trim($linesensor,"\n"));
+            if($str)
+            {
+                $str .= "\n";
+            }
+
+            fputs($fresult,$str);
+
+            $p++;
+        }
+
+
+        fclose($fcompass);
+        fclose($fsensor);
+        fclose($fresult);
+
+        return "ok";
+
         $job        = new AnalysisMatchData();
         $res        = $job->create_compass_data($matchId,$foot);
 
@@ -809,23 +875,17 @@ class MatchController extends Controller
     }
 
 
-    public function compass_translate($infile,$outfile)
+    public function compass_translate(Request $request)
     {
+        $infile  = $request->input('infile');
+        $outfile = $request->input('outfile');
 
-        $command = "/usr/bin/compass $infile $outfile";
-        shell_exec($command);
+        $job        = new AnalysisMatchData();
+        $job->compass_translate($infile,$outfile);
 
-        $text = file_get_contents($outfile);
-        $text = substr($text,0,-2)."]";
-
-        $json = json_decode($text,true);
-
-        //转换成经纬度
-
-
-        print_r($json);
-
+        return apiData()->send();
     }
+
 
     public function zhangweixi(Request $request)
     {

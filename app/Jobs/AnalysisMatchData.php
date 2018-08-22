@@ -256,8 +256,19 @@ class AnalysisMatchData implements ShouldQueue
                 $matchesData[$matchId]['isFinish']  = 1;
             }
 
-            if($data['type'] == '' && false)
+            if($data['type'] == '')
             {
+                unset($data['source_data']);
+                unset($data['timestamp']);
+                unset($data['match_id']);
+
+                if($type == 'sensor'){
+
+                    unset($data['gx']);
+                    unset($data['gy']);
+                    unset($data['gz']);
+                }
+
                 file_put_contents($file,implode(" ",$data)."\n",FILE_APPEND);
                 continue;
             }
