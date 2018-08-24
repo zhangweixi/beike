@@ -1116,8 +1116,8 @@ class AnalysisMatchData implements ShouldQueue
 
         $command    = "/usr/bin/compass $infile $outfile";
 
-        mylogger($command);
-        //$res        = shell_exec($command);
+        //mylogger($command);
+        $res        = shell_exec($command);
 
         return true;
 
