@@ -100,23 +100,37 @@ class Http{
         return $res;
     }
 
-    public function sock(){
+    /**
+     * 发起一个无阻塞的网络请求
+     * @param $host string 域名
+     * @param $url string 网址
+     * @param $method string 方法
+     * @return boolean
+     * */
+    public static function sock($host,$url,$method="GET")
+    {
+        $fp = fsockopen($host, 80, $errno, $errstr, 2);
 
-        $fp = fsockopen($this->_host, 80, $errno, $errstr, 30);
         if (!$fp)
         {
             return false;
 
         } else {
 
-            stream_set_blocking($fp,0);
-            $http = "GET {$this->_url} HTTP/1.1\r\n";
-            $http .= "Host: {$this->_host}\r\n";
+            //stream_set_blocking($fp,0);
+            $http = "$method {$url} HTTP/1.1\r\n";
+            $http .= "Host: {$host}\r\n";
             $http .= "Connection: Close\r\n\r\n";
+            mylogger($http);
             fwrite($fp,$http);
+            $f = fread($fp,2048);
+            dd($f);
             fclose($fp);
+            mylogger($errno);
             return true;
         }
     }
+
+
 
 }

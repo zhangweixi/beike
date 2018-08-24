@@ -31,17 +31,33 @@ class AnalysisMatchData implements ShouldQueue
      * @return void
      */
     public $tries   = 1;
-    public $sourceId= 0;    //要处理的比赛的数据
     public $timeout = 80;
-    public $fenpi   = true;
-    public $jiexiUrl= "";
-    public $userId  = 0;
+
+    private $sourceId   = 0;    //要处理的比赛的数据
+    private $userId     = 0;
+    private $action     = "";
+    private $host       = "";
+    private $infile     = "";
+    private $outfile    = "";
+    private $matchId    = 0;
+    private $type       = "";
+    private $foot       = "";
 
 
-    public function __construct($sourceId=0,$jiexiUrl='')
+
+
+    public function __construct($action,$param = [])
     {
-        $this->sourceId = $sourceId;
-        $this->jiexiUrl= $jiexiUrl;
+        $this->action   = $action;
+
+        foreach($param as $key => $v)
+        {
+            if($key == "host")
+            {
+                $v = "http://".$v;
+            }
+            $this->$key = $v;
+        }
     }
 
 
@@ -82,9 +98,9 @@ class AnalysisMatchData implements ShouldQueue
                 $table->double('ax');
                 $table->double('ay');
                 $table->double('az');
-                $table->double('gx');
-                $table->double('gy');
-                $table->double('gz');
+                $table->double('gx')->default(0);
+                $table->double('gy')->default(0);
+                $table->double('gz')->default(0);
                 $table->string('type');
                 $table->string('source_data');
                 $table->bigInteger('timestamp');
@@ -116,13 +132,33 @@ class AnalysisMatchData implements ShouldQueue
      */
     public function handle()
     {
+        switch ($this->action)
+        {
+            case 'parse_data':
+                return $this->parse_data();
+                break;
 
+            case 'create_compass_sensor':
+                return $this->create_compass_sensor($this->matchId,$this->foot);
+                break;
+
+            case 'compass_translate':
+                return $this->compass_translate($this->infile,$this->outfile);
+                break;
+        }
+    }
+
+
+    /**
+     * 解析数据
+     * */
+    private function parse_data()
+    {
         //获得数据信息
         $sourceData = BaseMatchSourceDataModel::find($this->sourceId);
 
         //检查本信息是否处理过
         if($sourceData->status != 0 ) {
-
 
             return true;
         }
@@ -211,17 +247,11 @@ class AnalysisMatchData implements ShouldQueue
 
         //mylogger("开始解析:".time());
         //3.解析数据
-        if($type == 'sensor')
+        switch ($type)
         {
-            $datas = $this->handle_sensor_data($dataStr,$matchId,$syncTime);
-
-        }elseif($type == 'gps'){
-
-            $datas = $this->handle_gps_data($dataStr,$matchId);
-
-        }elseif($type == 'compass'){
-
-            $datas = $this->handle_compass_data($dataStr,$matchId,$syncTime);
+            case  "sensor": $datas = $this->handle_sensor_data($dataStr,$matchId,$syncTime);    break;
+            case     "gps": $datas = $this->handle_gps_data($dataStr,$matchId);                 break;
+            case "compass": $datas = $this->handle_compass_data($dataStr,$matchId,$syncTime);   break;
         }
 
 
@@ -239,9 +269,6 @@ class AnalysisMatchData implements ShouldQueue
         //多场数据
         $matchesData    = [];
 
-
-        $timePosition   = -1;
-
         foreach($datas as $key=>$data)
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
@@ -254,48 +281,34 @@ class AnalysisMatchData implements ShouldQueue
                     'matchId'   => $matchId,
                     'data'      => []
                 ];
-                $file   = public_path('uploads/temp/'.$matchId."-".$type."-".$foot.".txt");
 
+                $file   = public_path('uploads/match/'.$matchId."-".$type."-".$foot.".txt");
             }
+
 
             if($data['type'] == "E")
             {
                 $matchesData[$matchId]['isFinish']  = 1;
             }
 
-            if($data['type'] == '' && false)
+            if($data['type'] == '')
             {
-                unset($data['source_data']);
-                unset($data['match_id']);
-                unset($data['timestamp']);
-
-
-                if($type == 'sensor'){
-
-                    unset($data['gx']);
-                    unset($data['gy']);
-                    unset($data['gz']);
+                switch ($type)
+                {
+                    case "gps":     $str = $data['lat']." ".$data['lon'];               break;
+                    case "sensor":  $str = $data['ax']." ".$data['ay']." ".$data['az']; break;
+                    case "compass": $str = $data['x']." ".$data['y']." ".$data['z'];    break;
                 }
 
+                //$str.= " ".$data['timestamp'];
+                file_put_contents($file,$str."\n",FILE_APPEND);
 
-                file_put_contents($file,trim(implode(",",$data),",")."\n",FILE_APPEND);
                 continue;
             }
 
             array_push($matchesData[$matchId]['data'],array_merge($data,$dataBaseInfo));
         }
 
-
-        //删除GPS最后一条数据,因为这条数据是不合格的
-        /*
-        foreach($matchesData as $key => $matchData)
-        {
-            if($matchData['isFinish'] == 1 && $type == 'gps')
-            {
-                $len    = count($matchData['data']) - 1;
-                unset($matchesData[$key]['data'][$len]);
-            }
-        }*/
 
         //将数据存入到数据库中
         //如果是分批传输，则解析后的内容必须存储在数据库
@@ -316,10 +329,10 @@ class AnalysisMatchData implements ShouldQueue
         //数据解析完毕，修改标记
         MatchModel::update_match_data($this->sourceId,['status'=>2]);
 
+
         /*========本条数据解析完毕，请求解析下一条数据 begin ===*/
 
-
-        if($this->jiexiUrl != "")
+        if($this->host != "")
         {
             $nextData = DB::table('match_source_data')
                 ->where('user_id',$userId)
@@ -332,12 +345,10 @@ class AnalysisMatchData implements ShouldQueue
 
             if($nextData)
             {
-                $url = $this->jiexiUrl."?matchSourceId=" . $nextData->match_source_id;
+                $url = $this->host."/api/v1/match/jiexi_single_data?matchSourceId=" . $nextData->match_source_id;
                 file_get_contents($url);
-
             }
         }
-
 
         /*========本条数据解析完毕，请求解析下一条数据 end =====*/
 
@@ -354,7 +365,7 @@ class AnalysisMatchData implements ShouldQueue
 
             if($matchData['isFinish'] == 0 || $matchId == 0)
             {
-               continue;
+                continue;
             }
 
             //sensor，罗盘都上传完毕，开始计算方向角
@@ -374,6 +385,10 @@ class AnalysisMatchData implements ShouldQueue
             //生成匹配文件耗时太多，不能在一个线程里单独完成
             //$this->create_compass_data($matchId,$foot);
 
+            $createCompassUrl   = $this->host."/api/v1/match/create_compass_sensor?matchId=".$matchId."&foot=".$foot;
+            file_get_contents($createCompassUrl);
+
+
 
 
             //如果已经生成了航向角的文件，则发起调用算法系统
@@ -382,7 +397,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
             //生成对应的json文件
-            $this->create_json_data($matchId,[$type],$foot);
+            //$this->create_json_data($matchId,[$type],$foot);
 
             //如果GPS传输完毕,根据解析的数据生成热点图
             if($type == 'gps')
@@ -393,7 +408,6 @@ class AnalysisMatchData implements ShouldQueue
 
         return true;
     }
-
     /**
      * 所有传输完毕，创建json文件
      * @param $matchId  integer 比赛ID
@@ -444,7 +458,6 @@ class AnalysisMatchData implements ShouldQueue
             Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
 
         }
-
 
 
         //2.gps
@@ -535,7 +548,7 @@ class AnalysisMatchData implements ShouldQueue
         }
 
 
-        if($lastData && $type == 'gps')
+        if($lastData && $type == 'gps' && $lastData->type == "OLD" )
         {
             DB::connection('matchdata')->table($table)->where('id',$lastData->id)->delete();
             $prevStr =  $lastData->source_data;
@@ -645,15 +658,14 @@ class AnalysisMatchData implements ShouldQueue
 
                     if($type == "00"){ //后出现 $type   = "A";
 
-                        $content['ax']      = bcdiv(bcadd(bcmul($x,488),500),1000);
-                        $content['ay']      = bcdiv(bcadd(bcmul($y,488),500),1000);
-                        $content['az']      = bcdiv(bcadd(bcmul($z,488),500),1000);
-                        //$content['data']   .= ",".$singleInsertData['source_data'];
+                        $content['ax']      = bcdiv(bcadd(bcmul($x,488),500),1000,0);
+                        $content['ay']      = bcdiv(bcadd(bcmul($y,488),500),1000,0);
+                        $content['az']      = bcdiv(bcadd(bcmul($z,488),500),1000,0);
+                        //$content['data']    = $singleInsertData['source_data'];
 
-                        $content['data']    = $singleInsertData['source_data'];
-
-
-                    }elseif($type == "01"){ //先出现 $type   = "G";
+                    }
+                    elseif($type == "01")
+                    { //先出现 $type   = "G"; 暂时不使用
 
                         $content['data']    = $singleInsertData['source_data'];
                         $content['gx']      = bcadd(bcmul($x,70),0x55);
@@ -674,16 +686,16 @@ class AnalysisMatchData implements ShouldQueue
                     }
 
                     //mylogger($syncTime."-".$validDataNum."*".$perTime);
-                    $timestamp                  = bcadd($syncTime ,$validDataNum*$perTime);
+                    $timestamp                  = bcadd($syncTime ,$validDataNum*$perTime,0);
                     $validDataNum++;
 
                     $singleInsertData['ax']     = $content['ax'];
                     $singleInsertData['ay']     = $content['ay'];
                     $singleInsertData['az']     = $content['az'];
-                    $singleInsertData['gx']     = $content['gx'];
-                    $singleInsertData['gy']     = $content['gy'];
-                    $singleInsertData['gz']     = $content['gz'];
-                    $singleInsertData['source_data']    = $content['data'];
+                    //$singleInsertData['gx']     = $content['gx'];
+                    //$singleInsertData['gy']     = $content['gy'];
+                    //$singleInsertData['gz']     = $content['gz'];
+                    //$singleInsertData['source_data']    = $content['data'];
                     $singleInsertData['timestamp']      =$timestamp;
 
                 }elseif($type == "88" || $type == "99" || $type == 'aa' || $type == 'bb' || $type == 'cc' ) {
@@ -695,7 +707,6 @@ class AnalysisMatchData implements ShouldQueue
 
                     $syncTime                       = $timestamp;
 
-                    //mylogger("同步时间:".$syncTime);
 
                     $type                           = $this->types[$type];
                     $singleInsertData['type']       = $type;
@@ -920,6 +931,95 @@ class AnalysisMatchData implements ShouldQueue
      * @param $foot string 脚
      * @return boolean
      * */
+    public function create_compass_sensor($matchId,$foot)
+    {
+        //检查sensor和compass是否都解析完毕
+        $matchProcess   = BaseMatchDataProcessModel::find($matchId);
+        $sensorColum    = "sensor_".$foot;
+        $compassColum   = "compass_".$foot;
+
+        if($matchProcess == null ||
+            $matchProcess->$sensorColum == 0 ||
+            $matchProcess->$compassColum == 0)
+        {
+
+            return true;
+        }
+
+
+        //sensor数据
+        $sensorPath = public_path('uploads/match/'.$matchId."-sensor-".$foot.".txt");
+        $fsensor    = fopen($sensorPath,'r');
+        //将所有数据读取到数组中
+        $sensors    = file(public_path('uploads/match/'.$matchId."-sensor-".$foot.".txt"));
+
+
+        //罗盘数据
+        $compassPath= public_path('uploads/match/'.$matchId."-compass-".$foot.".txt");
+        $fcompass   = fopen($compassPath,'r');
+
+
+        //结果文件
+        $resultPath = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
+        $fresult    = fopen($resultPath,'a+');
+
+
+        $maxlength  = count($sensors)-1;
+        $p=1;
+
+        while(!feof($fcompass))
+        {
+            $linecompass    = fgets($fcompass);
+            if(!$linecompass)
+            {
+                break;
+            }
+            //移动三条 读一条
+
+            $newp = intval($p*4);
+
+
+            if($newp > $maxlength){
+
+                break;
+            }
+
+            //$linesensor = fgets($fsensor);
+            $linesensor   = $sensors[$newp];
+
+            //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
+            $linesensor = str_replace(" ",",",$linesensor);
+            $linecompass= str_replace(" ",",",$linecompass);
+
+            $str = trim(trim($linesensor,"\n")).",".trim(trim($linecompass,"\n"));
+
+            if($str)
+            {
+                $str .= "\n";
+            }
+
+            fputs($fresult,$str);
+
+            $p++;
+        }
+
+        fclose($fcompass);
+        fclose($fsensor);
+        fclose($fresult);
+
+
+        //计算角度
+        $outFile    = public_path('uploads/match/'.$matchId."-".$foot."-angle.txt");
+        $this->compass_translate($resultPath,$outFile);
+
+    }
+
+    /**
+     * 生成计算角度的罗盘和sensor数据
+     * @param $matchId integer 比赛ID
+     * @param $foot string 脚
+     * @return boolean
+     * */
     public function create_compass_data($matchId,$foot)
     {
         $matchModel = new MatchModel();
@@ -1016,8 +1116,12 @@ class AnalysisMatchData implements ShouldQueue
 
         $command    = "/usr/bin/compass $infile $outfile";
 
+        mylogger($command);
+        //$res        = shell_exec($command);
 
-        $res        = shell_exec($command);
+        return true;
+
+
         $text       = file_get_contents($outfile);
         //$text       = substr($text,0,-2)."]";
         $compass    = json_decode($text,true);
@@ -1049,7 +1153,6 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function create_gps_map($matchId,array $gpsData = [])
     {
-
         $matchInfo  = MatchModel::find($matchId);
         $courtInfo  = CourtModel::find($matchInfo->court_id);
 

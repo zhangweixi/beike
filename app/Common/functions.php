@@ -758,4 +758,10 @@ function arraySequence($array, $field, $sort = 'SORT_DESC')
 }
 
 
+function floattostr( $val )
+{
+    preg_match( "#^([\+\-]|)([0-9]*)(\.([0-9]*?)|)(0*)$#", trim($val), $o );
+    return $o[1].sprintf('%d',$o[2]).($o[3]!='.'?$o[3]:'');
+}
+
 ?>

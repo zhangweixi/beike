@@ -24,12 +24,15 @@ class MatchController extends Controller
         set_time_limit(300);
     }
 
+
+
+    /*===============================数据操作开始===============================*/
+
     /**
      * 上传比赛数据
      * */
     public function upload_match_data(Request $request)
     {
-
         $userId     = $request->input('userId',0);
         $deviceSn   = $request->input('deviceSn','');
         $deviceData = $request->input('deviceData','');
@@ -87,9 +90,10 @@ class MatchController extends Controller
         //数据已解析完毕，尽快解析本条数据
         if($hasData == null)
         {
-            $url            = url('api/v1/match/jiexi_single_data');
+            $host           = $request->getHost();
             $delayTime      = now()->addSecond(1);
-            AnalysisMatchData::dispatch($sourceId,$url)->delay($delayTime);
+            $data           = ['sourceId'=>$sourceId,'host'=>$host];
+            AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
         }
 
         //数据存储完毕，调用MATLAB系统开始计算
@@ -98,6 +102,12 @@ class MatchController extends Controller
     }
 
 
+    /**
+     * 解析单条数据
+     * 调用matlab解析数据
+     * @param $request Request
+     * @return string
+     * */
     public function jiexi_single_data(Request $request)
     {
         $matchSourceId  = $request->input('matchSourceId',0);
@@ -106,23 +116,153 @@ class MatchController extends Controller
         if($dataInfo->status == 0)
         {
             $delayTime      = now()->addSecond(1);
-            $url            = url('api/v1/match/jiexi_single_data');
-            AnalysisMatchData::dispatch($matchSourceId,$url)->delay($delayTime);
-
+            $host           = $request->getHost();
+            $data           = ['sourceId'=>$matchSourceId,'host'=>$host];
+            AnalysisMatchData::dispatch('parse_data',$data)->delay($delayTime);
         }
+        return apiData()->send();
+    }
+
+
+
+    /**
+     * 解析单条数据，不传递
+     * */
+    public function jiexi(Request $request)
+    {
+        //数据存储完毕，调用MATLAB系统开始计算
+        $sourceId = $request->input('sourceId');
+
+
+        //2.开始解析数据
+        $job    = new AnalysisMatchData('parse_data',['sourceId'=>$sourceId]);
+
+        $job->handle();
+        //mylogger("相应前端".time());
+        return apiData()->send(200,'ok');
+    }
+
+
+    /**
+     * 创建罗盘和sensor的文件
+     * */
+    public function create_compass_sensor(Request $request)
+    {
+        $matchId    = $request->input('matchId',0);
+        $foot       = $request->input('foot','');
+
+        if(false){
+
+            $fsensor    = public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt");
+            $fsensor    = fopen($fsensor,'r');
+
+            $fcompass   = public_path('uploads/temp/'.$matchId."-compass-".$foot.".txt");
+            $fcompass   = fopen($fcompass,'r');
+
+
+            $fresult     = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
+            $fresult    = fopen($fresult,'a+');
+
+
+            //将所有数据读取到数组中
+            $sensors    = file(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"));
+
+
+
+            $maxlength  = count($sensors)-1;
+            $p=1;
+
+            while(!feof($fcompass)){
+
+
+
+                $linecompass    = fgets($fcompass);
+                if(!$linecompass)
+                {
+                    break;
+                }
+                //移动三条 读一条
+
+                $newp = intval($p*4);
+
+
+                if($newp > $maxlength){
+
+                    break;
+
+                }
+
+
+                //$linesensor = fgets($fsensor);
+                $linesensor   = $sensors[$newp];
+
+                //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
+
+                $str = trim(trim($linesensor,"\n")).",".trim(trim($linecompass,"\n"));
+
+                if($str)
+                {
+                    $str .= "\n";
+                }
+
+                fputs($fresult,$str);
+
+                $p++;
+            }
+
+
+            fclose($fcompass);
+            fclose($fsensor);
+            fclose($fresult);
+
+            return "ok";
+        }
+
+
+
+        $delayTime      = now()->addSecond(1);
+        $data           = ['matchId'=>$matchId,'foot'=>$foot];
+        AnalysisMatchData::dispatch("create_compass_sensor",$data)->delay($delayTime);
+
+        //$job        = new AnalysisMatchData();
+        //$res        = $job->create_compass_data($matchId,$foot);
 
         return apiData()->send();
     }
+
+
+    /**
+     * 调用角度转换
+     * */
+    public function compass_translate(Request $request)
+    {
+        $infile  = $request->input('infile');
+        $outfile = $request->input('outfile');
+
+        $job        = new AnalysisMatchData();
+
+        $job->compass_translate($infile,$outfile);
+
+        return apiData()->send();
+    }
+
+
+
+    /*===============================数据操作结束===============================*/
+
+
+
+
 
     public function jiexi_match(Request $request)
     {
         $matchId    = $request->input('matchId');
         $dataes     = DB::table('match_source_data')->where('match_id',$matchId)->get();
-        $url            = url('api/v1/match/jiexi_single_data');
+
         foreach($dataes as $key=> $data)
         {
             $delayTime      = now()->addSecond(3*$key);
-            AnalysisMatchData::dispatch($data->match_source_id,$url)->delay($delayTime);
+            AnalysisMatchData::dispatch($data->match_source_id,$request->getHost())->delay($delayTime);
         }
 
         return apiData()->send();
@@ -138,18 +278,6 @@ class MatchController extends Controller
     }
 
 
-    public function jiexi(Request $request){
-
-        //数据存储完毕，调用MATLAB系统开始计算
-        $sourceId = $request->input('sourceId');
-
-        //2.开始解析数据
-        $job    = new AnalysisMatchData($sourceId);
-
-        $job->handle();
-        //mylogger("相应前端".time());
-        return apiData()->send(200,'ok');
-    }
 
     public function sensortest(Request $request)
     {
@@ -798,84 +926,6 @@ class MatchController extends Controller
 
 
 
-    public function create_compass_data(Request $request)
-    {
-        $matchId    = $request->input('matchId',0);
-        $foot       = $request->input('foot','');
-
-        if(true){
-
-            $fsensor    = public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt");
-            $fsensor    = fopen($fsensor,'r');
-
-            $fcompass   = public_path('uploads/temp/'.$matchId."-compass-".$foot.".txt");
-            $fcompass   = fopen($fcompass,'r');
-
-
-            $fresult     = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
-            $fresult    = fopen($fresult,'a+');
-
-
-            //将所有数据读取到数组中
-            $sensors    = file(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"));
-
-
-
-            $maxlength  = count($sensors)-1;
-            $p=1;
-
-            while(!feof($fcompass)){
-
-
-
-                $linecompass    = fgets($fcompass);
-                if(!$linecompass)
-                {
-                    break;
-                }
-                //移动三条 读一条
-
-                $newp = intval($p*4);
-
-
-                if($newp > $maxlength){
-
-                    break;
-
-                }
-
-
-                //$linesensor = fgets($fsensor);
-                $linesensor   = $sensors[$newp];
-
-                //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
-
-                $str = trim(trim($linesensor,"\n")).",".trim(trim($linecompass,"\n"));
-
-                if($str)
-                {
-                    $str .= "\n";
-                }
-
-                fputs($fresult,$str);
-
-                $p++;
-            }
-
-
-            fclose($fcompass);
-            fclose($fsensor);
-            fclose($fresult);
-
-            return "ok";
-        }
-
-
-        $job        = new AnalysisMatchData();
-        $res        = $job->create_compass_data($matchId,$foot);
-
-        return apiData()->send();
-    }
 
 
     /**
@@ -925,16 +975,7 @@ class MatchController extends Controller
     }
 
 
-    public function compass_translate(Request $request)
-    {
-        $infile  = $request->input('infile');
-        $outfile = $request->input('outfile');
 
-        $job        = new AnalysisMatchData();
-        $job->compass_translate($infile,$outfile);
-
-        return apiData()->send();
-    }
 
 
     public function zhangweixi(Request $request)
