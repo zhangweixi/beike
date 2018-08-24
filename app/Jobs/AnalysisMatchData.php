@@ -33,16 +33,14 @@ class AnalysisMatchData implements ShouldQueue
     public $tries   = 1;
     public $sourceId= 0;    //要处理的比赛的数据
     public $timeout = 80;
-    public $saveToDB= false;
     public $fenpi   = true;
     public $jiexiUrl= "";
     public $userId  = 0;
 
 
-    public function __construct($sourceId=0,$saveToDB = false,$jiexiUrl='')
+    public function __construct($sourceId=0,$jiexiUrl='')
     {
         $this->sourceId = $sourceId;
-        $this->saveToDB = $saveToDB;
         $this->jiexiUrl= $jiexiUrl;
     }
 
@@ -118,11 +116,13 @@ class AnalysisMatchData implements ShouldQueue
      */
     public function handle()
     {
+
         //获得数据信息
         $sourceData = BaseMatchSourceDataModel::find($this->sourceId);
 
         //检查本信息是否处理过
         if($sourceData->status != 0 ) {
+
 
             return true;
         }
@@ -133,6 +133,11 @@ class AnalysisMatchData implements ShouldQueue
         $foot       = $sourceData->foot;
         $this->userId = $userId;
 
+        if(!Storage::disk('local')->has($sourceData->data))
+        {
+            dd('文件不存在'.$sourceData->data);
+            return false;
+        }
 
         //标记处于解析状态中
         MatchModel::update_match_data($this->sourceId,['status'=>1]);
@@ -235,6 +240,8 @@ class AnalysisMatchData implements ShouldQueue
         $matchesData    = [];
 
 
+        $timePosition   = -1;
+
         foreach($datas as $key=>$data)
         {
             //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
@@ -259,8 +266,9 @@ class AnalysisMatchData implements ShouldQueue
             if($data['type'] == '' && false)
             {
                 unset($data['source_data']);
-                unset($data['timestamp']);
                 unset($data['match_id']);
+                unset($data['timestamp']);
+
 
                 if($type == 'sensor'){
 
@@ -268,6 +276,7 @@ class AnalysisMatchData implements ShouldQueue
                     unset($data['gy']);
                     unset($data['gz']);
                 }
+
 
                 file_put_contents($file,trim(implode(",",$data),",")."\n",FILE_APPEND);
                 continue;
@@ -378,7 +387,7 @@ class AnalysisMatchData implements ShouldQueue
             //如果GPS传输完毕,根据解析的数据生成热点图
             if($type == 'gps')
             {
-                //$this->create_gps_map($matchId);
+                $this->create_gps_map($matchId);
             }
         }
 
@@ -1057,6 +1066,7 @@ class AnalysisMatchData implements ShouldQueue
                 ->where('match_id',$matchId)
                 ->where('lat','>',0)
                 ->where('lon','>',0)
+                ->where('type','')
                 ->orderBy('id')
                 ->chunk(1000,function($gpsList) use(&$gpsData)
                 {

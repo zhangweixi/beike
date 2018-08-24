@@ -84,11 +84,12 @@ class MatchController extends Controller
             return apiData()->send();
         }
 
+        //数据已解析完毕，尽快解析本条数据
         if($hasData == null)
         {
             $url            = url('api/v1/match/jiexi_single_data');
-            $delayTime      = now()->addSecond(2);
-            AnalysisMatchData::dispatch($sourceId,true,$url)->delay($delayTime);
+            $delayTime      = now()->addSecond(1);
+            AnalysisMatchData::dispatch($sourceId,$url)->delay($delayTime);
         }
 
         //数据存储完毕，调用MATLAB系统开始计算
@@ -106,7 +107,7 @@ class MatchController extends Controller
         {
             $delayTime      = now()->addSecond(1);
             $url            = url('api/v1/match/jiexi_single_data');
-            AnalysisMatchData::dispatch($matchSourceId,true,$url)->delay($delayTime);
+            AnalysisMatchData::dispatch($matchSourceId,$url)->delay($delayTime);
 
         }
 
@@ -121,7 +122,7 @@ class MatchController extends Controller
         foreach($dataes as $key=> $data)
         {
             $delayTime      = now()->addSecond(3*$key);
-            AnalysisMatchData::dispatch($data->match_source_id,true,$url)->delay($delayTime);
+            AnalysisMatchData::dispatch($data->match_source_id,$url)->delay($delayTime);
         }
 
         return apiData()->send();
@@ -132,7 +133,7 @@ class MatchController extends Controller
         //数据存储完毕，调用MATLAB系统开始计算
         $sourceId       = $request->input('sourceId');
         $delayTime      = now()->addSecond(2);
-        AnalysisMatchData::dispatch($sourceId,true)->delay($delayTime);
+        AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
         return apiData()->send(200,'ok');
     }
 
@@ -143,7 +144,7 @@ class MatchController extends Controller
         $sourceId = $request->input('sourceId');
 
         //2.开始解析数据
-        $job    = new AnalysisMatchData($sourceId,true);
+        $job    = new AnalysisMatchData($sourceId);
 
         $job->handle();
         //mylogger("相应前端".time());
@@ -313,7 +314,7 @@ class MatchController extends Controller
     public function create_json($matchId=0)
     {
         $matchId =364;
-        $job    = new AnalysisMatchData(0,true);
+        $job    = new AnalysisMatchData(0);
         $job->create_json_data($matchId);
 
         exit;
@@ -799,79 +800,128 @@ class MatchController extends Controller
 
     public function create_compass_data(Request $request)
     {
-        logbug('begin');
-
         $matchId    = $request->input('matchId',0);
         $foot       = $request->input('foot','');
-        $fsensor    = fopen(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"),'r');
-        $fcompass   = fopen(public_path('uploads/temp/'.$matchId."-compass-".$foot.".txt"),'r');
 
-        $result     = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
-        $fresult    = fopen($result,'a+');
+        if(true){
 
-        $sensors    = file(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"));
-        $maxlength  = count($sensors)-1;
-        $p=1;
+            $fsensor    = public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt");
+            $fsensor    = fopen($fsensor,'r');
 
-        while(!feof($fcompass)){
+            $fcompass   = public_path('uploads/temp/'.$matchId."-compass-".$foot.".txt");
+            $fcompass   = fopen($fcompass,'r');
 
 
-
-            $linecompass    = fgets($fcompass);
-
-            //移动三条 读一条
-
-            $newp = intval($p*4.07621);
+            $fresult     = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
+            $fresult    = fopen($fresult,'a+');
 
 
-            if($newp > $maxlength){
+            //将所有数据读取到数组中
+            $sensors    = file(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"));
 
-                break;
 
+
+            $maxlength  = count($sensors)-1;
+            $p=1;
+
+            while(!feof($fcompass)){
+
+
+
+                $linecompass    = fgets($fcompass);
+                if(!$linecompass)
+                {
+                    break;
+                }
+                //移动三条 读一条
+
+                $newp = intval($p*4);
+
+
+                if($newp > $maxlength){
+
+                    break;
+
+                }
+
+
+                //$linesensor = fgets($fsensor);
+                $linesensor   = $sensors[$newp];
+
+                //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
+
+                $str = trim(trim($linesensor,"\n")).",".trim(trim($linecompass,"\n"));
+
+                if($str)
+                {
+                    $str .= "\n";
+                }
+
+                fputs($fresult,$str);
+
+                $p++;
             }
 
 
-//            for($i=0;$i<3;$i++){
-//
-//                if(!feof($fsensor))
-//                {
-//                    fgets($fsensor);
-//                }
-//            }
-//
-//            if(feof($fsensor)){
-//
-//                break;
-//            }
+            fclose($fcompass);
+            fclose($fsensor);
+            fclose($fresult);
 
-            //$linesensor = fgets($fsensor);
-            $linesensor   = $sensors[$newp];
-
-            //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
-
-            $str = trim(trim($linecompass,"\n"))." ".trim(trim($linesensor,"\n"));
-            if($str)
-            {
-                $str .= "\n";
-            }
-
-            fputs($fresult,$str);
-
-            $p++;
+            return "ok";
         }
 
-
-        fclose($fcompass);
-        fclose($fsensor);
-        fclose($fresult);
-
-        return "ok";
 
         $job        = new AnalysisMatchData();
         $res        = $job->create_compass_data($matchId,$foot);
 
-        logbug('end');
         return apiData()->send();
+    }
+
+
+    /**
+     * 重置时间
+     * */
+    public function reset_time(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $type       = $request->input('type');
+        $foot       = $request->input('foot');
+        $userId     = $request->input('userId');
+
+
+        $where      = [
+            'match_id'  => $matchId,
+            'type'      => "",
+            "foot"      => $foot,
+        ];
+
+        $table      = "user_".$userId."_".$type;
+
+        $db1         = DB::connection('matchdata')->table($table)->where('match_id',$matchId)->where('foot',$foot);
+        $db2         = DB::connection('matchdata')->table($table)->where('match_id',$matchId)->where('foot',$foot);
+
+        $first      = $db1->where('type','')->orderBy('id')->first();
+        $last       = $db2->where('type','')->orderBy('id','desc')->first();
+
+        $times      = $last->timestamp - $first->timestamp;
+
+        $allNum     = DB::connection('matchdata')->table($table)->where($where)->count();
+        $perTime    = $times/$allNum;
+
+        $allData    = DB::connection('matchdata')->table($table)->where($where)->select('id')->orderBy('id')->get();
+
+        foreach($allData as $key => $d)
+        {
+
+            $newTime    = $perTime * $key + $first->timestamp;
+            DB::connection('matchdata')->table($table)->where('id',$d->id)->update(['timestamp'=>$newTime]);
+
+        }
+
+
+
+        return 'ok';
+
     }
 
 
@@ -892,7 +942,7 @@ class MatchController extends Controller
         //如果是最后一条，判断是否结束
         $num = "12156.9032234";
         return gps_to_gps($num);
-        $job    = new AnalysisMatchData(0);
+        $job    = new AnalysisMatchData();
         $job->create_compass_data(318);
     }
 
