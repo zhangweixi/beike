@@ -501,7 +501,7 @@ class MatchController extends Controller
 
 
             $max        = max($allp);
-            $avg        = $max/13;
+            $avg        = $max/100;
 
             //把数据调节到十个等级
             if($avg > 0)
