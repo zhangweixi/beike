@@ -129,7 +129,7 @@ class ShequMatchModel extends Model{
 
             if($needMember)
             {
-                $match->members     = $shequModel->get_match_user($match->sq_match_id);
+                $match->members     = $shequModel->get_match_user($match->sq_match_id,$match->user_id);
             }
         }
         return $matches;
@@ -140,11 +140,11 @@ class ShequMatchModel extends Model{
      * 获得参加比赛的用户
      * @param $matchId int 比赛ID
      * */
-    public function get_match_user($matchId)
+    public function get_match_user($matchId,$userId=0)
     {
-        $matchUsers = DB::table('shequ_user_match as a')
+        $matchUsers = DB::table('shequ_match_user as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
-            ->select('b.nick_name',DB::raw('LEFT(b.birthday,4) as age'),'a.grade','b.role1 as role','b.head_img')
+            ->select('a.user_id','b.nick_name',DB::raw('LEFT(b.birthday,4) as age'),'a.grade','b.role1 as role','b.head_img')
             ->where('a.sq_match_id',$matchId)
             ->get();
 
@@ -155,7 +155,45 @@ class ShequMatchModel extends Model{
             $age        = $year - $user->age;
             $age        = $age > 200 ? "未知":(string)$age;
             $user->age  = $age;
+            $user->isCreater    = $userId == $user->user_id ? 1 : 0;
         }
+
         return $matchUsers;
     }
+
+
+
+    /**
+     * 获得比赛邀请列表
+     * @param $userId integer 用户ID
+     * */
+    public function get_match_invite($userId)
+    {
+
+        $invites = DB::table('shequ_match_invite as a')
+            ->leftJoin('shequ_match as b','b.sq_match_id','=','a.match_id')
+            ->select('a.match_id','a.invite_id','a.created_at','a.status','b.credit','b.address','b.total_num','b.grade','b.sign_fee','b.begin_time','b.user_id')
+            ->where('a.user_id',$userId)
+            ->paginate(5);
+
+
+        foreach ($invites as $invite)
+        {
+            $timeInfo           = explode(' ',$invite->created_at);
+            $beginTime          = explode(" ",$invite->begin_time);
+
+            $invite->title      = "邀请信息";
+            $invite->created_at = str_replace('-','.',$timeInfo[0])." ".str_replace('-',":",substr($timeInfo[1],0,5));
+            $invite->beginDate  = $beginTime[0];
+            $invite->beginTime  = $beginTime[1];
+            $invite->credit     = credit_to_text($invite->credit);
+            unset($invite->begin_time);
+            $invite->members    = $this->get_match_user($invite->match_id,$invite->user_id);
+
+        }
+        return $invites;
+    }
+
+
+
 }

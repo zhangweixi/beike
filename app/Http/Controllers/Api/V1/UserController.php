@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\V1\DeviceModel;
+use App\Models\V1\FriendModel;
 use App\Models\V1\MessageModel;
+use App\Models\V1\ShequMatchModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\UserModel;
@@ -366,26 +368,31 @@ class UserController extends Controller
     public function message_type(Request $request)
     {
         $userId     = $request->input('userId');
+        $systemNum  = MessageModel::count_unread_msg($userId,'system');
+        $inviteNum  = MessageModel::count_unread_msg($userId,'invite');
+        $focusNum   = MessageModel::count_unread_msg($userId,'focus');
+
+
         $msgTypes   = [
             [
                 "msgType"   => 'focus',
                 "typeTitle" => "关注信息",
                 "icon"      => url('beike/images/icon/msg-focus.png'),
-                'msgNum'    => 0,
+                'msgNum'    => $focusNum,
                 'newMsg'    => "一只小小龟请求关注你"
             ],
             [
                 "msgType"   => 'invite',
                 "typeTitle" => "邀请信息",
                 "icon"      => url('beike/images/icon/msg-invite.png'),
-                'msgNum'    => 0,
+                'msgNum'    => $inviteNum,
                 'newMsg'    => "11-09  14:00-16:00  虹口足球场"
             ],
             [
                 "msgType"   => 'system',
                 "typeTitle" => "系统信息",
                 "icon"      => url('beike/images/icon/msg-system.png'),
-                'msgNum'    => 0,
+                'msgNum'    => $systemNum,
                 'newMsg'    => "一只小小龟请求关注你"
             ]
         ];
@@ -395,24 +402,86 @@ class UserController extends Controller
 
 
     /**
-     * 用户信息列表
+     * 阅读所有消息
+     * @param $msgType string 消息类型
+     * @param $userId integer 用户ID
      * */
-    public function message(Request $request)
+    public function read_all_message($msgType,$userId)
     {
+        $messages = DB::table('user_message')->where('type',$msgType)
+            ->where(function($db)use($userId) {
+
+                $db->where('user_id',0)->orWhere('user_id',$userId);
+            })
+            ->whereRaw("NOT FIND_IN_SET($userId,readed_users)")
+            ->select('msg_id','readed_users')
+            ->get();
+
+        foreach ($messages as $msg)
+        {
+            $users  = $msg->readed_users ? $msg->readed_users.",".$userId : $userId;
+            DB::table('user_message')->where('msg_id',$msg->msg_id)->update(['readed_users'=>$users]);
+        }
+    }
+
+    /**
+     * 系统信息列表
+     * */
+    public function system_message(Request $request)
+    {
+
         $userId = $request->input('userId');
+        $page   = $request->input('page',1);
+        $page == 1? $this->read_all_message("system",$userId) : '';
+
 
         $isRead = DB::raw("IF(FIND_IN_SET('{$userId}',readed_users) > 0,1,0) AS is_readed");
         $message = DB::table('user_message')
             ->where('user_id',$userId)
+            ->where('type','system')
             ->orWhere('user_id',0)
             ->select('msg_id','title','content','content_id','type','thumb_img','created_at',$isRead)
             ->paginate(20);
 
         foreach($message as $msg)
         {
-            $msg->thumb_img = url($msg->thumb_img);
+            $timeInfo           = explode(' ',$msg->created_at);
+            $msg->thumb_img     = url($msg->thumb_img);
+            $msg->created_at    = str_replace('-','.',$timeInfo[0])." ".str_replace('-',":",substr($timeInfo[1],0,5));
         }
         return apiData()->add('message',$message)->send();
+    }
+
+
+
+
+    /**
+     * 关注信息
+     * */
+    public function focus_message(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $page       = $request->input('page',1);
+        $page == 1? $this->read_all_message("focus",$userId) : '';
+
+        $msgList    = FriendModel::apply_list($userId);
+
+        return apiData()->add('messages',$msgList)->send();
+    }
+
+
+    /**
+     * 比赛邀请信息
+     * */
+    public function invite_message(Request $request)
+    {
+        $userId             = $request->input('userId');
+        $page               = $request->input('page',1);
+        $page == 1? $this->read_all_message("invite",$userId) : '';
+        $shequMatchModel    = new ShequMatchModel();
+        $invites            = $shequMatchModel->get_match_invite($userId);
+
+        return apiData()->add('messages',$invites)->send();
     }
 
 

@@ -2,11 +2,12 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use App\Models\V1\ShequMatchModel;
 use App\Models\Base\BaseShequMatchModel;
-use App\Models\Base\BaseShequUserMatchModel;
+use App\Models\Base\BaseShequMatchUserModel;
 
 
 
@@ -45,6 +46,7 @@ class ShequMatchController extends Controller
         $credit     = $request->input('credit');
         $signFee    = $request->input('signFee');
 
+        $userBility = BaseUserAbilityModel::find($userId);
 
         $credit = text_to_credit($credit);
 
@@ -71,6 +73,14 @@ class ShequMatchController extends Controller
             "img" => url('beike/images/default/foot.png')
         ];
 
+        //自己加入比赛
+        $matchUserModel = new BaseShequMatchUserModel();
+        $matchUserModel->sq_match_id   = $shequModel->sq_match_id;
+        $matchUserModel->user_id    = $userId;
+        $matchUserModel->grade      = $userBility ? $userBility->grade : 0;
+        $matchUserModel->save();
+
+
         return apiData()
             ->add("shareInfo", $shareInfo)
             ->add('matchId', $shequModel->sq_match_id)
@@ -85,7 +95,7 @@ class ShequMatchController extends Controller
     {
         $userId = $request->input('userId');
         $matchId = $request->input('matchId');
-        $matchUserModel = new BaseShequUserMatchModel();
+        $matchUserModel = new BaseShequMatchUserModel();
 
         //检查用户是否加入
         $matchUser = $matchUserModel->where('user_id', $userId)->where('sq_match_id', $matchId)->first();
@@ -115,7 +125,7 @@ class ShequMatchController extends Controller
         $matchId   = $request->input('matchId');
 
         //减去申请列表中的用户
-        BaseShequUserMatchModel::where('sq_match_id',$matchId)->where('user_id',$userId)->delete();
+        BaseShequMatchUserModel::where('sq_match_id',$matchId)->where('user_id',$userId)->delete();
 
         BaseShequMatchModel::where('sq_match_id',$matchId)->decrement('joined_num');
 
@@ -199,9 +209,22 @@ class ShequMatchController extends Controller
 
         foreach($matches as $match)
         {
-            $match->isCreater   = $userId == $match->user_id ? 1 : 0;
+            $match->isCreater   = $userId == $match->user_id ? 1 : 0;   //是否是创建者
 
             $match->credit      = credit_to_text($match->credit);
+
+            $match->jsJoined    = 0;    //是否参加比赛
+
+            //判断自己是否参加
+            foreach($match->members as $member)
+            {
+                if($member->user_id == $userId)
+                {
+                    $match->isJoined    = 1;
+                    break;
+                }
+            }
+
         }
         return apiData()->add('matches',$matches)->send();
     }
@@ -235,20 +258,5 @@ class ShequMatchController extends Controller
             ->add('matches',$dayMatch)
             ->send();
     }
-
-
-    /**
-     * 通过手机号查找好友
-     * */
-    public function find_friend_by_mobile(Request $request)
-    {
-
-
-
-    }
-
-
-
-
 
 }

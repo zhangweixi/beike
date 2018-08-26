@@ -43,7 +43,7 @@ class FriendController extends Controller
 
         //添加消息
         $messageModel   = new MessageModel();
-        $messageModel->add_message("好友请求",$userInfo->nick_name."请求加您为好友",'apply_friend',$friendUserId,$newFriend->apply_id);
+        $messageModel->add_message("好友请求",$userInfo->nick_name."请求加您为好友",'focus',$friendUserId,$newFriend->apply_id);
 
         return apiData()->send(200,'已发送，请等待同意吧');
     }
@@ -54,7 +54,7 @@ class FriendController extends Controller
      * */
     public function handle_apply(Request $request)
     {
-        $result     = $request->input('result',0);
+        $status     = $request->input('result',0);
         $applyId    = $request->input('applyId');
 
         $applyInfo  = BaseFriendApplyModel::where('apply_id',$applyId)->first();
@@ -66,26 +66,34 @@ class FriendController extends Controller
             return apiData()->send(2001,'您已经处理过该信息');
         }
 
-        //修改申请记录
-        BaseFriendApplyModel::where('apply_id',$applyId)->update(['status'=>$result]);
+
 
 
         //同意：添加到好友列表
-        if($result == 1)
+        if($status == 1)
         {
             FriendModel::add_friend($applyInfo->user_id,$applyInfo->friend_user_id);
             $result     = "同意";
 
-        }else{
+        }elseif($status == 0){
 
             $result     = "拒绝";
+            $status     = "-1";
 
         }
+
+        //修改申请记录
+        BaseFriendApplyModel::where('apply_id',$applyId)->update(['status'=>$status]);
 
         $userInfo       = BaseUserModel::find($applyInfo->friend_user_id);
         //通知申请人处理情况
         $messageModel   = new MessageModel();
         $messageModel->add_message("关注好友通知",$userInfo->nick_name.$result."了您的好友请求",'',$applyInfo->user_id);
+
+
+        //修改消息为已读
+        MessageModel::read_message_by_type($applyInfo->friend_user_id,'focus',$applyId);
+
 
         return apiData()->send(200,'操作成功');
     }
@@ -136,7 +144,10 @@ class FriendController extends Controller
 
 
     /**
-     * 通讯录好友
+     *
+     * @title 查找通讯录好友
+     * @descriptioni 根据用户通讯录获取好友
+     *
      * */
     public function mobile_friends(Request $request)
     {

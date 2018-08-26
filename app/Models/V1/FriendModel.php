@@ -65,4 +65,31 @@ class FriendModel extends Model
         }
         return $friends;
     }
+
+    /**
+     * 申请朋友列表
+     * @param $userId integer 用户ID
+     * */
+    static function apply_list($userId)
+    {
+        $applyList = DB::table('friend_apply as a')
+            ->leftJoin('users as b','b.id','=','a.user_id')
+            ->leftJoin('user_global_ability as d','d.user_id','=','a.user_id')
+            ->select('b.head_img','b.nick_name','b.role1 as role','b.birthday as age','d.grade','a.created_at','a.status','a.msg')
+            ->where('a.friend_user_id',$userId)
+            ->orderBy('apply_id','desc')
+            ->paginate(10);
+
+        foreach($applyList as $apply)
+        {
+            $timeInfo           = explode(' ',$apply->created_at);
+            $apply->head_img    = get_default_head($apply->head_img);
+            $apply->age         = birthday_to_age($apply->age);
+            $apply->role        = $apply->role ?? "";
+            $apply->grade       = $apply->grade ?? 0;
+            $apply->created_at  = str_replace('-','.',$timeInfo[0])." ".str_replace('-',":",substr($timeInfo[1],0,5));
+            $apply->msg         = $apply->msg == "" ? $apply->nick_name."请求加您为好友" : $apply->msg;
+        }
+        return $applyList;
+    }
 }

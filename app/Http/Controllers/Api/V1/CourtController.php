@@ -38,13 +38,43 @@ class CourtController extends Controller
         {
             $courtData["p_".$key]   = implode(",",$this->str_to_gps($p));
         }
-        
+
         $courtModel = new CourtModel();
         $courtId    = $courtModel->add_court($courtData);
 
         $this->calculate_court($courtId); //计算足球场的数据
 
         return apiData()->set_data('courtId',$courtId)->send(200,'SUCCESS');
+    }
+
+
+    /**
+     * 检查单个jps是否有效
+     * */
+    public function check_single_gps(Request $request)
+    {
+        $gps    = $request->input('gps');
+
+        if(empty($gps)){
+
+           $code    = 2001;
+           $msg     = "gps为空";
+        }else{
+
+            $gpsInfo    = $this->str_to_gps($gps);
+            if($gpsInfo['lon'] == 0 || $gpsInfo['lat'] == 0){
+
+                $code   = 2001;
+                $msg    = "GPS无效";
+
+            }else{
+
+                $code   = 200;
+                $msg    = "SUCCESS";
+            }
+        }
+
+        return apiData()->send($code,$msg);
     }
 
     /* *
@@ -209,9 +239,6 @@ class CourtController extends Controller
         set_time_limit(120);
 
 
-
-
-
         $courtId    = $request->input('courtId');
 
         $courtInfo  = CourtModel::find($courtId);
@@ -231,18 +258,16 @@ class CourtController extends Controller
             ['lat'=>31.2873562398,'lon'=>121.3783261186]
         ];
 
-        for($i=0;$i<11;$i++)
+        for($i=0;$i<8;$i++)
         {
 
             $points = array_merge($points,$points);
         }
+
         //dd(count($points));
-
-        $points = \GuzzleHttp\json_encode($points);
-        $points = \GuzzleHttp\json_decode($points);
-
+        mylogger('begin');
         $mapData= $court->court_hot_map($points);
-
+        mylogger('end');
 
         return $mapData;
     }

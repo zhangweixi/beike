@@ -53,19 +53,49 @@ class MessageModel extends Model
     }
 
     /**
+     * 按类型阅读消息
+     * @param $userId integer 用户ID
+     * @param $type string 类型
+     * @param $contentId integer 内容ID
+     *
+     * */
+    static function read_message_by_type($userId,$type,$contentId)
+    {
+        $msgInfo = DB::table('user_message')
+            ->where('content_id',$contentId)
+            ->where('type',$type)
+            ->first();
+
+        if(strlen($msgInfo->readed_users) != 0) {
+
+            $userId  = $msgInfo->readed_users . "," . $userId;
+        }
+
+        DB::table('user_message')->where('msg_id',$msgInfo->msg_id)->update(['readed_users'=>$userId,'updated_at'=>date_time()]);
+    }
+
+        /**
      * 统计未读消息数量
      * @param $userId integer 用户ID
+     * @param $type string 消息类型
      * */
-    static function count_unread_msg($userId)
+    static function count_unread_msg($userId,$type='')
     {
+
         $sql    = "SELECT COUNT(*) AS total 
                     FROM  user_message 
                     WHERE (user_id = $userId OR user_id = 0) 
                     AND   (FIND_IN_SET('{$userId}',readed_users) = 0 OR FIND_IN_SET('{$userId}',readed_users) IS NULL )";
+
+        if($type){
+            $sql .= " AND type = '{$type}'";
+        }
+
         $countInfo = DB::select($sql);
 
         return $countInfo[0]->total;
     }
+
 
 
 
