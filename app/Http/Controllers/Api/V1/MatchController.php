@@ -7,11 +7,8 @@ use App\Models\Base\BaseMatchSourceDataModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
-use Illuminate\Support\Facades\Redis;
 use DB;
 use App\Jobs\AnalysisMatchData;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 
@@ -23,10 +20,6 @@ class MatchController extends Controller
         ini_set ('memory_limit', '500M');
         set_time_limit(300);
     }
-
-
-
-    /*===============================数据操作开始===============================*/
 
     /**
      * 上传比赛数据
@@ -102,196 +95,6 @@ class MatchController extends Controller
     }
 
 
-    /**
-     * 解析单条数据
-     * 调用matlab解析数据
-     * @param $request Request
-     * @return string
-     * */
-    public function jiexi_single_data(Request $request)
-    {
-        $matchSourceId  = $request->input('matchSourceId',0);
-        $dataInfo       = DB::table('match_source_data')->where('match_source_id',$matchSourceId)->first();
-
-        if($dataInfo->status == 0)
-        {
-            $delayTime      = now()->addSecond(1);
-            $host           = $request->getHost();
-            $data           = ['sourceId'=>$matchSourceId,'host'=>$host];
-            AnalysisMatchData::dispatch('parse_data',$data)->delay($delayTime);
-        }
-        return apiData()->send();
-    }
-
-
-
-    /**
-     * 解析单条数据，不传递
-     * */
-    public function jiexi(Request $request)
-    {
-        //数据存储完毕，调用MATLAB系统开始计算
-        $sourceId = $request->input('sourceId');
-
-
-        //2.开始解析数据
-        $job    = new AnalysisMatchData('parse_data',['sourceId'=>$sourceId]);
-
-        $job->handle();
-        //mylogger("相应前端".time());
-        return apiData()->send(200,'ok');
-    }
-
-
-    /**
-     * 创建罗盘和sensor的文件
-     * */
-    public function create_compass_sensor(Request $request)
-    {
-        $matchId    = $request->input('matchId',0);
-        $foot       = $request->input('foot','');
-
-        if(false){
-
-            $fsensor    = public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt");
-            $fsensor    = fopen($fsensor,'r');
-
-            $fcompass   = public_path('uploads/temp/'.$matchId."-compass-".$foot.".txt");
-            $fcompass   = fopen($fcompass,'r');
-
-
-            $fresult     = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
-            $fresult    = fopen($fresult,'a+');
-
-
-            //将所有数据读取到数组中
-            $sensors    = file(public_path('uploads/temp/'.$matchId."-sensor-".$foot.".txt"));
-
-
-
-            $maxlength  = count($sensors)-1;
-            $p=1;
-
-            while(!feof($fcompass)){
-
-
-
-                $linecompass    = fgets($fcompass);
-                if(!$linecompass)
-                {
-                    break;
-                }
-                //移动三条 读一条
-
-                $newp = intval($p*4);
-
-
-                if($newp > $maxlength){
-
-                    break;
-
-                }
-
-
-                //$linesensor = fgets($fsensor);
-                $linesensor   = $sensors[$newp];
-
-                //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
-
-                $str = trim(trim($linesensor,"\n")).",".trim(trim($linecompass,"\n"));
-
-                if($str)
-                {
-                    $str .= "\n";
-                }
-
-                fputs($fresult,$str);
-
-                $p++;
-            }
-
-
-            fclose($fcompass);
-            fclose($fsensor);
-            fclose($fresult);
-
-            return "ok";
-        }
-
-
-
-        $delayTime      = now()->addSecond(1);
-        $data           = ['matchId'=>$matchId,'foot'=>$foot];
-        AnalysisMatchData::dispatch("create_compass_sensor",$data)->delay($delayTime);
-
-        //$job        = new AnalysisMatchData();
-        //$res        = $job->create_compass_data($matchId,$foot);
-
-        return apiData()->send();
-    }
-
-
-    /**
-     * 调用角度转换
-     * */
-    public function compass_translate(Request $request)
-    {
-        $infile  = $request->input('infile');
-        $outfile = $request->input('outfile');
-
-        $job        = new AnalysisMatchData();
-
-        $job->compass_translate($infile,$outfile);
-
-        return apiData()->send();
-    }
-
-
-
-    /*===============================数据操作结束===============================*/
-
-
-
-
-
-    public function jiexi_match(Request $request)
-    {
-        $matchId    = $request->input('matchId');
-        $dataes     = DB::table('match_source_data')->where('match_id',$matchId)->get();
-
-        foreach($dataes as $key=> $data)
-        {
-            $delayTime      = now()->addSecond(3*$key);
-            AnalysisMatchData::dispatch($data->match_source_id,$request->getHost())->delay($delayTime);
-        }
-
-        return apiData()->send();
-    }
-
-    public function test_match(Request $request){
-        //return (new AnalysisMatchData(1))->create_json_data(407,['sensor'],'R');
-        //数据存储完毕，调用MATLAB系统开始计算
-        $sourceId       = $request->input('sourceId');
-        $delayTime      = now()->addSecond(2);
-        AnalysisMatchData::dispatch($sourceId)->delay($delayTime);
-        return apiData()->send(200,'ok');
-    }
-
-
-
-    public function sensortest(Request $request)
-    {
-        //return hexToInt("f9ffffff");
-        $time   = $request->input('time');
-        return hexdec(reverse_hex($time));
-
-        $str = explode(',',$str);
-        foreach($str as $k => $s)
-        {
-            //dd(pack(bin2hex($s));
-        }
-        return hexToInt("a1000000");
-    }
 
     /**
      * 百度地图
@@ -434,56 +237,6 @@ class MatchController extends Controller
 
     }
 
-
-
-    /**
-     * 生产json文件
-     * */
-    public function create_json($matchId=0)
-    {
-        $matchId =364;
-        $job    = new AnalysisMatchData(0);
-        $job->create_json_data($matchId);
-
-        exit;
-
-        //将一定时间内的数据提取出来 生成json文件
-        $GLOBALS['sensorData']  = [
-            'ax'    => [],
-            'ay'    => [],
-            'az'    => [],
-            'gx'    => [],
-            'gy'    => [],
-            'gz'    => []
-        ];
-
-        DB::table('match_sensor')
-            ->where('match_id',$matchId)
-            ->where('data_key',1)
-            ->select('x','y','z','type')
-            ->orderBy('sensor_id')
-            ->chunk(1000,function($sensors)
-            {
-                foreach($sensors as $sensor)
-                {
-                    if($sensor->type == 'A')
-                    {
-                        array_push($GLOBALS['sensorData']['ax'],$sensor->x);
-                        array_push($GLOBALS['sensorData']['ay'],$sensor->y);
-                        array_push($GLOBALS['sensorData']['az'],$sensor->z);
-
-                    }else{
-
-                        array_push($GLOBALS['sensorData']['gx'],$sensor->x);
-                        array_push($GLOBALS['sensorData']['gy'],$sensor->y);
-                        array_push($GLOBALS['sensorData']['gz'],$sensor->z);
-
-                    }
-                }
-            });
-
-        file_put_contents('sensor.json',\GuzzleHttp\json_encode($GLOBALS['sensorData']));
-    }
 
 
 
@@ -869,61 +622,6 @@ class MatchController extends Controller
 
         return apiData()->send();
     }
-
-
-    public function get_pitch(Request $request)
-    {
-        $matchModel = new MatchModel();
-        $matchId    = $request->input('matchId');
-        $matchInfo  = $matchModel->get_match_detail($matchId);
-
-        $compassTable   = "user_".$matchInfo->user_id."_compass";
-        $sensorTable    = "user_".$matchInfo->user_id."_sensor";
-
-
-        DB::connection('matchdata')
-            ->table($compassTable)
-            ->where('match_id',$matchId)
-            ->orderBy('id')
-            ->chunk(1000,function($compasses) use($sensorTable,$matchId)
-        {
-            foreach($compasses as $compass)
-            {
-                $timestamp = $compass->timestamp;
-
-                $sensor = DB::connection("matchdata")
-                    ->table($sensorTable)
-                    ->where("match_id",$matchId)
-                    ->where('timestamp',">=",$timestamp)
-                    ->where('type','A')
-                    ->orderBy('id')
-                    ->first();
-
-                $info = [
-                    "path"  => "/home/zhangweixi/compass_to_gps/app",
-                    "ax"    => $sensor->x,
-                    "ay"    => $sensor->y,
-                    "az"    => $sensor->x,
-                    "cx"    => $compass->x,
-                    "cy"    => $compass->y,
-                    "cz"    => $compass->x
-                ];
-
-                //system("/usr/bin/compassapp -88 -19 1009 -0.013671875 -0.26985546946525574 -0.32883575558662415");
-		dd(system("./../../../../usr/bin/compassapp  -88 -19 1009 -0.013671875 -0.26985546946525574 -0.32883575558662415"));
-                $command = implode(" ",$info);
-                //dd($command);
-                //$command = "pwd";
-                $result  = exec($command,$arr);
-                var_dump($result);
-                var_dump($arr);
-                exit();
-            }
-
-
-        });
-    }
-
 
 
 

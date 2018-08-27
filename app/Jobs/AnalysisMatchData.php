@@ -34,16 +34,15 @@ class AnalysisMatchData implements ShouldQueue
     public $timeout = 80;
 
     private $sourceId   = 0;    //要处理的比赛的数据
-    private $userId     = 0;
-    private $action     = "";
-    private $host       = "";
-    private $infile     = "";
-    private $outfile    = "";
-    private $matchId    = 0;
-    private $type       = "";
-    private $foot       = "";
-
-
+    private $userId     = 0;    //用户ID
+    private $action     = "";   //要调用的方法
+    private $host       = "";   //当前域名，用于发起下一次网络请求
+    private $infile     = "";   //转换角度的文件，转换角度的输入文件
+    private $outfile    = "";   //转换角度的输出文件
+    private $matchId    = 0;    //比赛ID
+    private $type       = "";   //数据类型
+    private $foot       = "";   //哪只脚
+    private $matlabHost = "matlab.launchever.cn";
 
 
     public function __construct($action,$param = [])
@@ -144,6 +143,10 @@ class AnalysisMatchData implements ShouldQueue
 
             case 'compass_translate':
                 return $this->compass_translate($this->infile,$this->outfile);
+                break;
+
+            case 'create_gps_map':
+                return $this->create_gps_map($this->matchId,$this->foot);
                 break;
         }
     }
@@ -282,7 +285,8 @@ class AnalysisMatchData implements ShouldQueue
                     'data'      => []
                 ];
 
-                $file   = public_path('uploads/match/'.$matchId."-".$type."-".$foot.".txt");
+                $file   = public_path('uploads/match/'.$matchId."/".$type."-".$foot.".txt");
+                mk_dir(dirname($file));
             }
 
 
@@ -345,7 +349,9 @@ class AnalysisMatchData implements ShouldQueue
 
             if($nextData)
             {
-                $url = $this->host."/api/v1/match/jiexi_single_data?matchSourceId=" . $nextData->match_source_id;
+                $params = ['matchSourceId'=>$nextData->match_source_id];
+                $params = http_build_sign($params);
+                $url    = $this->host."/api/matchCaculate/jiexi_single_data?".$params;
                 file_get_contents($url);
             }
         }
@@ -383,12 +389,14 @@ class AnalysisMatchData implements ShouldQueue
 
 
             //生成匹配文件耗时太多，不能在一个线程里单独完成
-            //$this->create_compass_data($matchId,$foot);
-
-            $createCompassUrl   = $this->host."/api/v1/match/create_compass_sensor?matchId=".$matchId."&foot=".$foot;
-            file_get_contents($createCompassUrl);
-
-
+            //生成罗盘和sensor的匹配文件
+            if($this->host)
+            {
+                $params         = ['matchId'=>$matchId,'foot'=>$foot];
+                $params         = http_build_sign($params);
+                $createCompassUrl   = $this->host."/api/matchCaculate/create_compass_sensor?".$params;
+                file_get_contents($createCompassUrl);
+            }
 
 
             //如果已经生成了航向角的文件，则发起调用算法系统
@@ -402,97 +410,16 @@ class AnalysisMatchData implements ShouldQueue
             //如果GPS传输完毕,根据解析的数据生成热点图
             if($type == 'gps')
             {
-                $this->create_gps_map($matchId);
+                $params = ['matchId'=>$matchId,'foot'=>$foot];
+                $params = http_build_query($params);
+                $url    = $this->host."/api/matchCaculate/create_gps_map?".$params;
+                file_get_contents($url);
+                //$this->create_gps_map($matchId,$foot);
             }
         }
 
         return true;
     }
-    /**
-     * 所有传输完毕，创建json文件
-     * @param $matchId  integer 比赛ID
-     * @param $types    array   类型
-     * @param $foot     string  脚
-     * @return boolean
-     * */
-    public function create_json_data($matchId,Array $types,$foot)
-    {
-        //将不同类型的数据保存到json
-        //如果是分批传输，则结果只能最终一次性获取
-        $matchInfo  = MatchModel::find($matchId);
-        $userId     = $matchInfo->user_id;
-
-        //如果是sensor的最后一条数据，那么需要等待同一只脚的sensor数据解析完毕后才能解析
-
-        //1.sensor
-        if(in_array('sensor',$types))
-        {
-            $type       = "sensor";
-            $table      = "user_".$userId."_".$type;
-
-            $matchData  = [
-                'ax'    => [],
-                'ay'    => [],
-                'az'    => []
-            ];
-
-
-            DB::connection('matchdata')
-                ->table($table)
-                ->select('ax','ay','az')
-                ->where('type','')
-                ->where('foot',$foot)
-                ->where('match_id',$matchId)
-                ->orderBy('id')
-                ->chunk(1000,function($data)use(&$matchData)
-                {
-                    foreach($data as $d)
-                    {
-                        array_push($matchData['ax'],$d->ax);
-                        array_push($matchData['ay'],$d->ay);
-                        array_push($matchData['az'],$d->az);
-                    }
-                });
-
-            $resultFile = "match/".$matchId."-".$type."-".$foot.".json";
-            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
-
-        }
-
-
-        //2.gps
-        if(in_array('gps',$types))
-        {
-            $type       = "gps";
-            $table      = "user_".$userId."_".$type;
-            $matchData  = [
-                'lat'    => [],
-                'lon'    => [],
-            ];
-
-            DB::connection('matchdata')
-                ->table($table)
-                ->select("lat","lon")
-                ->where('match_id',$matchId)
-                ->orderBy('id')
-                ->chunk(1000,function($data)use(&$matchData)
-                {
-                    foreach($data as $d)
-                    {
-                        array_push($matchData['lat'],$d->lat);
-                        array_push($matchData['lon'],$d->lon);
-                    }
-                });
-            $resultFile = "match/".$matchId."-".$type.".json";
-            Storage::disk('web')->put($resultFile,\GuzzleHttp\json_encode($matchData));
-        }
-
-
-
-
-        return true;
-    }
-
 
 
 
@@ -558,18 +485,6 @@ class AnalysisMatchData implements ShouldQueue
     }
 
 
-
-    private function call_matlab($matchId)
-    {
-        $url        = "http://matlab.launchever.cn/api/caculate?matchId=".$matchId;
-
-        mylogger('callmatlab:'.$matchId);
-        return true;
-
-        $http       = new Http();
-        $response   = $http->send($url);
-        var_dump($response);
-    }
 
     //通用类型
     public $types   = [
@@ -948,21 +863,20 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //sensor数据
-        $sensorPath = public_path('uploads/match/'.$matchId."-sensor-".$foot.".txt");
+        $sensorPath = public_path("uploads/match/{$matchId}/sensor-{$foot}.txt");
         $fsensor    = fopen($sensorPath,'r');
         //将所有数据读取到数组中
-        $sensors    = file(public_path('uploads/match/'.$matchId."-sensor-".$foot.".txt"));
+        $sensors    = file(public_path("uploads/match/{$matchId}/sensor-{$foot}.txt"));
 
 
         //罗盘数据
-        $compassPath= public_path('uploads/match/'.$matchId."-compass-".$foot.".txt");
+        $compassPath= public_path("uploads/match/{$matchId}/compass-{$foot}.txt");
         $fcompass   = fopen($compassPath,'r');
 
 
         //结果文件
-        $resultPath = public_path('uploads/temp/'.$matchId.'-sensor-compass-'.$foot.".txt");
+        $resultPath = public_path("uploads/temp/{$matchId}-sensor-compass-{$foot}.txt");
         $fresult    = fopen($resultPath,'a+');
-
 
         $maxlength  = count($sensors)-1;
         $p=1;
@@ -1007,179 +921,107 @@ class AnalysisMatchData implements ShouldQueue
         fclose($fsensor);
         fclose($fresult);
 
-
         //计算角度
-        $outFile    = public_path('uploads/match/'.$matchId."-".$foot."-angle.txt");
+        $outFile    = public_path("uploads/match/{$matchId}/angle-{$foot}.txt");
         $this->compass_translate($resultPath,$outFile);
 
+        //角度计算完毕，请求调用算法系统
+        $this->call_matlab($this->matchId);
     }
+
+
 
     /**
-     * 生成计算角度的罗盘和sensor数据
-     * @param $matchId integer 比赛ID
-     * @param $foot string 脚
+     * 罗盘角度转换
+     * @param $infile string 输入文件
+     * @param $outfile string 输出文件
      * @return boolean
      * */
-    public function create_compass_data($matchId,$foot)
-    {
-        $matchModel = new MatchModel();
-        $matchInfo  = $matchModel->get_match_detail($matchId);
-
-        //检查sensor和compass是否都解析完毕
-        $matchProcess   = BaseMatchDataProcessModel::find($matchId);
-        $sensorColum    = "sensor_".$foot;
-        $compassColum   = "compass_".$foot;
-
-        if($matchProcess == null ||
-            $matchProcess->$sensorColum == 0 ||
-            $matchProcess->$compassColum == 0)
-        {
-
-            return true;
-        }
-
-        $compassTable   = "user_".$matchInfo->user_id."_compass";
-        $sensorTable    = "user_".$matchInfo->user_id."_sensor";
-
-        mk_dir(public_path("uploads/temp"));
-
-        //两只脚的数据
-
-        $infile         = public_path("uploads/temp/".$matchId."-".$foot.".txt");
-        $outfile        = public_path("uploads/match/".$matchId."-compass-".$foot.".json");
-
-        if(file_exists($infile))
-        {
-            unlink($infile);
-        }
-
-        logbug($matchId."-".$foot."-匹配罗盘begin");
-        $id = 0;
-        DB::connection('matchdata')
-            ->table($compassTable)
-            ->select('x','y','z','timestamp')
-            ->where('match_id',$matchId)
-            ->where('foot',$foot)
-            ->where('type','')
-            ->orderBy('id')
-            ->chunk(1000,function($compasses) use($sensorTable,$matchId,$id,$infile,$foot)
-            {
-                foreach($compasses as $compass)
-                {
-                    $timestamp = $compass->timestamp;
-
-                    $sensor = DB::connection("matchdata")
-                        ->table($sensorTable)
-                        ->select('id','ax','ay','az')
-                        ->where('id',">=",$id)
-                        ->where("match_id",$matchId)
-                        ->where('foot',$foot)
-                        ->where('type','')
-                        ->where('timestamp',">=",$timestamp)
-                        ->orderBy('id')
-                        ->first();
-
-
-                    //罗盘之后没有sensor了
-                    if($sensor == null)
-                    {
-                        break;
-                    }
-
-                    $id = $sensor->id;
-                    $info = [
-                        "ax"    => $sensor->ax,//加速度
-                        "ay"    => $sensor->ay,
-                        "az"    => $sensor->az,
-                        "cx"    => $compass->x,//罗盘
-                        "cy"    => $compass->y,
-                        "cz"    => $compass->z
-                    ];
-                    file_put_contents($infile, implode(",",$info)."\n",FILE_APPEND);
-                }
-            });
-
-        //由罗盘信息转换成航向角
-        //$this->compass_translate($infile,$outfile);
-        logbug($matchId."-".$foot."-匹配罗盘begin");
-        return true;
-    }
-
-
-
     public function compass_translate($infile,$outfile)
     {
+        if(file_exists($infile))
+        {
+            return "输入文件不存在";
+        }
+
+
         if(file_exists($outfile))
         {
             file_put_contents($outfile,"");
         }
 
-        $command    = "/usr/bin/compass $infile $outfile";
-
-        //mylogger($command);
+        $command    = "/usr/bin/compass $infile $outfile > /dev/null && echo 'success' ";
         $res        = shell_exec($command);
+        $res        = trim($res);
 
-        return true;
+        return $res == "success" ? true : false ;
+    }
 
 
-        $text       = file_get_contents($outfile);
-        //$text       = substr($text,0,-2)."]";
-        $compass    = json_decode($text,true);
 
-        //转换成经纬度
-        $azimuth    = [];
-        $pitch      = [];
-        $roll       = [];
 
-        foreach($compass as $v)
+    private function call_matlab($matchId)
+    {
+        //检查5个文件是否存在
+
+        $SEN_R      = public_path("uploads/match/{$matchId}/sensor-R.txt");
+        $SEN_L      = public_path("uploads/match/{$matchId}/sensor-L.txt");
+
+        $ANG_R      = public_path("uploads/match/{$matchId}/angle-R.txt");
+        $ANG_L      = public_path("uploads/match/{$matchId}/angle-L.txt");
+
+        $GPS_L      = public_path("uploads/match/{$matchId}/gps-L.txt");
+
+
+        if(file_exists($SEN_R) && file_exists($SEN_L) && file_exists($ANG_L) && file_exists($ANG_R) && file_exists($GPS_L))
         {
-            array_push($azimuth,$v[0]);
-            array_push($pitch,$v[1]);
-            array_push($roll,$v[2]);
+            $params     = http_build_sign(['matchId'=>$matchId]);
+            $url        = "http://{$this->matlabHost}/api/matchCaculate/call_matlab?".$params;
+            $res        = file_get_contents($url);
         }
-
-        $compass    = \GuzzleHttp\json_encode(['azimuth'=>$azimuth,'pitch'=>$pitch,'roll'=>$roll]);
-        file_put_contents($outfile,$compass);
-
-        return true;
     }
 
 
     /**
      * 生成GPS热点图
      * @param $matchId integer 比赛ID
+     * @param $foot string 脚
      * @param $gpsData  array GPS数据
      * @return boolean
      * */
-    public function create_gps_map($matchId,array $gpsData = [])
+    public function create_gps_map($matchId,$foot,array $gpsData = [])
     {
         $matchInfo  = MatchModel::find($matchId);
-        $courtInfo  = CourtModel::find($matchInfo->court_id);
 
+        if($matchInfo->court_id == 0){
+
+            return false;
+        }
+
+        $courtInfo  = CourtModel::find($matchInfo->court_id);
         $points     = $courtInfo->boxs;
         $points     =  \GuzzleHttp\json_decode($points);
+
+
 
 
 
         //没有数据,从数据库获取
         if(count($gpsData) == 0)
         {
-            DB::connection('matchdata')
-                ->table('user_'.$matchInfo->user_id."_gps")
-                ->where('match_id',$matchId)
-                ->where('lat','>',0)
-                ->where('lon','>',0)
-                ->where('type','')
-                ->orderBy('id')
-                ->chunk(1000,function($gpsList) use(&$gpsData)
-                {
-                    foreach($gpsList as $gps)
-                    {
-                        array_push($gpsData,['lat'=>gps_to_gps($gps->lat),'lon'=>gps_to_gps($gps->lon)]);
-                    }
-                });
+            //GPS存储在文件中，不在数据库中
+
+            $gpsFile    = public_path("uploads/match/".$matchId."/gps-".$foot.".txt");
+            $gpsPoints  = file($gpsFile);
+
+            foreach($gpsPoints as $gps)
+            {
+                $gpsInfo    = explode(' ',$gps);
+                array_push($gpsData,['lat'=>$gpsInfo[0],'lon'=>$gpsInfo[1]]);
+            }
         }
-        //dd($gpsData);
+
+
         $court      = new Court();
         $court->set_centers($points->center);
         $mapData    = $court->court_hot_map($gpsData);

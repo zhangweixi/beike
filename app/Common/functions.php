@@ -764,4 +764,32 @@ function floattostr( $val )
     return $o[1].sprintf('%d',$o[2]).($o[3]!='.'?$o[3]:'');
 }
 
+//签名
+function sign($arr)
+{
+    $secret = "lanqi888";
+    if(count($arr) == 0)
+    {
+        return "";
+    }
+
+    ksort($arr);
+
+    $str    = "";
+    foreach($arr as $v)
+    {
+        $str .= $v;
+    }
+    return md5(md5($str.$secret));
+}
+
+
+function http_build_sign($arr)
+{
+    $sign           = sign($arr);
+    $arr['sign']    = $sign;
+
+    return http_build_query($arr);
+}
+
 ?>
