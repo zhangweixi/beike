@@ -939,6 +939,9 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function compass_translate($infile,$outfile)
     {
+        mylogger('结果文件:'.$outfile);
+        mylogger('输入文件:'.$outfile);
+
         if(file_exists($infile))
         {
             return "输入文件不存在";
@@ -953,7 +956,7 @@ class AnalysisMatchData implements ShouldQueue
         $command    = "/usr/bin/compass $infile $outfile > /dev/null && echo 'success' ";
         $res        = shell_exec($command);
         $res        = trim($res);
-
+        mylogger('结果:'.$res);
         return $res == "success" ? true : false ;
     }
 
