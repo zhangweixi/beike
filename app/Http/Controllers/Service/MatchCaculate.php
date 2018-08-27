@@ -28,7 +28,13 @@ class MatchCaculate extends Controller
      * */
     public function call_matlab(Request $request)
     {
-        mylogger('调用matlab'.$request->getHost());
+
+        $matchId        = $request->input('matchId');
+        $data           = ['matchId'=>$matchId];
+        $delayTime      = now()->addSecond(1);
+
+        AnalysisMatchData::dispatch('init_matlab',$data)->delay($delayTime);
+
         return apiData()->send();
     }
 
