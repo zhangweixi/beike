@@ -960,12 +960,20 @@ class AnalysisMatchData implements ShouldQueue
         //检查2个文件是否存在
         $ANG_R      = public_path("uploads/match/{$matchId}/angle-R.txt");
         $ANG_L      = public_path("uploads/match/{$matchId}/angle-L.txt");
-        mylogger('callmatlab');
+
+        mylogger("R".$ANG_R);
+        mylogger("L".$ANG_L);
+
         if(file_exists($ANG_L) && file_exists($ANG_R))
         {
             $params     = http_build_sign(['matchId'=>$matchId]);
             $url        = "http://{$this->matlabHost}/api/matchCaculate/call_matlab?".$params;
+            mylogger($url);
             $res        = file_get_contents($url);
+
+        }else{
+
+            mylogger('文件缺失');
         }
     }
 
