@@ -942,7 +942,7 @@ class AnalysisMatchData implements ShouldQueue
         mylogger('结果文件:'.$outfile);
         mylogger('输入文件:'.$infile);
 
-        if(file_exists($infile))
+        if(!file_exists($infile))
         {
             return "输入文件不存在";
         }
