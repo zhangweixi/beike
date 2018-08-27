@@ -866,7 +866,7 @@ class AnalysisMatchData implements ShouldQueue
         $sensorPath = public_path("uploads/match/{$matchId}/sensor-{$foot}.txt");
         $fsensor    = fopen($sensorPath,'r');
         //将所有数据读取到数组中
-        $sensors    = file(public_path("uploads/match/{$matchId}/sensor-{$foot}.txt"));
+        $sensors    = file($sensorPath);
 
 
         //罗盘数据
@@ -875,7 +875,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //结果文件
-        $resultPath = public_path("uploads/temp/{$matchId}-sensor-compass-{$foot}.txt");
+        $resultPath = public_path("uploads/match/{$matchId}/sensor-compass-{$foot}.txt");
         $fresult    = fopen($resultPath,'a+');
 
         $maxlength  = count($sensors)-1;
