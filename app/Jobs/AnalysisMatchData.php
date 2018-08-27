@@ -133,21 +133,15 @@ class AnalysisMatchData implements ShouldQueue
     {
         switch ($this->action)
         {
-            case 'parse_data':
-                return $this->parse_data();
-                break;
+            case 'parse_data':              $this->parse_data();                                        break;
 
-            case 'create_compass_sensor':
-                return $this->create_compass_sensor($this->matchId,$this->foot);
-                break;
+            case 'create_compass_sensor':   $this->create_compass_sensor($this->matchId,$this->foot);   break;
 
-            case 'compass_translate':
-                return $this->compass_translate($this->infile,$this->outfile);
-                break;
+            case 'compass_translate':       $this->compass_translate($this->infile,$this->outfile);     break;
 
-            case 'create_gps_map':
-                return $this->create_gps_map($this->matchId,$this->foot);
-                break;
+            case 'create_gps_map':          $this->create_gps_map($this->matchId,$this->foot);          break;
+
+            case 'init_matlab':             $this->init_matlab($this->matchId);                         break;
         }
     }
 
@@ -939,9 +933,6 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function compass_translate($infile,$outfile)
     {
-        mylogger('结果文件:'.$outfile);
-        mylogger('输入文件:'.$infile);
-
         if(!file_exists($infile))
         {
             return "输入文件不存在";
@@ -954,10 +945,10 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         $command    = "/usr/bin/compass $infile $outfile > /dev/null && echo 'success' ";
-        mylogger($command);
+
         $res        = shell_exec($command);
         $res        = trim($res);
-        mylogger('结果:'.$res);
+
         return $res == "success" ? true : false ;
     }
 
@@ -966,18 +957,11 @@ class AnalysisMatchData implements ShouldQueue
 
     private function call_matlab($matchId)
     {
-        //检查5个文件是否存在
-
-        $SEN_R      = public_path("uploads/match/{$matchId}/sensor-R.txt");
-        $SEN_L      = public_path("uploads/match/{$matchId}/sensor-L.txt");
-
+        //检查2个文件是否存在
         $ANG_R      = public_path("uploads/match/{$matchId}/angle-R.txt");
         $ANG_L      = public_path("uploads/match/{$matchId}/angle-L.txt");
 
-        $GPS_L      = public_path("uploads/match/{$matchId}/gps-L.txt");
-
-
-        if(file_exists($SEN_R) && file_exists($SEN_L) && file_exists($ANG_L) && file_exists($ANG_R) && file_exists($GPS_L))
+        if(file_exists($ANG_L) && file_exists($ANG_R))
         {
             $params     = http_build_sign(['matchId'=>$matchId]);
             $url        = "http://{$this->matlabHost}/api/matchCaculate/call_matlab?".$params;
@@ -1050,9 +1034,12 @@ class AnalysisMatchData implements ShouldQueue
     }
 
 
-    public function failed(Exception $e)
+    /**
+     * 初始化matlab软件
+     * */
+    public function init_matlab($matchId)
     {
-
+        mylogger("我已经成功啦");
     }
 }
 

@@ -28,10 +28,9 @@ class MatchCaculate extends Controller
      * */
     public function call_matlab(Request $request)
     {
-        mylogger($request->all());
-        return "ok";
+        mylogger('调用matlab'.$request->getHost());
+        return apiData()->send();
     }
-
 
 
     /**
