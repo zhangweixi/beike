@@ -203,6 +203,32 @@ class FriendController extends Controller
 
 
     /**
+     * 搜索朋友
+     * */
+    public function search_friends(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $keywords   = $request->input('keywords');
+
+        $friends = DB::table('users as a')
+            ->leftJoin('friend as b','b.user_id','=',DB::raw(" $userId AND b.friend_user_id = a.id"))
+            ->leftJoin('user_global_ability as d','d.user_id','=','a.id')
+            ->select('a.id','a.nick_name','a.role1 as role','a.birthday as age','a.head_img',DB::raw("IF(b.user_id,1,0) as isFriend,IFNULL(d.grade,0) as grade"))
+            ->where('a.nick_name','like',"%$keywords%")
+            ->orderBy('a.id','desc')
+            ->paginate(20);
+
+        foreach($friends as $friend)
+        {
+            $friend->head_img   = get_default_head($friend->head_img);
+            $friend->age        = birthday_to_age($friend->age);
+            $friend->role       = $friend->role ?? "";
+        }
+
+        return apiData()->add('friends',$friends)->send();
+    }
+
+    /**
      * 邀请通讯录好友
      * */
     public function invite_mobile_friend(Request $request)
@@ -210,7 +236,6 @@ class FriendController extends Controller
         $mobile = $request->input('mobile');
 
         //发送邀请短信
-
 
         return apiData()->send(200,'已给您的好友发送了邀请信息');
     }
