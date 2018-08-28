@@ -189,11 +189,31 @@ class ShequMatchModel extends Model{
             $invite->credit     = credit_to_text($invite->credit);
             unset($invite->begin_time);
             $invite->members    = $this->get_match_user($invite->match_id,$invite->user_id);
+            $invite->joinedNum  = count($invite->members);
 
         }
         return $invites;
     }
 
 
+    /**
+     * 接受邀请
+     * @param $inviteId int 邀请ID
+     * */
+    public function accept_invite($inviteId)
+    {
+        DB::table('shequ_match_invite')->where('invite_id',$inviteId)->update(['status'=>1]);
+
+    }
+
+
+    /**
+     * 拒绝邀请
+     * @param $inviteId integer 邀请ID
+     * */
+    public function refuse_invite($inviteId)
+    {
+        DB::table('shequ_match_invite')->where('invite_id',$inviteId)->update(['status'=>2]);
+    }
 
 }
