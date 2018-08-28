@@ -265,8 +265,8 @@ class ShequMatchController extends Controller
     public function shequ_match_list(Request $request)
     {
         $userId     = $request->input('userId');
-        $lon        = $request->input('lon',0);
-        $lat        = $request->input('lat',0);
+        $lon        = $request->input('longitude',0);
+        $lat        = $request->input('latitude',0);
 
 
         $shequModel = new ShequMatchModel();
