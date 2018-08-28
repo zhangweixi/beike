@@ -1,5 +1,7 @@
 <?php
 namespace App\Models\V1;
+use App\Models\Base\BaseShequMatchModel;
+use App\Models\Base\BaseShequMatchUserModel;
 use Dingo\Api\Http\Request;
 use function GuzzleHttp\Psr7\str;
 use Illuminate\Database\Eloquent\Model;
@@ -195,15 +197,74 @@ class ShequMatchModel extends Model{
         return $invites;
     }
 
+    /**
+     * 添加比赛的用户
+     * @param $matchId integer 比赛ID
+     * @param $userId integer 用户ID
+     * */
+    public function add_match_user($matchId,$userId)
+    {
+        $matchUser                  = new BaseShequMatchUserModel;
+        $matchUser->user_id         = $userId;
+        $matchUser->sq_match_id     = $matchId;
+        $matchUser->save();
+
+
+        //修改参与人员数量
+        BaseShequMatchModel::where('sq_match_id',$matchId)->increment('joined_num');
+
+    }
+
+    /**
+     * 邀请用户
+     * @param $matchId integer 比赛ID
+     * @param $userId integer 用户ID
+     *
+     * */
+    public function invite_user($matchId,$userId)
+    {
+        $time   = date_time();
+        $data   = [
+            'match_id'  => $matchId,
+            'user_id'   => $userId,
+            'status'    => 0,
+            'created_at'=> $time,
+            'updated_at'=> $time
+        ];
+
+        $inviteId   = DB::table('shequ_match_invite')->insertGetId($data);
+
+        $messageModel   = new MessageModel();
+        $messageModel->add_message("邀请信息","邀请你参加比赛","invite",$userId,$inviteId);
+
+    }
 
     /**
      * 接受邀请
      * @param $inviteId int 邀请ID
+     * @return string
      * */
     public function accept_invite($inviteId)
     {
-        DB::table('shequ_match_invite')->where('invite_id',$inviteId)->update(['status'=>1]);
+        $inviteInfo = DB::table('shequ_match_invite')->where('invite_id',$inviteId)->first();
 
+        //检查用户是否已满
+        $isFull = ShequMatchModel::check_user_is_full($inviteInfo->match_id);
+
+        if($isFull == true){
+
+            $this->refuse_invite($inviteId);
+
+            return "本场比赛人数已满，自动拒绝了本邀请";
+
+        }else{
+
+            DB::table('shequ_match_invite')->where('invite_id',$inviteId)->update(['status'=>1]);
+
+            $this->add_match_user($inviteInfo->match_id,$inviteInfo->user_id);
+
+            return "SUCCESS";
+        }
     }
 
 
@@ -216,4 +277,35 @@ class ShequMatchModel extends Model{
         DB::table('shequ_match_invite')->where('invite_id',$inviteId)->update(['status'=>2]);
     }
 
+
+    /**
+     * 检查用户是否已满
+     * @param $matchId integer 比赛ID
+     * @return boolean
+     * */
+    public static function check_user_is_full($matchId)
+    {
+        $matchInfo = BaseShequMatchModel::find($matchId);
+        if($matchInfo->total_num <= $matchInfo->joined_num) {
+
+            return true;
+
+        }else{
+
+            return false;
+        }
+    }
+
+    /**
+     * 检查是否参加比赛
+     * @param $matchId integer 比赛ID
+     * @param $userId
+     * @return boolean
+     * */
+    public static function check_is_join_match($matchId,$userId)
+    {
+        $isJoin     = BaseShequMatchUserModel::where('sq_match_id',$matchId)->where('user_id',$userId)->first();
+
+        return $isJoin ? true : false;
+    }
 }

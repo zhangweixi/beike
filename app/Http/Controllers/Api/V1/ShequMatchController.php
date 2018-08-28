@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Base\BaseUserAbilityModel;
+use App\Models\V1\MatchModel;
 use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use App\Models\V1\ShequMatchModel;
@@ -87,31 +88,91 @@ class ShequMatchController extends Controller
             ->send(200, '比赛创建成功');
     }
 
+    /**
+     * 邀请加入比赛
+     * */
+    public function invite_match(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $userId     = $request->input('userId');
+
+        $matchModel = new ShequMatchModel();
+
+        $isFull     = ShequMatchModel::check_user_is_full($matchId);
+        if($isFull == true){
+
+            return apiData()->send(2001,'人数已满,不能再邀请');
+        }
+
+        //检查是否已经参加
+        $isJoin     = ShequMatchModel::check_is_join_match($matchId,$userId);
+
+        if($isJoin){
+
+            return apiData()->send(2001,'已经参加了比赛，不能再邀请了');
+        }
+
+
+        $matchModel->invite_user($matchId,$userId);
+
+        return apiData()->send();
+    }
+
+    /**
+     * 处理邀请
+     * */
+    public function hand_invite(Request $request)
+    {
+        $inviteId   = $request->input('inviteId');
+        $result     = $request->input('result');
+        $matchModel = new ShequMatchModel();
+
+
+        $code   = 200;
+
+        if($result == 0){
+
+            $matchModel->refuse_invite($inviteId);
+            $msg    = "SUCCESS";
+
+        }elseif($result == 1){
+
+            //检查用户是否已满
+
+            $msg    = $matchModel->accept_invite($inviteId);
+
+            if($msg == "SUCCESS"){
+
+                $code   = 2001;
+            }
+        }
+
+        return apiData()->send($code,$msg);
+    }
+
 
     /**
      * 参加比赛
      * */
     public function join_match(Request $request)
     {
-        $userId = $request->input('userId');
-        $matchId = $request->input('matchId');
-        $matchUserModel = new BaseShequMatchUserModel();
+        $userId     = $request->input('userId');
+        $matchId    = $request->input('matchId');
 
         //检查用户是否加入
-        $matchUser = $matchUserModel->where('user_id', $userId)->where('sq_match_id', $matchId)->first();
-        if ($matchUser != null) {
+        $matchUser = BaseShequMatchUserModel::where('user_id', $userId)->where('sq_match_id', $matchId)->first();
+
+        if ($matchUser != null)
+        {
             return apiData()->send(2001, '您已经加入了本比赛');
         }
 
         //检查人数是否已满
         //xxxx
 
-        $matchUserModel->user_id = $userId;
-        $matchUserModel->sq_match_id = $matchId;
-        $matchUserModel->save();
+        $shequMatch = new ShequMatchModel();
+        $shequMatch->add_match_user($matchId,$userId);
 
-        //修改参与人员数量
-        BaseShequMatchModel::where('sq_match_id',$matchId)->increment('joined_num');
 
         return apiData()->send(200, '成功加入比赛');
     }
