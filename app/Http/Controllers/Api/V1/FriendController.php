@@ -5,6 +5,7 @@ use App\Common\Geohash;
 use App\Models\Base\BaseFriendModel;
 use App\Models\Base\BaseUserModel;
 use App\Models\V1\MessageModel;
+use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\FriendModel;
@@ -155,6 +156,7 @@ class FriendController extends Controller
         $users      = $request->input('users');
         $users      = \GuzzleHttp\json_decode($users);
 
+        $userInfo   = UserModel::find($userId);
 
         //查找已加入系统的用户
         $mobiles    = [];
@@ -162,7 +164,11 @@ class FriendController extends Controller
 
         foreach($users as $user)
         {
-            array_push($mobiles,$user->mobile);
+            if($user->mobile == trim($userInfo->mobile))
+            {
+                continue;
+            }
+            array_push($mobiles,trim($user->mobile));
             $names["i".$user->mobile] = $user->name;
         }
 
