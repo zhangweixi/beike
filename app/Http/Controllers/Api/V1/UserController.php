@@ -515,7 +515,7 @@ class UserController extends Controller
     /**
      * 球队
      * */
-    public function ball_tamp(Request $request)
+    public function ball_teamp(Request $request)
     {
         $unions = DB::table('football_union')->select('union_id','union_name')->where('is_show',1)->orderBy('sort')->get();
 
