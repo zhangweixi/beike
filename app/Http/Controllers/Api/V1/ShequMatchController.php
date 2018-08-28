@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\V1\ShequMatchModel;
 use App\Models\Base\BaseShequMatchModel;
 use App\Models\Base\BaseShequMatchUserModel;
-
+use Illuminate\Support\Facades\DB;
 
 
 class ShequMatchController extends Controller
@@ -143,7 +143,7 @@ class ShequMatchController extends Controller
 
             if($msg == "SUCCESS"){
 
-                $code   = 2001;
+                $code   = 200;
             }
         }
 
@@ -264,9 +264,26 @@ class ShequMatchController extends Controller
      * */
     public function shequ_match_list(Request $request)
     {
-        $userId     = $request->input('userId',0);
+        $userId     = $request->input('userId');
+        $lon        = $request->input('lon',0);
+        $lat        = $request->input('lat',0);
+
+
         $shequModel = new ShequMatchModel();
         $matches    = $shequModel->get_match_list(true);
+
+
+
+        $allFriend  = DB::table('friend')->where('user_id',$userId)->pluck('friend_user_id')->toArray();
+        if($lon == 0 || $lat == 0)
+        {
+            $userInfo   = UserModel::find($userId);
+            $lat        = $userInfo->lat;
+            $lon        = $userInfo->lon;
+        }
+
+
+        //获得所有的朋友
 
         foreach($matches as $match)
         {
@@ -274,7 +291,16 @@ class ShequMatchController extends Controller
 
             $match->credit      = credit_to_text($match->credit);
 
-            $match->jsJoined    = 0;    //是否参加比赛
+            $match->isJoined    = 0;    //是否参加比赛
+
+            $match->friendNum   = 0;    //朋友的数量
+
+            //球距离
+            if($lat != 0 && $lon != 0 && $match->lat && $match->lon)
+            {
+                $match->distance    = gps_distance($lat,$lon,$match->lat,$match->lon);
+            }
+
 
             //判断自己是否参加
             foreach($match->members as $member)
@@ -282,10 +308,13 @@ class ShequMatchController extends Controller
                 if($member->user_id == $userId)
                 {
                     $match->isJoined    = 1;
-                    break;
+                }
+
+                if(in_array($member->user_id,$allFriend))
+                {
+                    $match->friendNum++;
                 }
             }
-
         }
         return apiData()->add('matches',$matches)->send();
     }

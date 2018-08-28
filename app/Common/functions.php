@@ -792,4 +792,19 @@ function http_build_sign($arr)
     return http_build_query($arr);
 }
 
+
+function gps_distance($lon1, $lat1, $lon2, $lat2)
+{
+    return (2*ATAN2(SQRT(SIN(($lat1-$lat2)*PI()/180/2)
+                *SIN(($lat1-$lat2)*PI()/180/2)+
+                COS($lat2*PI()/180)*COS($lat1*PI()/180)
+                *SIN(($lon1-$lon2)*PI()/180/2)
+                *SIN(($lon1-$lon2)*PI()/180/2)),
+                SQRT(1-SIN(($lat1-$lat2)*PI()/180/2)
+                    *SIN(($lat1-$lat2)*PI()/180/2)
+                    +COS($lat2*PI()/180)*COS($lat1*PI()/180)
+                    *SIN(($lon1-$lon2)*PI()/180/2)
+                    *SIN(($lon1-$lon2)*PI()/180/2))))*6378140;
+}
+
 ?>

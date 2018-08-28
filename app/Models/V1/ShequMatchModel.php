@@ -74,7 +74,7 @@ class ShequMatchModel extends Model{
 
 
 
-    private $matchColum = ['sq_match_id','user_id','grade','credit','begin_time','total_num','joined_num','address','sign_fee','created_at'];
+    private $matchColum = ['sq_match_id','user_id','grade','credit','begin_time','total_num','joined_num','address','sign_fee','created_at','lat','lon'];
 
     /**
      * 用户比赛列表
@@ -127,7 +127,7 @@ class ShequMatchModel extends Model{
             $timeInfo           = explode(" ",$match->begin_time);
             $match->begin_date  = $timeInfo[0];
             $match->begin_time  = $timeInfo[1];
-            $match->distance    = 0.3;
+            $match->distance    = 0;
 
             if($needMember)
             {
