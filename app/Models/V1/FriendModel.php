@@ -75,7 +75,7 @@ class FriendModel extends Model
         $applyList = DB::table('friend_apply as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
             ->leftJoin('user_global_ability as d','d.user_id','=','a.user_id')
-            ->select('b.head_img','b.nick_name','b.role1 as role','b.birthday as age','d.grade','a.created_at','a.status','a.msg')
+            ->select('a.apply_id','b.head_img','b.nick_name','b.role1 as role','b.birthday as age','d.grade','a.created_at','a.status','a.msg')
             ->where('a.friend_user_id',$userId)
             ->orderBy('apply_id','desc')
             ->paginate(10);
