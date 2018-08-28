@@ -78,7 +78,7 @@ class FriendController extends Controller
         }elseif($status == 0){
 
             $result     = "拒绝";
-            $status     = "-1";
+            $status     = 2;
 
         }
 
