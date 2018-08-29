@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
  * @param $head string 头像
  * @return string
  * */
-function get_default_head($head)
+function get_default_head($head='')
 {
     return $head ? config('app.filehost')."/".$head : url("beike/images/default/head.png");
 }

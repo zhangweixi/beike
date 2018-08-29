@@ -116,31 +116,60 @@ class FriendController extends Controller
      * */
     public function recommend_friends(Request $request)
     {
-
         $userId     = $request->input('userId');
 
-        $sql = "SELECT 
-                    a.id,
-                    a.nick_name,
-                    a.birthday as age,
-                    IFNULL(a.role1,'') as role ,
-                    a.head_img,
-                    IFNULL(b.grade,0) as grade 
-                FROM users a 
-                LEFT JOIN user_global_ability b ON b.user_id = a.id 
-                WHERE a.id <> $userId 
-                AND a.id NOT IN (SELECT friend_user_id FROM friend WHERE user_id = $userId) 
-                LIMIT 20";
 
-        $friends    = DB::select($sql);
+        $allFriend  = DB::table('friend')->where('user_id',$userId)->pluck('friend_user_id')->toArray();
 
-        foreach($friends as $friend)
+        $colum      = ['u.id','u.head_img','u.nick_name','u.role1 as role','u.birthday as age','g.grade'];
+
+        $recommendFriends    = [];
+
+        //1.获取朋友的朋友
+        $otherFriends = DB::table('friend as a')
+            ->leftJoin('friend as b','b.friend_user_id','=',DB::raw('a.friend_user_id and b.user_id <>'.$userId))
+            ->leftJoin('users as u','u.id','=','b.user_id')
+            ->leftJoin('user_global_ability as g','g.user_id','=','u.id')
+            ->select($colum)
+            ->where('a.user_id',$userId)
+            ->get();
+        $userMatches   = DB::table('shequ_match_user')->where('user_id',$userId)->pluck('sq_match_id')->toArray();
+
+
+        foreach($otherFriends as $friend)
+        {
+            array_push($recommendFriends,$friend);
+            array_push($allFriend,$friend->id);
+        }
+
+
+        //2.参加过同一场比赛的
+        $matchFriend = DB::table('shequ_match_user as a')
+            ->leftJoin('users as u','u.id','=','a.user_id')
+            ->leftJoin('user_global_ability as g','g.user_id','=','u.id')
+            ->select($colum)
+            ->whereIn('a.sq_match_id',$userMatches)
+            ->whereNotIn('a.user_id',$allFriend)
+            ->where('a.user_id',"<>",$userId)
+            ->get();
+
+        //地理位置
+
+
+        foreach($matchFriend as $friend)
+        {
+            array_push($recommendFriends,$friend);
+        }
+
+        foreach($recommendFriends as $friend)
         {
             $friend->head_img   = get_default_head($friend->head_img);
             $friend->age        = birthday_to_age($friend->age);
+            $friend->role       = $friend->role ?? "";
+            $friend->grade      = $friend->grade ?? 0;
         }
 
-        return apiData()->add('friends',$friends)->send();
+        return apiData()->add('friends',$recommendFriends)->send();
     }
 
 
@@ -154,6 +183,7 @@ class FriendController extends Controller
     {
         $userId     = $request->input('userId');
         $users      = $request->input('users');
+
         $users      = \GuzzleHttp\json_decode($users);
 
         $userInfo   = UserModel::find($userId);
@@ -201,9 +231,20 @@ class FriendController extends Controller
 
             if(!in_array($mobile,$registedMobiles))
             {
-                array_push($unregisteredUsers,['mobile'=>$mobile,'nick_name'=>$user->name]);
+                $unregiFriend   = [
+                    'id'        => 0,
+                    'mobile'    => $mobile,
+                    'nick_name' => $user->name,
+                    'role'      => '',
+                    'grade'     => 0,
+                    'head_img'  => get_default_head(),
+                    'age'       => 0,
+
+                ];
+                array_push($unregisteredUsers,$unregiFriend);
             }
         }
+
         return apiData()->add('registeredUsers',$registeredUsers)->add('unregisteredUsers',$unregisteredUsers)->send();
     }
 
