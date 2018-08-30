@@ -10,14 +10,14 @@ namespace App\Http\Controllers\Web;
 use Illuminate\Http\Request;
 
 
-class ShortLink
+class ShortLinkController
 {
 
     public function index(Request $request,$method)
     {
         switch ($method)
         {
-            case "0":
+            case "0": return $this->match_invity_by_mobile($request);break;
         }
 
 
@@ -31,7 +31,7 @@ class ShortLink
     {
         $matchId    = $request->input('I');
 
-        return $matchId;
+        return "比赛ID:".$matchId;
     }
 
 
