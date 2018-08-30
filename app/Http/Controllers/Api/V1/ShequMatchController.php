@@ -49,7 +49,7 @@ class ShequMatchController extends Controller
 
         $userBility = BaseUserAbilityModel::find($userId);
 
-        $credit = text_to_credit($credit);
+        //$credit = text_to_credit($credit);
 
         $shequModel = new BaseShequMatchModel();
         $shequModel->user_id = $userId;
@@ -272,9 +272,8 @@ class ShequMatchController extends Controller
         $shequModel = new ShequMatchModel();
         $matches    = $shequModel->get_match_list(true);
 
-
-
         $allFriend  = DB::table('friend')->where('user_id',$userId)->pluck('friend_user_id')->toArray();
+
         if($lon == 0 || $lat == 0)
         {
             $userInfo   = UserModel::find($userId);
@@ -289,7 +288,7 @@ class ShequMatchController extends Controller
         {
             $match->isCreater   = $userId == $match->user_id ? 1 : 0;   //是否是创建者
 
-            $match->credit      = credit_to_text($match->credit);
+            //$match->credit      = credit_to_text($match->credit);
 
             $match->isJoined    = 0;    //是否参加比赛
 
