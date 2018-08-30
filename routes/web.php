@@ -27,3 +27,7 @@ Route::any('/service/upload',"Service\Upload@upload");
 
 Route::any('/code','Service\Mobile@get_code');//测试获取电话号码
 
+
+//端链接
+Route::any('/s/{method}','Web\ShortLinkController@index');
+
