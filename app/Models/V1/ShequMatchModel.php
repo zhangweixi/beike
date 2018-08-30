@@ -188,7 +188,7 @@ class ShequMatchModel extends Model{
             $invite->created_at = str_replace('-','.',$timeInfo[0])." ".str_replace('-',":",substr($timeInfo[1],0,5));
             $invite->beginDate  = $beginTime[0];
             $invite->beginTime  = $beginTime[1];
-            $invite->credit     = credit_to_text($invite->credit);
+            //$invite->credit     = credit_to_text($invite->credit);
             unset($invite->begin_time);
             $invite->members    = $this->get_match_user($invite->match_id,$invite->user_id);
             $invite->joinedNum  = count($invite->members);
