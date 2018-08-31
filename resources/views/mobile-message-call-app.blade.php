@@ -75,7 +75,7 @@
             //你的代码
             //window.location.href = "taobao://**";
 
-            window.location.href = "bakersoccer://";
+            window.location.href = "bakersoccer://host";
 
             setTimeout(function(){
 
