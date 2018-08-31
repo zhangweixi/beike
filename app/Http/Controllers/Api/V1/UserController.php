@@ -105,7 +105,7 @@ class UserController extends Controller
 
         } elseif($type == 'qq') {
 
-            if(empty($wxinfo['qq_openid'])){
+            if(empty($qqinfo['qq_openid'])){
 
                 return apiData()->send(5002,'缺少参数');
             }
