@@ -219,24 +219,31 @@ class ShequMatchModel extends Model{
      * 邀请用户
      * @param $matchId integer 比赛ID
      * @param $userId integer 用户ID
+     * @param $mobile string 手机号
      *
      * */
-    public function invite_user($matchId,$userId)
+    public function invite_user($matchId,$userId,$mobile="")
     {
         $time   = date_time();
         $data   = [
             'match_id'  => $matchId,
             'user_id'   => $userId,
+            "mobile"    => $mobile,
             'status'    => 0,
             'created_at'=> $time,
             'updated_at'=> $time
         ];
 
         $inviteId   = DB::table('shequ_match_invite')->insertGetId($data);
+        if($userId == 0)
+        {
+            return true;
+        }
 
         $messageModel   = new MessageModel();
         $messageModel->add_message("邀请信息","邀请你参加比赛","invite",$userId,$inviteId);
 
+        return true;
     }
 
     /**
@@ -308,4 +315,22 @@ class ShequMatchModel extends Model{
 
         return $isJoin ? true : false;
     }
+
+
+    /**
+     * 检查手机好友是否参加比赛
+     *
+     * @param $matchId int 比赛ID
+     * @param $mobile string 手机号
+     * @return boolean
+     * */
+    public static function check_mobile_friend_is_invite($matchId,$mobile)
+    {
+        $isInvite = DB::table('shequ_match_invite')->where('match_id',$matchId)->where('mobile',$mobile)->first();
+
+        return $isInvite ? true : false;
+    }
+
+
+
 }

@@ -64,9 +64,18 @@ class MobileMassege{
             $this->countryCode = "";
         }
 
-        $this->check_can_send_code($this->mobile);
+        $result = $this->check_can_send_code($this->mobile);
 
-        $resInfo = $this->send_msg();
+        if($result == false)
+        {
+            return false;
+        }
+
+
+        $template_code  = config('aliyun.loginTempId');
+        $data           = ['code'=>$this->code];
+
+        $resInfo        = $this->send_msg($this->mobile,$template_code,$data);
 
 
         //记录发送的验证码
@@ -213,21 +222,33 @@ class MobileMassege{
     }
 
 
-    /*************************
-     * 创建最终的url 并发起请求
-     ************************/
-    public function send_msg()
+
+    /**
+     * 发送邀请比赛信息
+     * */
+    public function send_match_invite_message($mobile,$friend,$user,$time,$matchId)
     {
-        $template_code  = config('aliyun.loginTempId');
+        $templateCode   = config('aliyun.matchInviteId');
+
+        $data           = ["friend"=>$friend,"user"=>$user,"time"=>$time,"matchId"=>$matchId];
+
+        return $this->send_msg($mobile,$templateCode,$data);
+    }
+
+
+
+    /**
+     * 发送消息
+     * */
+    private function send_msg($mobile,$templateCode,array $data = [])
+    {
+
         $appKey         = config('aliyun.appKey');
         $appSecret      = config('aliyun.appSecret');
         $signName       = config('aliyun.signName');
 
         //短信中的替换变量json字符串
-        $json_string_param = json_encode(['code'=>$this->code]);
-
-        //接收短信的手机号码
-        $phone = $this->mobile;
+        $json_string_param = json_encode($data);
 
         // 初始化阿里云config
         AliyunConfig::load();
@@ -238,9 +259,9 @@ class MobileMassege{
 
         $acsClient  = new DefaultAcsClient($profile);
         $request    = new SendSmsRequest(); // 初始化SendSmsRequest实例用于设置发送短信的参数
-        $request->setPhoneNumbers($phone);  // 必填，设置短信接收号码
+        $request->setPhoneNumbers($mobile);  // 必填，设置短信接收号码
         $request->setSignName($signName);   // 必填，设置签名名称
-        $request->setTemplateCode($template_code); // 必填，设置模板CODE
+        $request->setTemplateCode($templateCode); // 必填，设置模板CODE
         empty($json_string_param) ? "" : $request->setTemplateParam($json_string_param);
 
         $acsResponse        =  $acsClient->getAcsResponse($request); // 发起请求
@@ -254,8 +275,6 @@ class MobileMassege{
 
         return false;
     }
-
-
 
 
     /********************

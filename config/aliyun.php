@@ -5,5 +5,6 @@ return [
     "appSecret" =>  "B3nKgqgbT9iHisk5DRAGpWB0MLdAYJ",
     "signName"  =>  "贝壳足球",
     "loginTempId"=> "SMS_134115374",
+    "matchInviteId"=> "SMS_143716614",
     "regTempId" =>  "",
 ];

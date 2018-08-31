@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Common\MobileMassege;
 use App\Http\Controllers\Controller;
 use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\MatchModel;
@@ -93,8 +94,16 @@ class ShequMatchController extends Controller
      * */
     public function invite_match(Request $request)
     {
-        $matchId    = $request->input('matchId');
-        $userId     = $request->input('userId');
+        $type           = $request->input('type');  //system:系统朋友，mobile:手机好友
+
+        $matchId        = $request->input('matchId');
+        $userId         = $request->input('userId');
+
+        $friendUserId   = $request->input('friendUserId');
+        $friendName     = $request->input("friendName");    //手机号邀请需要
+        $friendMobile   = $request->input('friendMobile');
+
+
 
         $matchModel = new ShequMatchModel();
 
@@ -104,19 +113,50 @@ class ShequMatchController extends Controller
             return apiData()->send(2001,'人数已满,不能再邀请');
         }
 
-        //检查是否已经参加
-        $isJoin     = ShequMatchModel::check_is_join_match($matchId,$userId);
 
-        if($isJoin){
+        if($type == "system") {
 
-            return apiData()->send(2001,'已经参加了比赛，不能再邀请了');
+            //检查是否已经参加
+            $isJoin     = ShequMatchModel::check_is_join_match($matchId,$friendUserId);
+
+            if($isJoin){
+
+                return apiData()->send(2001,'已经参加了比赛，不能再邀请了');
+            }
+
+            $matchModel->invite_user($matchId,$friendUserId);
+
+        }elseif($type == "mobile"){
+
+
+            //检查是否邀请过
+            $isInvite   = ShequMatchModel::check_mobile_friend_is_invite($matchId,$friendMobile);
+
+
+            if($isInvite){
+
+                return apiData()->send(2001,"已经邀请过该好友了");
+            }
+
+            $userInfo   = UserModel::find($userId);
+
+            $matchInfo  = BaseShequMatchModel::find($matchId);
+
+
+            $mobileMessage  = new MobileMassege();
+
+            $result         = $mobileMessage->send_match_invite_message($friendMobile,$friendName,$userInfo->nick_name,$matchInfo->begin_time,$matchId);
+
+            if($result == true)
+            {
+                $matchModel->invite_user($matchId,0,$friendMobile);
+            }
         }
-
-
-        $matchModel->invite_user($matchId,$userId);
 
         return apiData()->send();
     }
+
+
 
     /**
      * 处理邀请
