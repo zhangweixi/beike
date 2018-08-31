@@ -80,7 +80,7 @@ class UserController extends Controller
                 'qq_name'   => $name,
                 'qq_head'   => $head
             ];
-            $nickName   = $name;
+            $nickname   = $name;
         }
 
 
@@ -95,8 +95,8 @@ class UserController extends Controller
 
         $userInfo   = $userModel->get_user_info_by_mobile($mobile);
 
-        if($type == 'wx') //微信登陆，绑定微信信息
-        {
+        if($type == 'wx') {//微信登陆，绑定微信信息
+
             if(empty($wxinfo['wx_unionid']))
             {
                 return apiData()->send(5001,'缺少参数');
@@ -105,8 +105,8 @@ class UserController extends Controller
 
         } elseif($type == 'qq') {
 
-            if(empty($wxinfo['qq_openid']))
-            {
+            if(empty($wxinfo['qq_openid'])){
+
                 return apiData()->send(5002,'缺少参数');
             }
             $userModel->update_user_info($userInfo['id'],$qqinfo);
