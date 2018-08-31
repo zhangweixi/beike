@@ -8,6 +8,8 @@
 
 <a href="bakersoccer://host">启动应用程序</a>
 
+<a href="taobao://">淘宝</a>
+
 <script>
     var browser = {
 
