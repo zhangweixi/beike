@@ -30,13 +30,9 @@ class UserController extends Controller
 
         $nickName   = $request->input('nickName');
 
-        $wxname     = $request->input('wxName');
-        $wxhead     = $request->input('wxHead');
-        $wxUnionid  = $request->input('wxUnionid');
-
-        $qqOpenid   = $request->input('qqOpenid');
-        $qqname     = $request->input('qqName');
-        $qqHead     = $request->input('qqHead');
+        $name       = $request->input('name');
+        $head       = $request->input('headImg');
+        $openId     = $request->input('id');
 
         //1.检查参数
         $params     = [
@@ -65,18 +61,29 @@ class UserController extends Controller
         $userModel  = new UserModel();
         $isRegister = $userModel->check_exists_user_by_mobile($mobile);
 
-        $wxinfo     = [
-            'wx_name'   => $wxname,
-            'wx_head'   => $wxhead,
-            'wx_unionid'=> $wxUnionid
-        ];
+        $wxinfo     = $qqinfo   = [];
 
-        $qqinfo     = [
+        if($type == "wx"){
 
-            'qq_openid' => $qqOpenid,
-            'qq_name'   => $qqname,
-            'qq_head'   => $qqHead
-        ];
+            $wxinfo     = [
+                'wx_name'   => $name,
+                'wx_head'   => $head,
+                'wx_unionid'=> $openId
+            ];
+
+            $nickname       = $name;
+
+        }elseif($type == 'qq'){
+
+            $qqinfo     = [
+                'qq_openid' => $openId,
+                'qq_name'   => $name,
+                'qq_head'   => $head
+            ];
+            $nickName   = $name;
+        }
+
+
 
         if(!$isRegister) //未注册，进行手机号注册 其他也没法绑定
         {
