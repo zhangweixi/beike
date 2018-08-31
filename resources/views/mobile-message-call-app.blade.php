@@ -62,7 +62,8 @@
 
 
             //你的代码
-            window.location.href = "taobao://";
+            //window.location.href = "taobao://";
+            window.location.href = "com.football.launchever://";
 
             setTimeout(function(){
 
