@@ -63,9 +63,9 @@
 
             setTimeout(function(){
 
-                window.location.href = "你的app在商店中的地址";
+                //window.location.href = "你的app在商店中的地址";
 
-                window.location.href = "你的app在商店中的地址";  //为什么要加两遍我下面会说到
+                //window.location.href = "你的app在商店中的地址";  //为什么要加两遍我下面会说到
 
             },2000)
 
@@ -73,18 +73,20 @@
         }else if (browser.versions.android){
 
             //你的代码
-            window.location.href = "taobao://**";
+            //window.location.href = "taobao://**";
+
+            window.location.href = "taobao://";
 
             setTimeout(function(){
 
-                window.location.href = "你的app的下载地址";
+               // window.location.href = "你的app的下载地址";
 
             },2000)
         }
     }
 
     call_app();
-    
+
 </script>
 
 
