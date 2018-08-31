@@ -30,6 +30,8 @@ class ShortLinkController
     {
         $matchId    = $request->input('I');
 
+        return view('mobile-message-call-app');
+
         return "比赛ID:".$matchId;
     }
 
