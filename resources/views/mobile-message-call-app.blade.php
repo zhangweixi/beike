@@ -5,6 +5,9 @@
     <title>Title</title>
 </head>
 <body>
+
+<a href="bakersoccer://host">启动应用程序</a>
+
 <script>
     var browser = {
 
@@ -74,7 +77,7 @@
 
             //你的代码
             //window.location.href = "taobao://**";
-
+            alert('打开APP');
             window.location.href = "bakersoccer://host";
 
             setTimeout(function(){
