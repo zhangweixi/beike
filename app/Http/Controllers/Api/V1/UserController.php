@@ -321,6 +321,57 @@ class UserController extends Controller
 
 
     /**
+     * 比赛比较
+     * */
+    public function user_global_ability_compare(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $friendId   = $request->input('friendUserId');
+
+        $userModel  = new UserModel();
+
+        $friendInfo = $userModel->get_user_info($friendId);
+
+        $userInfo   = new \stdClass();
+        $userInfo->id       = $friendInfo['id'];
+        $userInfo->headImg  = $friendInfo['headImg'];
+        $userInfo->nickName = $friendInfo['nickName'];
+        $userInfo->age      = birthday_to_age($friendInfo['birthday']);
+        $userInfo->foot     = $friendInfo['foot'];
+        $userInfo->role1    = $friendInfo['role1'];
+        $userInfo->role2    = $friendInfo['role2'];
+
+
+
+        //基本数据
+        $myAbility      = $userModel->user_global_ability($userId);
+        $friendAbility  = $userModel->user_global_ability($friendId);
+        $baseAbility    = ["self"=>$myAbility,"friend"=>$friendAbility];
+
+        //详细数据
+        $selfDetail     = [
+            "passAir"       => 34,
+            "passGround"    => 20,
+            "shoot"         => 2,
+            "head"          => 3
+        ];
+
+        $friendDetail     = [
+            "passAir"       => 34,
+            "passGround"    => 20,
+            "shoot"         => 2,
+            "head"          => 3
+        ];
+
+        $detailAbility  = ["self"=>$selfDetail,"friend"=>$friendDetail];
+
+        return apiData()->add('friendInfo',$userInfo)
+            ->add('baseAbility',$baseAbility)
+            ->add('detailAbility',$detailAbility)
+            ->send();
+    }
+
+    /**
      * 用户单项数据图
      * */
     public function user_global_ability_maps()

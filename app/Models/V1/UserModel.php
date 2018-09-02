@@ -138,6 +138,28 @@ class UserModel extends Model
     }
 
 
+    /**
+     * 用户的整体数据
+     * @param $userId int 用户ID
+     * */
+    public function user_global_ability($userId)
+    {
+        $colums         = ["shoot","pass","strength","dribble","defense","run"];
+        $ability        = DB::table('user_global_ability')->select($colums)->where('user_id',$userId)->first();
+
+        if($ability == null)
+        {
+            $ability        = new \stdClass();
+            $ability->shoot     = 0;
+            $ability->pass      = 0;
+            $ability->strength  = 0;
+            $ability->dribble   = 0;
+            $ability->defense   = 0;
+            $ability->run       = 0;
+        }
+
+        return $ability;
+    }
 
 
 
