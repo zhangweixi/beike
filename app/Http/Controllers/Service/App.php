@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Service;
 
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseVersionModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Common\Http;
@@ -10,11 +11,33 @@ use App\Common\Geohash;
 
 class App extends Controller{
 
-    public function get_config(Request $request){
+    public function get_config(Request $request)
+    {
+        $versionDevice      = $this->get_last_version('device');
+        $clientType         = $request->header('Client-Type');
 
         //1.APP版本
-        $versionIos        = "0.0.1";
-        $versionAndroid    = "0.0.1";
+        if($clientType == 'IOS'){
+
+            $appVersion     = $this->get_last_version('IOS');
+
+        }else{
+
+            $appVersion     = $this->get_last_version('android');
+        }
+
+        $appVersion     = [
+            'version'   => $appVersion->version,
+            'file'      => url($appVersion->file)
+        ];
+
+
+        $deviceVersion      = [
+            'version'   => $versionDevice->version,
+            'fileRight' => url($versionDevice->file_right),
+            'fileLeft'  => url($versionDevice->file_left)
+        ];
+
 
         //记录用户设备类型
         $userId             = $request->input('userId',0);
@@ -44,9 +67,8 @@ class App extends Controller{
 
 
         return apiData()
-            ->set_data('versionIos',$versionIos)
-            ->set_data('versionAndroid',$versionAndroid)
-            ->set_data('time',date('Y-m-d H:i:s'))
+            ->set_data('appVersion',$appVersion)
+            ->set_data('deviceVersion',$deviceVersion)
             ->send();
     }
 
@@ -58,6 +80,16 @@ class App extends Controller{
         return ['ok'];
     }
 
+    /**
+     * 获得最新版本
+     * @param $type string 类型
+     * */
+    public function get_last_version($type)
+    {
+        $version = BaseVersionModel::where('type',$type)->where('publish',1)->orderBy('id','desc')->first();
+
+        return $version;
+    }
 
 
 }
