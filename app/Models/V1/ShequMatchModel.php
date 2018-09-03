@@ -117,8 +117,8 @@ class ShequMatchModel extends Model{
     {
         $matches    = DB::table('shequ_match')
             ->select($this->matchColum)
-            ->orderBy('begin_time')
-            ->paginate(2);
+            ->orderBy('begin_time','desc')
+            ->paginate(20);
 
         $shequModel = new ShequMatchModel();
 
