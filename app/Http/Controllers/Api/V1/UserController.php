@@ -32,7 +32,7 @@ class UserController extends Controller
 
         $name       = $request->input('name');
         $head       = $request->input('headImg');
-        $openId     = $request->input('id');
+        $openId     = $request->input('openId');
 
         //1.检查参数
         $params     = [
