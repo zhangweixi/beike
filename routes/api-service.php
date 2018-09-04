@@ -12,6 +12,7 @@ $api->version('v1',['prefix'=>"api",'namespace'=>"App\Http\Controllers\Service"]
     $api->post('socket',            "App@socket");                  //获得APP配置
     $api->post('qiniuToken',        "Qiniu@get_token");             //获取七牛Token
     $api->any('matchCaculate/{action}',"MatchCaculate@action");		//算法系统
+    $api->any('wechat/{action}',	"Wechat@action");				//微信
 
 
 });
