@@ -9,7 +9,7 @@ matlabApp = Dispatch('Matlab.application')
 
 #1.切换工作目录
 workplacedir = os.getcwd()
-self.matlabApp.execute("cd " + workplacedir)
+matlabApp.execute("cd " + workplacedir)
 
 #2.添加matlab脚本所在的目录到路径中
 
@@ -17,7 +17,8 @@ matlabApp.execute("addpath('"+ workplacedir +"')")
 
 
 #3.调用函数
-command = "beike('{sourcefile}','{resultfile}')".format_map(vars())
+#command = "beike('{sourcefile}','{resultfile}')".format_map(vars())
+command = "matlab_function_add(1,10)"
 result = matlabApp.execute(command)
 
 
