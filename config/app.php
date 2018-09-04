@@ -105,11 +105,12 @@ return [
     |
     */
 
-    'key' => env('APP_KEY'),
+    'key'       => env('APP_KEY'),
 
-    'cipher' => 'AES-256-CBC',
+    'cipher'    => 'AES-256-CBC',
 
     'filehost'  => env('FILE_HOST'),
+    'matlabhost'=> env('MATLAB_HOST',''),
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
