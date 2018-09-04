@@ -20,8 +20,8 @@ sourcefile = "in.txt"
 resultfile = "out.txt"
 
 #3.调用函数
-command = "beike('{sourcefile}','{resultfile}')".format_map(vars())
-#command = "matlab_function_add(1,10)"
+#command = "beike('{sourcefile}','{resultfile}')".format_map(vars())
+command = "matlabfunctionadd(1,10)"
 result = matlabApp.execute(command)
 
 
