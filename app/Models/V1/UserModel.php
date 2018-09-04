@@ -150,12 +150,12 @@ class UserModel extends Model
         if($ability == null)
         {
             $ability        = new \stdClass();
-            $ability->shoot     = 0;
-            $ability->pass      = 0;
-            $ability->strength  = 0;
-            $ability->dribble   = 0;
-            $ability->defense   = 0;
-            $ability->run       = 0;
+            $ability->shoot     = rand(0,100);
+            $ability->pass      = rand(0,100);
+            $ability->strength  = rand(0,100);
+            $ability->dribble   = rand(0,100);
+            $ability->defense   = rand(0,100);
+            $ability->run       = rand(0,100);
         }
 
         return $ability;
