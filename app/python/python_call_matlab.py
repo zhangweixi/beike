@@ -4,7 +4,7 @@ import time
 import json
 import os
 from win32com.client import Dispatch
-import 
+
 
 matlabApp = Dispatch('Matlab.application')
 
