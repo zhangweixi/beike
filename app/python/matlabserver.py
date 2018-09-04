@@ -66,7 +66,13 @@ class server():
                 print("服务已停止")
 
             matlab = Dispatch('Matlab.application')
-            matlab.execute("quit")
+            try:
+
+                matlab.execute("quit")
+
+            finally:
+                pass
+            
 
         except OSError:
 
