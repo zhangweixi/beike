@@ -18,3 +18,11 @@ public/data.php
 jsonlab-1.5
 /database
 public/uploads/
+public/logs
+test.php
+public/python-queue.pid
+app/python/queue.py
+public/vendors/
+app/python/python-queue.pid
+test.txt
+app/Http/Controllers/showdoc_api.sh
