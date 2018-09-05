@@ -359,7 +359,34 @@ class ShequMatchController extends Controller
         return apiData()->add('matches',$matches)->send();
     }
 
+    /**
+     * 比赛分享配置
+     * */
+    public function match_share_config(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $userId     = $request->input('userId',0);
 
+        if($userId > 0) {
+
+            $userInfo   = UserModel::find($userId);
+
+        }else{
+
+            $userInfo   = new \stdClass();
+            $userInfo->nick_name = "";
+        }
+
+
+        $matchInfo  = ShequMatchModel::find($matchId);
+
+        $url        = "http://www.baidu.com";
+        $title      = $userInfo->nick_name. "邀您你参加足球比赛，已参加{$matchInfo->joined_num}";
+        $desc       = "伙计，{$matchInfo->begin_time}，{$matchInfo->address}，来好好爽一把吧！";
+        $img        = url('beike/images/default/foot.png');
+
+        return apiData()->add('url',$url)->add('title',$title)->add('desc',$desc)->add('img',$img)->send();
+    }
 
 
     /**

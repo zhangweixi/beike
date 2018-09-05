@@ -10,6 +10,9 @@ use DB;
 
 class ShequMatchModel extends Model{
 
+    protected $table = "shequ_match";
+    protected $primaryKey = "sq_match_id";
+
     public function add_match($matchData)
     {
         $matchData['created_at']    = date_time();
