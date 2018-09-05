@@ -51,7 +51,6 @@ class ShequMatchController extends Controller
 
         $userBility = BaseUserAbilityModel::find($userId);
 
-        //$credit = text_to_credit($credit);
 
         $shequModel = new BaseShequMatchModel();
         $shequModel->user_id = $userId;
@@ -68,14 +67,6 @@ class ShequMatchController extends Controller
         $userInfo = $userModel->get_user_info($userId);
 
 
-
-        $shareInfo = [
-            "url" => "http://www.baidu.com",
-            "title" => $userInfo['nickName'] . "邀您你参加足球比赛",
-            "desc" => "西瓜电视空调，不如球场上爽一把",
-            "img" => url('beike/images/default/foot.png')
-        ];
-
         //自己加入比赛
         $matchUserModel = new BaseShequMatchUserModel();
         $matchUserModel->sq_match_id   = $shequModel->sq_match_id;
@@ -84,8 +75,15 @@ class ShequMatchController extends Controller
         $matchUserModel->save();
 
 
+        $shareInfo = [
+            "url" => "http://www.baidu.com",
+            "title" => $userInfo['nickName'] . "邀您你参加足球比赛",
+            "desc" => "西瓜电视空调，不如球场上爽一把",
+            "img" => url('beike/images/default/foot.png')
+        ];
+        //->add("shareInfo", $shareInfo)
+
         return apiData()
-            ->add("shareInfo", $shareInfo)
             ->add('matchId', $shequModel->sq_match_id)
             ->send(200, '比赛创建成功');
     }
@@ -200,6 +198,7 @@ class ShequMatchController extends Controller
         $userId     = $request->input('userId');
         $matchId    = $request->input('matchId');
 
+
         //检查用户是否加入
         $matchUser = BaseShequMatchUserModel::where('user_id', $userId)->where('sq_match_id', $matchId)->first();
 
@@ -209,7 +208,28 @@ class ShequMatchController extends Controller
         }
 
         //检查人数是否已满
-        //xxxx
+        $matchInfo  = ShequMatchModel::find($matchId);
+
+        if($matchInfo->total_num == $matchInfo->total_num)
+        {
+            return apiData()->send(2002,"人数已满!");
+        }
+
+        $userInfo  = UserModel::find($userId);
+
+        //检查信用是否足够
+        if($userInfo->credit < $matchInfo->credit){
+
+            return apiData()->send(2003,"信用分不足");
+        }
+
+        //检查能力分是否足够
+        $userAbility    = BaseUserAbilityModel::find($userId);
+        if($userAbility == null || $userAbility->grade < $matchInfo->grade){
+
+            return apiData()->send(2004,"能力分不足");
+        }
+
 
         $shequMatch = new ShequMatchModel();
         $shequMatch->add_match_user($matchId,$userId);
