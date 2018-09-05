@@ -311,7 +311,7 @@ class UserController extends Controller
         $grades->defence = ['self'=>60,'avg'=>100];//防守能力
         $grades->grab = ['self'=>30,'avg'=>100];//抢球
 
-        $map            = create_round_array(2,3);
+        //$map            = create_round_array(2,3);
         return apiData()
             //->set_data('map',$map)
             ->set_data('userAbility',$userAbility)
@@ -471,7 +471,7 @@ class UserController extends Controller
 
                 $db->where('user_id',0)->orWhere('user_id',$userId);
             })
-            ->whereRaw("NOT FIND_IN_SET($userId,readed_users)")
+            ->whereRaw("(NOT FIND_IN_SET($userId,readed_users) OR readed_users is null OR readed_users = '')")
             ->select('msg_id','readed_users')
             ->get();
 
@@ -520,7 +520,11 @@ class UserController extends Controller
     {
         $userId     = $request->input('userId');
         $page       = $request->input('page',1);
-        $page == 1? $this->read_all_message("focus",$userId) : '';
+
+        if($page == 1)
+        {
+            $this->read_all_message("focus",$userId);
+        }
 
         $msgList    = FriendModel::apply_list($userId);
 
