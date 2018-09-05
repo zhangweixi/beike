@@ -34,12 +34,21 @@ class FriendModel extends Model
      * */
     static function add_friend($userId,$friendUserId)
     {
+        //把别人加为自己的好友
         $friend  = new BaseFriendModel();
         $friend->user_id        = $userId;
         $friend->friend_user_id = $friendUserId;
         $friend->save();
 
-        return  $friend->friend_id;
+
+        //把自己加为别人的好友
+        $friend  = new BaseFriendModel();
+        $friend->user_id        = $friendUserId;
+        $friend->friend_user_id = $userId;
+        $friend->type           = 1;
+        $friend->save();
+
+        return true;
     }
 
 
