@@ -117,9 +117,10 @@ class FriendController extends Controller
     public function recommend_friends(Request $request)
     {
         $userId     = $request->input('userId');
+        $geohash    = UserModel::where('id',$userId)->value('geohash');
+        $geohash    = substr($geohash,0,5);
 
-
-        $allFriend  = DB::table('friend')->where('user_id',$userId)->pluck('friend_user_id')->toArray();
+        $allFriend  = $this->friend_and_applyed_ids($userId);
 
         $colum      = ['u.id','u.head_img','u.nick_name','u.role1 as role','u.birthday as age','g.grade'];
 
@@ -132,9 +133,12 @@ class FriendController extends Controller
             ->leftJoin('user_global_ability as g','g.user_id','=','u.id')
             ->select($colum)
             ->where('a.user_id',$userId)
+            ->where('b.user_id',">",0)
             ->get();
-        $userMatches   = DB::table('shequ_match_user')->where('user_id',$userId)->pluck('sq_match_id')->toArray();
 
+
+
+        $userMatches   = DB::table('shequ_match_user')->where('user_id',$userId)->pluck('sq_match_id')->toArray();
 
         foreach($otherFriends as $friend)
         {
@@ -153,13 +157,27 @@ class FriendController extends Controller
             ->where('a.user_id',"<>",$userId)
             ->get();
 
-        //地理位置
-
-
         foreach($matchFriend as $friend)
         {
             array_push($recommendFriends,$friend);
+            array_push($allFriend,$friend->id);
         }
+
+
+        //地理位置
+        $neabyFriend = DB::table('users as u')
+            ->leftJoin('user_global_ability as g','g.user_id','=','u.id')
+            ->select($colum)
+            ->whereNotIn('u.id',$allFriend)
+            ->where('u.id','<>',$userId)
+            ->where('u.geohash','like',"'{$geohash}%'")
+            ->get();
+
+        foreach($neabyFriend as $friend)
+        {
+            array_push($recommendFriends,$friend);
+        }
+
 
         foreach($recommendFriends as $friend)
         {
@@ -188,6 +206,8 @@ class FriendController extends Controller
 
         $userInfo   = UserModel::find($userId);
 
+        $allFriend   = $this->friend_and_applyed_ids($userId);
+
         //查找已加入系统的用户
         $mobiles    = [];
         $names      = [];
@@ -204,10 +224,9 @@ class FriendController extends Controller
 
         //已注册的用户
         $registeredUsers    = DB::table('users as a')
-            ->leftJoin('friend as b','b.friend_user_id','=',DB::raw('a.id AND b.user_id='.$userId))
             ->leftJoin('user_global_ability as d','d.user_id','=','a.id')
             ->select('a.id','a.birthday as age','role1 as role','a.mobile','a.head_img','d.grade')
-            ->where('b.friend_id')
+            ->whereNotIn("a.id",$allFriend)
             ->whereIn('a.mobile',$mobiles)
             ->get();
 
@@ -250,6 +269,23 @@ class FriendController extends Controller
 
 
     /**
+     * 已是朋友或已申请为朋友的用户ID
+     * */
+    private function friend_and_applyed_ids($userId)
+    {
+        //已经是朋友了的
+        $allFriend      = DB::table('friend')->where('user_id',$userId)->pluck('friend_user_id')->toArray();
+
+        //已经申请为朋友了的
+        $applyFriend    = DB::table('friend_apply')->where('user_id',$userId)->where('status',0)->pluck('friend_user_id')->toArray();
+
+        $allFriend      = array_merge($allFriend,$applyFriend);
+        $allFriend      = array_unique($allFriend);
+
+        return $allFriend;
+    }
+
+    /**
      * 搜索朋友
      * */
     public function search_friends(Request $request)
@@ -283,6 +319,7 @@ class FriendController extends Controller
         $mobile = $request->input('mobile');
 
         //发送邀请短信
+
 
         return apiData()->send(200,'已给您的好友发送了邀请信息');
     }
