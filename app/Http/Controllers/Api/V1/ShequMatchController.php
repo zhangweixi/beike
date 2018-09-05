@@ -225,7 +225,8 @@ class ShequMatchController extends Controller
 
         //检查能力分是否足够
         $userAbility    = BaseUserAbilityModel::find($userId);
-        if($userAbility == null || $userAbility->grade < $matchInfo->grade){
+
+        if($matchInfo->grade > 0 && ($userAbility == null || $userAbility->grade < $matchInfo->grade)){
 
             return apiData()->send(2004,"能力分不足");
         }
