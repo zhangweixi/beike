@@ -602,7 +602,7 @@ class UserController extends Controller
             array_push($unions,$union);
         }
 
-        return $unions;
+        return apiData()->add('unions',$unions)->send();
     }
 }
 
