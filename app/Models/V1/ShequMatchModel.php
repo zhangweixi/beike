@@ -57,7 +57,7 @@ class ShequMatchModel extends Model{
     public function user_match_list($userId,$beginTime="",$endTime="")
     {
 
-        $db = DB::table('shequ_user_match as a')
+        $db = DB::table('shequ_match_user as a')
             ->leftJoin('shequ_match as b','b.sq_match_id','=','a.sq_match_id')
             ->select("b.*")
             ->where('a.user_id',$userId);
