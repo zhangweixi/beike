@@ -5,6 +5,7 @@ use App\Common\MobileMassege;
 use App\Http\Controllers\Controller;
 use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\MatchModel;
+use App\Models\V1\MessageModel;
 use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use App\Models\V1\ShequMatchModel;
@@ -266,7 +267,7 @@ class ShequMatchController extends Controller
             $match->members = $sqMatchModel->get_match_user($match->sq_match_id);
         }
 
-        $msgNum = 20;
+        $msgNum     = MessageModel::count_unread_msg($userId);
 
         return apiData()
             ->add('year',(int)$year)
