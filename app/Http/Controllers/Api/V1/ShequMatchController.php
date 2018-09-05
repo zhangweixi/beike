@@ -444,7 +444,7 @@ class ShequMatchController extends Controller
 
                 if($member->user_id == $userId) {
 
-                    $match->jsJoined    = 1;
+                    $match->isJoined    = 1;
                     break;
                 }
             }
