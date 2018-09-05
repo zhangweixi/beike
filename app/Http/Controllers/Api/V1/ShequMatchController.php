@@ -437,7 +437,7 @@ class ShequMatchController extends Controller
 
         foreach($dayMatch as $match)
         {
-            $match->jsJoined    = 0;
+            $match->isJoined    = 0;
             $match->members     = $sqMatchModel->get_match_user($match->sq_match_id);
 
             foreach($match->members as $member){
