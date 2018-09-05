@@ -266,7 +266,7 @@ class ShequMatchController extends Controller
         $day    = date('d',$time);
 
 
-        $userId = $request->input('userId');
+        $userId = $request->input('userId',0);
 
 
         $sqMatchModel   = new ShequMatchModel();
@@ -283,8 +283,17 @@ class ShequMatchController extends Controller
 
         foreach($dayMatch as $match)
         {
+            $match->isJoined    = 0;
+            $match->members     = $sqMatchModel->get_match_user($match->sq_match_id);
 
-            $match->members = $sqMatchModel->get_match_user($match->sq_match_id);
+            foreach($match->members as $member){
+
+                if($member->user_id == $userId)
+                {
+                    $match->jsJoined    = 1;
+                    break;
+                }
+            }
         }
 
         $msgNum     = MessageModel::count_unread_msg($userId);
@@ -349,7 +358,6 @@ class ShequMatchController extends Controller
         {
             $match->isCreater   = $userId == $match->user_id ? 1 : 0;   //是否是创建者
 
-            //$match->credit      = credit_to_text($match->credit);
 
             $match->isJoined    = 0;    //是否参加比赛
 
@@ -428,7 +436,17 @@ class ShequMatchController extends Controller
 
         foreach($dayMatch as $match)
         {
-            $match->members = $sqMatchModel->get_match_user($match->sq_match_id);
+            $match->jsJoined    = 0;
+            $match->members     = $sqMatchModel->get_match_user($match->sq_match_id);
+
+            foreach($match->members as $member){
+
+                if($member->user_id == $userId) {
+
+                    $match->jsJoined    = 1;
+                    break;
+                }
+            }
         }
 
         return apiData()
