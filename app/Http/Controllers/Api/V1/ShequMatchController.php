@@ -210,7 +210,7 @@ class ShequMatchController extends Controller
         //检查人数是否已满
         $matchInfo  = ShequMatchModel::find($matchId);
 
-        if($matchInfo->total_num == $matchInfo->total_num)
+        if($matchInfo->total_num == $matchInfo->joined_num)
         {
             return apiData()->send(2002,"人数已满!");
         }
