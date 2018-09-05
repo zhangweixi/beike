@@ -29,7 +29,8 @@ class UserModel extends Model
         'role2',
         'foot',
         'device_sn',
-        'token'
+        'token',
+        'football_team',
     ];
 
     /**
