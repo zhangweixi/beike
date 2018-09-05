@@ -313,7 +313,7 @@ class UserController extends Controller
 
         $map            = create_round_array(2,3);
         return apiData()
-            ->set_data('map',$map)
+            //->set_data('map',$map)
             ->set_data('userAbility',$userAbility)
             ->set_data('grades',$grades)
             ->send();
