@@ -24,53 +24,21 @@ class ShequMatchModel extends Model{
     }
 
 
-
-    public function count_month_match($userId,$year,$month,$fullMonth=false)
+    /*
+     * 统计某月的每天比赛数量
+     * */
+    public function count_month_match($userId,$year,$month)
     {
-
-
         $month      = full_str_length($month,2,0);
         $month      = $year."-".$month;
 
-        $sql = "SELECT LEFT(begin_time,10) as `day` ,count(*) as matchNum 
-                FROM shequ_match 
-                WHERE user_id = $userId 
-                AND LEFT(begin_time,7) = '{$month}'
+        $sql = "SELECT LEFT(b.begin_time,10) as `day` ,count(a.sq_match_id) as matchNum 
+                FROM shequ_match_user as a 
+                LEFT JOIN shequ_match as b ON b.sq_match_id = a.sq_match_id
+                WHERE a.user_id = $userId 
+                AND LEFT(b.begin_time,7) = '{$month}'
                 GROUP BY `day` ";
         $matches = DB::select($sql);
-
-        return $matches;
-
-        $monthDays  = daysInmonth($year,$month);
-        if($fullMonth == true)
-        {
-            $hasDays    = [];
-            //收集已有的日期
-            foreach ($matches as $key => $day)
-            {
-                array_push($hasDays,$day->day);
-                $matches[$key]  = object_to_array($day);
-            }
-
-            //填补空缺的日期
-            for($i=1;$i<= $monthDays;$i++)
-            {
-                $d  = full_str_length($i,2,0);
-                if (!in_array($d,$hasDays)) {
-
-
-                    array_push($matches,['day'=>$d,'matchNum'=>0]);
-                }
-            }
-        }
-
-        //按时间排序
-        $matches = arraySequence($matches,'day','SORT_ASC');
-
-        foreach($matches as $key => $day)
-        {
-            $matches[$key]['day']  = $month . "-" . $day['day'];
-        }
 
         return $matches;
     }
@@ -89,19 +57,22 @@ class ShequMatchModel extends Model{
     public function user_match_list($userId,$beginTime="",$endTime="")
     {
 
-        $db = DB::table('shequ_match')->where('user_id',$userId);
+        $db = DB::table('shequ_user_match as a')
+            ->leftJoin('shequ_match as b','b.sq_match_id','=','a.sq_match_id')
+            ->select("b.*")
+            ->where('a.user_id',$userId);
 
         if($beginTime)
         {
-            $db->where('begin_time',">=",$beginTime);
+            $db->where('b.begin_time',">=",$beginTime);
         }
 
         if($endTime)
         {
-            $db->where('begin_time',"<=",$endTime);
+            $db->where('b.begin_time',"<=",$endTime);
         }
 
-        $matches    = $db->select($this->matchColum)->get();
+        $matches    = $db->get();
 
         foreach($matches as $match)
         {
