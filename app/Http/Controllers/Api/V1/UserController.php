@@ -580,6 +580,17 @@ class UserController extends Controller
     public function ball_teamp(Request $request)
     {
         $unions = DB::table('football_union')->select('union_id','union_name')->where('is_show',1)->orderBy('sort')->get();
+        $userId = $request->input('userId',0);
+
+        if($userId > 0)
+        {
+            $userInfo   = UserModel::find($userId);
+            $teamId     = $userInfo->football_team;
+
+        }else{
+
+            $teamId     = 0;
+        }
 
         $teamUnions = [];
         foreach($unions as $union)
@@ -593,6 +604,8 @@ class UserController extends Controller
         foreach($teams as $team)
         {
             $team->logo     = url($team->logo);
+            $team->isMyTeam = $teamId == $team->team_id ? 1 : 0; //判断是不是当前球队
+
             array_push($teamUnions[$team->union_id]->teams,$team);
         }
 
