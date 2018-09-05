@@ -13,7 +13,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class UsersController extends Controller
+class UserController extends Controller
 {
 
     public function users(Request $request)
@@ -33,9 +33,9 @@ class UsersController extends Controller
             });
         }
 
-        $users  = $users->page(20);
+        $users  = $users->paginate(20);
 
         return apiData()->add('users',$users)->send();
     }
-
 }
+
