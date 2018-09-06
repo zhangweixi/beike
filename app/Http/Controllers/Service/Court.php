@@ -207,16 +207,14 @@ class Court{
         foreach($this->centerPoints as $key1 => $line)
         {
             $preDis = 100000000;
+
             foreach($line as $key2 => $p)
             {
                 $a      = bcmul(bcsub($point->lat,$p->lat),10000);
                 $b      = bcmul(bcsub($point->lon,$p->lon),10000);
-                //mylogger($a);
-                //mylogger($b);
-
 
                 $dis    = bcadd(bcmul($a,$a),bcmul($b,$b));
-                //mylogger("===".$dis);
+
                 if($dis < $minDis)
                 {
                     $minDis = $dis;
@@ -235,12 +233,90 @@ class Court{
         return $position;
     }
 
+    public  $middlePoints   = [];
+
+    /**
+     * 找到最近的点
+     * @param $point GPSPoint 要找的点
+     * @return array
+     * */
+    public function find_nearest_point1(GPSPoint $point)
+    {
+        //找到中间一列
+        if($this->middlePoints == [])
+        {
+            foreach($this->centerPoints as $key=>$line)
+            {
+                array_push($this->middlePoints,$line[ceil($this->latNum/2)]);
+            }
+        }
+
+        //寻找最近的那一列
+        $key1    = $this->min_dis_position($point,$this->middlePoints);
+
+
+
+        $linePoints = $this->centerPoints[$key1];
+
+
+        $key2   = $this->min_dis_position($point,$linePoints);
+        $position   = [$key1,$key2];
+
+        return $position;
+    }
+
+    /**
+     * 获得最小距离的位置
+     * @param $p GPSPoint
+     * @param $points GPSPoint
+     * @return integer
+     * */
+    private function min_dis_position($p,$points)
+    {
+        $minDis = 100000000;
+        $preDis = 100000000;
+
+        $posi   = null;
+
+        foreach($points as $key => $point)
+        {
+            $a      = bcmul(bcsub($point->lat,$p->lat),1000);
+            $b      = bcmul(bcsub($point->lon,$p->lon),1000);
+
+            $dis    = bcadd(bcmul($a,$a),bcmul($b,$b));
+
+            if($dis < $minDis)
+            {
+                $minDis     = $dis;
+                $posi       = $key;
+            }
+
+            //如果当前距离大于上一个点的距离，说明越来越远，则不用计算后面的点了
+            if($dis > $preDis)
+            {
+                break;
+            }
+            $preDis = $dis;
+        }
+
+        return $posi;
+    }
+
+    private function distance($point1,$point2)
+    {
+
+        $a      = bcmul(bcsub($point2->lat,$point1->lat),10000);
+        $b      = bcmul(bcsub($point2->lon,$point1->lon),10000);
+
+        $dis    = bcadd(bcmul($a,$a),bcmul($b,$b));
+        return $dis;
+    }
+
     /**
      * 球场热点图
      * */
     public function court_hot_map($points)
     {
-        set_time_limit(120);
         $result   = [];
 
         //初始化一个二维数组
@@ -254,10 +330,11 @@ class Court{
 
         foreach($points as $point)
         {
+
             if(intval($point['lat']) == 0 )  continue;
 
             $position   = $this->find_nearest_point(new GPSPoint($point['lat'],$point['lon']));
-            //dd($position);
+
             $result[$position[0]][$position[1]]++;
         }
 
