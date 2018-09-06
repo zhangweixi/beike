@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
+use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
@@ -489,13 +490,13 @@ class MatchController extends Controller
     public function match_detail_hotmap(Request $request)
     {
         $matchId    = $request->input('matchId');
-        $midSpeed   = create_round_array(20,23);
-        $heighSpeed = create_round_array(20,23);
-        $sprint     = create_round_array(20,23);
-        $shortPass  = create_round_array(20,23);
-        $longPass   = create_round_array(20,23);
-        $rob        = create_round_array(20,23);
-        $dribble    = create_round_array(20,23);
+        $midSpeed   = create_round_array(12,22);
+        $heighSpeed = create_round_array(12,22);
+        $sprint     = create_round_array(12,22);
+        $shortPass  = create_round_array(12,22);
+        $longPass   = create_round_array(12,22);
+        $rob        = create_round_array(12,22);
+        $dribble    = create_round_array(12,22);
 
         $maps       = [
             ['name'=>"中速跑动",'data'=>$midSpeed],
@@ -622,6 +623,7 @@ class MatchController extends Controller
 
         return apiData()->send();
     }
+
 
 
 
@@ -775,6 +777,7 @@ class MatchController extends Controller
         return 'ok';
         //return $data;
     }
+
 }
 
 
