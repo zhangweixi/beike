@@ -7,9 +7,10 @@
  */
 
 namespace App\Http\Controllers\Service;
+use App\Common\WechatTemplate;
 use App\Http\Controllers\Controller;
 use Dingo\Api\Http\Request;
-use Overtrue\LaravelWeChat\Facade;
+
 
 
 class Wechat extends Controller
@@ -43,18 +44,20 @@ class Wechat extends Controller
     /*
      * 发送模板消息
      * */
-    public function template_message()
+    public function template_message(\App\Common\WechatTemplate $template)
     {
+        $template->create();
         $this->wechat->template_message->send([
-                'touser' => 'user-openid',
-                'template_id' => 'template-id',
-                'url' => 'https://easywechat.org',
-                'data' => [
-                    'key1' => 'VALUE',
-                    'key2' => 'VALUE2'
-            ],
+                'touser' => $template->openId,
+                'template_id' => $template->templateId,
+                'url' => $template->url,
+                'data' => $template->data,
         ]);
+
     }
+
+
+
 
     /*
      * 登录
@@ -64,7 +67,7 @@ class Wechat extends Controller
         $redirectUrl    = url('/api/wechat/login_callback');
 
         $response       = $this->wechat->oauth->setRedirectUrl($redirectUrl)->scopes(["snsapi_userinfo"])->setRequest($request)->redirect();
-        
+
         return $response;
     }
 
@@ -76,5 +79,23 @@ class Wechat extends Controller
         $user = $this->wechat->oauth->setRequest($request)->user();
 
         dd($user);
+    }
+
+
+
+    public function test()
+    {
+        $serviceTemplate    = (new WechatTemplate())->serviceFinishTemplate();
+        $serviceTemplate->first  = "比赛通知";
+        $serviceTemplate->remark = "比赛结束";
+        $serviceTemplate->openId = "o1zLM0daxBjdzyYwFxQ9YxPs7O6Q";
+        $serviceTemplate->orderSn = "123";
+        $serviceTemplate->deviceSn = "设备编号";
+        $serviceTemplate->workAddress = "工作地址";
+        $serviceTemplate->workStyle = "工作模式";
+        $serviceTemplate->workTime = "工作时间";
+        $serviceTemplate->url = "http://www.baidu.com";
+
+        $this->template_message($serviceTemplate);
     }
 }
