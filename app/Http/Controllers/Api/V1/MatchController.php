@@ -90,8 +90,6 @@ class MatchController extends Controller
             AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
         }
 
-        //数据存储完毕，调用MATLAB系统开始计算
-
         return apiData()->send(200,'ok');
     }
 

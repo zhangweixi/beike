@@ -141,7 +141,7 @@ class AnalysisMatchData implements ShouldQueue
 
             case 'create_gps_map':          $this->create_gps_map($this->matchId,$this->foot);          break;
 
-            case 'init_matlab':             $this->init_matlab($this->matchId);                         break;
+            case 'run_matlab':             $this->run_matlab($this->matchId);                         break;
         }
     }
 
@@ -384,7 +384,7 @@ class AnalysisMatchData implements ShouldQueue
 
             //生成匹配文件耗时太多，不能在一个线程里单独完成
             //生成罗盘和sensor的匹配文件
-            if($this->host)
+            if($this->host && $type != "gps")
             {
                 $params         = ['matchId'=>$matchId,'foot'=>$foot];
                 $params         = http_build_sign($params);
@@ -954,27 +954,30 @@ class AnalysisMatchData implements ShouldQueue
 
 
 
-
+    /**
+     * 调用算法系统
+     * @param $matchId integer 比赛ID
+     *
+     * */
     private function call_matlab($matchId)
     {
         //检查2个文件是否存在
         $ANG_R      = public_path("uploads/match/{$matchId}/angle-R.txt");
         $ANG_L      = public_path("uploads/match/{$matchId}/angle-L.txt");
 
-        mylogger("R".$ANG_R);
-        mylogger("L".$ANG_L);
 
         if(file_exists($ANG_L) && file_exists($ANG_R))
         {
             $params     = http_build_sign(['matchId'=>$matchId]);
-            $url        = "http://{$this->matlabHost}/api/matchCaculate/call_matlab?".$params;
-            mylogger($url);
+            $url        = config('app.matlabhost')."/api/matchCaculate/call_matlab?".$params;
+
             $res        = file_get_contents($url);
 
         }else{
 
             mylogger('文件缺失');
         }
+
     }
 
 
@@ -1013,14 +1016,26 @@ class AnalysisMatchData implements ShouldQueue
             foreach($gpsPoints as $gps)
             {
                 $gpsInfo    = explode(' ',$gps);
-                array_push($gpsData,['lat'=>$gpsInfo[0],'lon'=>$gpsInfo[1]]);
+                if($gpsInfo[0] == 0){
+
+                    continue;
+                }
+
+                $lat        = gps_to_gps($gpsInfo[0]);
+                $lon        = gps_to_gps(trim($gpsInfo[1],"\n"));
+                array_push($gpsData,['lat'=>$lat,'lon'=>$lon]);
             }
         }
+
+        mylogger(time());
 
 
         $court      = new Court();
         $court->set_centers($points->center);
+        $gpsData    = array_merge($gpsData,$gpsData);
         $mapData    = $court->court_hot_map($gpsData);
+
+        mylogger(time());
 
         //把结果存储到比赛结果表中
         $resultInfo = BaseMatchResultModel::find($matchId);
@@ -1044,10 +1059,108 @@ class AnalysisMatchData implements ShouldQueue
 
     /**
      * 初始化matlab软件
+     *
+     * 注意，这里的一切操作都是在算法服务器上，
+     *
+     * @param $matchId
      * */
-    public function init_matlab($matchId)
+    public function run_matlab($matchId)
     {
-        mylogger("我已经成功啦");
+
+
+        $matchInfo      = MatchModel::find($matchId);
+        $courtId        = $matchInfo->court_id;
+
+        $courtInfo      = CourtModel::find($courtId);
+        $courtType      = $courtInfo->court_type_id;
+
+        $dir            = "uploads/match/{$matchId}/";
+        $apihost        = config('app.apihost')."/";
+
+        $baseSensorL    = $dir."sensor-L.txt";
+        $baseSensorR    = $dir."sensor-R.txt";
+
+        $baseCompassL   = $dir."angle-L.txt";
+        $baseCompassR   = $dir."angle-R.txt";
+        $baseGps        = $dir."gps-L.txt";
+        $result         = public_path($dir."result.txt");
+
+        //根据球场获得配置文件
+        if($courtType > 0){
+
+            $baseConfig     = "uploads/courttype/1.txt";
+            $config         = public_path($baseConfig);
+
+        }else{
+
+            $config         = "";
+        }
+
+
+        $callbackUrl    = urlencode($apihost."api/matchCaculate/save_matlab_result?matchId={$matchId}&result=");
+
+        mk_dir($dir);
+
+        $files  = [
+            "sensor_l"  =>  $baseSensorL,
+            "sensor_r"  =>  $baseSensorR,
+            "compass_l" =>  $baseCompassL,
+            "compass_r" =>  $baseCompassR,
+            "gps"       =>  $baseGps
+        ];
+
+        foreach($files as $key  => $file){
+
+            $content    = file_get_contents($apihost.$file);
+            $file       = public_path($file);
+
+            file_put_contents($file,$content);
+
+            $files[$key]    = $file;
+        }
+
+
+
+        if($config && !file_exists($config)) {
+
+            $content = file_get_contents($apihost.$baseConfig);
+
+            file_put_contents($config,$content);
+        }
+
+        $pythonfile = app_path('python/python_call_matlab.py');
+        $command    = "python %s --sensorl=%s --sensorr=%s --compassl=%s --compassr=%s --gps=%s --config=%s --callbackurl=%s  --result=%s";
+        $f          = $files;
+
+        $command    = sprintf($command,$pythonfile,$f['sensor_l'],$f['sensor_r'],$f['compass_l'],$f['compass_r'],$f['gps'],$config,$callbackUrl,$result);
+
+        //shell_exec($command);
+        mylogger("调用matlab成功：".$command);
+
     }
+
+
+
+    /**
+     * 保存matlab算法计算出来的结果
+     * */
+    public function save_matlab_result()
+    {
+        $matchId    = $this->matchId;
+
+        //从远程服务器读取结果
+        $resultFile = config('app.matlabhost')."/uploads/result/{$matchId}.txt";
+
+        $content    = file_get_contents($resultFile);
+
+
+
+        //存储结果
+
+
+
+    }
+
+
 }
 

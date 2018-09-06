@@ -23,21 +23,6 @@ class MatchCaculate extends Controller
         set_time_limit(300);
     }
 
-    /**
-     * 调用算法系统
-     * */
-    public function call_matlab(Request $request)
-    {
-
-        $matchId        = $request->input('matchId');
-        $data           = ['matchId'=>$matchId];
-        $delayTime      = now()->addSecond(1);
-
-        AnalysisMatchData::dispatch('init_matlab',$data)->delay($delayTime);
-
-        return apiData()->send();
-    }
-
 
     /**
      * 解析单条数据，不传递
@@ -130,6 +115,15 @@ class MatchCaculate extends Controller
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
 
+        if(true)
+        {
+            $analysis   = new AnalysisMatchData("create_gps_map");
+            $analysis->create_gps_map($matchId,$foot);
+            exit;
+        }
+
+
+
         $delayTime      = now()->addSecond(1);
         $data           = ['matchId'=>$matchId,'foot'=>$foot];
         AnalysisMatchData::dispatch("create_gps_map",$data)->delay($delayTime);
@@ -137,6 +131,9 @@ class MatchCaculate extends Controller
 
     }
 
+    /**
+     * 解析时间
+     * */
     public function sensortest(Request $request)
     {
         //return hexToInt("f9ffffff");
@@ -153,7 +150,9 @@ class MatchCaculate extends Controller
 
 
 
-
+    /**
+     * 解析比赛数据
+     * */
     public function jiexi_match(Request $request)
     {
         $matchId    = $request->input('matchId');
@@ -167,4 +166,47 @@ class MatchCaculate extends Controller
 
         return apiData()->send();
     }
+
+
+    /**
+     * 调用算法系统
+     * */
+    public function call_matlab(Request $request)
+    {
+        $matchId        = $request->input('matchId');
+        $data           = ['matchId'=>$matchId];
+
+        (new AnalysisMatchData("run_matlab"))->run_matlab($matchId);
+
+        //$delayTime      = now()->addSecond(1);
+        //AnalysisMatchData::dispatch('run_matlab',$data)->delay($delayTime);
+
+        return apiData()->send();
+    }
+
+
+    /**
+     * 读取数据并保存到结果中
+     * */
+    public function save_matlab_result(Request $request)
+    {
+        $matchId        = $request->input('matchId');
+        $result         = $request->input('result');
+
+        if($result == "FAIL")
+        {
+            //算法调用失败，使用微信通知我
+
+
+        }else{
+
+            $delayTime      = now()->addSecond(1);
+
+            AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
+        }
+
+        return apiData()->send();
+    }
+
+
 }
