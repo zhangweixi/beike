@@ -14,6 +14,7 @@ return [
     'filehost'     => env('FILE_HOST',''),
     'matlabhost'   => env('MATLAB_HOST',''),
     'apihost'      => env('API_HOST',''),
+    'wechatenv'    => env('WECHAT_ENV',false),
 
     /*
     |--------------------------------------------------------------------------
