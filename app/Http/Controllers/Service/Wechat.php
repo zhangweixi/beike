@@ -46,16 +46,19 @@ class Wechat extends Controller
      * */
     public function template_message(\App\Common\WechatTemplate $template)
     {
+        if(config('app.wechatenv') == false)
+        {
+            return false;
+        }
         $template->create();
-        $this->wechat->template_message->send([
-                'touser' => $template->openId,
-                'template_id' => $template->templateId,
-                'url' => $template->url,
-                'data' => $template->data,
-        ]);
-
+        $data = [
+            'touser'        => $template->openId,
+            'template_id'   => $template->templateId,
+            'url'           => $template->url,
+            'data'          => $template->data,
+        ];
+        $this->wechat->template_message->send($data);
     }
-
 
 
 
