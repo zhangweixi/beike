@@ -114,12 +114,13 @@ class MatchCaculate extends Controller
     {
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
+        $queue      = $request->input('needQueue',1);
 
-        if(true)
+        if($queue == 0)
         {
             $analysis   = new AnalysisMatchData("create_gps_map");
             $analysis->create_gps_map($matchId,$foot);
-            exit;
+            return "ok";
         }
 
 
