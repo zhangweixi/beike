@@ -725,6 +725,10 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
     }
 
 
+    $scope.clean_overlay = function()
+    {
+        $scope.map.clearOverlays();
+    }
 
 
     $scope.init_map = function()
