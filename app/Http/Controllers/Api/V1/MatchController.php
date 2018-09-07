@@ -41,7 +41,7 @@ class MatchController extends Controller
 
         if($hasFile){
 
-            return apiData()->send(2001,'数据重复上传');
+           # return apiData()->send(2001,'数据重复上传');
         }
 
         //数据文件存储在磁盘中
