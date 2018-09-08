@@ -100,7 +100,7 @@ class DeviceController extends Controller
         $userId     = $request->input('userId');
         $deviceSn   = $request->input('deviceSn');
         $deviceModel= new DeviceModel();
-        $deviceInfo = $deviceModel->get_device_info($deviceSn);
+        $deviceInfo = $deviceModel->get_device_info_by_sn($deviceSn);
 
         if($deviceInfo->owner == $userId)
         {
