@@ -2,8 +2,6 @@
 namespace App\Http\Controllers\Service;
 
 use App\Http\Controllers\Service\GPSPoint;
-use function foo\func;
-use phpDocumentor\Reflection\Types\Integer;
 
 /*
   足球场结构点阵结构
@@ -37,8 +35,11 @@ class Court{
 
     private $A,$B,$C,$D,$E,$F,$AF,$DE;
 
-    private $lonNum = 20;
-    private $latNum = 32;
+    //private $lonNum = 20;
+    //private $latNum = 32;
+
+    private $lonNum = 10;
+    private $latNum = 20;
 
     private $centerPoints = [];
 
@@ -302,6 +303,8 @@ class Court{
         return $posi;
     }
 
+
+
     private function distance($point1,$point2)
     {
 
@@ -312,10 +315,20 @@ class Court{
         return $dis;
     }
 
+
+    public $maxLat  = 0;
+    public $minLat  = 0;
+    public $maxLon  = 0;
+    public $minLon  = 0;
+
+
+
     /**
-     * 球场热点图
+     * 创建球场热点图
+     * @param $points GPSPoint[]
+     * @return  array
      * */
-    public function court_hot_map($points)
+    public function create_court_hot_map($points)
     {
         $result   = [];
 
@@ -324,23 +337,39 @@ class Court{
         {
             for($j=0;$j<$this->latNum;$j++)
             {
-               $result[$i][$j] = 0;
+                $result[$i][$j] = 0;
             }
         }
 
         foreach($points as $point)
         {
+            if(intval($point['lat']) == 0 ) {
 
-            if(intval($point['lat']) == 0 )  continue;
+                continue;
+            }
 
-            $position   = $this->find_nearest_point(new GPSPoint($point['lat'],$point['lon']));
+            $gpsPoint   = new GPSPoint($point['lat'],$point['lon']);
+
+            $position   = $this->find_nearest_point1($gpsPoint);
 
             $result[$position[0]][$position[1]]++;
         }
 
+        $result = \GuzzleHttp\json_encode($result);
+        mylogger($result);
 
         return $result;
+    }
 
+
+    /**
+     * 生成球场热点图
+     * @param $points GPSPoint[]
+     * @return array
+     * */
+    public function court_hot_map($points)
+    {
+        return $this->create_court_hot_map($points);
     }
 
 

@@ -13,6 +13,6 @@ $api->version('v1',['prefix'=>"api",'namespace'=>"App\Http\Controllers\Service"]
     $api->post('qiniuToken',        "Qiniu@get_token");             //获取七牛Token
     $api->any('matchCaculate/{action}',"MatchCaculate@action");		//算法系统
     $api->any('wechat/{action}',	"Wechat@action");				//微信
-
+    $api->any('matchGrade/{action}',"MatchGrade@action");			//比赛分数计算方法
 
 });

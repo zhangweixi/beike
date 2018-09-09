@@ -807,4 +807,32 @@ function gps_distance($lon1, $lat1, $lon2, $lat2)
                     *SIN(($lon1-$lon2)*PI()/180/2))))*6378140;
 }
 
+
+function data_scroll_to($map,$top)
+{
+    $allp       = [];
+    foreach($map as $line)
+    {
+
+        $allp   = array_merge($allp,$line);
+    }
+
+
+    $max        = max($allp);
+    $avg        = $max/$top;
+
+    //把数据调节到十个等级
+    if($avg > 0)
+    {
+        foreach($map as $lk => $line)
+        {
+            foreach($line as $pk =>$p)
+            {
+                $map[$lk][$pk] = (int)ceil($p/$avg);
+            }
+        }
+    }
+
+    return $map;
+}
 ?>

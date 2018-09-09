@@ -99,7 +99,9 @@ class CourtController extends Controller
     }
 
 
-    //显示足球场地图
+    /*
+     * 显示足球场地图
+     * */
     public function court_border(Request $request)
     {
         $matchId        = $request->input('matchId');
@@ -139,6 +141,10 @@ class CourtController extends Controller
         return apiData()->add('points',$points)->send();
     }
 
+
+    /*
+     * 显示足球内部热点图
+     * */
     public function court_content(Request $request)
     {
         $matchId    = $request->input('matchId');
@@ -178,15 +184,17 @@ class CourtController extends Controller
 
         return apiData()->set_data('points',$points)->send();
     }
+
+
+
     /**
      * 计算足球场数据
      * */
     public function calculate_court($courtId=0)
     {
+        $courtId    = 65;
 
-        //$courtId    = 18;
         $court  = new Court();
-
         $courtModel = new CourtModel();
         $courtInfo  = $courtModel->find($courtId);
 
@@ -205,19 +213,22 @@ class CourtController extends Controller
 
         if(0)
         {
-            $A =    new GPSPoint(0,0);
-            $B =    new GPSPoint(0,0);
-            $C =    new GPSPoint(0,0);
-            $D =    new GPSPoint(0,5);
-            $E =    new GPSPoint(5,5);
-            $F =    new GPSPoint(5,0);
+            $A =    new GPSPoint(1,10);
+            $B =    new GPSPoint(1,7);
+            $C =    new GPSPoint(1,4);
+            $D =    new GPSPoint(1,1);
+            $E =    new GPSPoint(10,1);
+            $F =    new GPSPoint(10,10);
 
-            $A =    new GPSPoint(31.2904461856,121.3755366212);
-            $B =    new GPSPoint(0,0);
-            $C =    new GPSPoint(0,0);
-            $D =    new GPSPoint(31.2875212840,121.3751932984);
-            $E =    new GPSPoint(31.2872003645,121.3783046609);
-            $F =    new GPSPoint(31.2901894581,121.3786157971);
+            if(0)
+            {
+                $A =    new GPSPoint(31.2904461856,121.3755366212);
+                $B =    new GPSPoint(0,0);
+                $C =    new GPSPoint(0,0);
+                $D =    new GPSPoint(31.2875212840,121.3751932984);
+                $E =    new GPSPoint(31.2872003645,121.3783046609);
+                $F =    new GPSPoint(31.2901894581,121.3786157971);
+            }
         }
 
         $points =  $court->calculate_court($A,$B,$C,$D,$E,$F);

@@ -158,6 +158,7 @@ class MatchModel extends Model
             "time_end",
             "created_mood_at"
         ];
+
         $matchDetail = DB::table('match')->select($columns)->where('match_id',$matchId)->first();
 
         return $matchDetail;

@@ -372,28 +372,7 @@ class MatchController extends Controller
             $map        = $result->gps_map;
             $map        = \GuzzleHttp\json_decode($map);
 
-            $allp       = [];
-            foreach($map as $line)
-            {
-
-                $allp   = array_merge($allp,$line);
-            }
-
-
-            $max        = max($allp);
-            $avg        = $max/100;
-
-            //把数据调节到十个等级
-            if($avg > 0)
-            {
-                foreach($map as $lk => $line)
-                {
-                    foreach($line as $pk =>$p)
-                    {
-                        $map[$lk][$pk] = (int)ceil($p/$avg);
-                    }
-                }
-            }
+            $map        = data_scroll_to($map,100);
 
         }else{//默认值
 
@@ -444,23 +423,25 @@ class MatchController extends Controller
             return apiData()->send(2001,"系统正在对数据玩命分析，请稍等");
         }
 
+
         $data   = [
             'shoot'         => [
                 'speedMax'  => $matchResult->shoot_speed_max,
                 'speedAvg'  => $matchResult->shoot_speed_avg,
                 'disMax'    => $matchResult->shoot_dis_max,
-                'disAvg'    => $matchResult->shoot_dis_avg
+                'disAvg'    => $matchResult->shoot_dis_avg,
+                'totalNum'  => $matchResult->shoot_num_total,
             ],
             'passShort'    => [
                 'speedMax'  => $matchResult->pass_s_speed_max,
-                'speedAvg'  => $matchResult->pass_s_speed_vag,
+                'speedAvg'  => $matchResult->pass_s_speed_avg,
                 'disMax'    => $matchResult->pass_s_dis_max,
                 'disAvg'    => $matchResult->pass_s_dis_avg,
                 'number'    => $matchResult->pass_s_num
             ],
             'passLength'    => [
                 'speedMax'  => $matchResult->pass_l_speed_max,
-                'speedAvg'  => $matchResult->pass_l_speed_vag,
+                'speedAvg'  => $matchResult->pass_l_speed_avg,
                 'disMax'    => $matchResult->pass_l_dis_max,
                 'disAvg'    => $matchResult->pass_l_dis_avg,
                 'number'    => $matchResult->pass_l_num
@@ -471,9 +452,16 @@ class MatchController extends Controller
                 'lowTime'      => $matchResult->run_low_time,
                 'midDis'       => $matchResult->run_mid_dis,
                 'midTime'      => $matchResult->run_mid_time,
-                'highDis'       => $matchResult->run_high_dis,
-                'highTime'      => $matchResult->run_high_time
+                'highDis'      => $matchResult->run_high_dis,
+                'highTime'     => $matchResult->run_high_time
             ],
+            'touchball' => [
+                "totalNum"  => $matchResult->touchball_num,
+                "speedMax"  =>  $matchResult->touchball_speed_max,
+                "speedAvg"  =>  $matchResult->touchball_speed_avg,
+                "strengthMax"=> $matchResult->touchball_strength_max,
+                "strengthAvg"=> $matchResult->touchball_strength_avg
+            ]
         ];
 
         return apiData()
@@ -488,22 +476,40 @@ class MatchController extends Controller
     public function match_detail_hotmap(Request $request)
     {
         $matchId    = $request->input('matchId');
-        $midSpeed   = create_round_array(12,22);
-        $heighSpeed = create_round_array(12,22);
+        $matchResult    = BaseMatchResultModel::find($matchId);
+
+        $lowSpeed   = \GuzzleHttp\json_decode($matchResult->map_speed_low,true);
+        $midSpeed   = \GuzzleHttp\json_decode($matchResult->map_speed_middle,true);
+        $highSpeed  = \GuzzleHttp\json_decode($matchResult->map_speed_high,true);
+
+        $lowSpeed   = data_scroll_to($lowSpeed,100);
+        $midSpeed   = data_scroll_to($midSpeed,100);
+        $highSpeed  = data_scroll_to($highSpeed,100);
+
+
+
+        $shortPass  = \GuzzleHttp\json_decode($matchResult->map_pass_short,true);
+        $longPass   = \GuzzleHttp\json_decode($matchResult->map_pass_long,true);
+        $touchball  = \GuzzleHttp\json_decode($matchResult->map_touchball,true);
+
+
+
         $sprint     = create_round_array(12,22);
-        $shortPass  = create_round_array(12,22);
-        $longPass   = create_round_array(12,22);
         $rob        = create_round_array(12,22);
         $dribble    = create_round_array(12,22);
 
+
         $maps       = [
-            ['name'=>"中速跑动",'data'=>$midSpeed],
-            ['name'=>"高速跑动",'data'=>$heighSpeed],
-            ['name'=>'冲刺','data'=>$sprint],
-            ['name'=>'短运','data'=>$shortPass],
-            ['name'=>'长运','data'=>$longPass],
-            ['name'=>'抢断','data'=>$rob],
-            ['name'=>'带球','data'=>$dribble]
+            ['name'=>"高速跑动",'data'=>$highSpeed,'type'=>'hot'],
+            ['name'=>"中速跑动",'data'=>$midSpeed,'type'=>'hot'],
+            ['name'=>"低速跑动",'data'=>$lowSpeed,'type'=>'hot'],
+
+            ['name'=>'短传','data'=>$shortPass,'type'=>'point'],
+            ['name'=>'长传','data'=>$longPass,'type'=>'point'],
+            ['name'=>'触球','data'=>$touchball,'type'=>'point'],
+            //['name'=>'冲刺','data'=>$sprint,'type'=>'hot'],
+            //['name'=>'抢断','data'=>$rob,'type'=>'hot'],
+            //['name'=>'带球','data'=>$dribble,'type'=>'hot']
         ];
 
         return apiData()

@@ -2,9 +2,11 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\Service\GPSPoint;
 use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
+use App\Models\Base\BaseUserAbilityModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -141,7 +143,9 @@ class AnalysisMatchData implements ShouldQueue
 
             case 'create_gps_map':          $this->create_gps_map($this->matchId,$this->foot);          break;
 
-            case 'run_matlab':             $this->run_matlab($this->matchId);                         break;
+            case 'run_matlab':              $this->run_matlab($this->matchId);                          break;
+
+            case 'save_matlab_result':      $this->save_matlab_result($this->matchId);                  break;
         }
     }
 
@@ -1032,8 +1036,8 @@ class AnalysisMatchData implements ShouldQueue
 
         $court      = new Court();
         $court->set_centers($points->center);
-        $gpsData    = array_merge($gpsData,$gpsData);
-        $mapData    = $court->court_hot_map($gpsData);
+        //$gpsData    = array_merge($gpsData,$gpsData);
+        $mapData    = $court->create_court_hot_map($gpsData);
 
         mylogger(time());
 
@@ -1143,24 +1147,212 @@ class AnalysisMatchData implements ShouldQueue
 
     /**
      * 保存matlab算法计算出来的结果
+     * @param $matchId integer
      * */
-    public function save_matlab_result()
+    public function save_matlab_result($matchId)
     {
-        $matchId    = $this->matchId;
+
+        return $this->save_pass_and_touch($matchId);
+        return $this->save_speed($matchId);
+    }
+
+
+    public function save_speed($matchId)
+    {
+        $matchInfo  = MatchModel::find($matchId);
 
         //从远程服务器读取结果
-        $resultFile = config('app.matlabhost')."/uploads/result/{$matchId}.txt";
 
-        $content    = file_get_contents($resultFile);
+        //1.速度信息
+        #$resultFile = config('app.matlabhost')."/uploads/result/{$matchId}.txt";
+        $speedFile = public_path("uploads/match/{$matchId}/r-speed.txt");
+
+        $speedsInfo= file($speedFile);
+
+        $maxSpeed   = 0;
+        $speedType  = [
+            'high'  => ['time'=>0,'dis'=>0,'limit'=>15*1000/60/60,'gps'=>[]],
+            'middle'=> ['time'=>0,'dis'=>0,'limit'=>9*1000/60/60,'gps'=>[]],
+            'low'   => ['time'=>0,'dis'=>0,'limit'=>3*1000/60/60,'gps'=>[]]
+        ];
+
+        $avgSpeed   = $speedsInfo[0][0];
+        $svgSpeed2  = $speedsInfo[0][1];
+        $distance   = $speedsInfo[0][2];
+        unset($speedsInfo[0]);
+
+
+        foreach ($speedsInfo as $key => &$speedInfo)
+        {
+            if((trim($key)-1) % 20 != 0)
+            {
+                //continue;
+            }
+
+            $speedInfo = trim($speedInfo,"\r\n");
+            $speedInfo = explode(' ',$speedInfo);
+            $speed      = $speedInfo[1];
+            $maxSpeed   = $speed > $maxSpeed ? $speed : $maxSpeed;
+
+
+            if($speed > $speedType['high']['limit']) {
+
+                $type = "high";
+
+            }elseif($speed > $speedType['middle']['limit']){
+
+                $type   = "middle";
+
+            }elseif($speed > $speedType['low']['limit']){
+
+                $type   = "low";
+            }
+
+            $lat    = gps_to_gps($speedInfo[3]*100);
+            $lon    = gps_to_gps($speedInfo[4]*100);
+
+            array_push($speedType[$type]['gps'],['lat'=>$lat,'lon'=>$lon]);
+            $speedType[$type]['time']++;
+            $speedType[$type]['dis'] += $speed;
+        }
+
+        //创建PGS
+        foreach ($speedType as $key => $type)
+        {
+
+            $map = $this->gps_map($matchInfo->court_id,$type['gps']);
+            $speedType[$key]['gps'] = $map;
+        }
+
+
+        //11.修改单场比赛的结果
+
+        $matchResult = [
+            'run_low_dis'       => $speedType['low']['dis'],
+            'run_mid_dis'       => $speedType['middle']['dis'],
+            'run_high_dis'      => $speedType['high']['dis'],
+            'run_low_time'      => $speedType['low']['time'],
+            'run_mid_time'      => $speedType['middle']['time'],
+            'run_high_time'     => $speedType['high']['time'],
+            'map_speed_low'     => $speedType['low']['gps'],
+            'map_speed_middle'  => $speedType['middle']['gps'],
+            'map_speed_high'    => $speedType['high']['gps'],
+        ];
+
+
+        BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
+
+        dd('xx');
+        //加到个人的整体数据中
+
+
+        //修改个人的整体数据 在此前一定会创建用户的个人数据
+
+        $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
+
+        $userAbility->run_distance_high     += $speedType['high']['dis'];
+        $userAbility->run_distance_middle   += $speedType['middle']['dis'];
+        $userAbility->run_distance_low      += $speedType['low']['dis'];
 
 
 
+
+        //计算整体分数
+
+
+        dd($speedType);
+
+        return $speedsInfo;
+        dd($content);
         //存储结果
-
-
 
     }
 
+
+    public function save_pass_and_touch($matchId)
+    {
+
+        $passFile   = public_path("uploads/match/{$matchId}/r-pass.txt");
+        $passlist   = file($passFile);
+        $matchInfo  = MatchModel::find($matchId);
+
+
+        //1：长传 2：短传 3：触球
+        $data   = [
+            "passLong"  =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]],
+            "passShort" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]],
+            "touchball" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]]
+        ];
+
+
+        foreach($passlist as $pass)
+        {
+            $pass   = trim($pass,"\r\n");
+            $pass   = explode(" ",$pass);
+            $type = intval($pass[0]);
+
+            switch ($type)
+            {
+                case 1 : array_push($data['passLong']['data'],$pass);break;
+                case 2 : array_push($data['passShort']['data'],$pass);break;
+                case 3 : array_push($data['touchball']['data'],$pass);break;
+            }
+        }
+
+
+        foreach($data as &$pass)
+        {
+            $speeds = [];
+            $gps    = [];
+
+            foreach($pass['data'] as $type)
+            {
+                $lat    = gps_to_gps($type[3]*100);
+                $lon    = gps_to_gps($type[4]*100);
+                array_push($speeds,$type[2]);
+                array_push($gps,['lat'=>$lat,'lon'=>$lon]);
+            }
+
+            $pass['num']        = count($pass['data']);
+            $pass['speedMax']   = round(max($speeds));
+            $pass['speedAvg']   = round(array_sum($speeds)/count($speeds));
+            $pass['gps']        = $this->gps_map($matchInfo->court_id,$gps);
+            unset($pass['data']);
+        }
+
+        $matchResult    = [
+            'pass_s_num'            => $data['passShort']['num'],
+            'pass_s_speed_max'      => $data['passShort']['speedMax'],
+            'pass_s_speed_avg'      => $data['passShort']['speedAvg'],
+            'pass_l_num'            => $data['passLong']['num'],
+            'pass_l_speed_max'      => $data['passLong']['speedMax'],
+            'pass_l_speed_avg'      => $data['passLong']['speedAvg'],
+            'touchball_num'         => $data['touchball']['num'],
+            'touchball_speed_max'   => $data['touchball']['speedMax'],
+            'touchball_speed_avg'   => $data['touchball']['speedAvg'],
+            'map_pass_short'        => $data['passShort']['gps'],
+            'map_pass_long'         => $data['passLong']['gps'],
+            'map_touchball'         => $data['touchball']['gps']
+        ];
+
+        BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
+
+        return $matchResult;
+
+    }
+
+    public function gps_map($courtId,$gpsList)
+    {
+        //创建GPS图谱
+        $courtInfo  = CourtModel::find($courtId);
+        $points     = $courtInfo->boxs;
+        $points     =  \GuzzleHttp\json_decode($points);
+        $court      = new Court();
+        $court->set_centers($points->center);
+
+        $mapData    = $court->create_court_hot_map($gpsList);
+        return $mapData;
+    }
 
 }
 
