@@ -456,7 +456,7 @@ class MatchController extends Controller
                 'highTime'     => $matchResult->run_high_time
             ],
             'touchball' => [
-                "totalNum"  => $matchResult->touchball_num,
+                "number"  => $matchResult->touchball_num,
                 "speedMax"  =>  $matchResult->touchball_speed_max,
                 "speedAvg"  =>  $matchResult->touchball_speed_avg,
                 "strengthMax"=> $matchResult->touchball_strength_max,
