@@ -47,6 +47,20 @@ class CourtController extends Controller
         return apiData()->set_data('courtId',$courtId)->send(200,'SUCCESS');
     }
 
+    /**
+     * 标记测量足球场
+     * */
+    public function remark_mesure_court(Request $request)
+    {
+        $userId     = $request->input('userId');
+
+        //清空数据
+        //DB::table('football_court_point')->where('user_id',$userId)->delete();
+
+        $uniqueId   = create_member_number();
+        return  apiData()->add('gpsGroupId',$uniqueId)->send();
+
+    }
 
     /**
      * 检查单个jps是否有效
@@ -56,6 +70,10 @@ class CourtController extends Controller
         $gps        = $request->input('gps');
         $lat        = $request->input('latitude',0);
         $lon        = $request->input('longitude',0);
+        $gpsGroupId = $request->input('gpsGroupId');
+        $userId     = $request->input('userId');
+        $position   = $request->input('position');
+
 
         if(empty($gps))
         {
@@ -71,12 +89,35 @@ class CourtController extends Controller
 
         }elseif($lat > 0 && $lon > 0){
 
+            //存储GPS信息
+            $gpsPoint   = [
+                "user_id"       => $userId,
+                "gps_group_id"  => $gpsGroupId,
+                "position"      => $position,
+                "mobile_lat"    => $lat,
+                "mobile_lon"    => $lon,
+                "device_lat"    => $gpsInfo['lat'],
+                "device_lon"    => $gpsInfo['lon']
+            ];
+
+            DB::table('football_court_point')->insert($gpsPoint);
+
+            //检查点数是否达到一定要求
+            $gpsNum = DB::table('football_court_point')->where('gps_group_id',$gpsGroupId)->where('position',$position)->count();
+
+            if($gpsNum == 20)
+            {
+                return apiData()->send();
+            }
+
+
             //将设备GPS转换成百度GPS
-            $gpsInfo  = gps_to_bdgps([['lat'=>$gpsInfo['lat'],'lon'=>$gpsInfo['lon']]]);
-            $gpsInfo  = $gpsInfo[0];
+            $gpsBaidu = gps_to_bdgps([['lat'=>$gpsInfo['lat'],'lon'=>$gpsInfo['lon']]]);
+            $gpsBaidu  = $gpsBaidu[0];
+
 
             //检查手机的GPS和设备的GPS的距离
-            $distance = gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
+            $distance = gps_distance($lon,$lat,$gpsBaidu['lon'],$gpsBaidu['lat']);
 
             if($distance > 3) {
 
@@ -332,4 +373,7 @@ class CourtController extends Controller
         $ana->create_gps_map(364);
         return "ok";
     }
+
+
+
 }
