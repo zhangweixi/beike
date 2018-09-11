@@ -72,16 +72,16 @@ class CourtController extends Controller
         }elseif($lat > 0 && $lon > 0){
 
             //将设备GPS转换成百度GPS
-            $mobileGps  = gps_to_bdgps(['lat'=>$lat,'lon'=>$lon]);
-            $mobileGps  = $mobileGps[0];
+            $gpsInfo  = gps_to_bdgps([['lat'=>$gpsInfo['lat'],'lon'=>$gpsInfo['lon']]]);
+            $gpsInfo  = $gpsInfo[0];
 
             //检查手机的GPS和设备的GPS的距离
-            $distance = gps_distance($mobileGps['lon'],$mobileGps['lat'],$gpsInfo['lon'],$gpsInfo['lat']);
+            $distance = gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
 
             if($distance > 3) {
 
                 $code   = 2004;
-                $msg    = "设备与手机距离[{$distance}],定位不准确，请重新定位";
+                $msg    = "设备与手机距离{$distance},定位不准确，请重新定位";
 
             } else {
 
