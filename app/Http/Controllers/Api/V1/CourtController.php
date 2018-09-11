@@ -87,7 +87,7 @@ class CourtController extends Controller
             $code   = 2001;
             $msg    = "GPS无效";
 
-        }elseif($lat > 0 && $lon > 0){
+        }else{
 
             //存储GPS信息
             $gpsPoint   = [
@@ -109,6 +109,7 @@ class CourtController extends Controller
             {
                 return apiData()->send();
             }
+
 
 
             //将设备GPS转换成百度GPS
