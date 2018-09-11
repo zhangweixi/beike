@@ -1152,7 +1152,7 @@ class AnalysisMatchData implements ShouldQueue
     public function save_matlab_result($matchId)
     {
 
-        return $this->save_pass_and_touch($matchId);
+        //return $this->save_pass_and_touch($matchId);
         return $this->save_speed($matchId);
     }
 
@@ -1212,8 +1212,11 @@ class AnalysisMatchData implements ShouldQueue
             $lon    = gps_to_gps($speedInfo[4]*100);
 
             array_push($speedType[$type]['gps'],['lat'=>$lat,'lon'=>$lon]);
-            $speedType[$type]['time']++;
-            $speedType[$type]['dis'] += $speed;
+            if((trim($key)-1) % 20 == 0)
+            {
+                $speedType[$type]['time']++;
+                $speedType[$type]['dis'] += $speed;
+            }
         }
 
         //创建PGS

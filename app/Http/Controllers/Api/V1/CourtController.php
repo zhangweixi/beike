@@ -53,21 +53,37 @@ class CourtController extends Controller
      * */
     public function check_single_gps(Request $request)
     {
-        $gps    = $request->input('gps');
+        $gps        = $request->input('gps');
+        $lat        = $request->input('latitude',0);
+        $lon        = $request->input('longitude',0);
 
-        if(empty($gps)){
+        if(empty($gps))
+        {
+            return apiData()->send(2001,"GPS为空");
+        }
 
-           $code    = 2001;
-           $msg     = "gps为空";
-        }else{
+        $gpsInfo    = $this->str_to_gps($gps);
 
-            $gpsInfo    = $this->str_to_gps($gps);
-            if($gpsInfo['lon'] == 0 || $gpsInfo['lat'] == 0){
+        if($gpsInfo['lon'] == 0 || $gpsInfo['lat'] == 0)
+        {
+            $code   = 2001;
+            $msg    = "GPS无效";
 
-                $code   = 2001;
-                $msg    = "GPS无效";
+        }elseif($lat > 0 && $lon > 0){
 
-            }else{
+            //将设备GPS转换成百度GPS
+            $mobileGps  = gps_to_bdgps(['lat'=>$lat,'lon'=>$lon]);
+            $mobileGps  = $mobileGps[0];
+
+            //检查手机的GPS和设备的GPS的距离
+            $distance = gps_distance($mobileGps['lon'],$mobileGps['lat'],$gpsInfo['lon'],$gpsInfo['lat']);
+
+            if($distance > 3) {
+
+                $code   = 2004;
+                $msg    = "设备与手机距离[{$distance}],定位不准确，请重新定位";
+
+            } else {
 
                 $code   = 200;
                 $msg    = "SUCCESS";
@@ -189,10 +205,11 @@ class CourtController extends Controller
 
     /**
      * 计算足球场数据
+     * @param $courtId integer 足球场ID
      * */
     public function calculate_court($courtId=0)
     {
-        $courtId    = 65;
+        //$courtId    = 66;
 
         $court  = new Court();
         $courtModel = new CourtModel();
