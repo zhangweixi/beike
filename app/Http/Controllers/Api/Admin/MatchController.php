@@ -69,7 +69,7 @@ class MatchController extends Controller
             $baiduGps['F_E']    = gps_to_bdgps($courtGps->F_E);
 
 
-            $newGps             = json_encode($courtInfo->boxs);
+            $newGps             = \GuzzleHttp\json_decode($courtInfo->boxs);
             $newGps->baiduGps   = $baiduGps;
 
             $courtInfo->boxs->baiduGps = $baiduGps;
