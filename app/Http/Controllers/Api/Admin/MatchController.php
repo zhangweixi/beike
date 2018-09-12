@@ -76,7 +76,7 @@ class MatchController extends Controller
             $courtInfo->boxs    = $courtGps;
             
             //更改数据
-            CourtModel::where('court_id',$matchInfo->court_id)->update(['boxs'=>\GuzzleHttp\json_encode($newGps)]);
+            //CourtModel::where('court_id',$matchInfo->court_id)->update(['boxs'=>\GuzzleHttp\json_encode($newGps)]);
         }
 
         return apiData()->add('court',$courtInfo)->send();
