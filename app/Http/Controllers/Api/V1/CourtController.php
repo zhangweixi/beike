@@ -497,7 +497,9 @@ class CourtController extends Controller
 
     public function temp()
     {
+        file_get_contents("http://matlab.launchever.cn/api/matchCaculate/call_matlab?matchId=564&sign=4587d4bd9ba3ea31124bfa72474e44c5");
 
+        return "ok";
         return $this->get_points_center("201809121504737483");
         return $this->create_court_gps_config(72,11);
 
