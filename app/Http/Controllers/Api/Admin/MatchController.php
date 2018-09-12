@@ -69,11 +69,12 @@ class MatchController extends Controller
             $baiduGps['F_E']    = gps_to_bdgps($courtGps->F_E);
 
 
-            $newGps             = \GuzzleHttp\json_decode($courtInfo->boxs);
-            $newGps->baiduGps   = $baiduGps;
+            $newGps             = \GuzzleHttp\json_decode($courtInfo->boxs,true);
+            $newGps['baiduGps'] = $baiduGps;
 
-            $courtInfo->boxs->baiduGps = $baiduGps;
-
+            $courtGps->baiduGps = $baiduGps;
+            $courtInfo->boxs    = $courtGps;
+            
             //更改数据
             CourtModel::where('court_id',$matchInfo->court_id)->update(['boxs'=>\GuzzleHttp\json_encode($newGps)]);
         }
