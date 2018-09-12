@@ -521,6 +521,8 @@ class CourtController extends Controller
 
         $points = $points['center'];
 
+        $courtInfo  = CourtModel::find($courtId);
+
 
         $configBoxs     = DB::table('football_court_type')->where('people_num',11)->first();
         $configBoxs     = \GuzzleHttp\json_decode($configBoxs->angles);
@@ -541,7 +543,12 @@ class CourtController extends Controller
                 $config .= $box->lat . " ".$box->lon." ".$big." ".$small." ".$box->angle."\n";
             }
         }
-        $config = trim($config,"\n");
+
+
+        $b = explode(",",$courtInfo->p_b);
+        $c = explode(",",$courtInfo->p_c);
+
+        $config .= implode(" ",$b)." ".implode(" ",$c)." 0";
 
         file_put_contents($courtAngleConfiFile,$config);
 
