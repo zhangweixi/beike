@@ -47,9 +47,17 @@ class MatchController extends Controller
 
         $courtGps   = \GuzzleHttp\json_decode($courtInfo->boxs);
 
+
+
         //检查是否有百度地图
         if(!isset($courtGps->biadu))
         {
+
+            foreach($courtGps as $gps)
+            {
+                $gps->lat   = gps_to_gps($gps->lat);
+                $gps->lon   = gps_to_gps($gps->lon);
+            }
 
             //将GPS转成百度GPS
             $baiduGps   = [];
