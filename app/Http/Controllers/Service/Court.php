@@ -133,6 +133,8 @@ class Court{
         return $courtMap;
     }
 
+
+
     /**
      * 间隔获得数组内容
      * @param $arr array 数组
@@ -356,7 +358,7 @@ class Court{
         }
 
         $result = \GuzzleHttp\json_encode($result);
-        mylogger($result);
+
 
         return $result;
     }
@@ -372,5 +374,32 @@ class Court{
         return $this->create_court_hot_map($points);
     }
 
+
+    /**
+     * 创建球场配置文件
+     * */
+    public function create_court_config()
+    {
+        //获取球场类型的角度设置图
+
+    }
+
+    /*
+     * 设置维度数量
+     *
+     * */
+    public function set_lat_num($latNum)
+    {
+        $this->latNum = $latNum;
+    }
+
+
+    /*
+     * 设置经度数量
+     * */
+    public function set_lon_num($lonNum)
+    {
+        $this->lonNum = $lonNum;
+    }
 
 }

@@ -1025,21 +1025,20 @@ class AnalysisMatchData implements ShouldQueue
                     continue;
                 }
 
-                $lat        = gps_to_gps($gpsInfo[0]);
-                $lon        = gps_to_gps(trim($gpsInfo[1],"\n"));
+                $lat        = $gpsInfo[0];
+                $lon        = trim($gpsInfo[1],"\n");
                 array_push($gpsData,['lat'=>$lat,'lon'=>$lon]);
             }
         }
 
-        mylogger(time());
+
 
 
         $court      = new Court();
         $court->set_centers($points->center);
-        //$gpsData    = array_merge($gpsData,$gpsData);
+
         $mapData    = $court->create_court_hot_map($gpsData);
 
-        mylogger(time());
 
         //把结果存储到比赛结果表中
         $resultInfo = BaseMatchResultModel::find($matchId);
