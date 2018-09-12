@@ -352,7 +352,7 @@ class Court{
 
             $gpsPoint   = new GPSPoint($point['lat'],$point['lon']);
 
-            $position   = $this->find_nearest_point1($gpsPoint);
+            $position   = $this->find_nearest_point($gpsPoint);
 
             $result[$position[0]][$position[1]]++;
         }
