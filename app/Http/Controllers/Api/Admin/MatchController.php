@@ -47,16 +47,19 @@ class MatchController extends Controller
 
         $courtGps   = \GuzzleHttp\json_decode($courtInfo->boxs);
 
-
+        unset($courtGps->center);
 
         //检查是否有百度地图
-        if(!isset($courtGps->biadu))
+        if(!isset($courtGps->baiduGps))
         {
 
-            foreach($courtGps as $gps)
+            foreach($courtGps as $gpsType)
             {
-                $gps->lat   = gps_to_gps($gps->lat);
-                $gps->lon   = gps_to_gps($gps->lon);
+                foreach($gpsType as $gps)
+                {
+                    $gps->lat   = gps_to_gps($gps->lat);
+                    $gps->lon   = gps_to_gps($gps->lon);    
+                }
             }
 
             //将GPS转成百度GPS
@@ -66,13 +69,13 @@ class MatchController extends Controller
             $baiduGps['F_E']    = gps_to_bdgps($courtGps->F_E);
 
 
+            $newGps             = json_encode($courtInfo->boxs);
+            $newGps->baiduGps   = $baiduGps;
 
-            $courtGps->baiduGps = $baiduGps;
-            $courtInfo->boxs    = $courtGps;
-
+            $courtInfo->boxs->baiduGps = $baiduGps;
 
             //更改数据
-            CourtModel::where('court_id',$matchInfo->court_id)->update(['boxs'=>\GuzzleHttp\json_encode($courtGps)]);
+            CourtModel::where('court_id',$matchInfo->court_id)->update(['boxs'=>\GuzzleHttp\json_encode($newGps)]);
         }
 
         return apiData()->add('court',$courtInfo)->send();
