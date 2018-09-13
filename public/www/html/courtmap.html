@@ -144,6 +144,10 @@
     function show_court_gps_group()
     {
         var gpsGroupId = $('#gpsGroupId').val();
+        if(gpsGroupId == "")
+        {
+            gpsGroupId = getQueryVariable('gpsGroupId');
+        }
         var url = "/api/v1/court/draw_court?gpsGroupId="+gpsGroupId;
         $.post(url).success(function(res){
 
@@ -183,6 +187,11 @@
     function show_court_gps_group_all()
     {
         var gpsGroupId = $('#gpsGroupId').val();
+        if(gpsGroupId == "")
+        {
+            gpsGroupId = getQueryVariable('gpsGroupId');
+        }
+        
         var url = "/api/v1/court/draw_court_all?gpsGroupId="+gpsGroupId;
         $.post(url).success(function(res){
 
