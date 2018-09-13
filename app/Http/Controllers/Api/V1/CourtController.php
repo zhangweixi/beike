@@ -136,7 +136,8 @@ class CourtController extends Controller
                 "mobile_lat"    => $lat,
                 "mobile_lon"    => $lon,
                 "device_lat"    => $gpsInfo['lat'],
-                "device_lon"    => $gpsInfo['lon']
+                "device_lon"    => $gpsInfo['lon'],
+                'created_at'    => date_time()
             ];
 
             DB::table('football_court_point')->insert($gpsPoint);
@@ -287,7 +288,7 @@ class CourtController extends Controller
     public function draw_court(Request $request)
     {
         $gpsGroupId = $request->input('gpsGroupId');
-        $sql = "SELECT position,
+        $sql = "SELECT `position`,
                 CONCAT(AVG(device_lon),',',AVG(device_lat)) AS device ,
                 CONCAT(AVG(mobile_lon),',',AVG(mobile_lat)) as  mobile,
                 AVG(device_lon) device_lon,
@@ -295,7 +296,9 @@ class CourtController extends Controller
                 AVG(mobile_lon) mobile_lon,
                 AVG(mobile_lat) mobile_lat
                 from football_court_point 
-                WHERE gps_group_id = '{$gpsGroupId}' GROUP BY position";
+                WHERE gps_group_id = '{$gpsGroupId}' 
+                GROUP BY `position`";
+
         $gpsInfo    = DB::select($sql);
 
 
