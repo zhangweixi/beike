@@ -152,7 +152,8 @@ class CourtController extends Controller
 
 
             //将设备GPS转换成百度GPS
-            $gpsBaidu = gps_to_bdgps([['lat'=>$gpsInfo['lat'],'lon'=>$gpsInfo['lon']]]);
+            $gpsBaidu = gps_to_bdgps([['lat'=>gps_to_gps($gpsInfo['lat']),'lon'=>gps_to_gps($gpsInfo['lon'])]]);
+
             $gpsBaidu  = $gpsBaidu[0];
 
 
@@ -300,7 +301,7 @@ class CourtController extends Controller
 
         foreach($gpsInfo as $point)
         {
-            $info = gps_to_bdgps([['lat'=>$point->device_lat,'lon'=>$point->device_lon]]);
+            $info = gps_to_bdgps([['lat'=>gps_to_gps($point->device_lat),'lon'=>gps_to_gps($point->device_lon)]]);
             $point->device_lat  = $info[0]['lat'];
             $point->device_lon  = $info[0]['lon'];
         }
@@ -327,7 +328,7 @@ class CourtController extends Controller
         foreach($gpsInfo as $point)
         {
             array_push($points['mobile'],['lat'=>$point->mobile_lat,'lon'=>$point->mobile_lon]);
-            array_push($points['device'],['lat'=>$point->device_lat,'lon'=>$point->device_lon]);
+            array_push($points['device'],['lat'=>gps_to_gps($point->device_lat),'lon'=>gps_to_gps($point->device_lon)]);
         }
 
         $points['device']   = gps_to_bdgps($points['device']);
