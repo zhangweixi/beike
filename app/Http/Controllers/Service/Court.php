@@ -357,7 +357,7 @@ class Court{
             $result[$position[0]][$position[1]]++;
         }
 
-        $result = \GuzzleHttp\json_encode($result);
+        //$result = \GuzzleHttp\json_encode($result);
 
 
         return $result;

@@ -1353,6 +1353,7 @@ class AnalysisMatchData implements ShouldQueue
         $court->set_centers($points->center);
 
         $mapData    = $court->create_court_hot_map($gpsList);
+        $mapData    = \GuzzleHttp\json_encode($mapData);
         return $mapData;
     }
 
