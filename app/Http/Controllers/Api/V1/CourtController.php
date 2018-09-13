@@ -20,7 +20,7 @@ class CourtController extends Controller
 
     public function add_court(Request $request)
     {
-        $userId     = $request->input('userId');
+        $userId     = $request->input('userId',0);
         $gpsGroupId = $request->input('gpsGroupId');
 
         //$points     = $request->input('points');
