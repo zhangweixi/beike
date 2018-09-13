@@ -14,5 +14,6 @@ $api->version('v1',['prefix'=>"api/admin",'middleware'=>['saveApiData'],'namespa
 
     $api->any('/match/{action}',        'MatchController@action');
 
+    $api->any('/court/{action}',        'CourtController@action');
 
 });

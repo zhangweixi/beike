@@ -58,10 +58,10 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             controller:'courtController'
         })
 
-        .state('count-department', {
-            url: "/count-department",
-            templateUrl: 'count-department.html?t=' + Math.random(),
-            controller: 'countController'
+        .state('court/list', {
+            url: "/court/list",
+            templateUrl: 'court-list.html?t=' + Math.random(),
+            controller: 'courtController'
         })
         .state('count-user', {
             url: '/count-user',

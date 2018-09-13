@@ -758,6 +758,24 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
     $scope.courtTable = {line:[],list:[],table:[]};
     $scope.courtTypes = [{"court_type_id":1,"num":11,"length":10,"width":20}];
 
+
+
+
+    $scope.courtList    = [];   //球场列表
+    $scope.courtListPaginationConf = {
+        currentPage: 0,
+        totalItems: 8000,
+        itemsPerPage: 15,
+        pagesLength: 10,
+        perPageOptions: [10, 20, 30, 40, 50],
+        onChange: function ()
+        {
+            $scope.get_court_list($scope.courtListPaginationConf.currentPage);
+        }
+    };
+
+
+
     var line = 21;
     var list = 25;
 
@@ -802,11 +820,38 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
         console.log($scope.courtTable.table);
     }
 
-    //获得球场分类的详细
+    /*
+    * 获得球场分类的详细
+    */
     $scope.get_court_type_detail = function()
     {
         var url = server + "/court/typeDetail?courtTypeId="+$scope.courtTypeId;
 
     }
+
+
+    /*
+    *球场列表
+    */
+    $scope.get_court_list = function(page)
+    {
+
+        var url = server + "court/court_list?page=" + page;
+
+        $http.post(url).success(function(res)
+        {
+
+            var courtData = res.data.courtList;
+
+            $scope.courtList = courtData.data;
+            $scope.courtListPaginationConf.currentPage = courtData.current_page;
+            $scope.courtListPaginationConf.totalItems = courtData.total;
+            $scope.courtListPaginationConf.itemsPerPage = courtData.per_page;
+
+
+        })
+
+    }
+
 
 })
