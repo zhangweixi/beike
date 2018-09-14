@@ -50,7 +50,7 @@ class CourtController extends Controller
 
         foreach($points as $key => $p)
         {
-            $courtData["p_".strtolower($p->position)]   = $p->device;
+            //$courtData["p_".strtolower($p->position)]   = $p->device;
         }
 
 
