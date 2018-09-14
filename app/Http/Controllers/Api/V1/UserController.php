@@ -267,7 +267,7 @@ class UserController extends Controller
 
         if($userInfo == false) //用户第一次登陆
         {
-            return apiData()->send(2001,'请绑定手机号');
+            return apiData()->send(200,'请绑定手机号');
         }
 
         return $this->login_action($userInfo['id']);
