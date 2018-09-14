@@ -22,6 +22,7 @@ class CourtController extends Controller
     {
         $userId     = $request->input('userId',0);
         $gpsGroupId = $request->input('gpsGroupId');
+        $borderPoint= $request->input('borderPoint','');
 
         //$points     = $request->input('points');
         //$points     = \GuzzleHttp\json_decode($points,true);
@@ -35,7 +36,13 @@ class CourtController extends Controller
             'width'     => 0,   //球场宽度
             'length'    => 0,   //球场长度
             "boxs"      => '',
-            'gps_group_id'  => $gpsGroupId
+            'gps_group_id'  => $gpsGroupId,
+            'p_a'       => "",
+            'p_b'       => "",
+            'p_c'       => "",
+            'p_d'       => "",
+            'p_e'       => "",
+            'p_f'       => "",
         ];
 
 
@@ -47,17 +54,20 @@ class CourtController extends Controller
         }
 
 
+
         $courtModel = new CourtModel();
         $courtId    = $courtModel->add_court($courtData);
 
-        $this->calculate_court($courtId); //计算足球场的数据
+        //$this->calculate_court($courtId); //计算足球场的数据
 
-        $configFile = $this->create_court_gps_config($courtId);//生成GPS的配置图
+        //$configFile = $this->create_court_gps_config($courtId);//生成GPS的配置图
 
-        $courtModel->where('court_id',$courtId)->update(['config_file'=>$configFile]);
+        //$courtModel->where('court_id',$courtId)->update(['config_file'=>$configFile]);
 
         return apiData()->set_data('courtId',$courtId)->send(200,'SUCCESS');
     }
+
+
 
 
     public function get_points_center($gpsGroupId)
@@ -501,11 +511,11 @@ class CourtController extends Controller
 
     public function temp()
     {
-        file_get_contents("http://matlab.launchever.cn/api/matchCaculate/call_matlab?matchId=564&sign=4587d4bd9ba3ea31124bfa72474e44c5");
+        //file_get_contents("http://matlab.launchever.cn/api/matchCaculate/call_matlab?matchId=564&sign=4587d4bd9ba3ea31124bfa72474e44c5");
 
-        return "ok";
-        return $this->get_points_center("201809121504737483");
-        return $this->create_court_gps_config(72,11);
+        //return "ok";
+        //return $this->get_points_center("201809121504737483");
+        return $this->create_court_gps_config(117);
 
         $ana    = new AnalysisMatchData(0);
         $ana->create_gps_map(364);
@@ -537,16 +547,16 @@ class CourtController extends Controller
         mk_dir(public_path("uploads/court-config"));
         $config = "";
 
-        foreach($configBoxs as $line)
+        foreach($configBoxs as $y => $line)
         {
-            foreach($line as $box)
+            foreach($line as $x => $box)
             {
-                $box->lat   = $points[$box->x][$box->y]->lat;
-                $box->lon   = $points[$box->x][$box->y]->lon;
-                $big        = $box->type == "D" ? 1 : 0;
-                $small      = $box->type == 'X' ? 1 : 0;
+                $lat    = $points[$x][$y]->lat;
+                $lon    = $points[$x][$y]->lon;
+                $big    = $box->type == "D" ? 1 : 0;
+                $small  = $box->type == 'X' ? 1 : 0;
 
-                $config .= $box->lat . " ".$box->lon." ".$big." ".$small." ".$box->angle."\n";
+                $config .= $lat . " ".$lon." ".$big." ".$small." ".$box->angle."\n";
             }
         }
 
