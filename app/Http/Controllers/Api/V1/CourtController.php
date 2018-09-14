@@ -171,6 +171,10 @@ class CourtController extends Controller
             //检查手机的GPS和设备的GPS的距离
             $distance = gps_distance($lon,$lat,$gpsBaidu['lon'],$gpsBaidu['lat']);
 
+            $msg    = "距离【{$distance}】";
+
+            return apiData()->send(2004,$msg);
+
             if($distance > 2) {
 
                 $code   = 2004;
