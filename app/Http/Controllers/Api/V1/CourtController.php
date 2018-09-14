@@ -153,12 +153,12 @@ class CourtController extends Controller
             DB::table('football_court_point')->insert($gpsPoint);
 
             //检查点数是否达到一定要求
+            /*
             $gpsNum = DB::table('football_court_point')->where('gps_group_id',$gpsGroupId)->where('position',$position)->count();
-
             if($gpsNum == 20)
             {
                 return apiData()->send();
-            }
+            }*/
 
 
 
