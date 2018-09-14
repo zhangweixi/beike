@@ -103,12 +103,12 @@
         })
     }
 
-    function show_big_data(points)
+    function show_big_data(points,color="red")
     {
         var options = {
             size: BMAP_POINT_SIZE_SMALL,
             shape: BMAP_POINT_SHAPE_STAR,
-            color: '#d340c3'
+            color: color
         }
         var pointCollection = new BMap.PointCollection(points, options);  // 初始化PointCollection
         map.addOverlay(pointCollection);  // 添加Overlay
@@ -191,7 +191,7 @@
         {
             gpsGroupId = getQueryVariable('gpsGroupId');
         }
-        
+
         var url = "/api/v1/court/draw_court_all?gpsGroupId="+gpsGroupId;
         $.post(url).success(function(res){
 
@@ -209,8 +209,9 @@
                 mobilepoints.push(getpoint(gps.lat,gps.lon));
             }
 
-            show_big_data(mobilepoints);
-            show_big_data(devicepoints);
+            show_big_data(mobilepoints,'red');
+            show_big_data(devicepoints,'green');
+            map.setCenter(mobilepoints[0],20);
 
             return ;
 
