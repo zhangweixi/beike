@@ -153,12 +153,15 @@ class CourtController extends Controller
             DB::table('football_court_point')->insert($gpsPoint);
 
             //检查点数是否达到一定要求
-            /*
-            $gpsNum = DB::table('football_court_point')->where('gps_group_id',$gpsGroupId)->where('position',$position)->count();
-            if($gpsNum == 20)
+
+            if($position == 'A')
             {
-                return apiData()->send();
-            }*/
+                $gpsNum = DB::table('football_court_point')->where('gps_group_id',$gpsGroupId)->where('position',$position)->count();
+
+            }else{
+
+                $gpsNum = 1000;
+            }
 
 
 
@@ -173,10 +176,8 @@ class CourtController extends Controller
 
             $msg    = "距离【{$distance}】";
 
-            //return apiData()->send(2004,$msg);
 
-
-            if($distance > 3 && $position == "A") {
+            if($distance > 3 && $gpsNum < 20) {
 
                 $code   = 2004;
                 $msg    = $msg;
