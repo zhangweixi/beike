@@ -173,17 +173,18 @@ class CourtController extends Controller
 
             $msg    = "距离【{$distance}】";
 
-            return apiData()->send(2004,$msg);
+            //return apiData()->send(2004,$msg);
 
-            if($distance > 2) {
+
+            if($distance > 3 && $position == "A") {
 
                 $code   = 2004;
-                $msg    = "设备与手机距离{$distance},定位不准确，请重新定位";
+                $msg    = $msg;
 
             } else {
 
                 $code   = 200;
-                $msg    = "SUCCESS";
+                $msg    = $msg."，开始";
             }
         }
 
@@ -515,6 +516,23 @@ class CourtController extends Controller
 
     public function temp()
     {
+        $a = [
+            ['lat'=>3109.7326109,'lon'=>12125.148228],
+            ['lat'=>3109.7520030,'lon'=>12125.148607],
+            ['lat'=>3109.7523926,'lon'=>12125.128647],
+            ['lat'=>3109.7330005,'lon'=>12125.128269],
+        ];
+
+
+        foreach($a as &$b)
+        {
+            $b['lat']   = gps_to_gps($b['lat']);
+            $b['lon']   = gps_to_gps($b['lon']);
+        }
+
+        $a = gps_to_bdgps($a);
+
+        return $a;
         //file_get_contents("http://matlab.launchever.cn/api/matchCaculate/call_matlab?matchId=564&sign=4587d4bd9ba3ea31124bfa72474e44c5");
 
         //return "ok";
