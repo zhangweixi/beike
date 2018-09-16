@@ -145,8 +145,9 @@ class UserModel extends Model
      * */
     public function user_global_ability($userId)
     {
-        $colums         = ["shoot","pass","strength","dribble","defense","run"];
+        $colums         = ["grade_shoot as shoot","grade_pass as pass","grade_strength as strength","grade_dribble as dribble","grade_defense as defense","grade_run as run"];
         $ability        = DB::table('user_global_ability')->select($colums)->where('user_id',$userId)->first();
+
 
         if($ability == null)
         {
