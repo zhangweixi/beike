@@ -4,6 +4,7 @@ namespace App\Models\V1;
 
 use Illuminate\Database\Eloquent\Model;
 use DB;
+use PhpParser\Node\Expr\Cast\Object_;
 
 
 class UserModel extends Model
@@ -142,6 +143,7 @@ class UserModel extends Model
     /**
      * 用户的整体数据
      * @param $userId int 用户ID
+     * @return Object
      * */
     public function user_global_ability($userId)
     {

@@ -2,7 +2,7 @@
 namespace App\Common;
 
 
-class WechatTemplate{
+class  WechatTemplate{
 
     public $templateId;
     public $url;
@@ -21,10 +21,18 @@ class WechatTemplate{
     {
         return new ServiceFinishTemplate();
     }
+
+
+    public function warningTemplate()
+    {
+        return new WarningTemplate();
+    }
 }
 
 
-
+/**
+ * 服务完成通知模板
+ * */
 class ServiceFinishTemplate extends WechatTemplate {
 
     public $orderSn     = "";
@@ -49,5 +57,27 @@ class ServiceFinishTemplate extends WechatTemplate {
     }
 }
 
+
+/**
+ * 异常报警模板
+ * */
+class WarningTemplate extends WechatTemplate{
+
+    public $warnType;
+    public $warnTime;
+    public $templateId = "yflcUkErnS9i0pq9q4_hh4ifCkTVc1OVK9TsEAB_H_k";
+
+
+    public function create()
+    {
+        $this->data = [
+            "first"     => $this->first,
+            "remark"    => $this->remark,
+            "keyword1"  => $this->warnType,
+            "keyword2"  => $this->warnTime
+        ];
+    }
+
+}
 
 

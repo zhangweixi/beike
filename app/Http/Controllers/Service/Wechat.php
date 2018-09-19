@@ -88,6 +88,16 @@ class Wechat extends Controller
 
     public function test()
     {
+        $template = (new WechatTemplate())->warningTemplate();
+
+        $template->first = "数据异常";
+        $template->remark="请尽快处理";
+        $template->warnType= "左右脚数据不一致";
+        $template->warnTime= date_time();
+        $this->template_message($template);
+
+        return 'ok';
+
         $serviceTemplate    = (new WechatTemplate())->serviceFinishTemplate();
         $serviceTemplate->first  = "比赛通知";
         $serviceTemplate->remark = "比赛结束";
