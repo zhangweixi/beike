@@ -1,11 +1,12 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Service\MatchGrade;
 use App\Models\V1\MatchModel;
 use Dingo\Api\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Common\Geohash;
-
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class TestController extends Controller
@@ -107,4 +108,78 @@ class TestController extends Controller
         return $neighbors;
         print_r($neighbors);
     }
+
+    /**
+     * 获得形状的角度
+     * */
+    public function get_shape_angle()
+    {
+
+        $pa = [0,0];
+        $pb = [5,0];
+        $pc = [5,5];
+
+        //$da = bcpow(($pb[0]-$pc[0]),2) + bcpow($pb[1]-$pc[1],2);
+        //$da = bcsqrt($da);
+        $dc = self::get_distance($pa,$pb);
+        $da = self::get_distance($pb,$pc);
+        $db = self::get_distance($pa,$pc);
+        return [$da,$db,$dc];
+        return self::angle("B",$da,$db,$dc);
+
+    }
+
+
+    public static function get_distance($a,$b)
+    {
+        $d= bcpow(($a[0]-$b[0]),2) + bcpow($a[1]-$b[1],2);
+        return bcsqrt($d);
+    }
+
+
+    /**
+     * @param $angle string A,B,C
+     * @param $a integer
+     * @param $b integer
+     * @param $c integer
+     * @return integer
+     * */
+    public static function angle($angle,$a,$b,$c){
+
+        //cosB=(c²+a²-b²)/2ac
+
+        switch ($angle)
+        {
+            case "A": $A = $a; $B = $b; $C = $c; break;
+            case "B": $A = $b; $B = $a; $C = $c; break;
+            case "C": $A = $c; $B = $b; $C = $a; break;
+        }
+
+        //$cosA = ($B^2 + $C^2 - $A^2)/2$B$C;
+        $cosA = ($B*$B + $C*$C - $A*$A) / 2*$B*$C;
+
+        #$cosA = bcdiv(bcsub(bcadd(bcpow($B,2), bcpow($C,2)),bcmul($A,2)),bcmul(2,bcmul($B,$C)));
+
+        return $cosA;
+    }
+
+
+    public function get_grade()
+    {
+        $matchGrade = new MatchGrade();
+        return $matchGrade->get_global_single_option_grade(1,'touchball_num_total',true);
+    }
+
+
+    public function test(Request $request){
+        mylogger($request->all());
+        return $request->all();
+    }
+
+}
+
+function floattostr( $val )
+{
+    preg_match( "#^([\+\-]|)([0-9]*)(\.([0-9]*?)|)(0*)$#", trim($val), $o );
+    return $o[1].sprintf('%d',$o[2]).($o[3]!='.'?$o[3]:'');
 }
