@@ -5,7 +5,7 @@ namespace App\Common;
 class  WechatTemplate{
 
     public $templateId;
-    public $url;
+    public $url = "";
     public $openId;
 
     public $data    = [];
