@@ -173,6 +173,7 @@ class TestController extends Controller
 
     public function test(Request $request){
         mylogger($request->all());
+        sleep(5);
         return $request->all();
     }
 
