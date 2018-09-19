@@ -94,6 +94,7 @@ class Wechat extends Controller
         $template->remark="请尽快处理";
         $template->warnType= "左右脚数据不一致";
         $template->warnTime= date_time();
+        $template->openId = "o1zLM0daxBjdzyYwFxQ9YxPs7O6Q";
         $this->template_message($template);
 
         return 'ok';
