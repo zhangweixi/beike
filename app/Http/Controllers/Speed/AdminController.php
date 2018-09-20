@@ -706,7 +706,7 @@ class AdminController extends Controller{
 
     public function get_paper_list(Request $request)
     {
-        $papers = DB::table('papersn')->orderBy('created_at','desc')->paginate(1);
+        $papers = DB::table('papersn')->orderBy('created_at','desc')->paginate(20);
         return apiData()->set_data('papers',$papers)->send();
     }
 
