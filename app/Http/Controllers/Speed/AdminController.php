@@ -108,7 +108,7 @@ class AdminController extends Controller{
                     }
 
                     if(empty(trim($title))){
-                        
+
                         continue;
                     }
 
@@ -138,7 +138,7 @@ class AdminController extends Controller{
                         $temp           = explode('==',$ans);
                         if(count($temp) == 1)
                         {
-                            exit("格式错误:第".$id."行,【".$ans."】");
+                            exit("格式错误:第".($id+1)."行,【".$ans."】");
                         }
 
                         //检查编码
