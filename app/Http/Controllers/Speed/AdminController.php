@@ -107,6 +107,10 @@ class AdminController extends Controller{
                         case "判断":$type = 'radio';break;
                     }
 
+                    if(empty(trim($title))){
+                        
+                        continue;
+                    }
 
                     $question = [
                         'title'         => $title,
