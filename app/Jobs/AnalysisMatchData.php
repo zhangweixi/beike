@@ -1141,7 +1141,7 @@ class AnalysisMatchData implements ShouldQueue
 
         $pythonfile = app_path('python/python_call_matlab.py');
         $matlabCmd  = "LanQi('{$localDir}','{$baseSensorL}','{$baseSensorR}','{$baseCompassL}','{$baseCompassR}','{$baseGps}','{$resultRun}','{$resultPass}','{$resultStep}')";
-        $command    = "python {$pythonfile} $matlabCmd";
+        $command    = "python {$pythonfile} --command={$matlabCmd}";
 
         shell_exec($command);
         mylogger("调用matlab成功：".$command);
