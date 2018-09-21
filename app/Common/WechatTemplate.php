@@ -17,13 +17,13 @@ class  WechatTemplate{
     public function create(){}
 
 
-    public function serviceFinishTemplate()
+    static function serviceFinishTemplate()
     {
         return new ServiceFinishTemplate();
     }
 
 
-    public function warningTemplate()
+    static function warningTemplate()
     {
         return new WarningTemplate();
     }

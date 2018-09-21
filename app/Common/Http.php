@@ -109,7 +109,7 @@ class Http{
      * */
     public static function sock($host,$url,$method="GET")
     {
-        $fp = fsockopen($host, 80, $errno, $errstr, 2);
+        $fp = fsockopen($host, 80, $errno, $errstr, 1);
 
         if (!$fp)
         {
@@ -121,12 +121,14 @@ class Http{
             $http = "$method {$url} HTTP/1.1\r\n";
             $http .= "Host: {$host}\r\n";
             $http .= "Connection: Close\r\n\r\n";
-            mylogger($http);
+
             fwrite($fp,$http);
-            $f = fread($fp,2048);
-            dd($f);
+            if(false){
+                $f = fread($fp,2048);
+                dd($f);
+            }
+
             fclose($fp);
-            mylogger($errno);
             return true;
         }
     }

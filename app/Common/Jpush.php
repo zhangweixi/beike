@@ -14,9 +14,10 @@ class Jpush{
     public  $data       = [];
 
 
-    public function __construct(){
-        $this->jpushAppKey = config('app.pushAppkey');
-        $this->jpushSecret = config('app.pushSecret');
+    public function __construct()
+    {
+        $this->jpushAppKey = config('jpush.appKey');
+        $this->jpushSecret = config('jpush.secret');
         $this->plushClient = new Client($this->jpushAppKey,$this->jpushSecret);
         $this->plushClient = $this->plushClient->push();
     }
@@ -25,14 +26,16 @@ class Jpush{
     /**
      * 设置发送的消息
      * */
-    public function set_message($msg){
+    public function set_message($msg)
+    {
         $this->message = $msg;
     }
 
     /**
      * 设置发送的标签
      * */
-    public function set_tags($tags){
+    public function set_tags($tags)
+    {
         $this->tags = $tags;
     }
 
@@ -40,7 +43,8 @@ class Jpush{
     /*
      * 发送消息
      * */
-    public function send(){
+    public function send()
+    {
         $push = $this->plushClient;
 
         //设置平台
@@ -74,77 +78,49 @@ class Jpush{
      * @param string $title 推送的标题
      * @param string $msg   推送的消息
      * @param int    $code  识别的code
-     * @param string $alias 推送的别名
      * @param int    $type  发送的类型 0:所有用户 1:按别名推送(表示单个) 2:按标签推送(多个)
-     * @param array  $tags  推送标签
+     * @param mixed  $user  用户
      * @param array data    发送给客户端的数据
-     * @return boolean
+     * @return array
      * */
-    public function pushContent($title,$msg,$code,$type,$alias = "",$tags = [],$data = [])
+    public function pushContent($title,$msg,$code,$type,$user,$data = [])
     {
-
         $extras      = [
-            'code'      => $code,
-            'message'   => json_encode($data),
-        ] ;
+            'code'   => $code,
+            'data'   => json_encode($data),
+        ];
+
         $push   = $this->plushClient;
+        $push->setPlatform('all')
+            ->options(['apns_production' => false])
+            ->iosNotification($msg, [
+                'title'  => $title,
+                //'badge'  => '+1',
+                'inbox'  => 2,
+                'extras' => $extras
+            ])
+            ->androidNotification($msg, [
+                'title'  => $title,
+                //'badge'  => '+1',
+                'inbox'  => 2,
+                'extras' => $extras
+            ]);
+
+        //$push->message($msg,[]); //自定义消息
+
         if($type == 0)
         {
-            $result = $push->setPlatform('all')
-                ->options(['apns_production' => true])
-                ->addAllAudience()
-                ->iosNotification($msg, [
-                    'title'  => $title,
-                    'sound'  => 'sound',
-                    'badge'  => '+1',
-                    'extras' => $extras
-                ])
-                ->androidNotification($msg, [
-                    'title'  => $title,
-                    'sound'  => 'sound',
-                    'badge'  => '+1',
-                    'inbox'  => 2,
-                    'extras' => $extras
-                ])->send();
-        }
-        elseif ($type == 1)
-        {
-            $result = $push->setPlatform('all')
-                ->addAlias($alias)
-                ->options(['apns_production' => true])
-                ->iosNotification($msg, [
-                    'title'  => $title,
-                    'sound'  => 'sound',
-                    'badge'  => '+1',
-                    'extras' => $extras
-                ])
-                ->androidNotification($msg, [
-                    'title'  => $title,
-                    'sound'  => 'sound',
-                    'badge'  => '+1',
-                    'inbox'  => 2,
-                    'extras' => $extras
-                ])->send();
+            $push->addAllAudience();
+
+        } elseif ($type == 1) {
+
+            $push->addAlias($alias);
 
         } elseif($type == 2) {
 
-            $result = $push->setPlatform('all')
-                ->addTag($tags)
-                ->options(['apns_production' => true])
-                ->iosNotification($msg, [
-                    'title'  => $title,
-                    'sound'  => 'sound',
-                    'badge'  => '+1',
-                    'extras' => $extras
-                ])
-                ->androidNotification($msg, [
-                    'title'  => $title,
-                    'sound'  => 'sound',
-                    'badge'  => '+1',
-                    'inbox'  => 2,
-                    'extras' => $extras
-                ])->send();
+            $push->addTag($tags);
         }
-        return $result;
+
+        return $push->send();
     }
 }

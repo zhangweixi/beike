@@ -15,6 +15,7 @@ return [
     'matlabhost'   => env('MATLAB_HOST',''),
     'apihost'      => env('API_HOST',''),
     'wechatenv'    => env('WECHAT_ENV',false),
+    "adminOpenId"  => "o1zLM0daxBjdzyYwFxQ9YxPs7O6Q",
 
     /*
     |--------------------------------------------------------------------------

@@ -2,7 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Common\WechatTemplate;
 use App\Http\Controllers\Service\GPSPoint;
+use App\Http\Controllers\Service\Wechat;
 use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
@@ -44,7 +46,7 @@ class AnalysisMatchData implements ShouldQueue
     private $matchId    = 0;    //比赛ID
     private $type       = "";   //数据类型
     private $foot       = "";   //哪只脚
-    private $matlabHost = "matlab.launchever.cn";
+
 
 
     public function __construct($action,$param = [])
@@ -53,10 +55,6 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($param as $key => $v)
         {
-            if($key == "host")
-            {
-                $v = "http://".$v;
-            }
             $this->$key = $v;
         }
     }
@@ -146,6 +144,8 @@ class AnalysisMatchData implements ShouldQueue
             case 'run_matlab':              $this->run_matlab($this->matchId);                          break;
 
             case 'save_matlab_result':      $this->save_matlab_result($this->matchId);                  break;
+
+            case 'finish_parse_data':       $this->finish_parse_data($this->matchId);                   break;
         }
     }
 
@@ -159,7 +159,7 @@ class AnalysisMatchData implements ShouldQueue
         $sourceData = BaseMatchSourceDataModel::find($this->sourceId);
 
         //检查本信息是否处理过
-        if($sourceData->status != 0 ) {
+        if($sourceData->status > 0 ) {
 
             return true;
         }
@@ -179,38 +179,19 @@ class AnalysisMatchData implements ShouldQueue
         //标记处于解析状态中
         MatchModel::update_match_data($this->sourceId,['status'=>1]);
 
-        //判断同类型的上一条数据是否解析完毕
-        $prevSourceDataId   = 0;
+        //由于上一条数据没有解析的完毕的话会自动请求解析下一条，所以如果有未解析完毕的数据就停止执行，等待上一条结束来自动延续
+        $prevSourceData = DB::table('match_source_data')
+            ->where('match_source_id',"<",$this->sourceId)
+            ->where('user_id',$userId)
+            ->where('foot',$foot)
+            ->where('type',$type)
+            ->where('device_sn',$sourceData->device_sn)
+            ->orderBy('match_source_id','desc')
+            ->first();
 
-        while (true){
-
-            if($prevSourceDataId > 0){
-
-                $prevSourceData = BaseMatchSourceDataModel::find($prevSourceDataId);
-
-            }else{
-
-                $prevSourceData = DB::table('match_source_data')
-                    ->select('match_source_id','status')
-                    ->where('match_source_id',"<",$this->sourceId)
-                    ->where('user_id',$userId)
-                    ->where('foot',$foot)
-                    ->where('type',$type)
-                    ->where('device_sn',$sourceData->device_sn)
-                    ->orderBy('match_source_id','desc')
-                    ->first();
-            }
-
-            //在此之前没有未处理的数据
-            if($prevSourceData == null || $prevSourceData->status == 2) {
-
-                break;
-
-            }else{
-
-                $prevSourceDataId   = $prevSourceData->match_source_id;
-                sleep(1);
-            }
+        if($prevSourceData != null && $prevSourceData->status < 2)
+        {
+            return true;
         }
 
 
@@ -288,22 +269,20 @@ class AnalysisMatchData implements ShouldQueue
             }
 
 
-            if($data['type'] == "E")
+            if($data['type'] == "E")    //END 数据结束
             {
-                $matchesData[$matchId]['isFinish']  = 1;
-            }
+                $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
 
-            if($data['type'] == '')
-            {
+            } elseif($data['type'] == ''){
+
                 switch ($type)
                 {
-                    case "gps":     $str = $data['lat']." ".$data['lon'];               break;
-                    case "sensor":  $str = $data['ax']." ".$data['ay']." ".$data['az']; break;
-                    case "compass": $str = $data['x']." ".$data['y']." ".$data['z'];    break;
+                    case "gps":     $str = [$data['lat'],   $data['lon'],$data['timestamp']];                  break;
+                    case "sensor":  $str = [$data['ax'],    $data['ay'],$data['az']];       break;
+                    case "compass": $str = [$data['x'],     $data['y'], $data['z']];        break;
                 }
 
-                //$str.= " ".$data['timestamp'];
-                file_put_contents($file,$str."\n",FILE_APPEND);
+                file_put_contents($file,implode(" ",$str)."\n",FILE_APPEND);            //将数据写入到文件中
 
                 continue;
             }
@@ -334,31 +313,25 @@ class AnalysisMatchData implements ShouldQueue
 
         /*========本条数据解析完毕，请求解析下一条数据 begin ===*/
 
-        if($this->host != "")
-        {
-            $nextData = DB::table('match_source_data')
-                ->where('user_id',$userId)
-                ->where('foot',$foot)
-                ->where('type',$type)
-                ->where('status',0)
-                ->where('match_source_id','>',$this->sourceId)
-                ->orderBy('match_source_id')
-                ->first();
+        $nextData = DB::table('match_source_data')
+            ->where('user_id',$userId)
+            ->where('foot',$foot)
+            ->where('type',$type)
+            ->where('status',0)
+            ->where('match_source_id','>',$this->sourceId)
+            ->orderBy('match_source_id')
+            ->first();
 
-            if($nextData)
-            {
-                $params = ['matchSourceId'=>$nextData->match_source_id];
-                $params = http_build_sign($params);
-                $url    = $this->host."/api/matchCaculate/jiexi_single_data?".$params;
-                file_get_contents($url);
-            }
+        if($nextData)
+        {
+            $params = ['matchSourceId'  =>  $nextData->match_source_id];
+            $params = http_build_sign($params);
+            $url    = $this->host."/api/matchCaculate/jiexi_single_data?".$params;
+            file_get_contents($url);
         }
 
+
         /*========本条数据解析完毕，请求解析下一条数据 end =====*/
-
-
-        //如何判断一场数据是否传完
-        //下一条数据的时间已经大于当前时间
 
 
         //上传的最后一条是数据，生成航向角 生成json文件
@@ -372,52 +345,27 @@ class AnalysisMatchData implements ShouldQueue
                 continue;
             }
 
-            //sensor，罗盘都上传完毕，开始计算方向角
-
             //更新数据解析进度
-            $matchProcess   = BaseMatchDataProcessModel::find($matchId);
-            if($matchProcess){
+            BaseMatchDataProcessModel::where('match_id',$matchId)->update([$type."_".$foot => 1]);
 
-                BaseMatchDataProcessModel::where('match_id',$matchId)->update([$type."_".$foot => 1]);
-
-            }else{
-
-                BaseMatchDataProcessModel::insert(['match_id'=>$matchId,$type."_".$foot=>1]);
-            }
+            $process   = BaseMatchDataProcessModel::find($matchId);
 
 
-            //生成匹配文件耗时太多，不能在一个线程里单独完成
-            //生成罗盘和sensor的匹配文件
-            if($this->host && $type != "gps")
+            if($process->gps_L == 1 && $process->sensor_L == 1 && $process->sensor_R == 1 && $process->compass_L == 1 && $process->R == 1)
             {
-                $params         = ['matchId'=>$matchId,'foot'=>$foot];
-                $params         = http_build_sign($params);
-                $createCompassUrl   = $this->host."/api/matchCaculate/create_compass_sensor?".$params;
-                file_get_contents($createCompassUrl);
-            }
+                //数据解析结束，同意处理后续数据
 
-
-            //如果已经生成了航向角的文件，则发起调用算法系统
-
-            //$this->call_matlab($matchId);
-
-
-            //生成对应的json文件
-            //$this->create_json_data($matchId,[$type],$foot);
-
-            //如果GPS传输完毕,根据解析的数据生成热点图
-            if($type == 'gps')
-            {
-                $params = ['matchId'=>$matchId,'foot'=>$foot];
-                $params = http_build_query($params);
-                $url    = $this->host."/api/matchCaculate/create_gps_map?".$params;
+                //$this->finish_parse_data($matchId);
+                $url = $this->host . "/api/matchCaculate/finish_parse_data?matchId="+$matchId;
                 file_get_contents($url);
-                //$this->create_gps_map($matchId,$foot);
             }
         }
 
         return true;
     }
+
+
+
 
 
 
@@ -839,41 +787,123 @@ class AnalysisMatchData implements ShouldQueue
 
 
     /**
+     * 执行方法
+     * @param $method string
+     * @param $params array
+     * @param $host string
+     * */
+    static function execute($method,$params,$host='api')
+    {
+        $host   = $host == 'api'? config('app.apihost') : config('app.matlabhost');
+        $params = http_build_query($params);
+        $url    = $host."/api/matchCaculate/".$method."?".$params;
+        file_get_contents($url);
+    }
+
+    /**
+     * 获得比赛数据的文件夹
+     * @param $matchId integer
+     * @return string
+     * */
+    static function matchdir($matchId)
+    {
+        return public_path("uploads/match/{$matchId}/");
+    }
+
+    /**
+     * 解析数据结束
+     * @param $matchId integer 比赛ID
+     * */
+    public function finish_parse_data($matchId)
+    {
+        $matchInfo      = MatchModel::find($matchId);
+        $dataDir        = self::matchdir($matchId);
+
+
+        //1.与球场相关
+        if($matchInfo->court_id >0 )
+        {
+            //1.0 生成热点图占用时间比较久，异步调用
+            $params = ['matchId'=>$matchId,'foot'=>"L"];
+            self::execute("create_gps_map",$params);
+
+
+            //1.1 拷贝一份球场配置文件到数据比赛中
+            $courtInfo  = CourtModel::find($matchInfo->court_id);
+            $configFile = "/".$courtInfo->config_file;
+            copy(public_path($configFile),$dataDir."cour-config.txt");
+        }
+
+        //2.同步两台设备的数据一致性
+        $this->sync_file_num_same($matchId);
+
+        //3.计算方向角
+        $foots      = ["L","R"];
+        foreach($foots as $foot)
+        {
+            $compassSensorFile  = $this->create_compass_sensor($matchId,$foot);
+            $outFile            = $dataDir."angle-{$foot}.txt";
+
+            //计算角度
+            $this->compass_translate($compassSensorFile,$outFile);
+        }
+
+        //3.角度计算完毕，请求调用算法系统
+        $this->call_matlab($this->matchId);
+
+    }
+
+
+    /**
+     * 同步文件数量一致
+     * @param $matchId integer 比赛ID
+     * */
+    private function sync_file_num_same($matchId)
+    {
+        $dataDir        = self::matchdir($matchId);
+        $compassNumL    = get_file_line_num($dataDir."compass-L.txt");
+        $compassNumR    = get_file_line_num($dataDir."compass-R.txt");
+
+        //如果两个文件数量差别大于400，发出警报
+        if(abs($compassNumL - $compassNumR) > 400)
+        {
+            $wechat     = new Wechat();
+            $template   = WechatTemplate::warningTemplate();
+            $template->openId   = config('app.adminOpenId');
+            $template->first    = "系统警告";
+            $template->warnType = "比赛数据量不一致";
+            $template->warnTime = date_time();
+            $template->remark   = "比赛ID:$matchId,罗盘左脚：{$compassNumL},罗盘右脚：{$compassNumR}";
+            $wechat->template_message($template);
+        }
+    }
+
+
+
+    /**
      * 生成计算角度的罗盘和sensor数据
      * @param $matchId integer 比赛ID
      * @param $foot string 脚
-     * @return boolean
+     * @return string
      * */
     public function create_compass_sensor($matchId,$foot)
     {
-        //检查sensor和compass是否都解析完毕
-        $matchProcess   = BaseMatchDataProcessModel::find($matchId);
-        $sensorColum    = "sensor_".$foot;
-        $compassColum   = "compass_".$foot;
-
-        if($matchProcess == null ||
-            $matchProcess->$sensorColum == 0 ||
-            $matchProcess->$compassColum == 0)
-        {
-
-            return true;
-        }
-
-
         //sensor数据
-        $sensorPath = public_path("uploads/match/{$matchId}/sensor-{$foot}.txt");
+        $dataDir    = self::matchdir($matchId);
+        $sensorPath = $dataDir."sensor-{$foot}.txt";
         $fsensor    = fopen($sensorPath,'r');
+
         //将所有数据读取到数组中
         $sensors    = file($sensorPath);
 
 
         //罗盘数据
-        $compassPath= public_path("uploads/match/{$matchId}/compass-{$foot}.txt");
+        $compassPath= $dataDir."compass-{$foot}.txt";
         $fcompass   = fopen($compassPath,'r');
 
 
         //结果文件
-        $resultPath = public_path("uploads/match/{$matchId}/sensor-compass-{$foot}.txt");
+        $resultPath = $dataDir."sensor-compass-{$foot}.txt";
         $fresult    = fopen($resultPath,'a+');
 
         $maxlength  = count($sensors)-1;
@@ -890,9 +920,8 @@ class AnalysisMatchData implements ShouldQueue
 
             $newp = intval($p*4);
 
-
-            if($newp > $maxlength){
-
+            if($newp > $maxlength)
+            {
                 break;
             }
 
@@ -919,12 +948,7 @@ class AnalysisMatchData implements ShouldQueue
         fclose($fsensor);
         fclose($fresult);
 
-        //计算角度
-        $outFile    = public_path("uploads/match/{$matchId}/angle-{$foot}.txt");
-        $this->compass_translate($resultPath,$outFile);
-
-        //角度计算完毕，请求调用算法系统
-        $this->call_matlab($this->matchId);
+        return $resultPath;
     }
 
 
@@ -942,11 +966,7 @@ class AnalysisMatchData implements ShouldQueue
             return "输入文件不存在";
         }
 
-
-        if(file_exists($outfile))
-        {
-            file_put_contents($outfile,"");
-        }
+        file_put_contents($outfile,"");     //清空历史数据
 
         $command    = "/usr/bin/compass $infile $outfile > /dev/null && echo 'success' ";
 
@@ -973,9 +993,7 @@ class AnalysisMatchData implements ShouldQueue
         if(file_exists($ANG_L) && file_exists($ANG_R))
         {
             $params     = http_build_sign(['matchId'=>$matchId]);
-            $url        = config('app.matlabhost')."/api/matchCaculate/call_matlab?".$params;
-
-            $res        = file_get_contents($url);
+            self::execute("run_matlab",$params,'matlab');
 
         }else{
 
@@ -1006,9 +1024,6 @@ class AnalysisMatchData implements ShouldQueue
         $points     =  \GuzzleHttp\json_decode($points);
 
 
-
-
-
         //没有数据,从数据库获取
         if(count($gpsData) == 0)
         {
@@ -1030,8 +1045,6 @@ class AnalysisMatchData implements ShouldQueue
                 array_push($gpsData,['lat'=>$lat,'lon'=>$lon]);
             }
         }
-
-
 
 
         $court      = new Court();
@@ -1069,76 +1082,67 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function run_matlab($matchId)
     {
-
-
         $matchInfo      = MatchModel::find($matchId);
         $courtId        = $matchInfo->court_id;
+        $localDir       = self::matchdir($matchId);
 
-        $courtInfo      = CourtModel::find($courtId);
-        $courtType      = $courtInfo->court_type_id;
+        $baseApiUrl     = config('app.apihost')."/uploads/match/{$matchId}/";
+        mkdir($localDir,777,true);
+        //数据文件
+        $baseSensorL    = "sensor-L.txt";
+        $baseSensorR    = "sensor-R.txt";
 
-        $dir            = "uploads/match/{$matchId}/";
-        $apihost        = config('app.apihost')."/";
-
-        $baseSensorL    = $dir."sensor-L.txt";
-        $baseSensorR    = $dir."sensor-R.txt";
-
-        $baseCompassL   = $dir."angle-L.txt";
-        $baseCompassR   = $dir."angle-R.txt";
-        $baseGps        = $dir."gps-L.txt";
-        $result         = public_path($dir."result.txt");
-
-        //根据球场获得配置文件
-        if($courtType > 0){
-
-            $baseConfig     = "uploads/courttype/1.txt";
-            $config         = public_path($baseConfig);
-
-        }else{
-
-            $config         = "";
-        }
+        $baseCompassL   = "angle-L.txt";
+        $baseCompassR   = "angle-R.txt";
+        $baseGps        = "gps-L.txt";
+        $baseConfig     = $courtId > 0 ? "court-config.txt" : '';
 
 
-        $callbackUrl    = urlencode($apihost."api/matchCaculate/save_matlab_result?matchId={$matchId}&result=");
+        //结果文件
+        $resultRun      = "result-run.txt";//跑动结果
+        $resultPass     = "result-pass.txt";//传球结果
+        $resultStep     = "result-step.txt";
 
-        mk_dir($dir);
+
+        $callbackUrl    = urlencode(config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}&result=");//回调URL
 
         $files  = [
             "sensor_l"  =>  $baseSensorL,
             "sensor_r"  =>  $baseSensorR,
             "compass_l" =>  $baseCompassL,
             "compass_r" =>  $baseCompassR,
-            "gps"       =>  $baseGps
+            "gps"       =>  $baseGps,
+            "config"    => $baseConfig
         ];
 
-        foreach($files as $key  => $file){
+        //===========将远程的文件拉取到本地来 开始==============
+        //球场配置文件
 
-            $content    = file_get_contents($apihost.$file);
-            $file       = public_path($file);
+
+        //数据文件
+        foreach($files as $key  => $file)
+        {
+            if ($file == "")
+            {
+                continue;
+            }
+
+            $content    = file_get_contents($baseApiUrl.$file);
+
+            $file       = $localDir.$file;
 
             file_put_contents($file,$content);
-
-            $files[$key]    = $file;
         }
 
+        //===========将远程的文件拉取到本地来 结束==============
 
-
-        if($config && !file_exists($config)) {
-
-            $content = file_get_contents($apihost.$baseConfig);
-
-            file_put_contents($config,$content);
-        }
 
         $pythonfile = app_path('python/python_call_matlab.py');
-        $command    = "python %s --sensorl=%s --sensorr=%s --compassl=%s --compassr=%s --gps=%s --config=%s --callbackurl=%s  --result=%s";
-        $f          = $files;
-
-        $command    = sprintf($command,$pythonfile,$f['sensor_l'],$f['sensor_r'],$f['compass_l'],$f['compass_r'],$f['gps'],$config,$callbackUrl,$result);
+        //$matlabCmd  = "LanQi('{$localDir}','{$baseSensorL}','{$baseSensorR}','{$baseCompassL}','{$baseCompassR}','{$baseGps}','{$resultRun}','{$resultPass}','{$resultStep}')";
+        //$command    = "python {$pythonfile} $matlabCmd";
 
         //shell_exec($command);
-        mylogger("调用matlab成功：".$command);
+        //mylogger("调用matlab成功：".$command);
 
     }
 
@@ -1147,40 +1151,63 @@ class AnalysisMatchData implements ShouldQueue
     /**
      * 保存matlab算法计算出来的结果
      * @param $matchId integer
+     * @return string
      * */
     public function save_matlab_result($matchId)
     {
+        //1.提取跑动结果
+        $this->save_run_result($matchId);
 
-        //return $this->save_pass_and_touch($matchId);
-        return $this->save_speed($matchId);
+
+        //2.提取触球，传球结果
+
+        $this->save_pass_and_touch($matchId);
+
+        return "ok";
     }
+    /*
+     * @var 足球场信息
+     * */
+    private $courtInfo = false;
 
 
-    public function save_speed($matchId)
+    /**
+     * 提取跑动结果并保存
+     * @param $matchId integer 比赛ID
+     * */
+    public function save_run_result($matchId)
     {
         $matchInfo  = MatchModel::find($matchId);
 
         //从远程服务器读取结果
 
         //1.速度信息
-        #$resultFile = config('app.matlabhost')."/uploads/result/{$matchId}.txt";
-        $speedFile = public_path("uploads/match/{$matchId}/r-speed.txt");
+        //$speedFile  = config('app.matlabhost')."/uploads/match/{$matchId}/result-run.txt";
 
-        $speedsInfo= file($speedFile);
+        $speedFile  = public_path("uploads/match/{$matchId}/result-run.txt");
 
-        $maxSpeed   = 0;
+        $speedsInfo = file($speedFile);
+
+        $maxSpeed   = 0;    //比赛最高速度
+
         $speedType  = [
             'high'  => ['time'=>0,'dis'=>0,'limit'=>15*1000/60/60,'gps'=>[]],
             'middle'=> ['time'=>0,'dis'=>0,'limit'=>9*1000/60/60,'gps'=>[]],
             'low'   => ['time'=>0,'dis'=>0,'limit'=>3*1000/60/60,'gps'=>[]]
         ];
 
-        $avgSpeed   = $speedsInfo[0][0];
-        $svgSpeed2  = $speedsInfo[0][1];
-        $distance   = $speedsInfo[0][2];
+        $speedHigh  = $speedType['high']['limit'];
+        $speedMid   = $speedType['middle']['limit'];
+        $speedLow   = $speedType['low']['limit'];
+
+
+        $avgSpeed   = $speedsInfo[0][0];    //整场比赛的平均速度
+        $svgSpeed2  = $speedsInfo[0][1];    //整场比赛的平均加速度
+        $distance   = $speedsInfo[0][2];    //整场比赛的跑动距离
         unset($speedsInfo[0]);
 
 
+        //区别出低速，中速，高速
         foreach ($speedsInfo as $key => &$speedInfo)
         {
             if((trim($key)-1) % 20 != 0)
@@ -1191,26 +1218,28 @@ class AnalysisMatchData implements ShouldQueue
             $speedInfo = trim($speedInfo,"\r\n");
             $speedInfo = explode(' ',$speedInfo);
             $speed      = $speedInfo[1];
-            $maxSpeed   = $speed > $maxSpeed ? $speed : $maxSpeed;
+            $maxSpeed   = max($speed,$maxSpeed);
 
-
-            if($speed > $speedType['high']['limit']) {
-
+            //速度M/s
+            if($speed > $speedHigh)
+            {
                 $type = "high";
 
-            }elseif($speed > $speedType['middle']['limit']){
+            }elseif($speed > $speedMid){
 
                 $type   = "middle";
 
-            }elseif($speed > $speedType['low']['limit']){
+            }elseif($speed > $speedLow){
 
                 $type   = "low";
             }
 
+            //将gps恢复到原始状态
             $lat    = gps_to_gps($speedInfo[3]*100);
             $lon    = gps_to_gps($speedInfo[4]*100);
 
             array_push($speedType[$type]['gps'],['lat'=>$lat,'lon'=>$lon]);
+
             if((trim($key)-1) % 20 == 0)
             {
                 $speedType[$type]['time']++;
@@ -1218,17 +1247,17 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
-        //创建PGS
+        mylogger(3);
+
+        //创建高、中、低速跑动热点图
         foreach ($speedType as $key => $type)
         {
-
-            $map = $this->gps_map($matchInfo->court_id,$type['gps']);
-            $speedType[$key]['gps'] = $map;
+            $speedType[$key]['gps'] = $this->gps_map($matchInfo->court_id,$type['gps']);
+            mylogger('3-'.$key);
         }
 
-
+        mylogger(4);
         //11.修改单场比赛的结果
-
         $matchResult = [
             'run_low_dis'       => $speedType['low']['dis'],
             'run_mid_dis'       => $speedType['middle']['dis'],
@@ -1236,45 +1265,33 @@ class AnalysisMatchData implements ShouldQueue
             'run_low_time'      => $speedType['low']['time'],
             'run_mid_time'      => $speedType['middle']['time'],
             'run_high_time'     => $speedType['high']['time'],
+            'run_speed_max'     => $maxSpeed,
             'map_speed_low'     => $speedType['low']['gps'],
             'map_speed_middle'  => $speedType['middle']['gps'],
             'map_speed_high'    => $speedType['high']['gps'],
         ];
-
-
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
-
-        dd('xx');
-        //加到个人的整体数据中
 
 
         //修改个人的整体数据 在此前一定会创建用户的个人数据
-
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
 
-        $userAbility->run_distance_high     += $speedType['high']['dis'];
-        $userAbility->run_distance_middle   += $speedType['middle']['dis'];
-        $userAbility->run_distance_low      += $speedType['low']['dis'];
-
-
-
-
-        //计算整体分数
-
-
-        dd($speedType);
-
-        return $speedsInfo;
-        dd($content);
-        //存储结果
+        $userAbility->run_distance_high     += $speedType['high']['dis'];   //总高速
+        $userAbility->run_distance_middle   += $speedType['middle']['dis']; //总中速
+        $userAbility->run_distance_low      += $speedType['low']['dis'];    //总低速
+        $userAbility->run_speed_max         =  max($userAbility->run_speed_max,$maxSpeed); //最高速度
+        $userAbility->run_distance_total    += ($speedType['high']['dis'] + $speedType['middle']['dis'] + $speedType['low']['dis']);
+        $userAbility->run_time_total        += ($speedType['high']['time'] + $speedType['middle']['time'] + $speedType['low']['time']);
+        $userAbility->user_id               =  $matchInfo->user_id;
+        $userAbility->save();
 
     }
 
 
+    //
     public function save_pass_and_touch($matchId)
     {
-
-        $passFile   = public_path("uploads/match/{$matchId}/r-pass.txt");
+        $passFile   = public_path("uploads/match/{$matchId}/result-pass.txt");
         $passlist   = file($passFile);
         $matchInfo  = MatchModel::find($matchId);
 
@@ -1286,12 +1303,11 @@ class AnalysisMatchData implements ShouldQueue
             "touchball" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]]
         ];
 
-
         foreach($passlist as $pass)
         {
             $pass   = trim($pass,"\r\n");
             $pass   = explode(" ",$pass);
-            $type = intval($pass[0]);
+            $type   = intval($pass[0]); //类型
 
             switch ($type)
             {
@@ -1322,6 +1338,7 @@ class AnalysisMatchData implements ShouldQueue
             unset($pass['data']);
         }
 
+
         $matchResult    = [
             'pass_s_num'            => $data['passShort']['num'],
             'pass_s_speed_max'      => $data['passShort']['speedMax'],
@@ -1339,14 +1356,33 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
-        return $matchResult;
+        //存储用户全局性的数据
+        $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
+        $userAbility->pass_num_short        += $data['passShort']['num'];
+        $userAbility->pass_num_long         += $data['passLong']['num'];
+        $userAbility->pass_num_total        += ($data['passShort']['num'] + $data['passLong']['num']);
+        $userAbility->pass_speed_max        =  max($userAbility->pass_speed_max,$data['passLong']['speedMax']);
+        $userAbility->touchball_num_total   += $data['touchball']['num'];
+        $userAbility->save();
 
     }
 
+
+    /**
+     * 创建各种项目的热点图
+     * @param  $courtId integer 球场ID
+     * @param  $gpsList array GPS列表
+     * @return string
+     * */
     public function gps_map($courtId,$gpsList)
     {
         //创建GPS图谱
-        $courtInfo  = CourtModel::find($courtId);
+        if($this->courtInfo == false)
+        {
+            $this->courtInfo    = CourtModel::find($courtId);
+        }
+
+        $courtInfo  = $this->courtInfo;
         $points     = $courtInfo->boxs;
         $points     =  \GuzzleHttp\json_decode($points);
         $court      = new Court();
@@ -1356,6 +1392,8 @@ class AnalysisMatchData implements ShouldQueue
         $mapData    = \GuzzleHttp\json_encode($mapData);
         return $mapData;
     }
+
+
 
 }
 

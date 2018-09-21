@@ -1,17 +1,13 @@
 <?php
-
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2018/8/27
- * Time: 13:35
- */
-
 namespace App\Http\Controllers\Service;
+use App\Common\Http;
 use App\Http\Controllers\Controller;
+use App\Models\V1\CourtModel;
 use Dingo\Api\Http\Request;
 use App\Jobs\AnalysisMatchData;
 use DB;
+use App\Http\Controllers\Service\Court;
+
 
 
 class MatchCaculate extends Controller
@@ -56,13 +52,29 @@ class MatchCaculate extends Controller
         if($dataInfo->status == 0)
         {
             $delayTime      = now()->addSecond(1);
-            $host           = $request->getHost();
+            $host           = "http://".$request->getHost();
             $data           = ['sourceId'=>$matchSourceId,'host'=>$host];
             AnalysisMatchData::dispatch('parse_data',$data)->delay($delayTime);
         }
         return apiData()->send();
     }
 
+
+    /**
+     * 结束解析数据
+     * @param $request Request
+     * @return string
+     * */
+    public function finish_parse_data(Request $request)
+    {
+
+        $matchId    = $request->input('matchId');
+        $delayTime  = now()->addSecond(1);
+        $data       = ['matchId'=>$matchId];
+        AnalysisMatchData::dispatch("finish_parse_data",$data)->delay($delayTime);
+
+        return apiData()->send();
+    }
 
     /**
      * 创建罗盘和sensor的文件
@@ -172,7 +184,7 @@ class MatchCaculate extends Controller
     /**
      * 调用算法系统
      * */
-    public function call_matlab(Request $request)
+    public function run_matlab(Request $request)
     {
         $matchId        = $request->input('matchId');
         $data           = ['matchId'=>$matchId];
@@ -211,4 +223,95 @@ class MatchCaculate extends Controller
     }
 
 
+    /**
+     * 调用处理球场
+     * @param $courtId integer 球场ID
+     * */
+    static function call_matlab_court_init($courtId)
+    {
+        $host   = str_replace("http://","",config("app.matlabhost"));
+        $path   = "/api/matchCaculate/call_matlab_court_action?courtId=".$courtId;
+        Http::sock($host,$path);
+    }
+
+
+    /**
+     * MATLAB服务器执行,建立球场模型
+     * 调用matlab生成去球场的几个顶点坐标
+     * @param $request Request
+     * */
+    public function call_matlab_court_action(Request $request)
+    {
+        $courtId    = $request->input('courtId');
+
+        //创建输入文件
+        Court::create_court_model_input_file($courtId);
+
+        //调用matlab
+        $dir        = public_path("uploads/court-config/{$courtId}/");
+        $inputFile  = "border-src.txt";         //边框数据
+        $outFile    = "border-dest.txt";        //顶点数据
+
+        $pythonFile = app_path("python/python_call_matlab.py");
+        $matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
+
+        $command = "python $pythonFile --command=$matlabCmd";
+
+        shell_exec($command);
+
+        $colums = [
+            "A"     => 'p_a',
+            "B"     => 'p_b',
+            "C"     => 'p_c',
+            "D"     => 'p_d',
+            "E"     => 'p_e',
+            "F"     => 'p_f',
+            "Sym_A" => 'p_a1',
+            "Sym_D" => 'p_d1'
+        ];
+
+        //读取结果，存储到数据中
+        $courtResult    = file($dir.$outFile);
+        $courtPoints    = [];
+
+        foreach($courtResult as $point)
+        {
+            $point  = explode(" ",trim($point,"\n"));
+            if(!isset($colums[$point[0]]))
+            {
+                continue;
+            }
+            $key                = $colums[$point[0]];
+            $courtPoints[$key]  = bcmul($point[1],100,5).",".bcmul($point[2],100,5);
+        }
+
+        CourtModel::where('court_id',$courtId)->update($courtPoints);
+
+
+        //调用matlab结束，开启其他工作
+
+        $host   = str_replace("http://","",config('app.apihost'));
+        $path   = "/api/matchCaculate/call_matlab_court_finish?courtId=".$courtId;
+        Http::sock($host,$path);
+    }
+
+
+    /**
+     * 球场工作结束
+     * 1.切割球场
+     * 2.创建球场配置文件
+     * @param $request Request
+     * */
+    public function call_matlab_court_finish(Request $request)
+    {
+        $courtId        = $request->input('courtId');
+
+        $courtService   = new Court();
+        $boxs           = $courtService->cut_court_to_small_box($courtId);      //划分球场成多个区域图
+        $configFile     = $courtService->create_court_gps_angle_config($courtId);//球场角度配置文件
+
+        $courtData      = ['boxs'=>\GuzzleHttp\json_encode($boxs),"config_file"=>$configFile];
+
+        CourtModel::where('court_id',$courtId)->update($courtData);
+    }
 }

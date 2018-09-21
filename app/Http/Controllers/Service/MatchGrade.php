@@ -20,6 +20,8 @@ class MatchGrade extends Controller
     private $totalUserNum   = null;
 
 
+
+
     /**
      * 获得用户整体数据
      * @param $userId integer

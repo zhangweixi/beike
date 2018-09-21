@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Common\Http;
+use App\Http\Controllers\Service\MatchCaculate;
 use App\Jobs\AnalysisMatchData;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\V1\MatchModel;
@@ -22,54 +24,28 @@ class CourtController extends Controller
     {
         $userId     = $request->input('userId',0);
         $gpsGroupId = $request->input('gpsGroupId');
-        $borderPoint= $request->input('borderPoint','');
-
-        //$points     = $request->input('points');
-        //$points     = \GuzzleHttp\json_decode($points,true);
 
         //2.添加新的球场
         $courtData  = [
-            'user_id'   => $userId,
-            'lat'       => 0,   //手机的维度
-            'lon'       => 0,   //手机经度
-            'address'   => "",  //球场地址
-            'width'     => 0,   //球场宽度
-            'length'    => 0,   //球场长度
-            "boxs"      => '',
+            'user_id'       => $userId,
             'gps_group_id'  => $gpsGroupId,
-            'p_a'       => "",
-            'p_b'       => "",
-            'p_c'       => "",
-            'p_d'       => "",
-            'p_e'       => "",
-            'p_f'       => "",
         ];
 
+        $courtModel     = new CourtModel();
+        $courtId        = $courtModel->add_court($courtData);
 
-        $points  = $this->get_points_center($gpsGroupId);
-
-        foreach($points as $key => $p)
-        {
-            //$courtData["p_".strtolower($p->position)]   = $p->device;
-        }
-
-
-
-        $courtModel = new CourtModel();
-        $courtId    = $courtModel->add_court($courtData);
-
-        //$this->calculate_court($courtId); //计算足球场的数据
-
-        //$configFile = $this->create_court_gps_config($courtId);//生成GPS的配置图
-
-        //$courtModel->where('court_id',$courtId)->update(['config_file'=>$configFile]);
+        //异步生成足球模型
+        MatchCaculate::call_matlab_court_init($courtId);
 
         return apiData()->set_data('courtId',$courtId)->send(200,'SUCCESS');
     }
 
 
-
-
+    /**
+     * 获得中心点
+     * @param $gpsGroupId string
+     * @return array
+     * */
     public function get_points_center($gpsGroupId)
     {
 
@@ -356,99 +332,26 @@ class CourtController extends Controller
     }
 
 
-
-    /**
-     * 计算足球场数据
-     * @param $courtId integer 足球场ID
+    /*
+     * 从文件中读取gps显示到地图上
      * */
-    public function calculate_court($courtId=0)
+    public function show_file_map(Request $request)
     {
-        if(0)
-        {
-            $A =    new GPSPoint(1,10);
-            $B =    new GPSPoint(1,7);
-            $C =    new GPSPoint(1,4);
-            $D =    new GPSPoint(1,1);
-            $E =    new GPSPoint(10,1);
-            $F =    new GPSPoint(10,10);
+        $filepath   = $request->input('filepath');
 
-            if(0)
-            {
-                $A =    new GPSPoint(31.2904461856,121.3755366212);
-                $B =    new GPSPoint(0,0);
-                $C =    new GPSPoint(0,0);
-                $D =    new GPSPoint(31.2875212840,121.3751932984);
-                $E =    new GPSPoint(31.2872003645,121.3783046609);
-                $F =    new GPSPoint(31.2901894581,121.3786157971);
-            }
+        $gpsList        = file(public_path($filepath));
+
+        foreach($gpsList as $key => $gps){
+
+            $info = explode(" ",trim($gps,"\n"));
+            $gpsList[$key]  = ["lat"=>gps_to_gps($info[0]),'lon'=>gps_to_gps($info[1])];
         }
 
-        $points =  $this->cut_court_to_small_box($courtId);
+        $gpsList    = gps_to_bdgps($gpsList);
 
-        $points = \GuzzleHttp\json_encode($points); //将切割的图存放在数据库
-
-        CourtModel::where('court_id',$courtId)->update(['boxs'=>$points]);
+        return apiData()->add('points',$gpsList)->send();
     }
 
-
-    /**
-     * 将足球场切分成小格子
-     * @param $courtId integer
-     * @param $latNum integer
-     * @param $lonNum integer
-     * @return array
-     * */
-    public function cut_court_to_small_box($courtId,$latNum=0,$lonNum =0)
-    {
-        $courtInfo  = CourtModel::find($courtId);
-
-        $pa         = explode(',',$courtInfo->p_a);
-        $pd         = explode(',',$courtInfo->p_d);
-        $pe         = explode(',',$courtInfo->p_e);
-        $pf         = explode(',',$courtInfo->p_f);
-
-        $A          = new GPSPoint($pa[0],$pa[1]);
-        $B          = new GPSPoint(0,0);
-        $C          = new GPSPoint(0,0);
-        $D          = new GPSPoint($pd[0],$pd[1]);
-        $E          = new GPSPoint($pe[0],$pe[1]);
-        $F          = new GPSPoint($pf[0],$pf[1]);
-
-        if(0)
-        {
-            $A =    new GPSPoint(1,10);
-            $B =    new GPSPoint(1,7);
-            $C =    new GPSPoint(1,4);
-            $D =    new GPSPoint(1,1);
-            $E =    new GPSPoint(10,1);
-            $F =    new GPSPoint(10,10);
-
-            if(0)
-            {
-                $A =    new GPSPoint(31.2904461856,121.3755366212);
-                $B =    new GPSPoint(0,0);
-                $C =    new GPSPoint(0,0);
-                $D =    new GPSPoint(31.2875212840,121.3751932984);
-                $E =    new GPSPoint(31.2872003645,121.3783046609);
-                $F =    new GPSPoint(31.2901894581,121.3786157971);
-            }
-        }
-
-
-        $court      = new Court();
-
-        if($latNum > 0)
-        {
-            $court->set_lat_num($latNum);
-        }
-
-        if($lonNum > 0)
-        {
-            $court->set_lon_num($lonNum);
-        }
-
-        return $court->calculate_court($A,$B,$C,$D,$E,$F);
-    }
 
 
     public function find_gps(Request $request)
@@ -483,7 +386,7 @@ class CourtController extends Controller
 
         //dd(count($points));
         mylogger('begin');
-        $mapData= $court->court_hot_map($points);
+        $mapData= $court->create_court_hot_map($points);
         mylogger('end');
 
         return $mapData;
@@ -517,11 +420,25 @@ class CourtController extends Controller
 
     public function temp()
     {
+        return str_replace("http://","",config("app.matlabhost"));
+        Http::sock("matlab.launchever.cn","/api/v1/test/test?test=123");
+        //Http::sock("dev1.api.launchever.cn","/api/matchCaculate/call_matlab_create_court_top_point");
+        mylogger('xx');
+        return "ok";
+
+        return (new Court())->create_court_model_input_file(146);
+        //return $this->create_court_gps_config(145);
+
+
         $a = [
-            ['lat'=>3109.7326109,'lon'=>12125.148228],
-            ['lat'=>3109.7520030,'lon'=>12125.148607],
-            ['lat'=>3109.7523926,'lon'=>12125.128647],
-            ['lat'=>3109.7330005,'lon'=>12125.128269],
+            ['lat'=>3109.7304,'lon'=>12125.1460],
+            ['lat'=>3109.7401,'lon'=>12125.1448],
+            ['lat'=>3109.7492,'lon'=>12125.1436],
+            ['lat'=>3109.7465,'lon'=>12125.1219],
+            ['lat'=>3109.7438,'lon'=>12125.1001],
+            ['lat'=>3109.7249,'lon'=>12125.1025],
+            ['lat'=>3109.7346,'lon'=>12125.1013],
+            ['lat'=>3109.7276,'lon'=>12125.1242]
         ];
 
 
@@ -532,6 +449,18 @@ class CourtController extends Controller
         }
 
         $a = gps_to_bdgps($a);
+
+        $point  = [];
+        $litter = ['A','B','C','D','E','F','G','H'];
+
+
+        foreach($a as $k=> $p)
+        {
+            array_push($point,['mobile_lat'=>$p['lat'],'mobile_lon'=>$p['lon'],"device_lat"=>$p['lat'],'device_lon'=>$p['lon'],'gps_group_id'=>1234,'user_id'=>4,'position'=>$litter[$k]]);
+        }
+
+
+        DB::table('football_court_point')->insert($point);
 
         return $a;
         //file_get_contents("http://matlab.launchever.cn/api/matchCaculate/call_matlab?matchId=564&sign=4587d4bd9ba3ea31124bfa72474e44c5");
@@ -546,53 +475,7 @@ class CourtController extends Controller
     }
 
 
-    /**
-     *
-     * 创建球场GPS配置文件
-     * @param $courtId integer 球场ID
-     * @param $courtType integer 球场类型
-     * @return array
-     * */
-    public function create_court_gps_config($courtId)
-    {
 
-        $points = $this->cut_court_to_small_box($courtId,40,25);
-
-        $points = $points['center'];
-
-        $courtInfo  = CourtModel::find($courtId);
-
-
-        $configBoxs     = DB::table('football_court_type')->where('people_num',11)->first();
-        $configBoxs     = \GuzzleHttp\json_decode($configBoxs->angles);
-        $filepath       = "uploads/court-config/{$courtId}.txt";
-        $courtAngleConfiFile = public_path($filepath);
-        mk_dir(public_path("uploads/court-config"));
-        $config = "";
-
-        foreach($configBoxs as $y => $line)
-        {
-            foreach($line as $x => $box)
-            {
-                $lat    = $points[$x][$y]->lat;
-                $lon    = $points[$x][$y]->lon;
-                $big    = $box->type == "D" ? 1 : 0;
-                $small  = $box->type == 'X' ? 1 : 0;
-
-                $config .= $lat . " ".$lon." ".$big." ".$small." ".$box->angle."\n";
-            }
-        }
-
-
-        $b = explode(",",$courtInfo->p_b);
-        $c = explode(",",$courtInfo->p_c);
-
-        $config .= implode(" ",$b)." ".implode(" ",$c)." 0";
-
-        file_put_contents($courtAngleConfiFile,$config);
-
-        return $filepath;
-    }
 
 
 }

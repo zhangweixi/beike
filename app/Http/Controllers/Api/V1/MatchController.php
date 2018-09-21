@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
+use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\UserModel;
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
 use DB;
 use App\Jobs\AnalysisMatchData;
 use Illuminate\Support\Facades\Storage;
+
 
 
 
@@ -22,8 +26,71 @@ class MatchController extends Controller
         set_time_limit(300);
     }
 
+
+
+    /**
+     * 开始比赛
+     * */
+    public function add_match(Request $request)
+    {
+
+        $matchInfo  = [
+            'user_id'   => $request->input('userId'),
+            'court_id'  => $request->input('courtId',0),
+        ];
+
+        $matchModel = new MatchModel();
+        $matchId    = $matchModel->add_match($matchInfo);
+        $timestamp  = getMillisecond();
+
+        $matchModel->log_match_status($matchId,'begin');
+
+
+
+        return apiData()
+            ->set_data('matchId',$matchId)
+            ->set_data('timestamp',$timestamp)
+            ->send();
+    }
+
+
+
+    /*
+     * 结束比赛
+     * */
+    public function finish_match(Request $request)
+    {
+
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+        $userId     = $matchInfo->user_id;
+
+        $matchModel->finish_match($matchId);    //结束比赛
+        $matchModel->log_match_status($matchId,'stop'); //操作标记
+
+
+        //数据解析进度表
+        BaseMatchDataProcessModel::create(['match_id'=>$matchId]);
+
+
+        //个人能力表
+        if(BaseUserAbilityModel::find($userId) == null)
+        {
+            BaseUserAbilityModel::create(['user_id'=>$userId]);
+        }
+
+        //比赛结果表
+        BaseMatchResultModel::create(['match_id'=>$matchId]);
+
+        return apiData()->send(200,"success");
+    }
+
+
     /**
      * 上传比赛数据
+     * @param $request Request
+     * @return Responsable
      * */
     public function upload_match_data(Request $request)
     {
@@ -33,21 +100,21 @@ class MatchController extends Controller
         $dataType   = $request->input('dataType');
         $foot       = $request->input('foot');
         $isFinish   = $request->input('isFinish',0);
-        $isAll      = $request->input('isAll',0);
+
 
         //数据校验  以防客户端网络异常导致数据上传重复
         $checkCode  = crc32($deviceData);
         $hasFile    = BaseMatchSourceDataModel::check_has_save_data($userId,$checkCode);
 
-        if($hasFile){
-
-           # return apiData()->send(2001,'数据重复上传');
+        if($hasFile)
+        {
+            return apiData()->send(2001,'数据重复上传');
         }
 
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
         $time   = create_member_number();
-        $file   = $date."/".$userId."-".$dataType.'-'.$foot.'-'.$time.".txt";//文件格式
+        $file   = $date."/".$userId."/".$dataType.'-'.$foot.'-'.$time.".txt";//文件格式
 
         Storage::disk('local')->put($file,$deviceData);
 
@@ -76,17 +143,13 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
-        if($isAll == 1)
-        {
-            return apiData()->send();
-        }
+
 
         //数据已解析完毕，尽快解析本条数据
         if($hasData == null)
         {
-            $host           = $request->getHost();
             $delayTime      = now()->addSecond(1);
-            $data           = ['sourceId'=>$sourceId,'host'=>$host];
+            $data           = ['sourceId'=>$sourceId];
             AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
         }
 
@@ -177,144 +240,6 @@ class MatchController extends Controller
         return apiData()->set_data('points',$bdpoints)->send();
     }
 
-
-
-    public function find_gps()
-    {
-        $url = "http://dev.api.launchever.cn/uploads/match/result-99-gps.json";
-        $content = file_get_contents($url);
-        $content = \GuzzleHttp\json_decode($content);
-
-        $lats = $content->lat;
-        $lons = $content->lon;
-
-        $latArr = [];
-        $lonArr = [];
-
-        foreach($lats as $lat)
-        {
-            if($lat == '') continue;
-            $lat = $lat * 1;
-            array_push($latArr,$lat);
-        }
-
-
-        foreach ($lons as $lon){
-
-            if($lon == "") continue;
-            $lon = $lon * 1;
-            array_push($lonArr,$lon);
-        }
-
-        $maxLat = max($latArr);
-        $minLat = min($latArr);
-
-        $maxLon = max($lonArr);
-        $minLon = min($lonArr);
-
-
-        $minlon =0;
-        $maxlon = 0;
-
-        foreach($latArr as $key => $lat)
-        {
-            if($lat == $minLat)
-            {
-                $minlon = max($minlon,$lonArr[$key]);
-                mylogger('minlat:'.$lat.",".$minlon);
-            }
-
-            if($lat == $maxLat)
-            {
-                $maxlon = max($maxlon,$lonArr[$key]);
-                mylogger('maxlat:'.$lat.",".$maxlon);
-            }
-        }
-
-        $str = "lat:\nmin-".$minLat.";\nmax-".$maxLat.";\nlon:\nmin-".$minLon.";\nmax-".$maxLon;
-        exit($str);
-
-    }
-
-
-
-
-    /**
-     * 数据结构
-     * */
-    public function data_struct()
-    {
-        $gps    = [
-            'lat'   =>[30.9022363331,30.9022363331,30.9022363331],
-            'lon'   =>[121.1792043623,121.1792043623,121.1792043623],
-            'spe'   =>[90,90,90],
-            'dir'   =>["L","R","R"]
-        ];
-
-
-        $sensor = [
-            'ax'    => [1,2,3,4],
-            'ay'    => [1,2,3,4],
-            'az'    => [1,2,3,4],
-            'gx'    => [1,2,3,4],
-            'gy'    => [1,2,3,4],
-            'gz'    => [1,2,3,4],
-        ];
-
-        $data   = [
-            'gps'       => $gps,
-            'sensor'    => $sensor
-        ];
-
-        $data1   = [    //结果数据
-            'SM'    => 1,
-            'CQ'    => 2,
-            'LL'    => 3,
-            'PD'    => 90,
-            'PD'    => 3,
-            'FS'    => 34,
-        ];
-
-        //file_put_contents(public_path('json.json'),\GuzzleHttp\json_encode($data));
-        return $data;
-    }
-
-
-
-    /**
-     * 开始比赛
-     * */
-    public function add_match(Request $request)
-    {
-
-        $matchInfo  = [
-            'user_id'   => $request->input('userId'),
-            'court_id'  => $request->input('courtId',0),
-        ];
-
-        $matchModel = new MatchModel();
-        $matchId    = $matchModel->add_match($matchInfo);
-        $timestamp  = getMillisecond();
-
-        $matchModel->log_match_status($matchId,'begin');
-        return apiData()
-            ->set_data('matchId',$matchId)
-            ->set_data('timestamp',$timestamp)
-            ->send();
-    }
-
-
-    /*
-     * 结束比赛
-     * */
-    public function finish_match(Request $request)
-    {
-        $matchId    = $request->input('matchId');
-        $matchModel = new MatchModel();
-        $matchModel->finish_match($matchId);
-        $matchModel->log_match_status($matchId,'stop');
-        return apiData()->send(200,"success");
-    }
 
 
     /**
@@ -629,67 +554,6 @@ class MatchController extends Controller
     }
 
 
-
-
-
-    /**
-     * 重置时间
-     * */
-    public function reset_time(Request $request)
-    {
-        $matchId    = $request->input('matchId');
-        $type       = $request->input('type');
-        $foot       = $request->input('foot');
-        $userId     = $request->input('userId');
-
-
-        $where      = [
-            'match_id'  => $matchId,
-            'type'      => "",
-            "foot"      => $foot,
-        ];
-
-        $table      = "user_".$userId."_".$type;
-
-        $db1         = DB::connection('matchdata')->table($table)->where('match_id',$matchId)->where('foot',$foot);
-        $db2         = DB::connection('matchdata')->table($table)->where('match_id',$matchId)->where('foot',$foot);
-
-        $first      = $db1->where('type','')->orderBy('id')->first();
-        $last       = $db2->where('type','')->orderBy('id','desc')->first();
-
-        $times      = $last->timestamp - $first->timestamp;
-
-        $allNum     = DB::connection('matchdata')->table($table)->where($where)->count();
-        $perTime    = $times/$allNum;
-
-        $allData    = DB::connection('matchdata')->table($table)->where($where)->select('id')->orderBy('id')->get();
-
-        foreach($allData as $key => $d)
-        {
-
-            $newTime    = $perTime * $key + $first->timestamp;
-            DB::connection('matchdata')->table($table)->where('id',$d->id)->update(['timestamp'=>$newTime]);
-
-        }
-
-
-
-        return 'ok';
-
-    }
-
-
-
-
-
-    public function zhangweixi(Request $request)
-    {
-        //如果是最后一条，判断是否结束
-        $num = "12156.9032234";
-        return gps_to_gps($num);
-        $job    = new AnalysisMatchData();
-        $job->create_compass_data(318);
-    }
 
     public function gps(Request $request)
     {

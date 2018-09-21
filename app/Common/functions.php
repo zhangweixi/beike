@@ -784,6 +784,9 @@ function sign($arr)
 }
 
 
+/**
+ * 建立网络请求HTTP签名
+ * */
 function http_build_sign($arr)
 {
     $sign           = sign($arr);
@@ -793,6 +796,14 @@ function http_build_sign($arr)
 }
 
 
+/**
+ * 更加经纬度获取距离
+ * @param $lon1 double
+ * @param $lat1 double
+ * @param $lat2 double
+ * @param $lon2 double
+ * @return float
+ * */
 function gps_distance($lon1, $lat1, $lon2, $lat2)
 {
     return (2*ATAN2(SQRT(SIN(($lat1-$lat2)*PI()/180/2)
@@ -807,7 +818,13 @@ function gps_distance($lon1, $lat1, $lon2, $lat2)
                     *SIN(($lon1-$lon2)*PI()/180/2))))*6378140;
 }
 
-
+/**
+ * 批量缩小数据集
+ * @param $map array    数据集
+ * @param $top double   要缩小到最大的数字
+ * @return array
+ *
+ * */
 function data_scroll_to($map,$top)
 {
     $allp       = [];
@@ -834,5 +851,37 @@ function data_scroll_to($map,$top)
     }
 
     return $map;
+}
+
+/**
+ * 获得文件的行数
+ * @param $file string 文件路径
+ * @return integer
+ * */
+function get_file_line_num($file)
+{
+    if(is_windows()) {
+
+        $handle     = fopen($file,"r");//以只读方式打开一个文件
+        $lineNum    = 0;
+
+        while(!feof($handle)) //函数检测是否已到达文件末尾
+        {
+            // 从文件指针中读取一行
+            if(fgets($handle))
+            {
+                $lineNum++;
+            };
+        }
+        fclose($handle);
+
+    }else{
+
+        $info       = shell_exec("wc -l $file");
+        $info       = explode(" ",$info);
+        $lineNum    = (int)$info[0];
+    }
+
+    return $lineNum;
 }
 ?>

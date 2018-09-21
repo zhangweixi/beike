@@ -2,6 +2,8 @@
 namespace App\Http\Controllers\Service;
 
 use App\Http\Controllers\Service\GPSPoint;
+use App\Models\V1\CourtModel;
+use DB;
 
 /*
   足球场结构点阵结构
@@ -85,6 +87,7 @@ class Court{
         return $this->cut_court();
 
     }
+
 
 
     /**
@@ -307,17 +310,6 @@ class Court{
 
 
 
-    private function distance($point1,$point2)
-    {
-
-        $a      = bcmul(bcsub($point2->lat,$point1->lat),10000);
-        $b      = bcmul(bcsub($point2->lon,$point1->lon),10000);
-
-        $dis    = bcadd(bcmul($a,$a),bcmul($b,$b));
-        return $dis;
-    }
-
-
     public $maxLat  = 0;
     public $minLat  = 0;
     public $maxLon  = 0;
@@ -357,37 +349,134 @@ class Court{
             $result[$position[0]][$position[1]]++;
         }
 
-        //$result = \GuzzleHttp\json_encode($result);
-
-
         return $result;
     }
 
 
+
+
     /**
-     * 生成球场热点图
-     * @param $points GPSPoint[]
+     * 将足球场切分成小格子
+     * @param $courtId integer
+     * @param $latNum integer
+     * @param $lonNum integer
      * @return array
      * */
-    public function court_hot_map($points)
+    public function cut_court_to_small_box($courtId,$latNum=0,$lonNum =0)
     {
-        return $this->create_court_hot_map($points);
+        $courtInfo  = CourtModel::find($courtId);
+
+        $pa         = explode(',',$courtInfo->p_a);
+        $pd         = explode(',',$courtInfo->p_d);
+        $pe         = explode(',',$courtInfo->p_e);
+        $pf         = explode(',',$courtInfo->p_f);
+
+        $A          = new GPSPoint($pa[0],$pa[1]);
+        $B          = new GPSPoint(0,0);
+        $C          = new GPSPoint(0,0);
+        $D          = new GPSPoint($pd[0],$pd[1]);
+        $E          = new GPSPoint($pe[0],$pe[1]);
+        $F          = new GPSPoint($pf[0],$pf[1]);
+
+
+        $court      = new Court();
+
+        if($latNum > 0)
+        {
+            $court->set_lat_num($latNum);
+        }
+
+        if($lonNum > 0)
+        {
+            $court->set_lon_num($lonNum);
+        }
+
+        return $court->calculate_court($A,$B,$C,$D,$E,$F);
     }
+
 
 
     /**
-     * 创建球场配置文件
+     *
+     * 创建球场GPS配置文件
+     * @param $courtId integer 球场ID
+     * @return string
      * */
-    public function create_court_config()
+    public function create_court_gps_angle_config($courtId)
     {
-        //获取球场类型的角度设置图
 
+        $points = $this->cut_court_to_small_box($courtId,40,25);
+
+        $points = $points['center'];
+
+        $courtInfo  = CourtModel::find($courtId);
+
+
+        $configBoxs     = DB::table('football_court_type')->where('people_num',11)->first();
+        $configBoxs     = \GuzzleHttp\json_decode($configBoxs->angles);
+        $filepath       = "uploads/court-config/{$courtId}.txt";
+        $courtAngleConfiFile = public_path($filepath);
+        mk_dir(public_path("uploads/court-config"));
+
+        $config = "";
+
+        foreach($configBoxs as $y => $line)
+        {
+            foreach($line as $x => $box)
+            {
+                $lat    = $points[$x][$y]->lat;
+                $lon    = $points[$x][$y]->lon;
+                $big    = $box->type == "D" ? 1 : 0;
+                $small  = $box->type == 'X' ? 1 : 0;
+
+                $config .= $lat . " ".$lon." ".$big." ".$small." ".$box->angle."\n";
+            }
+        }
+
+
+        $b = explode(",",$courtInfo->p_b);
+        $c = explode(",",$courtInfo->p_c);
+
+        $config .= implode(" ",$b)." ".implode(" ",$c)." 0";
+
+        file_put_contents($courtAngleConfiFile,$config);
+
+        return $filepath;
     }
 
-    /*
-     * 设置维度数量
-     *
+
+
+    /**
+     * 创建球场模型输入文件
+     * @param $courtId integer 球场ID
+     * @return string 文件路径
      * */
+    public static function create_court_model_input_file($courtId)
+    {
+        $gpsGroupId = CourtModel::where('court_id',$courtId)->value('gps_group_id');
+
+        $points     = DB::table('football_court_point')
+            ->where('gps_group_id',$gpsGroupId)
+            ->select('position','device_lat','device_lon')
+            ->get()->toArray();
+
+        foreach($points as $key => $p)
+        {
+            $points[$key]   = implode(" ",object_to_array($p));
+        }
+        $points     = implode("\n",$points);
+        $file       = "uploads/court-config/{$courtId}/border-src.txt";
+        mkdir(public_path("uploads/court-config/{$courtId}"));
+        file_put_contents(public_path($file),$points);
+
+        return $file;
+    }
+
+
+    /*
+    * 设置维度数量
+    *
+    * */
     public function set_lat_num($latNum)
     {
         $this->latNum = $latNum;
@@ -401,5 +490,6 @@ class Court{
     {
         $this->lonNum = $lonNum;
     }
+
 
 }
