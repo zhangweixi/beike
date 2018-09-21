@@ -1146,6 +1146,8 @@ class AnalysisMatchData implements ShouldQueue
         shell_exec($command);
         mylogger("调用matlab成功：".$command);
 
+        $params   = ['matchId'=>$matchId];
+        self::execute("save_matlab_result",$params,'api');
     }
 
 

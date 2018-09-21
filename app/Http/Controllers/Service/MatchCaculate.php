@@ -229,7 +229,7 @@ class MatchCaculate extends Controller
 
         }else{
 
-            return (new AnalysisMatchData(''))->save_matlab_result($matchId);
+            //return (new AnalysisMatchData(''))->save_matlab_result($matchId);
 
             $delayTime      = now()->addSecond(1);
             AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
