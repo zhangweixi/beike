@@ -245,7 +245,8 @@ class MatchCaculate extends Controller
         $courtId    = $request->input('courtId');
 
         //创建输入文件
-        Court::create_court_model_input_file($courtId);
+        $srcFile    = Court::create_court_model_input_file($courtId);
+        mylogger($srcFile);
 
         //调用matlab
         $dir        = public_path("uploads/court-config/{$courtId}/");
@@ -256,7 +257,14 @@ class MatchCaculate extends Controller
         $matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
 
         $command = "python $pythonFile --command=$matlabCmd";
+        mylogger($command);
 
+        if(!file_exists($dir.$inputFile))
+        {
+
+            mylogger($dir.$inputFile."不存在");
+            exit;
+        }
         shell_exec($command);
 
         $colums = [
@@ -292,7 +300,7 @@ class MatchCaculate extends Controller
 
         $host   = str_replace("http://","",config('app.apihost'));
         $path   = "/api/matchCaculate/call_matlab_court_finish?courtId=".$courtId;
-        Http::sock($host,$path);
+        //Http::sock($host,$path);
     }
 
 
