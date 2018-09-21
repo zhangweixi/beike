@@ -32,10 +32,17 @@ for i in options:
 #计算足球场的命令格式
 #command = ""
 
+
+
+
+
+
 command = params['command']
 
 #1.切换工作目录
-workplacedir = os.getcwd()+"/matlabsrc"
+#workplacedir = os.getcwd()+"/matlabsrc"
+workplacedir = os.path.dirname(__file__) + "/matlabsrc"
+
 
 matlabApp = Dispatch('Matlab.application')
 matlabApp.execute("cd " + workplacedir)
