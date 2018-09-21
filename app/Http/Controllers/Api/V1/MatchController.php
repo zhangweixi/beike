@@ -121,7 +121,7 @@ class MatchController extends Controller
         $matchData  = [
             'match_id'  => $request->input('matchId',0),
             'user_id'   => $userId,
-            'device_sn' => $deviceSn,
+            'device_sn' => $deviceSn??"",
             'type'      => $dataType,
             'data'      => $file,
             'foot'      => $foot,
