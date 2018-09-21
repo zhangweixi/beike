@@ -1087,7 +1087,7 @@ class AnalysisMatchData implements ShouldQueue
         $localDir       = self::matchdir($matchId);
 
         $baseApiUrl     = config('app.apihost')."/uploads/match/{$matchId}/";
-        mkdir($localDir,777,true);
+        mk_dir($baseApiUrl);
         //数据文件
         $baseSensorL    = "sensor-L.txt";
         $baseSensorR    = "sensor-R.txt";
@@ -1138,11 +1138,11 @@ class AnalysisMatchData implements ShouldQueue
 
 
         $pythonfile = app_path('python/python_call_matlab.py');
-        //$matlabCmd  = "LanQi('{$localDir}','{$baseSensorL}','{$baseSensorR}','{$baseCompassL}','{$baseCompassR}','{$baseGps}','{$resultRun}','{$resultPass}','{$resultStep}')";
-        //$command    = "python {$pythonfile} $matlabCmd";
+        $matlabCmd  = "LanQi('{$localDir}','{$baseSensorL}','{$baseSensorR}','{$baseCompassL}','{$baseCompassR}','{$baseGps}','{$resultRun}','{$resultPass}','{$resultStep}')";
+        $command    = "python {$pythonfile} $matlabCmd";
 
-        //shell_exec($command);
-        //mylogger("调用matlab成功：".$command);
+        shell_exec($command);
+        mylogger("调用matlab成功：".$command);
 
     }
 

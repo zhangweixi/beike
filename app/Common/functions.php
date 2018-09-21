@@ -487,7 +487,10 @@ function get_ip_address($ip)
 //创建多级目录
 function mk_dir( $dir ){
 
-    return  is_dir ( $dir ) or mk_dir(dirname( $dir )) and  mkdir ( $dir , 0777);
+
+    return is_dir($dir) or  mkdir ( $dir , 0777 , true);
+
+    //return  is_dir ( $dir ) or mk_dir(dirname( $dir )) and
 
 }
 
