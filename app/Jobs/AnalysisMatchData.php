@@ -1089,7 +1089,7 @@ class AnalysisMatchData implements ShouldQueue
         $localDir       = self::matchdir($matchId);
 
         $baseApiUrl     = config('app.apihost')."/uploads/match/{$matchId}/";
-        mk_dir($baseApiUrl);
+        mk_dir($localDir);
         //数据文件
         $baseSensorL    = "sensor-L.txt";
         $baseSensorR    = "sensor-R.txt";
