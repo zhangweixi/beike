@@ -300,7 +300,7 @@ class MatchCaculate extends Controller
 
         $host   = str_replace("http://","",config('app.apihost'));
         $path   = "/api/matchCaculate/call_matlab_court_finish?courtId=".$courtId;
-        //Http::sock($host,$path);
+        Http::sock($host,$path);
     }
 
 
