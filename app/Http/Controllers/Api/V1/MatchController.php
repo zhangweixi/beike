@@ -126,7 +126,7 @@ class MatchController extends Controller
             'data'      => $file,
             'foot'      => $foot,
             'is_finish' => $isFinish,
-            'status'    => $isAll == 1 ? 2 : 0,
+            'status'    => 0,
             'check_code'=> $checkCode
         ];
 
