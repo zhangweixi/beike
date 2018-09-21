@@ -352,7 +352,7 @@ class AnalysisMatchData implements ShouldQueue
 
             mylogger("检查数据是否解析完毕");
 
-            if($process->gps_L == 1 && $process->sensor_L == 1 && $process->sensor_R == 1 && $process->compass_L == 1 && $process->R == 1)
+            if($process->gps_L == 1 && $process->sensor_L == 1 && $process->sensor_R == 1 && $process->compass_L == 1 && $process->compass_R == 1)
             {
                 //数据解析结束，同意处理后续数据
                 //$this->finish_parse_data($matchId);
