@@ -88,8 +88,13 @@ var myapp = angular.module('myapp',['ui.router','tm.pagination']);
     {
         //$urlRouterProvider.otherwise('/');
         $stateProvider
-            .state('question-list',{
-                url:'/question-list',
+            .state('question-theme',{
+                url:'/question-theme',
+                templateUrl:'question-theme.html?t='+Math.random(),
+                controller:'questionController'
+            })
+            .state('question-list/:themeId',{
+                url:'/question-list/:themeId',
                 templateUrl:'question-list.html?t='+Math.random(),
                 controller:'questionController'
             })
@@ -133,8 +138,8 @@ var myapp = angular.module('myapp',['ui.router','tm.pagination']);
                 templateUrl:'paper-setting.html?t='+Math.random(),
                 controller:'paperController'
             })
-            .state('paper-create',{
-                url:"/paper-create",
+            .state('paper-create/:themeId',{
+                url:"/paper-create/:themeId",
                 templateUrl:'paper-create.html?t='+Math.random(),
                 controller:'paperController'
             })
@@ -192,7 +197,7 @@ myapp.controller('indexController',function($scope,$location,$http){
 });
 
 
-myapp.controller('questionController',function($scope,$http,$location){
+myapp.controller('questionController',function($scope,$http,$location,$stateParams){
 
     setTimeout(init_DataTables,1000);
     $scope.excel        = "";
@@ -200,6 +205,9 @@ myapp.controller('questionController',function($scope,$http,$location){
     $scope.hasQuestion  = false;
     $scope.addBtnText   = "若检查无误，点此提交题库";
     $scope.disableAddBtn = false;
+    $scope.questionTheme = "";
+
+    $scope.questionThemeList = [];
 
     $scope.paginationConf = {
         currentPage: 0,
@@ -212,6 +220,16 @@ myapp.controller('questionController',function($scope,$http,$location){
         }
     };
 
+    $scope.themePaginationConf = {
+        currentPage: 0,
+        totalItems: 8000,
+        itemsPerPage: 15,
+        pagesLength: 10,
+        perPageOptions: [10, 20, 30, 40, 50],
+        onChange: function(){
+            $scope.get_theme_list($scope.paginationConf.currentPage);
+        }
+    };
 
     /*获得题目列表*/
     $scope.get_question_list = function(page)
@@ -220,9 +238,11 @@ myapp.controller('questionController',function($scope,$http,$location){
 
             return;
         }
-        var url = server + "questions?page=" + page;
-            console.log($location);
-        $http.get(url).success(function(res)
+        var themeId = $stateParams.themeId;
+        var data    = {"page":page,"themeId":themeId};
+        var url     = server + "questions";
+
+        $http.post(url,data).success(function(res)
         {
             var questionData = res.data.question;
 
@@ -325,7 +345,7 @@ myapp.controller('questionController',function($scope,$http,$location){
         $scope.disableAddBtn = true;
 
         var url = server + "read_question";
-        var data= {filepath:$scope.excel,isSave:1};
+        var data= {filepath:$scope.excel,isSave:1,questionTheme:$scope.questionTheme};
 
         $scope.addBtnText = "正在提交，请稍等...";
 
@@ -346,14 +366,33 @@ myapp.controller('questionController',function($scope,$http,$location){
             });
     }
 
+    /*主体列表*/
+    $scope.get_theme_list = function(page){
+        if(page < 1) return;
 
+        var url = server + "get_question_theme_list";
+        var data = {page:page};
+
+        $http.post(url,data).success(function(res){
+
+
+            var theme = res.data.theme;
+
+            $scope.themePaginationConf.currentPage   = theme.current_page;
+            $scope.themePaginationConf.totalItems    = theme.total;
+            $scope.themePaginationConf.itemsPerPage  = theme.per_page;
+            $scope.questionThemeList                 = theme.data;
+
+        })
+    }
 
     $scope.init = function()
     {
         var path = $location.url();
+        console.log(path);
         switch (path)
         {
-            case '/question-list':$scope.get_question_list(1);break;
+            case '/question-theme':$scope.get_theme_list(1);break;
 
         }
     }
@@ -721,7 +760,7 @@ myapp.controller('adminController',function($scope,$http,$location,$stateParams)
 })
 
 
-myapp.controller('paperController',function($scope,$http,$location){
+myapp.controller('paperController',function($scope,$http,$location,$stateParams){
 
     $scope.variables        = {};
     $scope.questionNumber   = 0;
@@ -729,7 +768,8 @@ myapp.controller('paperController',function($scope,$http,$location){
     $scope.paperNumber      = 1;
     $scope.papers           = new Array();
     $scope.isFenfa          = false;
-
+    $scope.questionTheme    = 0;    //主题
+    $scope.themeInfo        = {};
     $scope.paginationConf = {
         currentPage: 0,
         totalItems: 8000,
@@ -789,7 +829,8 @@ myapp.controller('paperController',function($scope,$http,$location){
     {
         var data = {
             'paperNumber':$scope.paperNumber,
-            'beginDate':GMTToStr($scope.beginDate)
+            'beginDate':GMTToStr($scope.beginDate),
+            'themeId':$scope.themeInfo.question_theme_id
         };
 
         var url = server + "create_paper";
@@ -823,16 +864,38 @@ myapp.controller('paperController',function($scope,$http,$location){
         });
     }
 
+
+    $scope.get_theme_info = function()
+    {
+
+        var themeId = $stateParams.themeId;
+
+        var url = server + "get_theme_info?themeId="+themeId;
+
+        $http.get(url).success(function(res){
+
+            $scope.themeInfo = res.data.themeInfo;
+
+        })
+    }
+
+
     $scope.init = function()
     {
         var path = $location.url();
+
         if(path == "/paper-setting"){
 
             $scope.get_variable();
 
         }else if(path == "/paper-create") {
 
+            
+
             $scope.get_question_number();
+
+
+
 
         }else if(path == '/paper-list'){
 

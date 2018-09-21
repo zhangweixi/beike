@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Speed;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Speed\Model\PaperModel;
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;
 use DB;
 use Excel;
@@ -73,18 +74,45 @@ class AdminController extends Controller{
     public function read_question(Request $request)
     {
 
-        $isSave   = $request->input('isSave',0);
-        $isSave   = $isSave == 1 ? true : false;
-        $filePath = $request->input('filepath');
+        $isSave         = $request->input('isSave',0);
+        $isSave         = $isSave == 1 ? true : false;
+        $filePath       = $request->input('filepath');
+        $questionTheme  = $request->input('questionTheme','');
 
         $data   = [];
 
-        Excel::load($filePath, function($reader)use(&$data,$isSave) {
+        $themeId    = 0;
+
+        if($isSave == true)
+        {
+            if($questionTheme == ""){
+
+                exit("缺少主题");
+            }
+
+            $themeInfo = DB::table('question_theme')->where('question_theme_title',$questionTheme)->first();
+
+            if($themeInfo){
+
+                $themeId = $themeInfo->question_theme_id;
+
+            }else{
+
+                $themeId = DB::table('question_theme')->insertGetId(["question_theme_title"=>$questionTheme,"created_at"=>date_time()]);
+
+            }
+
+        }
+
+
+
+        Excel::load($filePath, function($reader)use(&$data,$isSave,$themeId) {
 
             $excel = $reader->all();
 
             foreach($excel as $sheet)
             {
+                $num = 0;
                 foreach($sheet as $key => $cell)
                 {
 
@@ -113,9 +141,10 @@ class AdminController extends Controller{
                     }
 
                     $question = [
-                        'title'         => $title,
-                        'type'          => $type,
-                        'created_at'    => $time,
+                        'title'             => $title,
+                        'type'              => $type,
+                        'created_at'        => $time,
+                        'question_theme_id' =>  $themeId
                     ];
 
                     //$question['ans']    = $answer;
@@ -175,6 +204,14 @@ class AdminController extends Controller{
                         array_push($data,$question);
 
                     }
+
+                    $num++;
+                }
+
+                if($num > 0 && $isSave == true){
+
+                    $sql = "UPDATE question_theme set total_num = total_num + $num ,surplus_num = surplus_num + $num WHERE question_theme_id = $themeId";
+                    DB::update($sql);
                 }
             }
         });
@@ -187,8 +224,16 @@ class AdminController extends Controller{
      * */
     public function questions(Request $request)
     {
+        $themeId    = $request->input('themeId',0);
+        if($themeId>0){
 
-        $question = DB::table('question')->paginate(10);
+            $question = DB::table('question')->where('question_theme_id',$themeId)->paginate(10);
+
+        }else{
+
+            $question = DB::table('question')->paginate(10);
+        }
+
         $paperModel = new PaperModel();
 
         foreach($question as $q)
@@ -199,6 +244,24 @@ class AdminController extends Controller{
         return apiData()->set_data('question',$question)->send();
     }
 
+
+    public function get_question_theme_list(Request $request)
+    {
+
+        $questionThemeList = DB::table('question_theme')->paginate(10);
+
+        return apiData()->add("theme",$questionThemeList)->send();
+    }
+
+
+    public function get_theme_info(Request $request){
+
+
+        $themeId    = $request->input('themeId');
+        $themeInfo  = $this->theme_info($themeId);
+
+        return apiData()->add('themeInfo',$themeInfo)->send();
+    }
 
     /*同步更新所有用户*/
     public function down_all_users()
@@ -587,6 +650,11 @@ class AdminController extends Controller{
         DB::table('system')->where('variable',$key)->update(['value'=>$value]);
     }
 
+    private function theme_info($themeId)
+    {
+        $themeInfo  = DB::table('question_theme')->where('question_theme_id',$themeId)->first();
+        return $themeInfo;
+    }
 
     public function create_paper(Request $request)
     {
@@ -594,12 +662,14 @@ class AdminController extends Controller{
         $beginDate  = $request->input('beginDate',current_date());
         $beginDate  = substr($beginDate,0,10);
         $number     = (int)$request->input('paperNumber',1);
+        $themeId    = $request->input('themeId');
+        $themeInfo  = $this->theme_info($themeId);
 
 
         //检查剩余的题是否够分配
         $perPaperNumber = (int)$this->system_variable('paper_question_number');
-        $totalQuestion  = (int)$this->system_variable('surplus_question_number');
-
+        //$totalQuestion  = (int)$this->system_variable('surplus_question_number');
+        $totalQuestion  = $themeInfo->surplus_num;
         if( $totalQuestion < $number*$perPaperNumber)
         {
             return apiData()->send(2001,'剩余题目数量不够分配，请重新设置试卷数量');
@@ -623,7 +693,7 @@ class AdminController extends Controller{
 
 
         //获得所有题型
-        $allQuestions   = DB::table('question')->pluck('question_id')->toArray();
+        $allQuestions   = DB::table('question')->where("question_theme_id",$themeId)->pluck('question_id')->toArray();
         $beginTime      = $this->system_variable('exam_begin_time');
         $endTime        = $this->system_variable('exam_end_time');
         $timeLength     = $this->system_variable('exam_time_length');
@@ -631,7 +701,10 @@ class AdminController extends Controller{
 
         //修改剩余题型数量
         $surplusQuestion = $totalQuestion - $number * $perPaperNumber;
-        $this->update_system_variable('surplus_question_number',$surplusQuestion);
+        //$this->update_system_variable('surplus_question_number',$surplusQuestion);
+
+        DB::table('question_theme')->where('question_theme_id',$themeId)->update(['surplus_num'=>$surplusQuestion]);
+
 
         foreach($paperSns as $paperSn)
         {
@@ -647,7 +720,7 @@ class AdminController extends Controller{
 
             DB::table('papersn')->insert($paperSnInfo);
 
-            DB::table('user')->orderBy('id')->chunk(200,function($users)use($allQuestions,$beginTime,$endTime,$paperSn,$timeLength,$perPaperNumber)
+            DB::table('user')->orderBy('id')->chunk(200,function($users)use($allQuestions,$beginTime,$endTime,$paperSn,$timeLength,$perPaperNumber,$themeId)
             {
 
                 $current = date_time();
@@ -673,9 +746,13 @@ class AdminController extends Controller{
                     ];
 
                     $paperId = DB::table('paper')->insertGetId($paperInfo);
-                    //再获取用户所有的
-                    $userQuestions = DB::table('paper_question')->where('user_sn',$userSn)->pluck('question_id')->toArray();
 
+                    //获得用户已经分配过的题型
+                    $userQuestions = DB::table('paper_question')
+                        ->where('user_sn',$userSn)
+                        ->where('question_theme_id',$themeId)
+                        ->pluck('question_id')
+                        ->toArray();
 
                     //去除已经分配过的题型
                     $newQuestion = array_diff($allQuestions,$userQuestions);
@@ -690,7 +767,8 @@ class AdminController extends Controller{
                         $quest = [
                             'question_id'   => $newQuestion[$key],
                             'paper_id'      => $paperId,
-                            'user_sn'       => $userSn
+                            'user_sn'       => $userSn,
+                            'question_theme_id'=>$themeId
                         ];
                         array_push($paperQuest,$quest);
                     }

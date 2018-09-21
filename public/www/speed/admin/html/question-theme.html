@@ -1,7 +1,7 @@
-<div class="col-md-12 col-sm-12 col-xs-12" data-ng-init="get_question_list(1)">
+<div class="col-md-12 col-sm-12 col-xs-12">
     <div class="x_panel">
         <div class="x_title">
-            <h2>题库列表</h2>
+            <h2>主题列表</h2>
 
             <ul class="nav navbar-right panel_toolbox hide">
                 <li>
@@ -34,33 +34,30 @@
                     <tr class="headings">
                         <!--<th><input type="checkbox" id="check-all" class="flat"></th>-->
                         <th class="column-title">#</th>
-                        <th class="column-title">id</th>
-                        <th class="column-title">题目</th>
-                        <th class="column-title">类型</th>
-                        <th class="column-title">创建日期</th>
-                        <th class="column-title">答案</th>
+                        <th class="column-title">主题</th>
+                        <th class="column-title">总题数</th>
+                        <th class="column-title">剩余题数</th>
+                        <th class="column-title">添加时间</th>
                         <th class="column-title">操作</th>
                     </tr>
                     </thead>
 
                     <tbody>
-                    <tr class="even pointer" ng-repeat="q in questions;">
+                    <tr class="even pointer" ng-repeat="theme in questionThemeList;">
                         <!--<td class="a-center ">-->
-                            <!--<input type="checkbox" class="flat" name="table_records">-->
+                        <!--<input type="checkbox" class="flat" name="table_records">-->
                         <!--</td>-->
                         <td class=" ">{{(paginationConf.currentPage-1) * paginationConf.itemsPerPage + $index +1}}</td>
-                        <td class=" ">{{q.question_id}}</td>
-                        <td class="col-sm col-sm-7">{{q.title}}</td>
+                        <td class="">{{theme.question_theme_title}}</td>
 
-                        <td class=" " ng-if="q.type == 'radio'">单选</td>
-                        <td class=" " ng-if="q.type == 'checkbox'">多选</td>
-                        <td class=" " ng-if="q.type == 'judge'">判断</td>
+                        <td class=" ">{{theme.total_num}}</td>
+                        <td class=" ">{{theme.surplus_num}}</td>
+                        <td class=" ">{{theme.created_at}}</td>
 
-                        <td class=" ">{{q.created_at}}</td>
-                        <td class=" ">
-                            <p ng-repeat="ans in q.answer">{{ans.content}} <i class="glyphicon glyphicon-ok" ng-if="ans.is_right ==1"></i></p>
-                        </td>
-                        <td class=" last"><a href="#"><button class="btn btn-danger">删除</button></a>
+                        <td class=" last">
+                            <!--<a href="#"><button class="btn btn-danger">删除</button></a>-->
+                            <a href="#paper-create/{{theme.question_theme_id}}"><button class="btn btn-danger">分配试卷</button></a>
+                            <a href="#question-list/{{theme.question_theme_id}}"><button class="btn btn-primary">查看题库</button></a>
                         </td>
                     </tr>
                     </tbody>
@@ -70,7 +67,7 @@
 
         </div>
 
-        <tm-pagination conf="paginationConf"></tm-pagination>
+        <tm-pagination conf="themePaginationConf"></tm-pagination>
 
     </div>
 </div>

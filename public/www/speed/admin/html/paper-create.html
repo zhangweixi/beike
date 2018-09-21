@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" ng-init="get_theme_info()">
     <div class="col-md-12 col-sm-12 col-xs-12">
         <div class="x_panel">
             <div class="x_title">
@@ -11,9 +11,17 @@
                 <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
 
                     <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">主题</label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input class="form-control col-md-7 col-xs-12" ng-model="themeInfo.question_theme_title" disabled="">
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
                         <label class="control-label col-md-3 col-sm-3 col-xs-12">剩余总题量</label>
                         <div class="col-md-6 col-sm-6 col-xs-12">
-                            <input class="form-control col-md-7 col-xs-12" ng-model="questionNumber" disabled="">
+                            <input class="form-control col-md-7 col-xs-12" ng-model="themeInfo.surplus_num" disabled="">
                         </div>
                     </div>
 
