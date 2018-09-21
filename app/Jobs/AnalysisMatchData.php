@@ -833,7 +833,7 @@ class AnalysisMatchData implements ShouldQueue
             //1.1 拷贝一份球场配置文件到数据比赛中
             $courtInfo  = CourtModel::find($matchInfo->court_id);
             $configFile = "/".$courtInfo->config_file;
-            copy(public_path($configFile),$dataDir."cour-config.txt");
+            copy(public_path($configFile),$dataDir."court-config.txt");
         }
 
         //2.同步两台设备的数据一致性

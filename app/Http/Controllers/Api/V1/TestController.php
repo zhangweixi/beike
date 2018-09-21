@@ -4,6 +4,7 @@ use App\Common\Jpush;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Service\MatchCaculate;
 use App\Http\Controllers\Service\MatchGrade;
+use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\V1\MatchModel;
 use Dingo\Api\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -174,6 +175,7 @@ class TestController extends Controller
 
 
     public function test(Request $request){
+
 
         $courtId    = $request->input('courtId');
         MatchCaculate::call_matlab_court_init($courtId);

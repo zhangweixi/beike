@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\V1\CourtModel;
 use Illuminate\Http\Request;
 use DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CourtController extends Controller
 {
@@ -59,13 +60,14 @@ class CourtController extends Controller
             {
                 $title      = $sheet->getTitle();
                 $listBox    = [];
-                $allList    = count($sheet)-1;
+                $listNum    = count($sheet);
 
                 foreach ($sheet as $listKey => $cell)   //一行
                 {
 
                     $lineBoxs   = [];
                     $lineIndex  = 0;
+
 
                     foreach($cell as $lineKey => $angle)    //每一个格子
                     {
@@ -81,15 +83,17 @@ class CourtController extends Controller
                             $angle  = sprintf("%0.2f", $angle);
                         }
 
-                        $boxInfo    = ["y"=>$allList-$listKey,"x"=>$lineIndex,"angle"=>$angle,"type"=>$type];
+                        $boxInfo    = ["angle"=>$angle,"type"=>$type];
                         array_push($lineBoxs,$boxInfo);
                         $lineIndex++;
                     }
 
                     if(count($lineBoxs) > 0)
                     {
-                        array_push($listBox,$lineBoxs);
+                        $listBox[$listNum-$listKey-1]   = $lineBoxs;
+                        $listBox[$listNum+$listKey]     = $lineBoxs;
                     }
+
                 }
 
                 if(count($listBox) > 0)
@@ -99,6 +103,9 @@ class CourtController extends Controller
             }
         });
 
+
+
+        //以对称性，将半个球场扩展为整个球场
 
         foreach($courTypes as $type => $court)
         {
