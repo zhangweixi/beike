@@ -357,7 +357,7 @@ class AnalysisMatchData implements ShouldQueue
             {
                 //数据解析结束，同意处理后续数据
                 //$this->finish_parse_data($matchId);
-                $url = $this->host . "/api/matchCaculate/finish_parse_data?matchId="+$matchId;
+                $url = $this->host . "/api/matchCaculate/finish_parse_data?matchId=".$matchId;
                 mylogger($url);
                 file_get_contents($url);
             }
