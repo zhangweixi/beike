@@ -169,12 +169,28 @@ class MatchCaculate extends Controller
     public function jiexi_match(Request $request)
     {
         $matchId    = $request->input('matchId');
-        $dataes     = DB::table('match_source_data')->where('match_id',$matchId)->get();
+        $types      = ['compass','sensor','gps'];
+        $foots      = ["R","L"];
 
-        foreach($dataes as $key=> $data)
+
+
+        foreach($types as $type)
         {
-            $delayTime      = now()->addSecond(3*$key);
-            AnalysisMatchData::dispatch($data->match_source_id,$request->getHost())->delay($delayTime);
+            foreach($foots as $foot)
+            {
+                if($type == 'gps' && $foot == 'R'){
+
+                    continue;
+                }
+
+                $condition      = ['match_id'=>$matchId,'type'=>$type,'foot'=>$foot];
+                $data         = DB::table('match_source_data')->where($condition)->orderBy('match_source_id')->first();
+
+                $host           = "http://".$request->getHost();
+                $data           = ['sourceId'=>$data->match_source_id,'host'=>$host];
+                $delayTime      = now()->addSecond(1);
+                AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
+            }
         }
 
         return apiData()->send();
