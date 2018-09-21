@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
+use App\Common\Jpush;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Service\MatchCaculate;
 use App\Http\Controllers\Service\MatchGrade;
 use App\Models\V1\MatchModel;
 use Dingo\Api\Http\Request;
@@ -173,9 +175,27 @@ class TestController extends Controller
 
     public function test(Request $request){
 
+        $courtId    = $request->input('courtId');
+        MatchCaculate::call_matlab_court_init($courtId);
+        return ;
         sleep(10);
         mylogger($request->all());
         return $request->all();
+    }
+
+
+    public function jpush()
+    {
+
+        $push   = new Jpush();
+        return $push->pushContent("标题","张".date_time(),3001,0,'',['name'=>'zhangweixi','time'=>date_time()]);
+
+    }
+
+    public function hex_to_time(Request $request)
+    {
+        $hex    = $request->input('hex');
+        return date_time(HexToTime($hex)/1000);
     }
 
 }
