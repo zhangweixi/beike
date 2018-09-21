@@ -466,7 +466,7 @@ class Court{
         }
         $points     = implode("\n",$points);
         $file       = "uploads/court-config/{$courtId}/border-src.txt";
-        mk_dir(public_path("uploads/court-config/{$courtId}"));
+        mkdir(public_path("uploads/court-config/{$courtId}"),777,true);
         file_put_contents(public_path($file),$points);
 
         return $file;
