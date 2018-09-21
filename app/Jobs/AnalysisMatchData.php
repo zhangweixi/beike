@@ -994,7 +994,7 @@ class AnalysisMatchData implements ShouldQueue
 
         if(file_exists($ANG_L) && file_exists($ANG_R))
         {
-            $params     = http_build_sign(['matchId'=>$matchId]);
+            $params     = ['matchId'=>$matchId];
             self::execute("run_matlab",$params,'matlab');
 
         }else{
