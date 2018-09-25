@@ -483,7 +483,7 @@ class MatchController extends Controller
         $speedTimeMid   = 0;
         $speedTimeHigh  = 0;
         $staticTime     = 0;
-        $i              = 1;
+        $totalNum       = count($matches);
         foreach ($matches as $key => $match)
         {
             $totalPass += $match->pass;
@@ -498,7 +498,7 @@ class MatchController extends Controller
             $match->shoot   = $match->shoot ?? 0;
             $match->pass    = $match->pass ?? 0;
             $match->run     = $match->run ?? 0;
-            $match->x       = $i++;
+            $match->x       = $totalNum - $key;
             unset($match->run_high_time);
             unset($match->run_mid_time);
             unset($match->run_low_time);
