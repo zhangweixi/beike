@@ -490,7 +490,11 @@ class MatchController extends Controller
 
         $suggestion = "作为阿根廷国家队主力左后卫，随着世界杯的进行，罗霍的身价也大幅度上涨。我记得我世界杯之前买入的时候连1W都不到，如今+1的已经8W8了，接近9W了。罗霍本届大赛发挥不错，有希望之后转会豪门，若是如此，想必10W的价格一点不贵。";
 
-        return apiData()->set_data('runInfo',$runInfo)->set_data('matchInfo',$matchInfo)->set_data('suggestion',$suggestion)->send();
+        return apiData()
+            ->set_data('runInfo',$runInfo)
+            ->set_data('matchInfo',$matchInfo)
+            //->set_data('suggestion',$suggestion)
+            ->send();
     }
 
     /*
