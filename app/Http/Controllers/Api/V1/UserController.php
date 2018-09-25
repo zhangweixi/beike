@@ -386,28 +386,18 @@ class UserController extends Controller
         $userInfo->role2    = $friendInfo['role2'];
 
 
-
         //基本数据
         $myAbility      = $userModel->user_global_ability($userId);
         $friendAbility  = $userModel->user_global_ability($friendId);
         $baseAbility    = ["self"=>$myAbility,"friend"=>$friendAbility];
 
         //详细数据
-        $selfDetail     = [
-            "passAir"       => 34,
-            "passGround"    => 20,
-            "shoot"         => 2,
-            "head"          => 3
+        $detailAbility     = [
+            ["name"=>"射门","self"=>30,"friend"=>40,"max"=>100],
+            ["name"=>"盘球","self"=>60,"friend"=>50,"max"=>100],
+            ["name"=>"控球","self"=>20,"friend"=>60,"max"=>100],
+            ["name"=>"攻击能力","self"=>50,"friend"=>80,"max"=>100],
         ];
-
-        $friendDetail     = [
-            "passAir"       => 34,
-            "passGround"    => 20,
-            "shoot"         => 2,
-            "head"          => 3
-        ];
-
-        $detailAbility  = ["self"=>$selfDetail,"friend"=>$friendDetail];
 
         return apiData()->add('friendInfo',$userInfo)
             ->add('baseAbility',$baseAbility)
