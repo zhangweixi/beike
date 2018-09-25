@@ -454,39 +454,85 @@ class MatchController extends Controller
         $number     = $request->input('matchNumber',20);
 
         //静止、慢跑、中速跑、高速跑
-        $matches = [];
         $totalPass  = 0;
         $totalShoot = 0;
         $totalRun   = 0;
 
-        for($i =0;$i<$number;$i++)
+        $sql    = "SELECT 
+                        a.match_id,
+                        b.shoot_num_total as shoot,
+                        b.pass_s_num + b.pass_l_num as pass,
+                        b.run_static_time,
+                        b.run_low_time,
+                        b.run_mid_time,
+                        b.run_high_time,
+                        b.run_low_dis + b.run_mid_dis +  b.run_high_dis as run
+                  FROM `match` as a 
+                  LEFT JOIN match_result as b ON b.match_id = a.match_id 
+                  WHERE a.user_id = $userId 
+                  ORDER BY a.match_id DESC ";
+
+
+        if($number > 0)
         {
-            $match = [
-                'shoot' => rand(0,20),
-                'pass'  => rand(0,50),
-                'run'   => rand(0,100),
-                'x'     => $i+1,
-            ];
+            $sql .= " LIMIT $number";
+        }
+        $matches = DB::select($sql);
 
-            $totalPass += $match['pass'];
-            $totalRun  += $match['run'];
-            $totalShoot+= $match['shoot'];
+        $speedTimeLow   = 0;
+        $speedTimeMid   = 0;
+        $speedTimeHigh  = 0;
+        $staticTime     = 0;
 
-            array_push($matches,$match);
+        foreach ($matches as $key => $match)
+        {
+            $totalPass += $match->pass;
+            $totalRun  += $match->run;
+            $totalShoot+= $match->shoot;
+            $match->x   = $key;
+
+            $speedTimeHigh  += $match->run_high_time;
+            $speedTimeMid   += $match->run_mid_time;
+            $speedTimeLow   += $match->run_low_time;
+            $staticTime     += $match->run_static_time;
+
+            $match->shoot   = $match->shoot ?? 0;
+            $match->pass    = $match->pass ?? 0;
+            $match->run     = $match->run ?? 0;
+
+            unset($match->run_high_time);
+            unset($match->run_mid_time);
+            unset($match->run_low_time);
+            unset($match->run_static_time);
         }
 
+
+        //计算百分比
+
+        $totalTime      = $speedTimeHigh + $speedTimeMid + $speedTimeLow + $staticTime;
+        $totalTime      = $totalTime > 1 ? $totalTime : 1;
+
+        $perSpeedLow    = ceil($speedTimeLow / $totalTime);
+        $perSpeedMid    = ceil($speedTimeMid / $totalTime);
+        $perSpeedHigh   = ceil($speedTimeHigh / $totalTime);
+        $perStatic      = 100 - ($perSpeedHigh + $perSpeedMid + $perSpeedLow);
+
+
         $runInfo = [
-            ["key"=>"static","name"=>"静止","value"=>30],
-            ["key"=>"low","name"=>"低速","value"=>40],
-            ["key"=>"middle","name"=>"中速","value"=>20],
-            ["key"=>"heigh","name"=>"高速","value"=>10]
+            ["key"=>"static",   "name"=>"走动","value"=>$perStatic],
+            ["key"=>"low",      "name"=>"低速","value"=>$perSpeedLow],
+            ["key"=>"middle",   "name"=>"中速","value"=>$perSpeedMid],
+            ["key"=>"heigh",    "name"=>"高速","value"=>$perSpeedHigh]
         ];
+
         $matchInfo = [
             'totalPass' => $totalPass,
             'totalRun'  => $totalRun,
             'totalShoot'=> $totalShoot,
             'matches'   => $matches
         ];
+
+
 
         $suggestion = "作为阿根廷国家队主力左后卫，随着世界杯的进行，罗霍的身价也大幅度上涨。我记得我世界杯之前买入的时候连1W都不到，如今+1的已经8W8了，接近9W了。罗霍本届大赛发挥不错，有希望之后转会豪门，若是如此，想必10W的价格一点不贵。";
 
