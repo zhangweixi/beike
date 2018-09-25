@@ -179,14 +179,18 @@ class UserModel extends Model
     {
         $geo        = new Geohash();
         $geohash    = $geo->encode($lat,$lon);
-        $geohash    = substr($geohash,$strlen);
+        $geohash    = substr($geohash,0,$strlen);
         $areas      = $geo->neighbors($geohash);
+        $areas['middle']    = substr($geohash,0,$strlen);
+
         $users      = [];
         foreach($areas as $area)
         {
             $ids    = $this->where('geohash','like',$area."%")->pluck('id');
-
-            array_push($users,$ids);
+            if(count($ids) > 0)
+            {
+                array_push($users,$ids);
+            }
         }
         return $users;
     }
