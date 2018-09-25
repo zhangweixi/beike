@@ -610,7 +610,7 @@ class AnalysisMatchData implements ShouldQueue
         $dataList    = array_filter($dataList);
 
         $insertData     = [];
-        dd($dataList);
+
         foreach($dataList as $key =>  $single)
         {
             //时间（16）长度（8）数据部分（n）
