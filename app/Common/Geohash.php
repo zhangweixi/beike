@@ -111,43 +111,15 @@ class Geohash {
     }
 
 
-    private function calculateAdjacent($srcHash, $dir) {
-
-        $srcHash = strtolower($srcHash);
-        $lastChr = $srcHash[strlen($srcHash) - 1];
-        $type = (strlen($srcHash) % 2) ? 'odd' : 'even';
-        $base = substr($srcHash, 0, strlen($srcHash) - 1);
-
-        if (strpos($this->borders[$dir][$type], $lastChr) !== false) {
-
-            $base = $this->calculateAdjacent($base, $dir);
-        }
-        return $base . $this->coding[strpos($this->neighbors[$dir][$type], $lastChr)];
-    }
-
-
-    public function neighbors($srcHash) {
-
-        $geohashPrefix = substr($srcHash, 0, strlen($srcHash) - 1);
-
-        $neighbors['top'] = $this->calculateAdjacent($srcHash, 'top');
-        $neighbors['bottom'] = $this->calculateAdjacent($srcHash, 'bottom');
-        $neighbors['right'] = $this->calculateAdjacent($srcHash, 'right');
-        $neighbors['left'] = $this->calculateAdjacent($srcHash, 'left');
-
-        $neighbors['topleft'] = $this->calculateAdjacent($neighbors['left'], 'top');
-        $neighbors['topright'] = $this->calculateAdjacent($neighbors['right'], 'top');
-        $neighbors['bottomright'] = $this->calculateAdjacent($neighbors['right'], 'bottom');
-        $neighbors['bottomleft'] = $this->calculateAdjacent($neighbors['left'], 'bottom');
-
-        return $neighbors;
-    }
 
 
 
     /**
      * Encode a hash from given lat and long
      * Author: Bruce Chen (weibo: @一个开发者)
+     * @param $lat double 纬度
+     * @param $long double 经度
+     * @return string
      */
     public function encode($lat, $long) {
 
@@ -221,6 +193,43 @@ class Geohash {
 
         return $hash;
     }
+
+
+
+    public function neighbors($srcHash) {
+
+        $geohashPrefix = substr($srcHash, 0, strlen($srcHash) - 1);
+
+        $neighbors['top'] = $this->calculateAdjacent($srcHash, 'top');
+        $neighbors['bottom'] = $this->calculateAdjacent($srcHash, 'bottom');
+        $neighbors['right'] = $this->calculateAdjacent($srcHash, 'right');
+        $neighbors['left'] = $this->calculateAdjacent($srcHash, 'left');
+
+        $neighbors['topleft'] = $this->calculateAdjacent($neighbors['left'], 'top');
+        $neighbors['topright'] = $this->calculateAdjacent($neighbors['right'], 'top');
+        $neighbors['bottomright'] = $this->calculateAdjacent($neighbors['right'], 'bottom');
+        $neighbors['bottomleft'] = $this->calculateAdjacent($neighbors['left'], 'bottom');
+
+        return $neighbors;
+    }
+
+
+
+
+    private function calculateAdjacent($srcHash, $dir) {
+
+        $srcHash = strtolower($srcHash);
+        $lastChr = $srcHash[strlen($srcHash) - 1];
+        $type = (strlen($srcHash) % 2) ? 'odd' : 'even';
+        $base = substr($srcHash, 0, strlen($srcHash) - 1);
+
+        if (strpos($this->borders[$dir][$type], $lastChr) !== false) {
+
+            $base = $this->calculateAdjacent($base, $dir);
+        }
+        return $base . $this->coding[strpos($this->neighbors[$dir][$type], $lastChr)];
+    }
+
 
     /**
      * What's the maximum error for $bits bits covering a range $min to $max

@@ -517,6 +517,7 @@ class MatchController extends Controller
         $perSpeedHigh   = ceil($speedTimeHigh / $totalTime);
         $perStatic      = 100 - ($perSpeedHigh + $perSpeedMid + $perSpeedLow);
 
+        $matches        = array_reverse($matches);
 
         $runInfo = [
             ["key"=>"static",   "name"=>"走动","value"=>$perStatic],

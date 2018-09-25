@@ -1,8 +1,10 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use App\Common\Geohash;
 use App\Common\MobileMassege;
 use App\Http\Controllers\Controller;
+use App\Jobs\CommonJob;
 use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\MatchModel;
 use App\Models\V1\MessageModel;
@@ -48,23 +50,34 @@ class ShequMatchController extends Controller
         $grade      = $request->input('grade');
         $credit     = $request->input('credit');
         $signFee    = $request->input('signFee');
+        $latitude   = $request->input('latitude',"");
+        $longitude  = $request->input('longitude','');
+
 
         $userBility = BaseUserAbilityModel::find($userId);
 
+        //检查时间是否有效
+        $matchbegin  = $matchDate." ".$matchTime.":00";
+        if(strtotime($matchbegin) < time())
+        {
+            return apiData()->send(2001,"比赛时间不能小于当前时间");
+        }
 
         $shequModel = new BaseShequMatchModel();
-        $shequModel->user_id = $userId;
+        $shequModel->user_id    = $userId;
         $shequModel->begin_time = $matchDate . " " . $matchTime;
-        $shequModel->total_num = $number;
-        $shequModel->address = $address;
-        $shequModel->grade = $grade;
-        $shequModel->credit = $credit;
-        $shequModel->sign_fee = $signFee;
+        $shequModel->total_num  = $number;
+        $shequModel->address    = $address;
+        $shequModel->grade      = $grade;
+        $shequModel->credit     = $credit;
+        $shequModel->sign_fee   = $signFee;
         $shequModel->joined_num = 0;
+        $shequModel->lat        = $latitude;
+        $shequModel->lon        = $longitude;
         $shequModel->save();
 
         $userModel = new UserModel();
-        $userInfo = $userModel->get_user_info($userId);
+        //$userInfo = $userModel->get_user_info($userId);
 
 
         //自己加入比赛
@@ -75,13 +88,15 @@ class ShequMatchController extends Controller
         $matchUserModel->save();
 
 
-        $shareInfo = [
-            "url" => "http://www.baidu.com",
-            "title" => $userInfo['nickName'] . "邀您你参加足球比赛",
-            "desc" => "西瓜电视空调，不如球场上爽一把",
-            "img" => url('beike/images/default/foot.png')
-        ];
-        //->add("shareInfo", $shareInfo)
+        //给临近的人推送比赛
+        if(strlen($latitude) > 0)
+        {
+            $users  = $userModel->get_user_ids_by_geohash($latitude,$longitude,4);
+
+            $delayTime  = now()->addSecond(1);
+
+            CommonJob::dispatch("new_match_notice",['matchId'=>$shequModel->sq_match_id,'users'=>$users])->delay($delayTime);
+        }
 
         return apiData()
             ->add('matchId', $shequModel->sq_match_id)

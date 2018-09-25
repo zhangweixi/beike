@@ -2,6 +2,7 @@
 
 namespace App\Models\V1;
 
+use App\Common\Geohash;
 use Illuminate\Database\Eloquent\Model;
 use DB;
 use PhpParser\Node\Expr\Cast\Object_;
@@ -167,6 +168,28 @@ class UserModel extends Model
 
 
 
+    /**
+     * 根据经纬度来查找附近的用户
+     * @param $lat double 纬度
+     * @param $lon double 经度
+     * @param $strlen integer 字符串长度
+     * @return array
+     * */
+    public function get_user_ids_by_geohash($lat,$lon,$strlen)
+    {
+        $geo        = new Geohash();
+        $geohash    = $geo->encode($lat,$lon);
+        $geohash    = substr($geohash,$strlen);
+        $areas      = $geo->neighbors($geohash);
+        $users      = [];
+        foreach($areas as $area)
+        {
+            $ids    = $this->where('geohash','like',$area."%")->pluck('id');
+
+            array_push($users,$ids);
+        }
+        return $users;
+    }
 
 
 
