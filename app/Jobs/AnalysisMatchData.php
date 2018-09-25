@@ -622,7 +622,7 @@ class AnalysisMatchData implements ShouldQueue
             if($length == "00000000" || $length == "01000000" || $length == "02000000" || $length == "03000000"){
 
                 if($length == "00000000"){
-
+                    mylogger($single);
                     $matchId    = $this->find_match_by_time($timestamp);
                 }
 
