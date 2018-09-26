@@ -62,6 +62,7 @@ class CommonJob implements ShouldQueue
      * */
     private function new_match_notice($matchId,$users = [])
     {
+        return "ok";
         $jpush      = new Jpush();
         $matchInfo  = ShequMatchModel::find($matchId);
 
