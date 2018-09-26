@@ -290,18 +290,30 @@ class MatchController extends Controller
         $matchInfo  = $matchModel->get_match_detail($matchId);
 
 
-        $result     = BaseMatchResultModel::find($matchId);
+        $matchResult     = BaseMatchResultModel::find($matchId);
+        
+        if($matchResult) {
 
-        if($result) {
+            $map                = \GuzzleHttp\json_decode($matchResult->gps_map);
 
-            $map        = $result->gps_map;
-            $map        = \GuzzleHttp\json_decode($map);
+            $map                = data_scroll_to($map,100);
 
-            $map        = data_scroll_to($map,100);
+            $matchInfo->shoot   = $matchResult->grade_shoot;
+            $matchInfo->pass    = $matchResult->grade_pass;
+            $matchInfo->strength= $matchResult->grade_strength;
+            $matchInfo->dribble = $matchResult->dribble;
+            $matchInfo->defense = $matchResult->defense;
+            $matchInfo->run     = $matchResult->run;
 
         }else{//默认值
 
-            $map        = create_round_array(20,32,true,0);
+            $map                = create_round_array(20,32,true,0);
+            $matchInfo->shoot   = 0;
+            $matchInfo->pass    = 0;
+            $matchInfo->strength= 0;
+            $matchInfo->dribble = 0;
+            $matchInfo->defense = 0;
+            $matchInfo->run     = 0;
         }
 
 
