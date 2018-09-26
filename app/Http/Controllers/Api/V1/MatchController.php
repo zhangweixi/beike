@@ -294,9 +294,16 @@ class MatchController extends Controller
         
         if($matchResult) {
 
-            $map                = \GuzzleHttp\json_decode($matchResult->gps_map);
+            if($matchResult->gps_map)
+            {
+                $map                = \GuzzleHttp\json_decode($matchResult->gps_map);
+                $map                = data_scroll_to($map,100);
 
-            $map                = data_scroll_to($map,100);
+            }else{
+
+                $map                = create_round_array(20,32,true,0);
+            }
+
 
             $matchInfo->shoot   = $matchResult->grade_shoot;
             $matchInfo->pass    = $matchResult->grade_pass;
