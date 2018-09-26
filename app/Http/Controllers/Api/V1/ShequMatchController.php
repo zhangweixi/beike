@@ -382,7 +382,7 @@ class ShequMatchController extends Controller
             //球距离
             if($lat != 0 && $lon != 0 && $match->lat && $match->lon)
             {
-                $match->distance    = gps_distance($lat,$lon,$match->lat,$match->lon);
+                $match->distance    = (int)gps_distance($lat,$lon,$match->lat,$match->lon);
             }
 
 
