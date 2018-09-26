@@ -408,22 +408,81 @@ class UserController extends Controller
     /**
      * 用户单项数据图
      * */
-    public function user_global_ability_maps()
+    public function user_global_ability_maps(Request $request)
     {
+        //历史比赛评分情况
+        //跑动距离，传球次数，射门次数，触球次数，最大速度
+
+        $userId = $request->input('userId');
+
         $maps   = [
             [
-                'name'      => "跑动最好情况",
-                'y_title'   => "次数",
-                'x_title'   => "时间",
-                'data'      => create_xy_map()
+                'name'      => "综合评分",
+                'key'       => 'grade',
+                'y_title'   => "分",
+                'x_title'   => '时间',
+                'data'      => [],
             ],
             [
-                'name'      => "传球最好情况",
-                'y_title'   => "次数",
+                'name'      => "射门",
+                'key'       => "shoot_num_total",
+                'y_title'   => "次",
                 'x_title'   => "时间",
-                'data'      => create_xy_map()
-            ]
+                'data'      => []
+            ],
+            [
+                'name'      => "跑动距离",
+                'key'       => 'runDis',
+                'y_title'   => "KM",
+                'x_title'   => "时间",
+                'data'      => [],
+            ],
+            [
+                'name'      => "冲刺速度",
+                'key'       => 'run_speed_max',
+                'y_title'   => "km/h",
+                'x_title'   => "时间",
+                'data'      => [],
+            ],
+            [
+                'name'      => "触球",
+                'key'       => 'touchball_num',
+                'y_title'   => "次",
+                'x_title'   => "时间",
+                'data'      => [],
+            ],
+            [
+                'name'      => "传球次数",
+                'key'       => 'passNum',
+                'y_title'   => "次",
+                'x_title'   => "时间",
+                'data'      => [],
+            ],
+
         ];
+
+        $matches = DB::table('match as a')
+            ->leftJoin('match_result as b','b.match_id','=','a.match_id')
+            ->select("b.grade","b.shoot_num_total","b.pass_s_num","b.pass_l_num","b.touchball_num","b.run_speed_max",'b.run_low_dis','b.run_mid_dis','b.run_high_dis','b.run_static_dis')
+            ->where('a.user_id',$userId)
+            ->where('b.match_id',">",0)
+            ->get();
+
+
+        foreach ($matches as $key => $match){
+
+            $match->passNum = $match->pass_s_num + $match->pass_l_num;
+            $match->runDis  = $match->run_low_dis + $match->run_mid_dis + $match->run_high_dis + $match->run_static_dis;
+
+
+            foreach($maps as &$map)
+            {
+                $option     = $map['key'];
+                array_push($map['data'],['x'=>(string)($key + 1),'y'=>$match->$option]);
+            }
+        }
+
+
 
         return apiData()->set_data('abilityMaps',$maps)->send(200,'success');
     }
