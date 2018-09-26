@@ -350,16 +350,16 @@ class AnalysisMatchData implements ShouldQueue
 
             $process   = BaseMatchDataProcessModel::find($matchId);
 
-            mylogger("检查数据是否解析完毕");
-            mylogger($process->gps_L .'-' .$process->sensor_L .'-'. $process->sensor_R .'-'. $process->compass_L .'-'.$process->compass_R);
+            //mylogger("检查数据是否解析完毕");
+            //mylogger($process->gps_L .'-' .$process->sensor_L .'-'. $process->sensor_R .'-'. $process->compass_L .'-'.$process->compass_R);
 
             if($process->gps_L == 1 && $process->sensor_L == 1 && $process->sensor_R == 1 && $process->compass_L == 1 && $process->compass_R == 1)
             {
                 //数据解析结束，同意处理后续数据
                 //$this->finish_parse_data($matchId);
-                $url = $this->host . "/api/matchCaculate/finish_parse_data?matchId=".$matchId;
-                mylogger($url);
-                file_get_contents($url);
+                //$url = config('app.apihost')."/api/matchCaculate/finish_parse_data?matchId=".$matchId;
+
+                self::execute("finish_parse_data",["matchId"=>$matchId]);
             }
         }
 
