@@ -305,12 +305,12 @@ class MatchController extends Controller
             }
 
 
-            $matchInfo->shoot   = $matchResult->grade_shoot;
-            $matchInfo->pass    = $matchResult->grade_pass;
-            $matchInfo->strength= $matchResult->grade_strength;
-            $matchInfo->dribble = $matchResult->dribble;
-            $matchInfo->defense = $matchResult->defense;
-            $matchInfo->run     = $matchResult->run;
+            $matchInfo->shoot   = $matchResult->grade_shoot ?? 0;
+            $matchInfo->pass    = $matchResult->grade_pass ?? 0;
+            $matchInfo->strength= $matchResult->grade_strength ?? 0;
+            $matchInfo->dribble = $matchResult->dribble ?? 0;
+            $matchInfo->defense = $matchResult->defense ?? 0;
+            $matchInfo->run     = $matchResult->run ?? 0;
 
         }else{//默认值
 
