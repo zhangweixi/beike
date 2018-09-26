@@ -1159,6 +1159,16 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function save_matlab_result($matchId)
     {
+        //同步文件
+        $files      = ["result-run.txt","result-pass.txt","result-step.txt"];
+        $matchDir   = self::matchdir($matchId);
+        $baseUrl    = config('app.matlabhost')."/uploads/match/{$matchId}/";
+
+        foreach($files as $file){
+
+            file_put_contents($matchDir.$file,file_get_contents($baseUrl.$file));
+        }
+
         //1.提取跑动结果
         $this->save_run_result($matchId);
 
