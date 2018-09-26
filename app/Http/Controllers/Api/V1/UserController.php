@@ -482,10 +482,10 @@ class UserController extends Controller
             }
         }
 
-        foreach($maps as &$map){
+        foreach($maps as &$map)
+        {
             unset($map['key']);
         }
-
 
         return apiData()->set_data('abilityMaps',$maps)->send(200,'success');
     }
@@ -713,18 +713,4 @@ class UserController extends Controller
 
         return apiData()->add('unions',$unions)->send();
     }
-}
-
-
-/**
- * 创建水平图谱
- * */
-function create_xy_map()
-{
-    $data   = [];
-    for($i=0;$i<10;$i++)
-    {
-        array_push($data,['x'=>(string)$i,'y'=>rand(0,10)]);
-    }
-    return $data;
 }
