@@ -117,7 +117,10 @@ class Jpush{
             $push->addAlias($user);
 
         } elseif($type == 2) {
-
+            if(!is_array())
+            {
+                $user = [$user];
+            }
             $push->addTag($user);
         }
 

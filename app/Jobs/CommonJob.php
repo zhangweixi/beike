@@ -16,7 +16,8 @@ class CommonJob implements ShouldQueue
 
     private $action;
     private $data;
-    private $timeout = 300;
+    public $timeout = 300;
+    public $tries = 1;
 
 
     /**
@@ -62,7 +63,6 @@ class CommonJob implements ShouldQueue
      * */
     private function new_match_notice($matchId,$users = [])
     {
-        return "ok";
         $jpush      = new Jpush();
         $matchInfo  = ShequMatchModel::find($matchId);
 

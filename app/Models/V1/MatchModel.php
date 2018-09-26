@@ -153,7 +153,10 @@ class MatchModel extends Model
             "created_mood_at"
         ];
 
-        $matchDetail = DB::table('match')->select($columns)->where('match_id',$matchId)->first();
+        $matchDetail = DB::table('match')
+            ->select($columns)
+            ->where('match_id',$matchId)
+            ->first();
 
         return $matchDetail;
     }
