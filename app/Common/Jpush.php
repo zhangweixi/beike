@@ -114,11 +114,11 @@ class Jpush{
 
         } elseif ($type == 1) {
 
-            $push->addAlias($alias);
+            $push->addAlias($user);
 
         } elseif($type == 2) {
 
-            $push->addTag($tags);
+            $push->addTag($user);
         }
 
         return $push->send();
