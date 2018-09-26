@@ -471,10 +471,9 @@ class UserController extends Controller
 
         foreach ($matches as $key => $match){
 
-            $match->passNum = $match->pass_s_num + $match->pass_l_num;
-            $match->runDis  = ($match->run_low_dis + $match->run_mid_dis + $match->run_high_dis + $match->run_static_dis)/1000;
-
-
+            $match->passNum         = $match->pass_s_num + $match->pass_l_num;
+            $match->runDis          = ($match->run_low_dis + $match->run_mid_dis + $match->run_high_dis + $match->run_static_dis)/1000;
+            $match->run_speed_max   = (int)($match->run_speed_max*60*60/1000);
 
             foreach($maps as &$map)
             {
