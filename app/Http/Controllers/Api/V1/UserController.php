@@ -482,6 +482,9 @@ class UserController extends Controller
             }
         }
 
+        foreach($maps as &$map){
+            unset($map['key']);
+        }
 
 
         return apiData()->set_data('abilityMaps',$maps)->send(200,'success');
