@@ -322,7 +322,7 @@ class AnalysisMatchData implements ShouldQueue
             ->orderBy('match_source_id')
             ->first();
 
-        if($nextData)
+        if($nextData && $this->host)
         {
             $params = ['matchSourceId'  =>  $nextData->match_source_id];
             $params = http_build_sign($params);
@@ -622,7 +622,7 @@ class AnalysisMatchData implements ShouldQueue
             if($length == "00000000" || $length == "01000000" || $length == "02000000" || $length == "03000000"){
 
                 if($length == "00000000"){
-                    
+
                     $matchId    = $this->find_match_by_time($timestamp);
                 }
 
