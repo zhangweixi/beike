@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Title</title>
+    <style>
+        body{
+            background:#000;
+            padding:0;
+            margin:0;
+            height:100vh;
+            width:100vw;
+            background-image:url('https://thumbs.dreamstime.com/z/%E8%B6%B3%E7%90%83%E8%BF%90%E5%8A%A8%E5%91%98%E9%98%9F-42346219.jpg');
+            background-size: cover;
+            background-repeat:no-repeat;
+            background-position: center;
+            text-align: center;
+        }
+
+        button{
+            position: absolute;
+            bottom:20vw;
+            margin:auto;
+            display: block;
+            width:80vw;
+            left:10vw;
+            line-height:2.5;
+            background:green;
+            color:#fff;
+            border:none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size:20px;
+        }
+    </style>
+    <script src="../../vendors/jquery/dist/jquery.min.js"></script>
+    <script>
+
+        function GetQueryString(name) {
+            var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if(r!=null)return  unescape(r[2]); return null;
+        }
+
+        var matchId = GetQueryString('matchId');
+
+        alert(matchId);
+        if(matchId > 0)
+        {
+
+
+
+        }
+    </script>
+</head>
+<body>
+
+    <button>加入比赛</button>
+
+</body>
+</html>
