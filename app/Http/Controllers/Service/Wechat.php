@@ -69,6 +69,7 @@ class Wechat extends Controller
     {
         $redirectUrl    = url('/api/wechat/login_callback');
         $url            = $request->input('url','');
+
         if($url)
         {
             $request->session()->put("appDirectUrl",$url);
@@ -87,6 +88,7 @@ class Wechat extends Controller
         $user = $this->wechat->oauth->setRequest($request)->user();
 
         $url = $request->session()->get('appDirectUrl');
+
 
         if($url){
             $url    = urldecode($url);
