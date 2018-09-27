@@ -68,6 +68,11 @@ class Wechat extends Controller
     public function login(Request $request)
     {
         $redirectUrl    = url('/api/wechat/login_callback');
+        $url            = $request->input('url','');
+        if($url)
+        {
+            $request->session()->put("appDirectUrl",$url);
+        }
 
         $response       = $this->wechat->oauth->setRedirectUrl($redirectUrl)->scopes(["snsapi_userinfo"])->setRequest($request)->redirect();
 
@@ -80,6 +85,14 @@ class Wechat extends Controller
     public function login_callback(Request $request)
     {
         $user = $this->wechat->oauth->setRequest($request)->user();
+
+        $url = $request->session()->get('appDirectUrl');
+
+        if($url){
+            $url    = urldecode($url);
+            header('Location:'.$url);
+            exit;
+        }
 
         dd($user);
     }
