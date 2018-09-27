@@ -425,6 +425,7 @@ class ShequMatchController extends Controller
         $matchInfo  = ShequMatchModel::find($matchId);
 
         $url        = config('app.apihost')."/www/app/match-invite.html?matchId=".$matchId;
+        $url        = config('app.apihost')."/api/wechat/login?url=".urlencode($url);
         $title      = $userInfo->nick_name. "邀您你参加足球比赛，已参加{$matchInfo->joined_num}";
         $desc       = "伙计，{$matchInfo->begin_time}，{$matchInfo->address}，来好好爽一把吧！";
         $img        = url('beike/images/default/foot.png');
