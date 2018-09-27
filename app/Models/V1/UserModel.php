@@ -186,7 +186,7 @@ class UserModel extends Model
         $users      = [];
         foreach($areas as $area)
         {
-            $ids    = $this->where('geohash','like',$area."%")->pluck('id');
+            $ids    = $this->where('geohash','like',$area."%")->pluck('id')->toArray();
             if(count($ids) > 0)
             {
                 array_push($users,$ids);
