@@ -128,7 +128,7 @@ class Wechat extends Controller
             return apiData()->send(2001,'没有微信信息');
         }
 
-        return apiData()->add('wechat',$wechatInfo)->send();
+        return apiData()->add('wechat',$wechatInfo->original)->send();
 
     }
 
