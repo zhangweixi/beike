@@ -920,7 +920,7 @@ class AnalysisMatchData implements ShouldQueue
             }
             //移动三条 读一条
 
-            $newp = intval($p*4);
+            $newp = intval($p*2.5);
 
             if($newp > $maxlength)
             {
@@ -1311,7 +1311,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //1：长传 2：短传 3：触球
-        $data   = [
+        $typeData   = [
             "passLong"  =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]],
             "passShort" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]],
             "touchball" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]]
@@ -1325,16 +1325,16 @@ class AnalysisMatchData implements ShouldQueue
 
             switch ($type)
             {
-                case 1 : array_push($data['passLong']['data'],$pass);break;
-                case 2 : array_push($data['passShort']['data'],$pass);break;
-                case 3 : array_push($data['touchball']['data'],$pass);break;
+                case 1 : array_push($typeData['passLong']['data'],$pass);break;
+                case 2 : array_push($typeData['passShort']['data'],$pass);break;
+                case 3 : array_push($typeData['touchball']['data'],$pass);break;
             }
         }
 
 
-        foreach($data as &$pass)
+        foreach($typeData as &$pass)
         {
-            $speeds = [];
+            $speeds = [0];
             $gps    = [];
 
             foreach($pass['data'] as $type)
@@ -1346,6 +1346,7 @@ class AnalysisMatchData implements ShouldQueue
             }
 
             $pass['num']        = count($pass['data']);
+
             $pass['speedMax']   = round(max($speeds));
             $pass['speedAvg']   = round(array_sum($speeds)/count($speeds));
             $pass['gps']        = $this->gps_map($matchInfo->court_id,$gps);
@@ -1354,29 +1355,29 @@ class AnalysisMatchData implements ShouldQueue
 
 
         $matchResult    = [
-            'pass_s_num'            => $data['passShort']['num'],
-            'pass_s_speed_max'      => $data['passShort']['speedMax'],
-            'pass_s_speed_avg'      => $data['passShort']['speedAvg'],
-            'pass_l_num'            => $data['passLong']['num'],
-            'pass_l_speed_max'      => $data['passLong']['speedMax'],
-            'pass_l_speed_avg'      => $data['passLong']['speedAvg'],
-            'touchball_num'         => $data['touchball']['num'],
-            'touchball_speed_max'   => $data['touchball']['speedMax'],
-            'touchball_speed_avg'   => $data['touchball']['speedAvg'],
-            'map_pass_short'        => $data['passShort']['gps'],
-            'map_pass_long'         => $data['passLong']['gps'],
-            'map_touchball'         => $data['touchball']['gps']
+            'pass_s_num'            => $typeData['passShort']['num'],
+            'pass_s_speed_max'      => $typeData['passShort']['speedMax'],
+            'pass_s_speed_avg'      => $typeData['passShort']['speedAvg'],
+            'pass_l_num'            => $typeData['passLong']['num'],
+            'pass_l_speed_max'      => $typeData['passLong']['speedMax'],
+            'pass_l_speed_avg'      => $typeData['passLong']['speedAvg'],
+            'touchball_num'         => $typeData['touchball']['num'],
+            'touchball_speed_max'   => $typeData['touchball']['speedMax'],
+            'touchball_speed_avg'   => $typeData['touchball']['speedAvg'],
+            'map_pass_short'        => $typeData['passShort']['gps'],
+            'map_pass_long'         => $typeData['passLong']['gps'],
+            'map_touchball'         => $typeData['touchball']['gps']
         ];
 
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
         //存储用户全局性的数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
-        $userAbility->pass_num_short        += $data['passShort']['num'];
-        $userAbility->pass_num_long         += $data['passLong']['num'];
-        $userAbility->pass_num_total        += ($data['passShort']['num'] + $data['passLong']['num']);
-        $userAbility->pass_speed_max        =  max($userAbility->pass_speed_max,$data['passLong']['speedMax']);
-        $userAbility->touchball_num_total   += $data['touchball']['num'];
+        $userAbility->pass_num_short        += $typeData['passShort']['num'];
+        $userAbility->pass_num_long         += $typeData['passLong']['num'];
+        $userAbility->pass_num_total        += ($typeData['passShort']['num'] + $typeData['passLong']['num']);
+        $userAbility->pass_speed_max        =  max($userAbility->pass_speed_max,$typeData['passLong']['speedMax']);
+        $userAbility->touchball_num_total   += $typeData['touchball']['num'];
         $userAbility->save();
 
     }
