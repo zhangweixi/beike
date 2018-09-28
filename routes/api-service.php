@@ -1,22 +1,6 @@
 <?php
 $api = app('Dingo\Api\Routing\Router');
 
-
-Route::namespace('Service')->prefix('api')->group(function(){
-
-	Route::post("getMobileCode",     "Mobile@get_mobile_code");      //获取验证码
-    Route::post("checkMobileCode",   "Mobile@check_mobile_code");    //检查验证码
-    Route::post("mobileCallback",    "Mobile@mobile_callback");      //验证码回调
-    Route::post('appConfig',         "App@get_config");              //获得APP配置
-    Route::post('socket',            "App@socket");                  //获得APP配置
-    Route::post('qiniuToken',        "Qiniu@get_token");             //获取七牛Token
-    Route::any('matchCaculate/{action}',"MatchCaculate@action");		//算法系统
-    Route::any('wechat/{action}',	"Wechat@action");				//微信
-    Route::any('matchGrade/{action}',"MatchGrade@action");			//比赛分数计算方法
-
-});
-
-/*
 $api->version('v1',['prefix'=>"api",'namespace'=>"App\Http\Controllers\Service"],function ($api)
 {
     $api->post("getMobileCode",     "Mobile@get_mobile_code");      //获取验证码
@@ -30,4 +14,3 @@ $api->version('v1',['prefix'=>"api",'namespace'=>"App\Http\Controllers\Service"]
     $api->any('matchGrade/{action}',"MatchGrade@action");			//比赛分数计算方法
 
 });
-*/

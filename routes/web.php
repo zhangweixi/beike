@@ -19,13 +19,14 @@ Route::get('/', function () {
 Route::get('/speed/weixin/{action}','Speed\Weixin@action');
 
 Route::any('/service/upload',"Service\Upload@upload");
+Route::any('/service/wechat/{action}',"Service\Wechat@action");
+
 
 
 //Route::get('/weixin/user','Speed\IndexController@user');
-
 //Route::get('/weixin/get_wx_info','Speed\IndexController@get_wx_info');
 
-Route::any('/code','Service\Mobile@get_code');//测试获取电话号码
+
 
 
 //端链接
