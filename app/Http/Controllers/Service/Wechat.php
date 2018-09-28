@@ -68,16 +68,13 @@ class Wechat extends Controller
      * */
     public function login(\Illuminate\Http\Request $request)
     {
-        $redirectUrl    = url('/api/wechat/login_callback');
-        $url            = $request->input('url','');
+        $redirectUrl    = url('/service/wechat/login_callback');
+        $url            = $request->input('url',null);
 
-
-
-        if($url)
+        if($url != null)
         {
             $request->session()->put("appDirectUrl",$url);
         }
-        return apiData()->send();
 
         $response       = $this->wechat->oauth->setRedirectUrl($redirectUrl)->scopes(["snsapi_userinfo"])->setRequest($request)->redirect();
 
@@ -89,20 +86,51 @@ class Wechat extends Controller
      * */
     public function login_callback(\Illuminate\Http\Request $request)
     {
-        //$user = $this->wechat->oauth->setRequest($request)->user();
 
-        $url = $request->session()->get('appDirectUrl');
-        return $url;
+        $user = $this->wechat->oauth->setRequest($request)->user(); //获取微信用户信息
 
-        if($url){
-            $url    = urldecode($url);
-            header('Location:'.$url);
-            exit;
-        }
+        $request->session()->put("wechatUser",$user);               //缓存微信用户信息
 
-        dd($user);
+        return $this->back_user_path();
     }
 
+
+    /**
+     * 返回用户的路径
+     * */
+    private function back_user_path()
+    {
+        $url    = session()->get('appDirectUrl',null);
+
+        if($url != null){
+
+            $url    = urldecode($url);
+
+            return response()->redirectTo($url);
+
+        }else{
+
+            return false;
+
+        }
+    }
+
+
+    /**
+     * 获取用户信息
+     * */
+    public function get_wechat_info()
+    {
+        $wechatInfo     = session()->get('wechatUser',null);
+
+        if($wechatInfo == null){
+
+            return apiData()->send(2001,'没有微信信息');
+        }
+
+        return apiData()->add('wechat',$wechatInfo)->send();
+
+    }
 
 
     public function test()
