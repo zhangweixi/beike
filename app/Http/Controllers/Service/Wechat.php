@@ -13,6 +13,7 @@ use Dingo\Api\Http\Request;
 
 
 
+
 class Wechat extends Controller
 {
     /**
@@ -65,7 +66,7 @@ class Wechat extends Controller
     /*
      * 登录
      * */
-    public function login(Request $request)
+    public function login(\Illuminate\Http\Request $request)
     {
         $redirectUrl    = url('/api/wechat/login_callback');
         $url            = $request->input('url','');
@@ -83,7 +84,7 @@ class Wechat extends Controller
     /**
      * 登录回调
      * */
-    public function login_callback(Request $request)
+    public function login_callback(\Illuminate\Http\Request $request)
     {
         $user = $this->wechat->oauth->setRequest($request)->user();
 
