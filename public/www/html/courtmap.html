@@ -20,9 +20,11 @@
         <button onclick="show_map_border();">显示球场边框</button>
         <button onclick="show_map_content();">显示球场内部点</button>
         <button onclick="clear_court();">清除足球场</button>
-        <input type="text" id="gpsGroupId">
+        <input type="text" id="gpsGroupId" placeholder="gpsGroupId">
         <button onclick="show_court_gps_group()">显示GPS群组</button>
         <button onclick="show_court_gps_group_all()">显示GPS群组所有点</button>
+        <input type="text" placeholder="filepath" id="filepath">
+        <button onclick="show_file_map()">显示文件地图</button>
 
         <div style="float:right;"><button style="background:red;">手机</button><button style="background:green;">设备</button></div>
 
@@ -242,6 +244,27 @@
         })
     }
 
+
+    function show_file_map(){
+
+        var filepath = $('#filepath').val();
+        var url = "/api/v1/court/show_file_map?filepath="+filepath;
+        $.post(url).success(function(res){
+
+
+            var points  = res.data.points;
+            var gpsPonts= [];
+
+            for(var gps of points)
+            {
+                gpsPonts.push(getpoint(gps.lat,gps.lon));
+            }
+            console.log(gpsPonts);
+            show_big_data(gpsPonts,'black');
+
+        })
+
+    }
 
     function addlabel(point,text,color)
     {

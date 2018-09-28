@@ -28,3 +28,7 @@ test.txt
 app/Http/Controllers/showdoc_api.sh
 app/python/matlabsrc/
 storage/
+app/python/pidfile.pid
+app/python/__pycache__/functions.cpython-35.pyc
+app/python/__pycache__/matlabserver.cpython-35.pyc
+app/python/matlabserver.pyc

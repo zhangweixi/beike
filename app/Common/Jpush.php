@@ -18,7 +18,8 @@ class Jpush{
     {
         $this->jpushAppKey = config('jpush.appKey');
         $this->jpushSecret = config('jpush.secret');
-        $this->plushClient = new Client($this->jpushAppKey,$this->jpushSecret);
+        $this->jpushLogFile= config('jpush.logFile');
+        $this->plushClient = new Client($this->jpushAppKey,$this->jpushSecret,$this->jpushLogFile);
         $this->plushClient = $this->plushClient->push();
     }
 
