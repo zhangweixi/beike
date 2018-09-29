@@ -107,12 +107,15 @@ class MatchController extends Controller
 
         //结果文件
         $dirfile    = public_path("uploads/match/".$matchId);
+        $dirfile    = scandir($dirfile);
+
         $resultFiles= [];
+
         foreach($dirfile as $file)
         {
             if(preg_match("/^\w/",$file))
             {
-                array_push($resultFiles,url("uploads/match/{$matchId}/").$file);
+                array_push($resultFiles,['name'=>$file,'url'=>url("uploads/match/{$matchId}")."/".$file]);
             }
         }
 

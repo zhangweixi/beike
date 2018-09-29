@@ -7,7 +7,18 @@
 
         <div class="x_content">
 
-            <p>原始文件</p>
+            <p class="btn btn-info">结果文件</p>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered jambo_table bulk_action">
+                    <tr  ng-repeat="file in matchFiles.resultFile">
+                        <td>{{file.name}}</td>
+                        <td><a target="_blank" href="{{file.url}}" class="btn-info btn btn-xs">打开</a></td>
+                    </tr>
+                </table>
+            </div>
+
+
+            <p class="btn btn-danger">原始文件</p>
             <div class="table-responsive">
                 <table class="table table-striped table-bordered jambo_table bulk_action">
                     <thead>
@@ -31,15 +42,6 @@
                     </tr>
 
                     </tbody>
-                </table>
-            </div>
-
-            <p>结果文件</p>
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered jambo_table bulk_action">
-                    <tr  ng-repeat="file in matchFiles.resultFile">
-                        <td><a target="_blank" href="{{file}}" class="btn-info btn btn-xs">打开</a></td>
-                    </tr>
                 </table>
             </div>
         </div>
