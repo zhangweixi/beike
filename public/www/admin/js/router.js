@@ -22,6 +22,11 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl: 'device-list.html?t=' + Math.random(),
             controller: 'deviceController'
         })
+        .state('device/edit/:deviceId', {
+            url: '/device/edit/:deviceId',
+            templateUrl: 'device-add.html?t=' + Math.random(),
+            controller: 'deviceController'
+        })
         .state('question-upload', {
             url: '/question-upload',
             templateUrl: 'question-upload.html?t=' + Math.random(),

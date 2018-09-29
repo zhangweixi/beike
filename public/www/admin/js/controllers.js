@@ -74,7 +74,7 @@ myapp.controller('indexController', function ($scope, $location, $http) {
 });
 
 
-myapp.controller('deviceController', function ($scope, $http, $location) {
+myapp.controller('deviceController', function ($scope, $http, $location,$stateParams) {
 
     setTimeout(init_DataTables, 1000);
 
@@ -95,6 +95,8 @@ myapp.controller('deviceController', function ($scope, $http, $location) {
             $scope.get_device_list($scope.paginationConf.currentPage);
         }
     };
+
+    $scope.deviceInfo   = {};
 
 
     /*获得题目列表*/
@@ -119,6 +121,69 @@ myapp.controller('deviceController', function ($scope, $http, $location) {
         });
     }
 
+
+
+    /*获取设备信息*/
+    $scope.get_device_info = function()
+    {
+        var deviceId    = $stateParams.deviceId;
+
+
+        if(deviceId == 0){
+
+            $scope.deviceInfo = {
+                "device_id":$stateParams.deviceId,
+                "device_sn":'',
+                "bluetooth_r":'',
+                "bluetooth_l":'',
+                "pin":'',
+            };
+            return false;
+        }
+
+        var url = server + "device/get_device_info?deviceId="+deviceId;
+
+        $http.get(url).success(function(res)
+        {
+
+            $scope.deviceInfo = res.data.deviceInfo;
+
+        })
+    }
+
+
+
+    //编辑设备
+    $scope.edit_device  = function()
+    {
+
+        var url = server + "device/edit_device";
+        var data = http_query($scope.deviceInfo);
+        $http.post(url,data).success(function(res)
+        {
+
+            alert(res.message);
+
+        })
+    }
+
+
+    //删除设备
+    $scope.delete_device = function(deviceId)
+    {
+
+        if(!confirm('确定删除吗')){
+
+            return false;
+        }
+
+        var url =server + "device/delete_device?deviceId="+deviceId;
+
+        $http.get(url).success(function(){
+
+            $scope.get_device_list($scope.paginationConf.currentPage);
+        })
+    }
 
     $scope.upload_excel = function () {
 

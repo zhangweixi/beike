@@ -66,7 +66,9 @@
                         <td class=" ">{{d.produced_at}}</td>
                         <td class=" ">{{d.created_at}}</td>
                         <td class=" ">{{d.nick_name}}</td>
-                        <td class="last"><a href="#"><button class="btn btn-danger">删除</button></a>
+                        <td class="last">
+                            <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_device(d.device_id)">删除</button></a>
+                            <a href="#device/edit/{{d.device_id}}"><button class="btn btn-xs btn-info">编辑</button></a>
                         </td>
                     </tr>
                     </tbody>

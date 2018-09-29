@@ -9,6 +9,10 @@ class DeviceModel extends Model
 {
 
     protected $table = "device";
+    protected $primaryKey = "device_id";
+
+    protected $guarded = [];
+
 
     /**
      * @param $pinCode string 设备pin码
@@ -45,6 +49,7 @@ class DeviceModel extends Model
     /**
      * 获得用户已经绑定的设备
      * @param $userId integer 用户ID
+     * @return  array
      * */
     public function get_user_devices($userId)
     {
