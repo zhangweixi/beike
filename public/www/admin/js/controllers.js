@@ -635,13 +635,16 @@ myapp.controller('adminController', function ($scope, $http, $location, $statePa
 
 myapp.controller('matchController', function($scope, $http, $location,$stateParams,$timeout){
 
-    $scope.matches      = [];
+    $scope.matches      = [];   //比赛列表
     $scope.map          = "";
     $scope.court        = {};
 
     $scope.matchId      = $stateParams.matchId;
 
     $scope.matchGps     = [];
+
+    $scope.matchResult  = [];   //比赛结果
+
 
     $scope.paginationConf = {
         currentPage: 0,
@@ -681,6 +684,22 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             });
     }
 
+
+    //比赛结果
+    $scope.get_match_result = function(){
+
+
+        var url         = server + "match/match_result?matchId=" + $scope.matchId;
+
+        $http.get(url).success(function(res)
+        {
+
+             $scope.matchResult = res.data.matchResult;
+             
+
+        })
+
+    }
 
     //获得比赛球场
     $scope.get_match_court = function()

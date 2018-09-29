@@ -18,13 +18,8 @@
                             <th class="column-title">用户</th>
                             <th class="column-title">开始时间</th>
                             <th class="column-title">结束时间</th>
+                            <td class="column-title">时长</td>
                             <th class="column-title">球场</th>
-                            <th class="column-title">射门</th>
-                            <th class="column-title">传球</th>
-                            <th class="column-title">力量</th>
-                            <th class="column-title">盘带</th>
-                            <th class="column-title">防御</th>
-                            <th class="column-title">跑动</th>
                             <th class="column-title">操作</th>
                         </tr>
                     </thead>
@@ -37,14 +32,12 @@
                             <td>{{match.nick_name}}</td>
                             <td>{{match.time_begin}}</td>
                             <td>{{match.time_end}}</td>
+                            <td>{{match.time_length}}</td>
                             <td><a href="#match/court/{{match.match_id}}">{{match.address}}({{match.court_id}})</a></td>
-                            <td>{{match.shoot}}</td>
-                            <td>{{match.pass}}</td>
-                            <td>{{match.strength}}</td>
-                            <td>{{match.dribble}}</td>
-                            <td>{{match.defense}}</td>
-                            <td>{{match.run}}</td>
-                            <td></td>
+
+                            <td>
+                                <a class="btn btn-info btn-xs" href="#match/result/{{match.match_id}}">结果</a>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

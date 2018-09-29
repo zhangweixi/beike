@@ -1,0 +1,187 @@
+<div class="col-md-12 col-sm-12 col-xs-12" ng-init="get_match_result()">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>比赛结果</h2>
+            <div class="clearfix"></div>
+        </div>
+
+        <style>
+            tr:hover{
+                background:#fff !important;
+            }
+        </style>
+        <div class="x_content">
+
+            <!--<p>Add class <code>bulk_action</code> to table for bulk actions options on row select</p>-->
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered jambo_table ">
+
+                    <tbody>
+                        <tr class="headings">
+                            <th class="column-title btn-primary" colspan="2">分数</th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <table class="table table-bordered ">
+                                    <tr>
+                                        <td>跑动：{{matchResult.grade_run}}</td>
+                                        <td>传球：{{matchResult.grade_pass}}</td>
+                                        <td>触球：{{matchResult.touchball}}</td>
+                                        <td>防守：{{matchResult.grade_defense}}</td>
+                                        <td>盘带：{{matchResult.grade_dribble}}</td>
+                                        <td>射门：{{matchResult.grade_shoot}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+
+
+                    <tbody>
+                        <tr>
+                            <th class="column-title btn-primary" colspan="2">射门</th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <table class="table-bordered table">
+                                    <tr>
+                                        <td>短射门数量:{{matchResult.shoot_num_short}}</td>
+                                        <td>长射门数量:{{matchResult.shoot_num_far}}</td>
+                                        <td>射门最大速度:{{matchResult.shoot_speed_max}}</td>
+                                        <td>射门平均速度:{{matchResult.shoot_speed_avg}}</td>
+                                        <td>射门最大距离:{{matchResult.shoot_dis_max}}</td>
+                                        <td>射门平均距离:{{matchResult.shoot_dis_avg}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+
+
+                    <tbody>
+                        <tr>
+                            <th class="column-title btn-primary" colspan="2">传球</th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <table class="table-bordered table">
+                                    <tr>
+                                        <td>类型</td>
+                                        <td>短传数量</td>
+                                        <td>最大距离</td>
+                                        <td>平均距离</td>
+                                        <td>最大速度</td>
+                                        <td>平均速度</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>短传</td>
+                                        <td>{{matchResult.pass_s_num}}</td>
+                                        <td>{{matchResult.pass_s_dis_max}}</td>
+                                        <td>{{matchResult.pass_s_dis_avg}}</td>
+                                        <td>{{matchResult.pass_s_speed_max}}</td>
+                                        <td>{{matchResult.pass_s_speed_avg}}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>长传</td>
+                                        <td>{{matchResult.pass_l_num}}</td>
+                                        <td>{{matchResult.pass_l_dis_max}}</td>
+                                        <td>{{matchResult.pass_l_dis_avg}}</td>
+                                        <td>{{matchResult.pass_l_speed_max}}</td>
+                                        <td>{{matchResult.pass_l_speed_avg}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+
+
+                    <tbody>
+                        <tr class="headings">
+                            <th class="column-title btn-primary" colspan="2">跑动</th>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <table class="table table-bordered ">
+                                    <tr>
+                                        <td>数据项</td>
+                                        <td>高速</td>
+                                        <td>中速</td>
+                                        <td>低速</td>
+                                        <td>走动</td>
+                                        <td>其他</td>
+                                    </tr>
+                                    <tr>
+
+                                        <td>距离</td>
+                                        <td>{{matchResult.run_high_dis}}</td>
+                                        <td>{{matchResult.run_mid_dis}}</td>
+                                        <td>{{matchResult.run_low_dis}}</td>
+                                        <td>{{matchResult.run_static_dis}}</td>
+                                        <td>最高速度:{{matchResult.run_speed_max}}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>时间</td>
+                                        <td>{{matchResult.run_high_time}}</td>
+                                        <td>{{matchResult.run_mid_time}}</td>
+                                        <td>{{matchResult.run_low_time}}</td>
+                                        <td>{{matchResult.run_static_time}}</td>
+                                        <td>高速平均速度:{{matchResult.run_high_speed_avg}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+
+
+                    <tbody>
+                        <tr>
+                            <th class="column-title btn-primary" colspan="2">触球</th>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2">
+                                <table class="table-bordered table">
+                                    <tr>
+                                        <td>触球数量:{{matchResult.touchball_num}}</td>
+                                        <td>触球平均速度:{{matchResult.touchball_speed_avg}}</td>
+                                        <td>触球最大速度:{{matchResult.touchball_speed_max}}</td>
+                                        <td>触球平均力量:{{matchResult.touchball_strength_avg}}</td>
+                                        <td>触球最大力量:{{matchResult.touchball_strength_max}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+
+
+                    <tbody>
+                        <tr>
+                            <th class="column-title btn-primary" colspan="2">其他</th>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2">
+                                <table class="table-bordered table">
+                                    <tr>
+                                        <td>转向次数:{{matchResult.change_direction_num}}</td>
+                                        <td>冲刺距离:{{matchResult.sprint_distance}}</td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+
+
+    </div>
+</div>
+
+<script src="../build/js/custom.min.js"></script>

@@ -294,9 +294,9 @@ class MatchController extends Controller
         
         if($matchResult) {
 
-            if($matchResult->gps_map)
+            if($matchResult->map_gps_run)
             {
-                $map                = \GuzzleHttp\json_decode($matchResult->gps_map);
+                $map                = \GuzzleHttp\json_decode($matchResult->map_gps_run);
                 $map                = data_scroll_to($map,100);
 
             }else{

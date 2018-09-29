@@ -1060,14 +1060,14 @@ class AnalysisMatchData implements ShouldQueue
 
         if($resultInfo) {
 
-            $resultInfo->gps_map    = \GuzzleHttp\json_encode($mapData);
+            $resultInfo->map_gps_run    = \GuzzleHttp\json_encode($mapData);
             $resultInfo->save();
 
         }else{
 
             $resultInfo     = new BaseMatchResultModel();
             $resultInfo->match_id   = $matchId;
-            $resultInfo->gps_map    = \GuzzleHttp\json_encode($mapData);
+            $resultInfo->map_gps_run    = \GuzzleHttp\json_encode($mapData);
             $resultInfo->save();
         }
 
@@ -1164,18 +1164,18 @@ class AnalysisMatchData implements ShouldQueue
         $matchDir   = self::matchdir($matchId);
         $baseUrl    = config('app.matlabhost')."/uploads/match/{$matchId}/";
 
-        foreach($files as $file){
-
+        foreach($files as $file)
+        {
             file_put_contents($matchDir.$file,file_get_contents($baseUrl.$file));
         }
 
         //1.提取跑动结果
-        $this->save_run_result($matchId);
+        $runResult      = $this->save_run_result($matchId);
 
 
         //2.提取触球，传球结果
+        $passTouchResult = $this->save_pass_and_touch($matchId);
 
-        $this->save_pass_and_touch($matchId);
 
         return "ok";
     }
@@ -1193,11 +1193,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         $matchInfo  = MatchModel::find($matchId);
 
-        //从远程服务器读取结果
-
         //1.速度信息
-        //$speedFile  = config('app.matlabhost')."/uploads/match/{$matchId}/result-run.txt";
-
         $speedFile  = public_path("uploads/match/{$matchId}/result-run.txt");
 
         $speedsInfo = file($speedFile);
@@ -1205,6 +1201,7 @@ class AnalysisMatchData implements ShouldQueue
         $maxSpeed   = 0;    //比赛最高速度
 
         $speedType  = [
+            'static'=> ['time'=>0,'dis'=>0,'limit'=>0,'gps'=>[]],
             'high'  => ['time'=>0,'dis'=>0,'limit'=>15*1000/60/60,'gps'=>[]],
             'middle'=> ['time'=>0,'dis'=>0,'limit'=>9*1000/60/60,'gps'=>[]],
             'low'   => ['time'=>0,'dis'=>0,'limit'=>3*1000/60/60,'gps'=>[]]
@@ -1229,8 +1226,8 @@ class AnalysisMatchData implements ShouldQueue
                 //continue;
             }
 
-            $speedInfo = trim($speedInfo,"\r\n");
-            $speedInfo = explode(' ',$speedInfo);
+            $speedInfo  = trim($speedInfo,"\r\n");
+            $speedInfo  = explode(' ',$speedInfo);
             $speed      = $speedInfo[1];
             $maxSpeed   = max($speed,$maxSpeed);
 
@@ -1246,6 +1243,10 @@ class AnalysisMatchData implements ShouldQueue
             }elseif($speed > $speedLow){
 
                 $type   = "low";
+
+            }else{
+
+                $type   = "static";
             }
 
             //将gps恢复到原始状态
@@ -1261,28 +1262,31 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
-        mylogger(3);
 
         //创建高、中、低速跑动热点图
         foreach ($speedType as $key => $type)
         {
             $speedType[$key]['gps'] = $this->gps_map($matchInfo->court_id,$type['gps']);
-            mylogger('3-'.$key);
+
         }
 
-        mylogger(4);
         //11.修改单场比赛的结果
         $matchResult = [
             'run_low_dis'       => $speedType['low']['dis'],
             'run_mid_dis'       => $speedType['middle']['dis'],
             'run_high_dis'      => $speedType['high']['dis'],
+            'run_static_dis'    => $speedType['static']['dis'],
             'run_low_time'      => $speedType['low']['time'],
             'run_mid_time'      => $speedType['middle']['time'],
             'run_high_time'     => $speedType['high']['time'],
+            'run_static_time'   => $speedType['static']['time'],
             'run_speed_max'     => $maxSpeed,
+            'map_speed_static'  => $speedType['static']['gps'],
             'map_speed_low'     => $speedType['low']['gps'],
             'map_speed_middle'  => $speedType['middle']['gps'],
             'map_speed_high'    => $speedType['high']['gps'],
+            'run_high_speed_avg'=> 0,//高速平均跑动速度
+            ''
         ];
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
@@ -1290,19 +1294,34 @@ class AnalysisMatchData implements ShouldQueue
         //修改个人的整体数据 在此前一定会创建用户的个人数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
 
+        //1.跑动距离
         $userAbility->run_distance_high     += $speedType['high']['dis'];   //总高速
         $userAbility->run_distance_middle   += $speedType['middle']['dis']; //总中速
         $userAbility->run_distance_low      += $speedType['low']['dis'];    //总低速
-        $userAbility->run_speed_max         =  max($userAbility->run_speed_max,$maxSpeed); //最高速度
-        $userAbility->run_distance_total    += ($speedType['high']['dis'] + $speedType['middle']['dis'] + $speedType['low']['dis']);
-        $userAbility->run_time_total        += ($speedType['high']['time'] + $speedType['middle']['time'] + $speedType['low']['time']);
+        $userAbility->run_distance_static   += $speedType['static']['dis']; //总走动
+        $userAbility->run_distance_total    += ($speedType['high']['dis'] + $speedType['middle']['dis'] + $speedType['low']['dis'] + $speedType['static']['dis']);
+
+        //跑动时间
+        $userAbility->run_time_high         += $speedType['high']['time'];
+        $userAbility->run_time_middle       += $speedType['middle']['time'];
+        $userAbility->run_time_low          += $speedType['middle']['time'];
+        $userAbility->run_time_static       += $speedType['static']['time'];
+        $userAbility->run_time_total        += ($speedType['high']['time'] + $speedType['middle']['time'] + $speedType['low']['time'] + $speedType['static']['time']);
+
+        //速度
+        $userAbility->run_speed_max         =  max($userAbility->run_speed_max,$maxSpeed);                      //最高速度
+        $userAbility->run_high_speed        = $userAbility->run_distance_high / $userAbility->run_time_total;   //高速平均速度
+
         $userAbility->user_id               =  $matchInfo->user_id;
+
         $userAbility->save();
 
     }
 
 
-    //
+    /**
+     * 传球和触球
+     * */
     public function save_pass_and_touch($matchId)
     {
         $passFile   = public_path("uploads/match/{$matchId}/result-pass.txt");
