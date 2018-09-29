@@ -10,6 +10,8 @@ namespace App\Http\Controllers\Api\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseMatchResultModel;
+use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
 use Illuminate\Http\Request;
@@ -81,6 +83,28 @@ class MatchController extends Controller
 
         return apiData()->add('court',$courtInfo)->send();
 
+    }
+
+    /**
+     * 比赛结果
+     * */
+    public function match_result(Request $request){
+
+        $matchId    = $request->input('matchId');
+
+        $matchResult = BaseMatchResultModel::find($matchId);
+
+        return apiData()->add('matchResult',$matchResult)->send();
+    }
+
+
+    public function match_files(Request $request){
+
+        $matchId    = $request->input('matchId');
+
+        $matchFiles = BaseMatchSourceDataModel::where('match_id',$matchId)->orderBy('foot')->orderBy('type')->get();
+
+        return apiData()->add('matchFiles',$matchFiles)->send();
     }
 
 

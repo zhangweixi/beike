@@ -55,6 +55,11 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl: "match-result.html?t=" + Math.random(),
             controller: 'matchController'
         })
+        .state('match/files/:matchId',{
+            url: "/match/files/:matchId",
+            templateUrl: "match-files.html?t=" + Math.random(),
+            controller: 'matchController'
+        })
         //球场
         .state('court/angle-setting/:courtTypeId',{
             url:"/court/angle-setting/:courtTypeId",

@@ -643,7 +643,9 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
     $scope.matchGps     = [];
 
-    $scope.matchResult  = [];   //比赛结果
+    $scope.matchResult  = {};   //比赛结果
+
+    $scope.matchFiles   = [];   //比赛文件
 
 
     $scope.paginationConf = {
@@ -693,12 +695,20 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
         $http.get(url).success(function(res)
         {
-
              $scope.matchResult = res.data.matchResult;
-             
-
         })
+    }
 
+    //比赛文件
+    $scope.get_match_files = function()
+    {
+        var url = server + "match/match_files?matchId="+$scope.matchId;
+
+        $http.get(url).success(function(res){
+
+            $scope.matchFiles = res.data.matchFiles;
+
+        });
     }
 
     //获得比赛球场
