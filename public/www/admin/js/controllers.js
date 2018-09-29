@@ -706,7 +706,8 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
         $http.get(url).success(function(res){
 
-            $scope.matchFiles = res.data.matchFiles;
+            $scope.matchFiles.sourceFile = res.data.matchFiles;
+            $scope.matchFiles.resultFile = res.data.resultFiles;
 
         });
     }

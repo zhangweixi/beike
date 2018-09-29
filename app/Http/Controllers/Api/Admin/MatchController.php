@@ -102,9 +102,21 @@ class MatchController extends Controller
 
         $matchId    = $request->input('matchId');
 
+        //原始文件
         $matchFiles = BaseMatchSourceDataModel::where('match_id',$matchId)->orderBy('foot')->orderBy('type')->get();
 
-        return apiData()->add('matchFiles',$matchFiles)->send();
+        //结果文件
+        $dirfile    = public_path("uploads/match/".$matchId);
+        $resultFiles= [];
+        foreach($dirfile as $file)
+        {
+            if(preg_match("/^\w/",$file))
+            {
+                array_push($resultFiles,url("uploads/match/{$matchId}/").$file);
+            }
+        }
+
+        return apiData()->add('matchFiles',$matchFiles)->add('resultFiles',$resultFiles)->send();
     }
 
 

@@ -1,14 +1,13 @@
 <div class="col-md-12 col-sm-12 col-xs-12" ng-init="get_match_files()">
     <div class="x_panel">
         <div class="x_title">
-            <h2>部门列表</h2>
+            <h2>比赛文件</h2>
             <div class="clearfix"></div>
         </div>
 
         <div class="x_content">
 
-            <!--<p>Add class <code>bulk_action</code> to table for bulk actions options on row select</p>-->
-
+            <p>原始文件</p>
             <div class="table-responsive">
                 <table class="table table-striped table-bordered jambo_table bulk_action">
                     <thead>
@@ -23,14 +22,24 @@
 
 
                     <tbody>
-                    <tr  ng-repeat="file in matchFiles">
+                    <tr  ng-repeat="file in matchFiles.sourceFile">
                         <td>{{file.foot}}</td>
                         <td>{{file.type}}</td>
                         <td>{{file.status}}</td>
                         <td>{{file.check_code}}</td>
                         <td><a target="_blank" href="/storage/app/{{file.data}}" class="btn-info btn btn-xs">打开</a></td>
                     </tr>
+
                     </tbody>
+                </table>
+            </div>
+
+            <p>结果文件</p>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered jambo_table bulk_action">
+                    <tr  ng-repeat="file in matchFiles.resultFile">
+                        <td><a target="_blank" href="{{file}}" class="btn-info btn btn-xs">打开</a></td>
+                    </tr>
                 </table>
             </div>
         </div>
