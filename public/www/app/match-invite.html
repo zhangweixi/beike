@@ -51,10 +51,14 @@
                         alert('成功加入比赛');
                         $scope.get_match_info();
 
-                    }else if(res.code == 2001){
+                    }else if(res.code == 2001) {
 
                         //用户没有注册，需要下载APP
                         alert(res.message);
+
+                    }else if(res.code == 2002){ //微信授权
+
+                        location.href = location.origin + "/service/wechat/login?url=" + encodeURI(location.href);
 
                     }else{
 
