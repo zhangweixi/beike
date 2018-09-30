@@ -110,10 +110,23 @@ class Wechat extends Controller
 
         }else{
 
-            return false;
+            dd(self::wechat_info());
 
         }
     }
+
+    public static function wechat_info()
+    {
+        $wechatInfo     = session()->get('wechatUser',null);
+
+        if($wechatInfo == null)
+        {
+            return null;
+        }
+
+        return $wechatInfo->original;
+    }
+
 
 
     /**
@@ -121,14 +134,14 @@ class Wechat extends Controller
      * */
     public function get_wechat_info()
     {
-        $wechatInfo     = session()->get('wechatUser',null);
+        $wechatInfo     = self::wechat_info();
 
         if($wechatInfo == null){
 
             return apiData()->send(2001,'没有微信信息');
         }
 
-        return apiData()->add('wechat',$wechatInfo->original)->send();
+        return apiData()->add('wechat',$wechatInfo)->send();
 
     }
 
