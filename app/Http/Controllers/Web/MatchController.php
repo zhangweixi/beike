@@ -37,14 +37,14 @@ class MatchController extends Controller{
     {
         $wexinInfo  = Wechat::wechat_info();
 
-        //$wexinInfo  = new \stdClass(); $wexinInfo->unionid = "o5nq00z3taGvcaYAUvKGpfxshcc8";
+        //$wexinInfo['unionid'] = "o5nq00z3taGvcaYAUvKGpfxshcc8";
 
         if($wexinInfo == null)
         {
             return apiData()->send(2002,'需微信授权');
         }
 
-        $unionId    = $wexinInfo->unionid;
+        $unionId    = $wexinInfo['unionid'];
 
         $matchId    = $request->input('matchId');
 
