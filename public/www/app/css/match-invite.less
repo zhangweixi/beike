@@ -1,0 +1,160 @@
+body{
+    background:#303144;
+    padding:0;
+    margin:0;
+    height:100vh;
+    width:100vw;
+    background-size: cover;
+    background-repeat:no-repeat;
+    background-position: center;
+    text-align: center;
+    color:#fff;
+}
+
+p{
+    padding:0;
+    margin:0;
+}
+.full{
+    display: block;
+    width:100%;
+}
+
+@graycolor:#ABADB6;
+@green:#00FFD5;
+.container{
+    padding:20px;
+    padding-top:0;
+
+    .content-box{
+        background: #3E4157;
+        position: relative;
+    }
+
+    .base-btn{
+        text-align: center;
+        margin:auto;
+        width:50%;
+        font-size:18px;
+        line-height: 2.3;
+        border-radius: 25px;
+    }
+    
+    .title-btn{
+        .base-btn;
+        position: relative;
+        top:-25px;
+        background: #00FFD5;
+        color:#303144;
+        font-size:20px;
+        border-radius: 25px;
+    }
+
+    .join-btn{
+        
+        .base-btn;
+        border:1px solid @green;
+        color:@green;
+        margin-top:30px;
+        width:80%;
+    }
+
+    .content{
+        margin-left:20px;
+    }
+    .content p{
+        border-bottom:1px solid #ABADB6;
+        padding:15px 0;
+        margin:0;
+        line-height:1.5;
+        font-size: 15px;
+        overflow: hidden;
+    }
+
+    .content p:nth-last-child(1){
+        
+        border:none;
+    }
+
+    .content span{
+        padding-right:20px;
+        color:#ABADB6;
+        float: left;
+
+    }
+
+
+    .content label{
+    
+        float: left;
+    }
+
+    .content label.cycle{
+        padding:2px 8px;
+        border:1px solid #ABADB6;
+        border-radius: 10px;
+        font-size:12px;
+        margin-right:20px;
+    }
+
+
+    .users {
+        padding: 0;
+        margin-top:0;
+        margin-bottom: 20px;
+        overflow: hidden;
+        li{
+            list-style: none;
+            height:50px;
+            display: block;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        div{
+            display: inline-block;
+            float: left;
+        }
+
+
+        p{
+            height:45%;
+            line-height: 25px;
+            padding:0;
+            border:none;
+            margin-left:15px;
+        }
+        
+        p span{
+            padding-right:0;
+        }
+        p .name{
+            color:#fff;
+        }
+        p .age{
+            font-size:13px;
+            line-height: 1.3;
+        }
+        .headimg{
+            width:50px;
+            height:50px;
+            display: inline-block;
+            float: left;
+            border-radius: 50%;
+        }
+        
+        .org{
+            margin-top:12px;
+            float: right;
+            background: #595C6D;
+            padding-left: 20px;
+            padding-right: 20px;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            line-height: 1.5;
+        }
+    }
+    
+
+
+}

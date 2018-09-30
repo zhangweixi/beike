@@ -5,60 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <title>Title</title>
-    <style>
-        body{
-            background:#000;
-            padding:0;
-            margin:0;
-            height:100vh;
-            width:100vw;
-            background-image:url('https://thumbs.dreamstime.com/z/%E8%B6%B3%E7%90%83%E8%BF%90%E5%8A%A8%E5%91%98%E9%98%9F-42346219.jpg');
-            background-size: cover;
-            background-repeat:no-repeat;
-            background-position: center;
-            text-align: center;
-        }
-
-        button{
-            position: absolute;
-            bottom:20vw;
-            margin:auto;
-            display: block;
-            width:80vw;
-            left:10vw;
-            line-height:2.5;
-            background:green;
-            color:#fff;
-            border:none;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size:20px;
-        }
-    </style>
+    <title>张维喜的参赛邀请</title>
+    <link rel="stylesheet" href="./css/match-invite.css?2kk">
     <script src="../../vendors/jquery/dist/jquery.min.js"></script>
+    <!--<script src="../../vendors/angular/angular.min.js"></script>-->
+    <script src="../../vendors/angular/angular.js"></script>
+
     <script>
 
-        function GetQueryString(name) {
+        function GetQueryString(name)
+        {
             var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
             var r = window.location.search.substr(1).match(reg);
             if(r!=null)return  unescape(r[2]); return null;
         }
 
-        var matchId = GetQueryString('matchId');
 
-        alert(matchId);
-        if(matchId > 0)
-        {
+        var  app = angular.module('app',[]);
+
+        app.controller('match',function($scope,$http){
+
+            $scope.matchInfo = {};
+            $scope.matchId  = GetQueryString('matchId');
+
+            /*获得比赛信息*/
+            $scope.get_match_info = function(){
+
+                var url = "/web/match/get_match_info?matchId="+$scope.matchId;
+                $http.get(url).then(function(res){
+
+                    $scope.matchInfo = res.data.data.matchInfo;
+                });
+            }
 
 
+            $scope.join_match = function()
+            {
+                var url = "/web/match/join_match?matchId="+$scope.matchId;
+                $http.get(url).then(function(res){
 
-        }
+                    res = res.data;
+
+                    if(res.code == 200){
+
+                        alert('成功加入比赛');
+                        $scope.get_match_info();
+
+                    }else if(res.code == 2001){
+
+                        //用户没有注册，需要下载APP
+                        alert(res.message);
+
+                    }else{
+
+                        alert(res.message);
+                    }
+                });
+            }
+
+            $scope.get_match_info();
+
+        })
     </script>
 </head>
-<body>
+<body ng-app="app" ng-controller="match">
 
-    <button>加入比赛</button>
+    <img class="full" src="./images/match-invite/match-invite.png">
+
+
+    <div class="container">
+        <div class="content-box">
+
+            <p class="title-btn">比赛详情</p>
+
+            <div class="content">
+                <p><span>比赛时间</span><label ng-bind="matchInfo.begin_time"></label></p>
+                <p><span>比赛费用</span><label ng-bind="matchInfo.sign_fee + '/人'"></label></p>
+                <p><span>比赛人数</span><label > {{matchInfo.total_num}}人</label></p>
+                <p><span>比赛地址</span><label ng-bind="matchInfo.address"></label></p>
+                <p><span>参加条件</span>
+                    <label class="cycle">{{matchInfo.creditText}}</label>
+                    <label class="cycle">高于{{matchInfo.grade}}分</label>
+                </p>
+            </div>
+
+            <p class="join-btn" ng-click="join_match()">我要参加</p>
+            <p style="height:20px;"></p>
+        </div>
+
+        <div style="height:80px;"></div>
+        <div class="content-box">
+
+            <p class="title-btn">已参赛人数</p>
+
+            <ul class="content users">
+
+               <li ng-repeat="user in matchInfo.users">
+
+                   <img class="headimg" ng-src="{{user.head_img}}" >
+                   <div>
+                       <p><span class="name">{{user.nick_name}}</span><span>/{{user.role}}</span></p>
+                       <p><span class="age">年龄:{{user.age}}&nbsp;评分:{{user.grade}}</span></p>
+                   </div>
+                   <p class="org" ng-if="user.isCreater == 1"><span>组织者</span></p>
+               </li>
+            </ul>
+        </div>
+
+    </div>
 
 </body>
 </html>

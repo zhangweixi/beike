@@ -22,6 +22,12 @@ Route::any('/service/upload',"Service\Upload@upload");
 Route::any('/service/wechat/{action}',"Service\Wechat@action");
 
 
+Route::prefix("web")->namespace("web")->group(function()
+{
+
+	Route::any('match/{action}',"MatchController@action");
+	
+});
 
 //Route::get('/weixin/user','Speed\IndexController@user');
 //Route::get('/weixin/get_wx_info','Speed\IndexController@get_wx_info');
