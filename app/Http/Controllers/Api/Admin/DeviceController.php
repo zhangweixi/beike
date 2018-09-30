@@ -63,7 +63,7 @@ class DeviceController extends Controller
     /*编辑设备信息*/
     public function edit_device(Request $request)
     {
-        $deviceId   = $request->input('deviceId',0);
+        $deviceId   = $request->input('device_id',0);
 
         $deviceInfo = $request->all();
 
