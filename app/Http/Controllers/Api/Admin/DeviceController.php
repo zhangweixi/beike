@@ -68,7 +68,11 @@ class DeviceController extends Controller
         $deviceInfo = $request->all();
 
         if($deviceId > 0) {
-
+            foreach ($deviceInfo as $key =>$v){
+                if($v == null){
+                    unset($deviceInfo[$key]);
+                }
+            }
             DeviceModel::where('device_id',$deviceId)->update($deviceInfo);
 
         }else{
