@@ -69,7 +69,8 @@ class DeviceController extends Controller
 
         if($deviceId > 0) {
             foreach ($deviceInfo as $key =>$v){
-                if($v == null || $v == "null"){
+                if($v == null || $v == "null")
+                {
                     unset($deviceInfo[$key]);
                 }
             }
