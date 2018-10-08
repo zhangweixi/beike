@@ -40,8 +40,8 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
         })
 
         //比赛
-        .state('match/list', {
-            url: "/match/list",
+        .state('match/list/:page', {
+            url: "/match/list/:page",
             templateUrl: 'match-list.html?t=' + Math.random(),
             controller: 'matchController'
         })

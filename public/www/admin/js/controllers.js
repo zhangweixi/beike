@@ -50,8 +50,15 @@ myapp.controller('indexController', function ($scope, $location, $http) {
         var data = http_query({token: token});
         $http.post(url, data).success(function (res) {
 
-            $scope.admin = res.data.admin;
+            if(res.code == 200){
 
+                $scope.admin = res.data.admin;
+
+            }else{
+                
+                location.href = "login.html";
+                
+            }
         });
     }
 
@@ -649,14 +656,18 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
 
     $scope.paginationConf = {
-        currentPage: 0,
+        currentPage: $stateParams.page,
         totalItems: 0,
         itemsPerPage: 0,
         pagesLength: 0,
         perPageOptions: [10, 20, 30, 40, 50],
         onChange: function ()
         {
-            $scope.get_match_list($scope.paginationConf.currentPage);
+            if($scope.paginationConf.currentPage > 0 )
+            {
+                $location.path('match/list/'+$scope.paginationConf.currentPage);
+            }
+            //$scope.get_match_list($scope.paginationConf.currentPage);
         }
     };
 
@@ -666,9 +677,14 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
     }
 
     //比赛列表
-    $scope.get_match_list = function(page)
+    $scope.get_match_list = function()
     {
-        if(page == 0) return;
+        page = $stateParams.page;
+        
+        if(page == 0) 
+        {
+            return;
+        }
 
         var url     = server + "match/matches";
         var data    = {page:page};
