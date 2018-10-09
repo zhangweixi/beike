@@ -3,7 +3,7 @@ $api = app('Dingo\Api\Routing\Router');
 
 //,'apiSign'
 
-$api->version('v1',['prefix'=>"api/admin",'middleware'=>['saveApiData'],'namespace'=>"App\Http\Controllers\Api\Admin"],function ($api)
+$api->version('v1',['prefix'=>"api/admin",'middleware'=>[],'namespace'=>"App\Http\Controllers\Api\Admin"],function ($api)
 {
 
     $api->any('/admin/{action}',        'AdminController@action');
