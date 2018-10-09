@@ -47,6 +47,7 @@ function credit_to_text($credit)
 }
 
 
+
 function text_to_credit($text)
 {
     switch ($text)
@@ -95,5 +96,15 @@ function gps_to_bdgps($gpsArr)
 
 function logbug($content)
 {
+    if(is_array($content)){
+        
+        $content = json_encode($content);
+
+    }elseif(is_object($content)){
+
+        $content = object_to_array($content);
+        logbug($content);
+        return;
+    }
     DB::table('debug')->insert(['debuginfo'=>$content,'created_at'=>date_time()]);
 }
