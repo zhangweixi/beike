@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Common\Geohash;
+use App\Common\Jpush;
 use App\Common\MobileMassege;
 use App\Http\Controllers\Controller;
 use App\Jobs\CommonJob;
@@ -92,9 +93,8 @@ class ShequMatchController extends Controller
         if(strlen($latitude) > 0)
         {
             $users  = $userModel->get_user_ids_by_geohash($latitude,$longitude,4);
-            $delayTime  = now()->addSecond(1);
-
-            CommonJob::dispatch("new_match_notice",['matchId'=>$shequModel->sq_match_id,'users'=>$users])->delay($delayTime);
+            $jpush      = new Jpush();
+            $jpush->pushContent("新比赛提醒",$address."球场".$shequModel->begin_time."有一场足球比赛，去瞧瞧吧！",3001,1,$users,['matchId'=>$shequModel->sq_match_id]);
         }
 
         return apiData()

@@ -115,7 +115,17 @@ class Jpush{
 
         } elseif ($type == 1) {
 
-            $push->addAlias((string)$user);
+            if(is_array($user))
+            {
+                foreach($user as $u){
+
+                    $push->addAlias((string)$u);
+                }
+
+            }else{
+
+                $push->addAlias((string)$user);
+            }
 
         } elseif($type == 2) {
 
