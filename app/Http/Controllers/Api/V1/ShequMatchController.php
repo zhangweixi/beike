@@ -70,7 +70,6 @@ class ShequMatchController extends Controller
         $shequModel->grade      = $grade;
         $shequModel->credit     = $credit;
         $shequModel->sign_fee   = $signFee;
-        $shequModel->joined_num = 1;
         $shequModel->lat        = $latitude;
         $shequModel->lon        = $longitude;
         $shequModel->save();
