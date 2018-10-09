@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\Base\BaseFootballCourtTypeModel;
 use App\Models\V1\DeviceModel;
 use App\Models\V1\FriendModel;
 use App\Models\V1\MessageModel;
@@ -147,6 +148,15 @@ class UserController extends Controller
         $userInfo['isNewUser']  = 0;
         $userInfo['birthday']   = $userInfo['birthday'] == "0000-00-00" ? "" : $userInfo['birthday'];
         $deviceInfo             = $this->get_user_current_device_info($userInfo['deviceSn']);
+
+        //球队信息
+        $userInfo['footballTeamName']   = "";
+        if($userInfo['footballTeam'] > 0)
+        {
+            $teamInfo = DB::table("football_team")->where('team_id',$userInfo['footballTeam'])->first();
+            $userInfo['footballTeamName']   = $teamInfo->team_name;
+        }
+
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
 
     }
@@ -240,6 +250,13 @@ class UserController extends Controller
         header('Token:'.$token);
         $deviceInfo = $this->get_user_current_device_info($userInfo['deviceSn']);
 
+        //球队信息
+        $userInfo['footballTeamName']   = "";
+        if($userInfo['footballTeam'] > 0)
+        {
+            $teamInfo = DB::table("football_team")->where('team_id',$userInfo['footballTeam'])->first();
+            $userInfo['footballTeamName']   = $teamInfo->team_name;
+        }
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'登录成功');
     }
 

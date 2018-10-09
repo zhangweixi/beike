@@ -55,8 +55,6 @@ class ShequMatchController extends Controller
         $longitude  = $request->input('longitude','');
 
 
-        $userBility = BaseUserAbilityModel::find($userId);
-
         //检查时间是否有效
         $matchbegin  = $matchDate." ".$matchTime.":00";
         if(strtotime($matchbegin) < time())
@@ -78,16 +76,10 @@ class ShequMatchController extends Controller
         $shequModel->save();
 
         $userModel = new UserModel();
-        //$userInfo = $userModel->get_user_info($userId);
-
 
         //自己加入比赛
-        $matchUserModel = new BaseShequMatchUserModel();
-        $matchUserModel->sq_match_id   = $shequModel->sq_match_id;
-        $matchUserModel->user_id    = $userId;
-        $matchUserModel->grade      = $userBility ? $userBility->grade : 0;
-        $matchUserModel->save();
-
+        $shequMatchModel= new ShequMatchModel();
+        $shequMatchModel->add_match_user($shequModel->sq_match_id,$userId);
 
         //给临近的人推送比赛
         if(strlen($latitude) > 0)

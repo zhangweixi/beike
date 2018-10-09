@@ -178,9 +178,12 @@ class ShequMatchModel extends Model{
      * */
     public function add_match_user($matchId,$userId)
     {
+        $ability                    = DB::table('user_global_ability')->select('grade')->first();
+
         $matchUser                  = new BaseShequMatchUserModel;
         $matchUser->user_id         = $userId;
         $matchUser->sq_match_id     = $matchId;
+        $matchUser->grade           = $ability ? $ability->grade : 0;
         $matchUser->save();
 
 

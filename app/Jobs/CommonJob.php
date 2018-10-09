@@ -41,11 +41,7 @@ class CommonJob implements ShouldQueue
     {
         switch ($this->action){
 
-            case 'new_match_notice':
-
-                $matchId    = $this->data['matchId'];
-                $users      = $this->data['users'];
-                $this->new_match_notice($matchId,$users);
+            case '':
 
             break;
 
@@ -56,20 +52,4 @@ class CommonJob implements ShouldQueue
     }
 
 
-    /**
-     * 新比赛通知
-     * @param $matchId integer 比赛ID
-     * @param $users array 用户ID
-     * */
-    private function new_match_notice($matchId,$users = [])
-    {
-        $jpush      = new Jpush();
-        $matchInfo  = ShequMatchModel::find($matchId);
-
-        foreach($users as $userId)
-        {
-            $jpush->pushContent("新比赛提醒",$matchInfo->address."球场".$matchInfo->begin_time."有一场足球比赛，去瞧瞧吧！",3001,1,$userId,['matchId'=>$matchId]);
-            sleep(1);
-        }
-    }
 }
