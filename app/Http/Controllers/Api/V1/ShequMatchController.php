@@ -92,7 +92,7 @@ class ShequMatchController extends Controller
         if(strlen($latitude) > 0)
         {
             $users  = $userModel->get_user_ids_by_geohash($latitude,$longitude,4);
-
+            logbug($users);
             $delayTime  = now()->addSecond(1);
 
             CommonJob::dispatch("new_match_notice",['matchId'=>$shequModel->sq_match_id,'users'=>$users])->delay($delayTime);
