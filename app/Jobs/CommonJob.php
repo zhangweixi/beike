@@ -68,7 +68,7 @@ class CommonJob implements ShouldQueue
 
         foreach($users as $userId)
         {
-            $jpush->pushContent("新比赛提醒",$matchInfo->address."球场".$matchInfo->begin_time."有一场足球比赛，去瞧瞧吧！",2001,1,$userId,['matchId'=>$matchId]);
+            $jpush->pushContent("新比赛提醒",$matchInfo->address."球场".$matchInfo->begin_time."有一场足球比赛，去瞧瞧吧！",3001,1,$userId,['matchId'=>$matchId]);
             sleep(1);
         }
     }
