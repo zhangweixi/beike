@@ -187,9 +187,10 @@ class UserModel extends Model
         foreach($areas as $area)
         {
             $ids    = $this->where('geohash','like',$area."%")->pluck('id')->toArray();
+
             if(count($ids) > 0)
             {
-                array_push($users,$ids);
+                $users  = array_merge($users,$ids);
             }
         }
         return $users;
