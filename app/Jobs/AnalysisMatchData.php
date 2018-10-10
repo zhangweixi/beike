@@ -1150,7 +1150,7 @@ class AnalysisMatchData implements ShouldQueue
             self::execute("save_matlab_result",$params,'api');
 
         }else{
-
+            mylogger('wwwwwwwwwwww');
             logbug("比赛:".$matchId."执行算法失败,结果为:".$result);
         }
     }
