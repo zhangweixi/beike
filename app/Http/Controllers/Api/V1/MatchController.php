@@ -70,18 +70,22 @@ class MatchController extends Controller
         $matchModel->log_match_status($matchId,'stop'); //操作标记
 
 
-        //数据解析进度表
+        //初始化数据解析进度表
         BaseMatchDataProcessModel::create(['match_id'=>$matchId]);
 
 
-        //个人能力表
+        //初始化个人能力表
         if(BaseUserAbilityModel::find($userId) == null)
         {
             BaseUserAbilityModel::create(['user_id'=>$userId]);
         }
 
-        //比赛结果表
+        //初始化比赛结果表
         BaseMatchResultModel::create(['match_id'=>$matchId]);
+
+        //计算比赛时间
+        $matchStatus = DB::table('match_status')->where('match_id',$matchId)->get();
+
 
         return apiData()->send(200,"success");
     }
@@ -108,7 +112,7 @@ class MatchController extends Controller
 
         if($hasFile)
         {
-            return apiData()->send(2001,'数据重复上传');
+            //return apiData()->send(2001,'数据重复上传');
         }
 
         //数据文件存储在磁盘中
