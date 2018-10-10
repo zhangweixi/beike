@@ -1291,7 +1291,6 @@ class AnalysisMatchData implements ShouldQueue
             'map_speed_middle'  => $speedType['middle']['gps'],
             'map_speed_high'    => $speedType['high']['gps'],
             'run_high_speed_avg'=> 0,//高速平均跑动速度
-            ''
         ];
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
