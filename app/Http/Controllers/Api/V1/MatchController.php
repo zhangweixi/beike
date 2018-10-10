@@ -130,29 +130,15 @@ class MatchController extends Controller
             'check_code'=> $checkCode
         ];
 
-        //之前是否有 未完成解析的数据  正在解析  不要加入队列
-        $hasData = DB::table('match_source_data')
-            ->where('user_id',$userId)
-            ->where('type',$dataType)
-            ->where('foot',$foot)
-            ->where('status',"<",2)
-            ->first();
-
-
         //1.储存数据
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
-
-
         //数据已解析完毕，尽快解析本条数据
-        if($hasData == null)
-        {
-            $delayTime      = now()->addSecond(1);
-            $data           = ['sourceId'=>$sourceId];
-            AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
-            logbug("队列:".$sourceId);
-        }
+        $delayTime      = now()->addSecond(1);
+        $data           = ['sourceId'=>$sourceId];
+        AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
+        logbug("队列:".$sourceId);
 
         return apiData()->send(200,'ok');
     }

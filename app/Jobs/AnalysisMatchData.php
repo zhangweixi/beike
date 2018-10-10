@@ -148,8 +148,6 @@ class AnalysisMatchData implements ShouldQueue
             case 'finish_parse_data':       $this->finish_parse_data($this->matchId);                   break;
         }
     }
-
-
     /**
      * 解析数据
      * */
@@ -176,9 +174,6 @@ class AnalysisMatchData implements ShouldQueue
             return false;
         }
 
-        //标记处于解析状态中
-        MatchModel::update_match_data($this->sourceId,['status'=>1]);
-
         //由于上一条数据没有解析的完毕的话会自动请求解析下一条，所以如果有未解析完毕的数据就停止执行，等待上一条结束来自动延续
         $prevSourceData = DB::table('match_source_data')
             ->where('match_source_id',"<",$this->sourceId)
@@ -194,6 +189,8 @@ class AnalysisMatchData implements ShouldQueue
             return true;
         }
 
+        //标记处于解析状态中
+        MatchModel::update_match_data($this->sourceId,['status'=>1]);
 
         //1.切分成单组
         $dataStr    = Storage::disk('local')->get($sourceData->data);
@@ -1143,11 +1140,18 @@ class AnalysisMatchData implements ShouldQueue
         $matlabCmd  = "LanQi('{$localDir}','{$baseSensorL}','{$baseSensorR}','{$baseCompassL}','{$baseCompassR}','{$baseGps}','{$resultRun}','{$resultPass}','{$resultStep}')";
         $command    = "python {$pythonfile} --command={$matlabCmd}";
 
-        shell_exec($command);
+        $result     = shell_exec($command."&& echo success");
         mylogger("调用matlab成功：".$command);
 
-        $params   = ['matchId'=>$matchId];
-        self::execute("save_matlab_result",$params,'api');
+        if(trim($result) == "success") {
+
+            $params   = ['matchId'=>$matchId];
+            self::execute("save_matlab_result",$params,'api');
+
+        }else{
+
+            logbug("比赛:".$matchId."执行算法失败,结果为:".$result);
+        }
     }
 
 
