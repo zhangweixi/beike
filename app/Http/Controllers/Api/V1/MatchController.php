@@ -151,6 +151,7 @@ class MatchController extends Controller
             $delayTime      = now()->addSecond(1);
             $data           = ['sourceId'=>$sourceId];
             AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
+            logbug("队列:".$sourceId);
         }
 
         return apiData()->send(200,'ok');
