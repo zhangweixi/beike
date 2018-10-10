@@ -1142,6 +1142,7 @@ class AnalysisMatchData implements ShouldQueue
 
         $result     = shell_exec($command."&& echo success");
         mylogger("调用matlab成功：".$command);
+        mylogger("调用结果:".$result);
 
         if(trim($result) == "success") {
 
