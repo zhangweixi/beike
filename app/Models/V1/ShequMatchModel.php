@@ -197,7 +197,7 @@ class ShequMatchModel extends Model{
      * @param $matchId integer 比赛ID
      * @param $userId integer 用户ID
      * @param $mobile string 手机号
-     *
+     * @return boolean
      * */
     public function invite_user($matchId,$userId,$mobile="")
     {
