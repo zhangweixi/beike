@@ -16,15 +16,18 @@ use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
+use DB;
 
 class MatchController extends Controller
 {
 
     public function matches(Request $request)
     {
-        $matches = MatchModel::orderBy('match_id','desc')->paginate(20);
-
+        $matches = DB::table('match as a')
+            ->leftJoin('users as b','b.id','=','a.user_id')
+            ->select('a.*','b.nick_name')
+            ->orderBy('a.match_id','desc')
+            ->paginate(20);
         return apiData()->add('matches',$matches)->send();
     }
 
