@@ -26,7 +26,7 @@ class MatchCaculate extends Controller
     public function jiexi(Request $request)
     {
         //数据存储完毕，调用MATLAB系统开始计算
-        $sourceId = $request->input('sourceId');
+        $sourceId = $request->input('matchSourceId');
 
 
         //2.开始解析数据
