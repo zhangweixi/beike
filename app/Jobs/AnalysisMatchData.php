@@ -324,6 +324,8 @@ class AnalysisMatchData implements ShouldQueue
             $params = ['matchSourceId'  =>  $nextData->match_source_id];
             $params = http_build_sign($params);
             $url    = $this->host."/api/matchCaculate/jiexi_single_data?".$params;
+
+            logbug("请求解析下一条数据：".$nextData->match_source_id); //标记解析下一条数据
             file_get_contents($url);
         }
 
@@ -433,11 +435,11 @@ class AnalysisMatchData implements ShouldQueue
 
     //通用类型
     public $types   = [
-        '99'    => "B",
-        '88'    => "T",
-        'aa'    => "P",
-        'bb'    => "C",
-        'cc'    => "E"
+        '99'    => "B", //开始
+        '88'    => "T", //同步
+        'aa'    => "P", //暂停
+        'bb'    => "C", //继续
+        'cc'    => "E"  //结束
     ];
 
 
