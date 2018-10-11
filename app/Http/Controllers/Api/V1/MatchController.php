@@ -69,6 +69,8 @@ class MatchController extends Controller
         $matchModel->finish_match($matchId);    //结束比赛
         $matchModel->log_match_status($matchId,'stop'); //操作标记
 
+        $matchTime  = $this->get_matching_time($matchId);   //计算时间
+        $matchModel->update_match($matchId,['time_length'=>$matchTime]);
 
         //初始化数据解析进度表
         BaseMatchDataProcessModel::create(['match_id'=>$matchId]);
@@ -83,11 +85,36 @@ class MatchController extends Controller
         //初始化比赛结果表
         BaseMatchResultModel::create(['match_id'=>$matchId]);
 
-        //计算比赛时间
-        $matchStatus = DB::table('match_status')->where('match_id',$matchId)->get();
-
-
         return apiData()->send(200,"success");
+    }
+
+    /**
+     * 获得比赛时间
+     * @param $matchId integer 比赛ID
+     * @return integer
+     * */
+    private function get_matching_time($matchId)
+    {
+        //计算比赛时间
+        $matchStatus    = DB::table('match_status')->where('match_id',$matchId)->get();
+        $statusNum      = count($matchStatus);
+        $time           = 0;
+
+        if($statusNum%2 == 0) //正常结束
+        {
+            for($i=0;$i<$statusNum;$i=$i+2)
+            {
+                $timeBegin = strtotime($matchStatus[$i]->created_at);
+                $timeEnd   = strtotime($matchStatus[$i+1]->created_at);
+                $time      = $time + ($timeEnd - $timeBegin);
+            }
+
+        }elseif($statusNum >=2 ){
+
+            $time       = strtotime($matchStatus[$statusNum-1]->created_at) - strtotime($matchStatus[0]->created_at);
+        }
+
+        return $time;
     }
 
 
@@ -142,7 +169,7 @@ class MatchController extends Controller
         $delayTime      = now()->addSecond(1);
         $data           = ['sourceId'=>$sourceId];
         AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
-        logbug("队列:".$sourceId);
+
 
         return apiData()->send(200,'ok');
     }
