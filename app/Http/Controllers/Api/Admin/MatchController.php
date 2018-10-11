@@ -109,8 +109,18 @@ class MatchController extends Controller
         $matchFiles = BaseMatchSourceDataModel::where('match_id',$matchId)->orderBy('foot')->orderBy('type')->get();
 
         //结果文件
+
         $dirfile    = public_path("uploads/match/".$matchId);
-        $dirfile    = scandir($dirfile);
+        if(file_exists($dirfile)) {
+
+            $dirfile    = scandir($dirfile);
+
+        }else{
+
+            $dirfile    = [];
+
+        }
+
 
         $resultFiles= [];
 
