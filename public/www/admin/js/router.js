@@ -60,6 +60,11 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl: "match-files.html?t=" + Math.random(),
             controller: 'matchController'
         })
+        .state('match/compass-map/:file',{
+            url:"/match/compass-map/:file",
+            templateUrl:"match-compass-map.html?t="+Math.random(),
+            controller:'matchController'
+        })
         //球场
         .state('court/angle-setting/:courtTypeId',{
             url:"/court/angle-setting/:courtTypeId",
