@@ -724,7 +724,12 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
             $scope.matchFiles.sourceFile = res.data.matchFiles;
             $scope.matchFiles.resultFile = res.data.resultFiles;
+            
+            for(var f of $scope.matchFiles.resultFile)
+            {
+                f.url1 = btoa(f.url);
 
+            }
         });
     }
 
@@ -861,6 +866,48 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
         $scope.get_match_court();
     }
 
+    $scope.compass = [];
+    $scope.get_compass_data = function()
+    {
+        var file = $stateParams.file;
+            file = atob(file);
+
+        var url = server + "match/get_compass_data?file="+file;
+        $http.get(url).success(function(res){
+
+            var data = res.data.compass;
+            var angles = [];
+            angles.x = [];
+            angles.y = [];
+            
+
+
+            var i = 0;
+            for(var angle of data)
+            {
+                angles.y.push(angle[0]);
+                angles.x.push(i++);
+            }
+
+            var option = {
+                xAxis: {
+                    type: 'category',
+                    data: angles.x
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: angles.y,
+                    type: 'line'
+                }]
+            };
+
+            var myChart = echarts.init(document.getElementById('main'));
+            myChart.setOption(option);
+
+        });
+    }
 
 })
 

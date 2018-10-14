@@ -136,6 +136,19 @@ class MatchController extends Controller
     }
 
 
+    public function get_compass_data(Request $request)
+    {
+        $url        = $request->input('file');
+        $compass    = file($url);
+        $data       = [];
+
+        foreach($compass as $d)
+        {
+            array_push($data,explode(" ",$d));
+        }
+
+        return apiData()->add('compass',$data)->send();
+    }
     /**
      * 比赛的GPS
      * */
