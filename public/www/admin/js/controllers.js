@@ -824,6 +824,10 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             color: '#d340c3'
         }
         var pointCollection = new BMap.PointCollection(points, options);  // 初始化PointCollection
+        if(points.length > 0)
+        {
+            $scope.map.centerAndZoom(points[0],20);
+        }
         $scope.map.addOverlay(pointCollection);  // 添加Overlay
     }
 
