@@ -111,7 +111,7 @@ class MessageModel extends Model
                     WHERE (user_id = $userId OR user_id = 0) 
                     AND   (FIND_IN_SET('{$userId}',readed_users) = 0 OR FIND_IN_SET('{$userId}',readed_users) IS NULL )
                     AND  type = '{$msgType}' 
-                    ORDER msg_id 
+                    ORDER BY msg_id 
                     LIMIT 1";
 
         $msgInfo = DB::select($sql);
