@@ -124,10 +124,6 @@ class ShequMatchController extends Controller
             //检查是否已经参加
             $isJoin     = ShequMatchModel::check_is_join_match($matchId,$friendUserId);
 
-            //检查是否邀请过了
-            //$isInvite   = ShequMatchModel::check_user_is_invited($matchId,$friendUserId);
-
-
             if($isJoin){
 
                 return apiData()->send(2001,'已经参加了比赛，不能再邀请了');
@@ -175,13 +171,21 @@ class ShequMatchController extends Controller
         $result     = $request->input('result');
         $matchModel = new ShequMatchModel();
 
+        $inviteInfo     = DB::table('shequ_match_invite')->where('invite_id',$inviteId)->first();
+        $userName       = UserModel::where('id',$inviteInfo->user_id)->pluck('nick_name');
+
+        $matchInfo      = ShequMatchModel::find($inviteInfo->match_id);
+        $matchCreater   = UserModel::where('id',$matchInfo->user_id)->select('id')->first();
+
 
         $code   = 200;
+        $status = "";
 
         if($result == 0){
 
             $matchModel->refuse_invite($inviteId);
             $msg    = "SUCCESS";
+            $status = "拒绝";
 
         }elseif($result == 1){
 
@@ -192,7 +196,13 @@ class ShequMatchController extends Controller
             if($msg == "SUCCESS"){
 
                 $code   = 200;
+                $status = "接受";
             }
+        }
+
+        if($status != '')
+        {
+            (new Jpush())->pushContent('邀请处理',"您的好友".$userName.$status."了您的时间为".$matchInfo->begin_time."的比赛邀请",3003,1,$matchCreater->id,[]);
         }
 
         return apiData()->send($code,$msg);
