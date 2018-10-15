@@ -543,28 +543,33 @@ class UserController extends Controller
         $inviteNum  = MessageModel::count_unread_msg($userId,'invite');
         $focusNum   = MessageModel::count_unread_msg($userId,'focus');
 
-
+        //最新的
+        $inviteMsg  = MessageModel::last_unread_msg($userId,'invite');
+        $focusMsg   = MessageModel::last_unread_msg($userId,'focus');
+        $systemMsg  = MessageModel::last_unread_msg($userId,'system');
+        $noMsg      = "暂无消息";
         $msgTypes   = [
             [
                 "msgType"   => 'focus',
                 "typeTitle" => "关注信息",
                 "icon"      => url('beike/images/icon/msg-focus.png'),
                 'msgNum'    => $focusNum,
-                'newMsg'    => "一只小小龟请求关注你"
+                'newMsg'    => $focusMsg ? $focusMsg->content : $noMsg
             ],
             [
                 "msgType"   => 'invite',
                 "typeTitle" => "邀请信息",
                 "icon"      => url('beike/images/icon/msg-invite.png'),
                 'msgNum'    => $inviteNum,
-                'newMsg'    => "11-09  14:00-16:00  虹口足球场"
+                'newMsg'    => $inviteMsg ? $inviteMsg->content : $noMsg
+                //'newMsg'    => "11-09  14:00-16:00  虹口足球场"
             ],
             [
                 "msgType"   => 'system',
                 "typeTitle" => "系统信息",
                 "icon"      => url('beike/images/icon/msg-system.png'),
                 'msgNum'    => $systemNum,
-                'newMsg'    => "一只小小龟请求关注你"
+                'newMsg'    => $systemMsg ? $systemMsg->content : $noMsg
             ]
         ];
 

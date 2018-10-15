@@ -97,6 +97,26 @@ class MessageModel extends Model
     }
 
 
+    /**
+     * 最新的一条未读消息
+     * @param $userId integer 用户ID
+     * @param $msgType string 消息类型
+     * @return object
+     * */
+    static function last_unread_msg($userId,$msgType)
+    {
 
+        $sql    = "SELECT *  
+                    FROM  user_message 
+                    WHERE (user_id = $userId OR user_id = 0) 
+                    AND   (FIND_IN_SET('{$userId}',readed_users) = 0 OR FIND_IN_SET('{$userId}',readed_users) IS NULL )
+                    AND  type = '{$msgType}' 
+                    ORDER msg_id 
+                    LIMIT 1";
+
+        $msgInfo = DB::select($sql);
+
+        return count($msgInfo) > 0 ? $msgInfo[0] : false;
+    }
 
 }
