@@ -136,7 +136,7 @@ class ShequMatchController extends Controller
             $matchModel->invite_user($matchId,$friendUserId);
 
             //发送提示消息
-            $msg    = "好友".$userInfo->nick_name."邀请你".$matchInfo->begin_time."到".$matchInfo->address."举办一场足球活动，去看看！";
+            $msg    = "您的好友".$userInfo->nick_name."邀请您于".$matchInfo->begin_time."到".$matchInfo->address."举办一场足球活动，去看看吧！";
             (new Jpush())->pushContent("比赛邀请",$msg,3002,1,$friendUserId,['matchId'=>$matchId]);
 
         }elseif($type == "mobile"){
