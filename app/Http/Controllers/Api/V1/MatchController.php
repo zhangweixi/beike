@@ -33,7 +33,11 @@ class MatchController extends Controller
      * */
     public function add_match(Request $request)
     {
+        return $this->create_match($request);
+    }
 
+    public function create_match(Request $request)
+    {
         $matchInfo  = [
             'user_id'   => $request->input('userId'),
             'court_id'  => $request->input('courtId',0),
@@ -45,14 +49,11 @@ class MatchController extends Controller
 
         $matchModel->log_match_status($matchId,'begin');
 
-
-
         return apiData()
             ->set_data('matchId',$matchId)
             ->set_data('timestamp',$timestamp)
             ->send();
     }
-
 
 
     /*
