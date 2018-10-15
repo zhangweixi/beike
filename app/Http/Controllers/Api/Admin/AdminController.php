@@ -54,4 +54,34 @@ class AdminController extends Controller
         }
 
     }
+
+    /**
+     *
+     * */
+    public function edit_admin(Request $request)
+    {
+        $name   = $request->input('name');
+        $passwd = $request->input('password');
+        $passwd = sha1(md5($passwd));
+        $adminId= $request->input('admin_id');
+
+        if($adminId == 0)
+        {
+            AdminModel::create(['name'=>$name,'password'=>$passwd,'created_at'=>date_time(),'updated_at'=>date_time()]);
+
+        }
+
+
+        return apiData()->send();
+    }
+
+
+
+    public function admin_list(Request $request)
+    {
+        $admin = AdminModel::get();
+
+        return apiData()->add('admins',$admin)->send();
+
+    }
 }

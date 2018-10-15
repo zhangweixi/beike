@@ -591,7 +591,7 @@ myapp.controller('adminController', function ($scope, $http, $location, $statePa
     console.log($stateParams);
 
     $scope.admin_list = function () {
-        var url = server + "admin_list";
+        var url = server + "admin/admin_list";
 
         $http.get(url).success(function (res) {
 
@@ -625,8 +625,9 @@ myapp.controller('adminController', function ($scope, $http, $location, $statePa
     }
 
     $scope.edit_admin = function () {
-        var url = server + "edit_admin";
-        $http.post(url, $scope.adminInfo).success(function (res) {
+        var url = server + "admin/edit_admin";
+        var data = http_query($scope.adminInfo);
+        $http.post(url, data).success(function (res) {
 
             if (res.code == 200) {
                 alert("添加成功");
