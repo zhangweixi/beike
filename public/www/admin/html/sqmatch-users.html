@@ -1,0 +1,39 @@
+<div class="col-md-12 col-sm-12 col-xs-12" ng-init="get_sqmatch_users()">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>社区比赛用户</h2>
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content">
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered jambo_table bulk_action">
+                    <thead>
+                    <tr class="headings">
+                        <th class="column-title">用户</th>
+                        <th class="column-title">加入方式</th>
+                        <th class="column-title">是否完成比赛</th>
+                        <td class="column-title">加入时间</td>
+                        <th class="column-title">操作</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr  ng-repeat="user in matchUsers">
+                        <td>{{user.nick_name}}</td>
+                        <td>{{user.join_type}}</td>
+                        <td>{{user.join_status}}</td>
+                        <td>{{user.created_at}}</td>
+                        <td>
+                            <!--<a class="btn btn-info btn-xs" href="#sqmatch/users/{{match.sq_match_id}}">成员</a>-->
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../build/js/custom.min.js"></script>

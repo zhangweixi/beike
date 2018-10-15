@@ -101,6 +101,16 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             url: "/admin-add/:id",
             templateUrl: 'admin-add.html?t=' + Math.random(),
             controller: 'adminController'
+        })
+        .state('sqmatch/list/:page',{
+            url:'/sqmatch/list/:page',
+            templateUrl:'sqmatch-list.html?t=' + Math.random(),
+            controller:'sqmatchController'
+        })
+        .state('sqmatch/users/:matchId',{
+            url:'/sqmatch/users/:matchId',
+            templateUrl:'sqmatch-users.html?t=' + Math.random(),
+            controller:'sqmatchController'
         });
 
 

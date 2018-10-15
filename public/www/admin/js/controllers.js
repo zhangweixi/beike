@@ -978,12 +978,6 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                 height = 700;
             }
 
-            console.log(width);
-            console.log(height);
-
-            
-        
-            //console.log(court);
 
             var option = {
                 xAxis: {
@@ -1125,6 +1119,57 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
         })
 
     }
+
+
+})
+
+myapp.controller('sqmatchController',function($scope,$http,$location,$stateParams){
+
+
+    $scope.matches  = [];
+    $scope.sqPaginationConf = {
+        currentPage: $stateParams.page,
+        totalItems: 0,
+        itemsPerPage: 0,
+        pagesLength: 0,
+        perPageOptions: [10, 20, 30, 40, 50],
+        onChange: function ()
+        {
+            if($scope.sqPaginationConf.currentPage > 0 )
+            {
+                $location.path('sqmatch/list/'+$scope.sqPaginationConf.currentPage);
+            }
+        }
+    };
+
+
+    //获取社区列表
+    $scope.get_sqmatch_list = function()
+    {
+        var page = $stateParams.page;
+        var url = server + "sqmatch/matches?page="+page;
+        $http.get(url).success(function(res){
+
+            var match      = res.data.matches;
+            $scope.matches = match.data;
+            $scope.sqPaginationConf.currentPage = page;
+            $scope.sqPaginationConf.totalItems = match.total;
+            $scope.sqPaginationConf.itemsPerPage = match.per_page;
+
+        });
+    }
+
+    $scope.matchUsers = [];
+    $scope.get_sqmatch_users = function()
+    {
+        var url = server + "sqmatch/match_users?matchId="+$stateParams.matchId;
+        $http.get(url).success(function(res){
+
+            $scope.matchUsers = res.data.matchUsers;
+
+        });
+    }
+
 
 
 })
