@@ -64,10 +64,10 @@ class AdminController extends Controller
         $passwd = $request->input('password');
         $passwd = sha1(md5($passwd));
         $adminId= $request->input('admin_id');
-
+        $real_name=$request->input('real_name');
         if($adminId == 0)
         {
-            AdminModel::create(['name'=>$name,'password'=>$passwd,'created_at'=>date_time(),'updated_at'=>date_time()]);
+            AdminModel::create(['name'=>$name,'real_name'=>$real_name,'password'=>$passwd,'created_at'=>date_time(),'updated_at'=>date_time()]);
 
         }
 
