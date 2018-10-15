@@ -122,6 +122,7 @@ class FriendController extends Controller
 
         $allFriend  = $this->friend_and_applyed_ids($userId);
 
+
         $colum      = ['u.id','u.head_img','u.nick_name','u.role1 as role','u.birthday as age','g.grade'];
 
         $recommendFriends    = [];
@@ -134,6 +135,7 @@ class FriendController extends Controller
             ->select($colum)
             ->where('a.user_id',$userId)
             ->where('b.user_id',">",0)
+            ->whereNotIn('b.friend_user_id',$allFriend)
             ->get();
 
 
