@@ -896,7 +896,9 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                     data: angles.x
                 },
                 yAxis: {
-                    type: 'value'
+                    type: 'value',
+                    minInterval:90,
+                    maxInterval:90,
                 },
                 series: [{
                     data: angles.y,
