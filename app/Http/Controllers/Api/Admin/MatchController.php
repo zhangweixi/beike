@@ -153,7 +153,7 @@ class MatchController extends Controller
             }
         }
 
-        $gpsList    = file_to_array(public_path("uploads/match/".$matchId."/gps-l.txt"));
+        $gpsList    = file_to_array(public_path("uploads/match/".$matchId."/gps-L.txt"));
 
         return apiData()->add('courtInfo',$courtData)->add('gpsList',$gpsList)->send();
 
