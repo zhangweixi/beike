@@ -107,21 +107,26 @@ class ShequMatchController extends Controller
         $friendName     = $request->input("friendName");    //手机号邀请需要
         $friendMobile   = $request->input('friendMobile');
 
+        $userInfo       = UserModel::find($userId);
+        $matchInfo      = BaseShequMatchModel::find($matchId);
 
+        $matchModel     = new ShequMatchModel();
 
-        $matchModel = new ShequMatchModel();
+        $isFull         = ShequMatchModel::check_user_is_full($matchId);
 
-        $isFull     = ShequMatchModel::check_user_is_full($matchId);
         if($isFull == true){
 
             return apiData()->send(2001,'人数已满,不能再邀请');
         }
 
-
         if($type == "system") {
 
             //检查是否已经参加
             $isJoin     = ShequMatchModel::check_is_join_match($matchId,$friendUserId);
+
+            //检查是否邀请过了
+            //$isInvite   = ShequMatchModel::check_user_is_invited($matchId,$friendUserId);
+
 
             if($isJoin){
 
@@ -129,6 +134,10 @@ class ShequMatchController extends Controller
             }
 
             $matchModel->invite_user($matchId,$friendUserId);
+
+            //发送提示消息
+            $msg    = "好友".$userInfo->nick_name."邀请你".$matchInfo->begin_time."到".$matchInfo->address."举办一场足球活动，去看看！";
+            (new Jpush())->pushContent("比赛邀请",$msg,3002,1,$friendUserId,['matchId'=>$matchId]);
 
         }elseif($type == "mobile"){
 
@@ -141,11 +150,6 @@ class ShequMatchController extends Controller
 
                 return apiData()->send(2001,"已经邀请过该好友了");
             }
-
-            $userInfo   = UserModel::find($userId);
-
-            $matchInfo  = BaseShequMatchModel::find($matchId);
-
 
             $mobileMessage  = new MobileMassege();
 
