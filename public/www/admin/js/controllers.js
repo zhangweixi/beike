@@ -905,8 +905,119 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
             var myChart = echarts.init(document.getElementById('main'));
             myChart.setOption(option);
+        });
+    }
+
+
+    $scope.get_match_run_data = function(){
+
+
+        var url = server + "match/get_match_run_data?matchId="+$stateParams.matchId;
+        $http.get(url).success(function(res){
+
+            var gpsList = res.data.gpsList;
+            var gpsData = [];
+            var courtData= res.data.courtInfo;
+
+            //找出经度最大，最小值，维度最大，最小值
+
+            var maxlat = 0;
+            var maxlon = 0;
+            var minlat = 100000000;
+            var minlon = 100000000;
+
+            for(var gps of gpsList)
+            {
+                if(gps[0] == 0 || gps[1] == 0)
+                {
+                    continue;
+                }
+                gps[0] = gps[0] * 1000;
+                gps[1] = gps[1] * 1000;
+
+                gpsData.push([gps[1],gps[0]]);
+
+                maxlat = Math.max(maxlat,gps[0]);
+                maxlon = Math.max(maxlon,gps[1]);
+                minlat = Math.min(minlat,gps[0]);
+                minlon = Math.min(minlon,gps[1]);
+            }
+
+           
+
+            var court = [];
+            for(var gps of courtData)
+            {
+                if(gps[0] == 0 || gps[1] == 0)
+                {
+                    continue;
+                }else{
+                    gps[0] = gps[0] * 1000;
+                    gps[1] = gps[1] * 1000;
+                }
+                court.push([gps[1],gps[0]]);
+                maxlat = Math.max(maxlat,gps[0]);
+                maxlon = Math.max(maxlon,gps[1]);
+                minlat = Math.min(minlat,gps[0]);
+                minlon = Math.min(minlon,gps[1]);
+            }
+
+            var height  = maxlat - minlat;
+            var width   = maxlon - minlon;
+
+            if(width < height)
+            {
+                height = 700 * (height/width);
+                width  = 700;
+
+            }else{
+
+                console.log(width/height);
+
+                width = 700 * (width / height );
+                height = 700;
+            }
+
+            console.log(width);
+            console.log(height);
+
+            
+        
+            //console.log(court);
+
+            var option = {
+                xAxis: {
+                    scale: true,
+                    //minInterval:1,
+                    //maxInterval:1,
+                },
+                yAxis: {
+                    scale: true,
+                    //minInterval:1,
+                    //maxInterval:1,
+                },
+                series: [
+                {
+                    type: 'effectScatter',
+                    symbolSize: 5,
+                    data: court
+                }, {
+                    type: 'scatter',
+                    data: gpsData,
+                    symbolSize:5
+                }
+                ]
+            };
+
+            $('#main').css({'width':width+"px",'height':height+"px"});
+            var myChart = echarts.init(document.getElementById('main'));
+            myChart.setOption(option);
 
         });
+    }
+
+    $scope.show_run_map = function(){
+
     }
 
 })

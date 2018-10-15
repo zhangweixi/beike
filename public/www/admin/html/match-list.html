@@ -1,7 +1,7 @@
 <div class="col-md-12 col-sm-12 col-xs-12" ng-init="get_match_list()">
     <div class="x_panel">
         <div class="x_title">
-            <h2>部门列表</h2>
+            <h2>比赛列表</h2>
             <div class="clearfix"></div>
         </div>
 
@@ -20,6 +20,7 @@
                             <th class="column-title">结束时间</th>
                             <td class="column-title">时长</td>
                             <th class="column-title">球场</th>
+                            <th class="column-title">热点图</th>
                             <th class="column-title">操作</th>
                         </tr>
                     </thead>
@@ -33,8 +34,9 @@
                             <td>{{match.time_begin}}</td>
                             <td>{{match.time_end}}</td>
                             <td>{{match.time_length}}</td>
-                            <td><a href="#match/court/{{match.match_id}}">{{match.address}}({{match.court_id}})</a></td>
 
+                            <td><a href="#match/court/{{match.match_id}}">{{match.address}}({{match.court_id}})</a></td>
+                            <td><a href="#match/run/{{match.match_id}}">热点图</a></td>
                             <td>
                                 <a class="btn btn-info btn-xs" href="#match/result/{{match.match_id}}">结果</a>
                                 <a class="btn btn-info btn-xs" href="#match/files/{{match.match_id}}">文件</a>

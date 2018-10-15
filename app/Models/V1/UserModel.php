@@ -33,6 +33,7 @@ class UserModel extends Model
         'device_sn',
         'token',
         'football_team',
+        'credit',
     ];
 
     /**

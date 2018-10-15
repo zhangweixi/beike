@@ -111,15 +111,8 @@ class MatchController extends Controller
         //结果文件
 
         $dirfile    = public_path("uploads/match/".$matchId);
-        if(file_exists($dirfile)) {
 
-            $dirfile    = scandir($dirfile);
-
-        }else{
-
-            $dirfile    = [];
-
-        }
+        $dirfile    = file_exists($dirfile) ? scandir($dirfile) : [];
 
 
         $resultFiles= [];
@@ -139,15 +132,31 @@ class MatchController extends Controller
     public function get_compass_data(Request $request)
     {
         $url        = $request->input('file');
-        $compass    = file($url);
-        $data       = [];
+        $data       = file_to_array($url);
+        return apiData()->add('compass',$data)->send();
+    }
 
-        foreach($compass as $d)
+
+    public function get_match_run_data(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $matchInfo  = MatchModel::find($matchId);
+        $courtInfo  = CourtModel::find($matchInfo->court_id);
+
+        $courtData  = [];
+        if($courtInfo)
         {
-            array_push($data,explode(" ",$d));
+            $keys = ['p_a','p_b','p_c','p_d','p_e','p_f','p_a1','p_d1'];
+            foreach($keys as $key)
+            {
+                array_push($courtData,explode(",",$courtInfo->$key));
+            }
         }
 
-        return apiData()->add('compass',$data)->send();
+        $gpsList    = file_to_array(public_path("uploads/match/".$matchId."/gps-l.txt"));
+
+        return apiData()->add('courtInfo',$courtData)->add('gpsList',$gpsList)->send();
+
     }
     /**
      * 比赛的GPS

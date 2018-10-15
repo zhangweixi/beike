@@ -887,4 +887,16 @@ function get_file_line_num($file)
 
     return $lineNum;
 }
+
+
+function file_to_array($file,$delimiter=" ")
+{
+    $fileData   = file($file);
+    $data       = [];
+    foreach($fileData as $d)
+    {
+        array_push($data,explode($delimiter,$d));
+    }
+    return $data;
+}
 ?>
