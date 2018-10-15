@@ -16,6 +16,6 @@ $api->version('v1',['prefix'=>"api/admin",'middleware'=>[],'namespace'=>"App\Htt
 
     $api->any('/court/{action}',        'CourtController@action');
 
-    $api->any('/sqmatch/{action}',      'SqmatchController@action');
+    $api->any('/sqmatch/{action}',      'SqMatchController@action');
 
 });
