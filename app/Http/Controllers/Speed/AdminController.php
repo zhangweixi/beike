@@ -670,27 +670,40 @@ class AdminController extends Controller{
         $perPaperNumber = (int)$this->system_variable('paper_question_number');
         //$totalQuestion  = (int)$this->system_variable('surplus_question_number');
         $totalQuestion  = $themeInfo->surplus_num;
-        if( $totalQuestion < $number*$perPaperNumber)
-        {
-            return apiData()->send(2001,'剩余题目数量不够分配，请重新设置试卷数量');
-        }
+
+
         $beginTime  = strtotime($beginDate." 00:00:00");
         $dayTime    = 24*60*60;
 
         $paperSns = [];
+        $newPaperNumber = 0;
+
         for($i=0;$i<$number;$i++)
         {
             //检查这个试卷序号的试题是否发送
             $paperSn = date('Y-m-d',$beginTime + $i * $dayTime);
             //检查是否已经创建了试卷
             $info = DB::table('papersn')->where('paper_sn',$paperSn)->first();
-            if($info)
-            {
-                return apiData()->send(2001,$paperSn."的试卷已经分发了，请重新选择起始日期");
+
+            //新的需要分配的
+            if($info == null) {
+
+                $newPaperNumber++;
+                $has = false;
+
+            }else{
+
+                $has = true;
             }
-            array_push($paperSns,$paperSn);
+            array_push($paperSns,["sn"=>$paperSn,"has"=>$has]);
         }
 
+
+        //检查数量是否足够
+        if( $totalQuestion < $newPaperNumber*$perPaperNumber)
+        {
+            return apiData()->send(2001,'剩余题目数量不够分配，请重新设置试卷数量');
+        }
 
         //获得所有题型
         $allQuestions   = DB::table('question')->where("question_theme_id",$themeId)->pluck('question_id')->toArray();
@@ -700,34 +713,46 @@ class AdminController extends Controller{
         $totalGrade     = $this->system_variable('total_grade');
 
         //修改剩余题型数量
-        $surplusQuestion = $totalQuestion - $number * $perPaperNumber;
-        //$this->update_system_variable('surplus_question_number',$surplusQuestion);
+        if($newPaperNumber > 0)
+        {
+            $surplusQuestion = $totalQuestion - $newPaperNumber * $perPaperNumber;
+            DB::table('question_theme')->where('question_theme_id',$themeId)->update(['surplus_num'=>$surplusQuestion]);
+        }
 
-        DB::table('question_theme')->where('question_theme_id',$themeId)->update(['surplus_num'=>$surplusQuestion]);
-
-
-        foreach($paperSns as $paperSn)
+        foreach($paperSns as $snInfo)
         {
             //创建papersn
-            $paperSnInfo = [
-                'paper_sn'      => $paperSn,
-                'publish_date'  => $paperSn,
-                'created_at'    => date_time(),
-                'title'         => $paperSn."的试卷",
-                'quest_num'     => $perPaperNumber,
-                'total_grade'   => $totalGrade
-            ];
+            $paperSn    = $snInfo['sn'];
+            if($snInfo['has'] == false) {
 
-            DB::table('papersn')->insert($paperSnInfo);
+                $paperSnInfo = [
+                    'paper_sn'      => $paperSn,
+                    'publish_date'  => $paperSn,
+                    'created_at'    => date_time(),
+                    'title'         => $paperSn."的试卷",
+                    'quest_num'     => $perPaperNumber,
+                    'total_grade'   => $totalGrade
+                ];
+                DB::table('papersn')->insert($paperSnInfo);
+                $usersSn = [];
 
-            DB::table('user')->orderBy('id')->chunk(200,function($users)use($allQuestions,$beginTime,$endTime,$paperSn,$timeLength,$perPaperNumber,$themeId)
+            }else{
+
+                $usersSn = DB::table('paper')->where('paper_sn',$paperSn)->pluck('user_sn')->toArray();
+            }
+
+
+            //已经分配过的用户不要再分配
+            DB::table('user')
+                ->whereNotIn('user_sn',$usersSn)
+                ->orderBy('id')
+                ->chunk(200,function($users)use($allQuestions,$beginTime,$endTime,$paperSn,$timeLength,$perPaperNumber,$themeId)
             {
 
                 $current = date_time();
 
                 $begin  = $paperSn." ".$beginTime;
                 $end    = $paperSn." ".$endTime;
-
                 foreach($users as $user)
                 {
                     $userSn     = $user->user_sn;
