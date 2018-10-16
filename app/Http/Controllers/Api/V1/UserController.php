@@ -308,8 +308,6 @@ class UserController extends Controller
             ["name"=>"射门欲望","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_desire",0)],
             ["name"=>"射门力量","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_strength",0)],
             ["name"=>"射门时机","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_chance",0)],
-            //["name"=>"长传速度","max"=>100,"self"=>self::def_grade($userAbility,"",0)],
-            //["name"=>"短传速度","max"=>100,"self"=>self::def_grade($userAbility,"",0)],
             ["name"=>"长传数量","max"=>100,"self"=>self::def_grade($userAbility,"grade_pass_num_long",0)],
             ["name"=>"短传数量","max"=>100,"self"=>self::def_grade($userAbility,"grade_pass_num_short",0)],
             ["name"=>"耐力",    "max"=>100,"self"=>self::def_grade($userAbility,"grade_endurance",0)],
@@ -324,6 +322,13 @@ class UserController extends Controller
             ->send();
     }
 
+    /**
+     * 获得对象的某个值，设置默认值
+     * @param $ojb object 对象
+     * @param $key string
+     * @param $value mixed 默认值
+     * @return mixed
+     * */
     private static function def_grade($ojb,$key,$value=0)
     {
         if($ojb && isset($ojb->$key))

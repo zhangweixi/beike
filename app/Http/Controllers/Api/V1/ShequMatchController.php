@@ -202,7 +202,7 @@ class ShequMatchController extends Controller
 
         if($status != '')
         {
-            (new Jpush())->pushContent('邀请处理',"您的好友".$userName.$status."了您的时间为".$matchInfo->begin_time."的比赛邀请",3003,1,$matchCreater->id,[]);
+            (new Jpush())->pushContent('邀请处理',"您的好友".$userName.$status."了您的时间为".$matchInfo->begin_time."的比赛邀请!",3003,1,$matchCreater->id,[]);
         }
 
         return apiData()->send($code,$msg);

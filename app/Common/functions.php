@@ -893,8 +893,11 @@ function file_to_array($file,$delimiter=" ")
 {
     $fileData   = file($file);
     $data       = [];
+
     foreach($fileData as $d)
     {
+        $d  = trim($d,"\n");
+        $d  = trim($d,"\r");
         array_push($data,explode($delimiter,$d));
     }
     return $data;
