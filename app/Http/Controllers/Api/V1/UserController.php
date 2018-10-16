@@ -309,9 +309,9 @@ class UserController extends Controller
             "grade_run      as run"
         ];
 
-
         $userAbility    = DB::table('user_global_ability')->select($colums)->where('user_id',$userId)->first();
-        if(!$userAbility)
+        //雷达图的分数
+        if($userAbility == null)
         {
             $userAbility    = new \stdClass();
             $userAbility->shoot     = 0;
@@ -322,57 +322,19 @@ class UserController extends Controller
             $userAbility->run       = 0;
         }
 
-
         $grades = [
-            ["name"=>"射门欲望","max"=>100,"self"=>86],
-            ["name"=>"射门力量","max"=>100,"self"=>60],
-            ["name"=>"射门时机","max"=>100,"self"=>90],
-            ["name"=>"长传速度","max"=>100,"self"=>48],
-            ["name"=>"短传速度","max"=>100,"self"=>36],
-            ["name"=>"长传数量","max"=>100,"self"=>48],
-            ["name"=>"短传数量","max"=>100,"self"=>20],
-            ["name"=>"短传数量","max"=>100,"self"=>20],
-            ["name"=>"耐力","max"=>100,"self"=>40],
-            ["name"=>"触球数量","max"=>100,"self"=>20],
-            ["name"=>"高速跑动","max"=>100,"self"=>20],
-            ["name"=>"灵活性","max"=>100,"self"=>50],
+            ["name"=>"射门欲望","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_desire",0)],
+            ["name"=>"射门力量","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_strength",0)],
+            ["name"=>"射门时机","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_chance",0)],
+            //["name"=>"长传速度","max"=>100,"self"=>self::def_grade($userAbility,"",0)],
+            //["name"=>"短传速度","max"=>100,"self"=>self::def_grade($userAbility,"",0)],
+            ["name"=>"长传数量","max"=>100,"self"=>self::def_grade($userAbility,"grade_pass_num_long",0)],
+            ["name"=>"短传数量","max"=>100,"self"=>self::def_grade($userAbility,"grade_pass_num_short",0)],
+            ["name"=>"耐力",    "max"=>100,"self"=>self::def_grade($userAbility,"grade_endurance",0)],
+            ["name"=>"冲刺能力","max"=>100,"self"=>self::def_grade($userAbility,"grade_sprint",0)],
+            ["name"=>"触球数量","max"=>100,"self"=>self::def_grade($userAbility,"grade_touchball_num",0)],
+            ["name"=>"灵活性",  "max"=>100,"self"=>self::def_grade($userAbility,"grade_flexible",0)],
         ];
-
-        if(false)
-        {
-            $grades = new \stdClass();
-            $grades->shootDesire    = ["self"=>86,"avg"=>100];//射门欲望
-            $grades->shootStrength  = ["self"=>60,"avg"=>100];//射门力量
-            $grades->shootTimeControl = ["self"=>56,"avg"=>100];//射门时机控制
-
-            //$grades->attack         = ['self'=>42,'avg'=>100];//攻击
-            //$grades->control        = ['self'=>65,'avg'=>100];//控球
-            //$grades->dribble        = ['self'=>76,'avg'=>100];//盘球
-            //$grades->passGround     = ['self'=>50,'avg'=>100];//地面传球
-            //$grades->passAir        = ['self'=>73,'avg'=>100];//空中传球
-
-            $grades->passSpeedShort     = ["self"=>48,"avg"=>100]; //短传距离
-            $grades->passSpeedLong      = ["self"=>63,"avg"=>100];  //长传距离
-
-
-            $grades->passNumShort       = ["self"=>47,"avg"=>100];   //短传数量
-            $grades->passNumLong        = ["self"=>86,"avg"=>100];    //长传数量
-
-
-            //$grades->location   = ['self'=>36,'avg'=>100];//定位球
-            //$grades->strength   = ['self'=>58,'avg'=>100];//强度
-            //$grades->head       = ['self'=>71,'avg'=>100];//头球
-            //$grades->defence    = ['self'=>69,'avg'=>100];//防守能力
-            //$grades->grab       = ['self'=>73,'avg'=>100];//抢球
-
-            $grades->touchball  = ['self'=>52,'avg'=>100];//触球
-            $grades->endurance  = ['self'=>44,'avg'=>100];//耐力
-            $grades->speed      = ['self'=>86,'avg'=>100];//速度
-
-            $grades->runDis      = ['self'=>80,'avg'=>100];//冲刺能力
-            $grades->flexible   = ['self'=>90,'avg'=>100];//灵活
-        }
-
 
         return apiData()
             ->set_data('userAbility',$userAbility)
@@ -380,6 +342,14 @@ class UserController extends Controller
             ->send();
     }
 
+    private static function def_grade($ojb,$key,$value=0)
+    {
+        if($ojb && isset($ojb->$key))
+        {
+            return $ojb->$key;
+        }
+        return $value;
+    }
 
     /**
      * 比赛比较
