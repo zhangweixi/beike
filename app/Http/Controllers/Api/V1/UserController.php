@@ -297,30 +297,12 @@ class UserController extends Controller
      * */
     public function user_global_ability(Request $request)
     {
-
         $userId = $request->input('userId');
+        $userModel      = new UserModel();
+        $userAbility    = $userModel->user_global_ability($userId);
 
-        $colums         = [
-            "grade_shoot    as shoot",
-            "grade_pass     as pass",
-            "grade_strength as strength",
-            "grade_dribble  as dribble",
-            "grade_defense  as defense",
-            "grade_run      as run"
-        ];
-
-        $userAbility    = DB::table('user_global_ability')->select($colums)->where('user_id',$userId)->first();
         //雷达图的分数
-        if($userAbility == null)
-        {
-            $userAbility    = new \stdClass();
-            $userAbility->shoot     = 0;
-            $userAbility->pass      = 0;
-            $userAbility->strength  = 0;
-            $userAbility->dribble   = 0;
-            $userAbility->defense   = 0;
-            $userAbility->run       = 0;
-        }
+        $baseAbility    = self::get_base_map($userAbility);
 
         $grades = [
             ["name"=>"射门欲望","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_desire",0)],
@@ -337,7 +319,7 @@ class UserController extends Controller
         ];
 
         return apiData()
-            ->set_data('userAbility',$userAbility)
+            ->set_data('userAbility',$baseAbility)
             ->set_data('grades',$grades)
             ->send();
     }
@@ -349,6 +331,22 @@ class UserController extends Controller
             return $ojb->$key;
         }
         return $value;
+    }
+
+    /**
+     * 获得基本雷达图
+     * */
+    private static function get_base_map($ability)
+    {
+        $baseMap = [
+            'shoot'     => self::def_grade($ability,"grade_shoot",0),
+            'pass'      => self::def_grade($ability,"grade_pass",0),
+            'strength'  => self::def_grade($ability,'grade_strength',0),
+            'dribble'   => self::def_grade($ability,'grade_dribble',0),
+            'defense'   => self::def_grade($ability,'grade_defense',0),
+            'run'       => self::def_grade($ability,'grade_run',0)
+        ];
+        return $baseMap;
     }
 
     /**
@@ -376,21 +374,27 @@ class UserController extends Controller
         //基本数据
         $myAbility      = $userModel->user_global_ability($userId);
         $friendAbility  = $userModel->user_global_ability($friendId);
-        $baseAbility    = ["self"=>$myAbility,"friend"=>$friendAbility];
+
+        $baseAbility    = [
+            "self"  =>  self::get_base_map($myAbility),
+            "friend"=>  self::get_base_map($friendAbility)
+        ];
 
         //详细数据
         $detailAbility     = [
-            ["name"=>"射门","self"=>30,"friend"=>40,"max"=>100],
-            ["name"=>"盘球","self"=>60,"friend"=>50,"max"=>100],
-            ["name"=>"控球","self"=>20,"friend"=>60,"max"=>100],
-            ["name"=>"攻击能力","self"=>50,"friend"=>80,"max"=>100],
+            ["name"=>"射门欲望","self"=>30,"friend"=>40,"max"=>100],
+            ["name"=>"射门力量","self"=>60,"friend"=>50,"max"=>100],
+            ["name"=>"射门时机","self"=>20,"friend"=>60,"max"=>100],
+            ["name"=>"长传数量","self"=>50,"friend"=>80,"max"=>100],
         ];
+
 
         return apiData()->add('friendInfo',$userInfo)
             ->add('baseAbility',$baseAbility)
             ->add('detailAbility',$detailAbility)
             ->send();
     }
+
 
     /**
      * 用户单项数据图

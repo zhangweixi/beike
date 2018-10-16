@@ -149,20 +149,7 @@ class UserModel extends Model
      * */
     public function user_global_ability($userId)
     {
-        $colums         = ["grade_shoot as shoot","grade_pass as pass","grade_strength as strength","grade_dribble as dribble","grade_defense as defense","grade_run as run"];
-        $ability        = DB::table('user_global_ability')->select($colums)->where('user_id',$userId)->first();
-
-
-        if($ability == null)
-        {
-            $ability        = new \stdClass();
-            $ability->shoot     = rand(0,100);
-            $ability->pass      = rand(0,100);
-            $ability->strength  = rand(0,100);
-            $ability->dribble   = rand(0,100);
-            $ability->defense   = rand(0,100);
-            $ability->run       = rand(0,100);
-        }
+        $ability        = DB::table('user_global_ability')->where('user_id',$userId)->first();
 
         return $ability;
     }
