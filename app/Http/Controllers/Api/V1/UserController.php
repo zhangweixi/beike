@@ -382,12 +382,16 @@ class UserController extends Controller
 
         //详细数据
         $detailAbility     = [
-            ["name"=>"射门欲望","self"=>30,"friend"=>40,"max"=>100],
-            ["name"=>"射门力量","self"=>60,"friend"=>50,"max"=>100],
-            ["name"=>"射门时机","self"=>20,"friend"=>60,"max"=>100],
-            ["name"=>"长传数量","self"=>50,"friend"=>80,"max"=>100],
+            ["name"=>"射门欲望",    "self"=>self::def_grade($myAbility,"grade_shoot_desire",0),     "friend"=>self::def_grade($friendAbility,"grade_shoot_desire",0),   "max"=>100],
+            ["name"=>"射门力量",    "self"=>self::def_grade($myAbility,"grade_shoot_strength",0),   "friend"=>self::def_grade($friendAbility,"grade_shoot_strength",0), "max"=>100],
+            ["name"=>"射门时机",    "self"=>self::def_grade($myAbility,"grade_shoot_chance",0),     "friend"=>self::def_grade($friendAbility,"grade_shoot_chance",0),   "max"=>100],
+            ["name"=>"长传数量",    "self"=>self::def_grade($myAbility,"grade_pass_num_long",0),    "friend"=>self::def_grade($friendAbility,"grade_pass_num_long",0),  "max"=>100],
+            ["name"=>"短传数量",    "self"=>self::def_grade($myAbility,"grade_pass_num_short",0),   "friend"=>self::def_grade($friendAbility,"grade_pass_num_short",0), "max"=>100],
+            ["name"=>"耐力",       "self"=>self::def_grade($myAbility,"grade_endurance",0),         "friend"=>self::def_grade($friendAbility,"grade_endurance",0),      "max"=>100],
+            ["name"=>"冲刺能力",    "self"=>self::def_grade($myAbility,"grade_sprint",0),           "friend"=>self::def_grade($friendAbility,"grade_sprint",0),         "max"=>100],
+            ["name"=>"触球数量",    "self"=>self::def_grade($myAbility,"grade_touchball_num",0),    "friend"=>self::def_grade($friendAbility,"grade_touchball_num",0),  "max"=>100],
+            ["name"=>"灵活性",      "self"=>self::def_grade($myAbility,"grade_flexible",0),         "friend"=>self::def_grade($friendAbility,"grade_flexible",0),       "max"=>100],
         ];
-
 
         return apiData()->add('friendInfo',$userInfo)
             ->add('baseAbility',$baseAbility)
