@@ -106,7 +106,7 @@ class MatchController extends Controller
         $matchId    = $request->input('matchId');
 
         //原始文件
-        $matchFiles = BaseMatchSourceDataModel::where('match_id',$matchId)->orderBy('foot')->orderBy('type')->get();
+        $matchFiles = BaseMatchSourceDataModel::where('match_id',$matchId)->orderBy('foot')->orderBy('type')->orderBy('match_source_id','desc')->get();
 
         //结果文件
 
