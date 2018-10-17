@@ -323,7 +323,6 @@ class MatchController extends Controller
                 $map                = create_round_array(20,32,true,0);
             }
 
-
             $matchInfo->shoot   = $matchResult->grade_shoot ?? 0;
             $matchInfo->pass    = $matchResult->grade_pass ?? 0;
             $matchInfo->strength= $matchResult->grade_strength ?? 0;
@@ -434,32 +433,43 @@ class MatchController extends Controller
     }
 
     /**
+     * 热点图转换
+     * @param $map string
+     * @return array
+     * */
+    private static function map_change($map){
+        if($map) {
+
+            $map   = \GuzzleHttp\json_decode($map,true);
+            $map   = data_scroll_to($map,100);
+
+        }else{
+
+            $map   = create_round_array(12,22,true);
+        }
+        return $map;
+    }
+
+    /**
      * 比赛热点图
      * */
     public function match_detail_hotmap(Request $request)
     {
-        $matchId    = $request->input('matchId');
+        $matchId        = $request->input('matchId');
         $matchResult    = BaseMatchResultModel::find($matchId);
 
-        $lowSpeed   = \GuzzleHttp\json_decode($matchResult->map_speed_low,true);
-        $midSpeed   = \GuzzleHttp\json_decode($matchResult->map_speed_middle,true);
-        $highSpeed  = \GuzzleHttp\json_decode($matchResult->map_speed_high,true);
+        $lowSpeed       = self::map_change($matchResult->map_speed_low);
+        $midSpeed       = self::map_change($matchResult->map_speed_middle);
+        $highSpeed      = self::map_change($matchResult->map_speed_high);
 
-        $lowSpeed   = data_scroll_to($lowSpeed,100);
-        $midSpeed   = data_scroll_to($midSpeed,100);
-        $highSpeed  = data_scroll_to($highSpeed,100);
-
-
-
-        $shortPass  = \GuzzleHttp\json_decode($matchResult->map_pass_short,true);
-        $longPass   = \GuzzleHttp\json_decode($matchResult->map_pass_long,true);
-        $touchball  = \GuzzleHttp\json_decode($matchResult->map_touchball,true);
+        $shortPass      = self::map_change($matchResult->map_pass_short);
+        $longPass       = self::map_change($matchResult->map_pass_long);
+        $touchball      = self::map_change($matchResult->map_touchball);
 
 
-
-        $sprint     = create_round_array(12,22);
-        $rob        = create_round_array(12,22);
-        $dribble    = create_round_array(12,22);
+        //$sprint     = create_round_array(12,22);
+        //$rob        = create_round_array(12,22);
+        //$dribble    = create_round_array(12,22);
 
 
         $maps       = [

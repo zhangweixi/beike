@@ -616,7 +616,7 @@ function create_round_array($y,$x,$default=false,$defaultNum=0)
         {
             if($default == true) {
 
-                $arr[$i][$j] = 0;
+                $arr[$i][$j] = $defaultNum;
 
             }else{
 
