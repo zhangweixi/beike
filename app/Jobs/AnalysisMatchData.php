@@ -170,7 +170,7 @@ class AnalysisMatchData implements ShouldQueue
 
         if(!Storage::disk('local')->has($sourceData->data))
         {
-            dd('文件不存在'.$sourceData->data);
+            logbug('文件['.$this->sourceId.']不存在'.$sourceData->data);
             return false;
         }
 
@@ -1183,7 +1183,20 @@ class AnalysisMatchData implements ShouldQueue
         //2.提取触球，传球结果
         $passTouchResult = $this->save_pass_and_touch($matchId);
 
+        if(0){
 
+            //3.射门数据
+            $shootResult    = $this->save_shoot_result($matchId);
+
+
+            //4.转向和急停
+            $changeDictResult = $this->save_direction_and_stop($matchId);
+
+
+            //5.带球与回追
+            $dribbleResult  = $this->save_dribble_and_backrun($matchId);
+        }
+        
         return "ok";
     }
     /*
@@ -1342,6 +1355,11 @@ class AnalysisMatchData implements ShouldQueue
             "touchball" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]]
         ];
 
+        //传球类型临界距离
+        //5人制：10米
+        //7人制：18米
+        //11人制：25米
+
         foreach($passlist as $pass)
         {
             $pass   = trim($pass,"\r\n");
@@ -1433,6 +1451,175 @@ class AnalysisMatchData implements ShouldQueue
         return $mapData;
     }
 
+
+    /**
+     * 保存射门结果
+     * @param $matchId integer 比赛ID
+     * @return mixed
+     * */
+    public function save_shoot_result($matchId)
+    {
+        $shootFile  = self::matchdir($matchId)."result-shoot.txt";
+        $shootData  = file_to_array($shootFile);
+        $matchInfo  = MatchModel::find($matchId);
+
+        //射门类型临界距离
+        $shootTypeDis   = 8;    //长短处的分割距离
+
+        //传球类型临界距离
+        //5人制：8米
+        //7人制：14米
+        //11人制：20米
+
+        $matchResult    = [
+            'shoot_num_short'   => 0,
+            'shoot_num_far'     => 0,
+            'shoot_num_total'   => 0,
+            'shoot_speed_max'   => 0,
+            'shoot_speed_avg'   => 0,
+            'shoot_dis_max'     => 0,
+            'shoot_dis_avg'     => 0,
+        ];
+        $gpsArr     = [];
+
+        foreach ($shootData as $shoot)
+        {
+
+            array_push($gpsArr,['lat'=>$shoot[0],'lon'=>$shoot[1]]);
+            $speed      = $shoot[4];
+            $distance   = $shoot[7];
+
+            $matchResult['shoot_num_total']++;
+            $distance < $shootTypeDis ? $matchResult['shoot_num_short']++ : $matchResult['shoot_num_far']++;
+            $matchResult['shoot_speed_max'] = max($speed,$matchResult['shoot_speed_max']);
+            $matchResult['shoot_dis_max']   = max($distance,$matchResult['shoot_dis_max']);
+
+            $matchResult['shoot_speed_avg'] += $speed;
+            $matchResult['shoot_dis_avg']   += $distance;
+        }
+
+        //射门热点图
+
+        $matchResult['map_shoot']       = $this->gps_map($matchInfo->court_id,$gpsArr);
+        $matchResult['shoot_speed_avg'] = bcdiv($matchResult['shoot_speed_avg'], $matchResult['shoot_num_total'],2);
+        $matchResult['shoot_dis_avg']   = bcdiv($matchResult['shoot_dis_avg'], $matchResult['shoot_num_total'],2);
+
+        BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
+
+        //个人全局信息
+        $userAbility                    = BaseUserAbilityModel::find($matchInfo->user_id);
+        $totalSpeed                     = $userAbility->shoot_num_total * $userAbility->shoot_speed         + $matchResult['shoot_num_total'] * $matchResult['shoot_speed_avg'];
+        $totalDis                       = $userAbility->shoot_num_total * $userAbility->shoot_distance_avg  + $matchResult['shoot_num_total'] * $matchResult['shoot_dis_avg'];
+        $userAbility->shoot_num_near    = $userAbility->shoot_num_near  + $matchResult['shoot_num_short'];
+        $userAbility->shoot_num_far     = $userAbility->shoot_num_far   + $matchResult['shoot_num_far'];
+        $userAbility->shoot_num_total   = $userAbility->shoot_num_total + $matchResult['shoot_num_total'];
+        $userAbility->shoot_speed       = $totalSpeed / $userAbility->shoot_num_total;
+        $userAbility->shoot_speed_max   = max($userAbility->shoot_speed_max,$matchResult['shoot_speed_max']);
+        $userAbility->shoot_distance_avg= $totalDis / $userAbility->shoot_num_total;
+        $userAbility->save();
+
+        return true;
+    }
+
+
+    /**
+     * @param $matchId integer 比赛ID
+     * @return mixed
+     * */
+    public function save_direction_and_stop($matchId)
+    {
+        //类型，开始方向，结束方向，维度，经度 1	23	30	3131.2356	12132.256458
+        $file       = self::matchdir($matchId)."result-direction-stop.txt";
+        $resultData = file_to_array($file);
+        $matchInfo  = MatchModel::find($matchId);
+
+        $matchResult    = [
+            "change_direction_num"  => 0,   //转向
+            "turn_around_num"       => 0,   //转身
+            "abrupt_stop_num"       => 0,   //急停次数
+        ];
+
+        foreach($resultData as $data)
+        {
+            $type       = $data[0];
+            $beginAngle = $data[1];
+            $endAngle   = $data[2];
+
+            if($type == "1") {
+
+                $angle  = abs($endAngle-$beginAngle);
+
+                if($angle >= 180) {
+
+                    $angle = min($endAngle,$beginAngle) + 360 - max($endAngle,$beginAngle);
+                }
+
+                $angle > 100 ? $matchResult['turn_around_num']++ : $matchResult['change_direction_num']++;
+
+            }elseif($type == "2"){
+
+                $matchResult["abrupt_stop_num"]++;
+            }
+        }
+
+        BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
+
+        $userAbility                        = BaseUserAbilityModel::find($matchInfo->user_id);
+        $userAbility->change_direction_num  += $matchResult['change_direction_num'];
+        $userAbility->turn_around_num       += $matchResult['turn_around_num'];
+        $userAbility->abrupt_stop_num       += $matchResult['abrupt_stop_num'];
+        $userAbility->save();
+
+        return true;
+    }
+
+
+    /**
+     * 保存带球与回追数据
+     * @param $matchId integer 比赛ID
+     * @return mixed
+     * */
+    public function save_dribble_and_backrun($matchId)
+    {
+        $file       = self::matchdir($matchId)."result-dribble-backrun.txt";
+        $matchData  = file_to_array($file);
+        $matchInfo  = MatchModel::find($matchId);
+
+        $matchResult    = [
+            "dribble_num"       => 0,
+            "dribble_dis_total" => 0,
+            "backrun_num"       => 0,
+            "backrun_dis_total" => 0
+        ];
+
+        foreach($matchData as $data)
+        {
+            $type   = $data[0];
+            $dis    = $data[6];
+
+            if($type == "1") {
+
+                $matchResult["dribble_num"]++;
+                $matchResult["dribble_dis_total"]+=$dis;
+
+            }elseif ($type == "2"){
+
+                $matchResult["backrun_num"]++;
+                $matchResult['backrun_dis_total']+=$dis;
+            }
+        }
+
+        BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
+
+        $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
+        $userAbility->dribble_dis_total += $matchResult["dribble_dis_total"];
+        $userAbility->dribble_num       += $matchResult['dribble_num'];
+        $userAbility->backrun_num       += $matchResult['backrun_num'];
+        $userAbility->backrun_dis_total += $matchResult['backrun_dis_total'];
+        $userAbility->save();
+
+        return true;
+    }
 
 
 }

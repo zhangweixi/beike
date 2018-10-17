@@ -308,6 +308,17 @@ class ShequMatchModel extends Model{
         return $isInvite ? true : false;
     }
 
+    /**
+     * 检查是否已经邀请过好友
+     * @param $matchId int 比赛ID
+     * @param $userId int 用户ID
+     * @return boolean
+     * */
+    public static function check_user_is_invited($matchId,$userId)
+    {
+        $isInvite = DB::table('shequ_match_invite')->where('match_id',$matchId)->where('user_id',$userId)->first();
 
+        return $isInvite ? true : false;
+    }
 
 }

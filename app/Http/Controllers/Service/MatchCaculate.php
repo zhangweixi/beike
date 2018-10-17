@@ -48,7 +48,7 @@ class MatchCaculate extends Controller
     {
         $matchSourceId  = $request->input('matchSourceId',0);
         $dataInfo       = DB::table('match_source_data')->where('match_source_id',$matchSourceId)->first();
-
+        logbug("解析下一条数据:".$matchSourceId);
         if($dataInfo->status == 0)
         {
             $delayTime      = now()->addSecond(1);

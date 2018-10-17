@@ -166,7 +166,7 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
-        //数据已解析完毕，尽快解析本条数据
+        //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
         $data           = ['sourceId'=>$sourceId];
         AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
