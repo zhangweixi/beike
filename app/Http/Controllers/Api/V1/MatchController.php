@@ -465,6 +465,7 @@ class MatchController extends Controller
         $shortPass      = self::map_change($matchResult->map_pass_short);
         $longPass       = self::map_change($matchResult->map_pass_long);
         $touchball      = self::map_change($matchResult->map_touchball);
+        $shoot          = self::map_change($matchResult->map_shoot);
 
 
         //$sprint     = create_round_array(12,22);
@@ -473,6 +474,7 @@ class MatchController extends Controller
 
 
         $maps       = [
+            ['name'=>"射门",'data'=>$shoot,'type'=>'point'],
             ['name'=>"高速跑动",'data'=>$highSpeed,'type'=>'hot'],
             ['name'=>"中速跑动",'data'=>$midSpeed,'type'=>'hot'],
             ['name'=>"低速跑动",'data'=>$lowSpeed,'type'=>'hot'],
