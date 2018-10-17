@@ -168,6 +168,19 @@ class CourtController extends Controller
         return apiData()->send($code,$msg);
     }
 
+    /**
+     * 返回最近的一个点
+     * */
+    public function return_back_last_point(Request $request)
+    {
+        $position   = $request->input('position');
+        $gpsGroupId = $request->input('gpsGroupId');
+
+        DB::table('football_court_point')->where('gps_group_id',$gpsGroupId)->where('position',$position)->delete();
+
+        return apiData()->send();
+    }
+
     /* *
      * 单条GPS转经纬度
      * @param $str string
