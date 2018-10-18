@@ -175,13 +175,92 @@
                         </tr>
                     </tbody>
 
+                    <tbody>
+                        <tr>
+                            <th class="column-title btn-primary" colspan="2">热点图</th>
+                        </tr>
+
+                        <tr>
+                            <td colspan="2">
+                                <div class="map-box">
+
+                                    <div class="map">
+                                        <h2>全局跑动热点图</h2>
+                                        <div id="map-run-all"></div>
+                                    </div>
+
+                                    <div class="map">
+                                        <h2>高速跑动热点图</h2>
+                                        <div id="map-run-high"></div>
+                                    </div>
+
+
+                                    <div class="map">
+                                        <h2>中速跑动热点图</h2>
+                                        <div id="map-run-middle"></div>
+                                    </div>
+
+                                    <div class="map">
+                                        <h2>低速跑动热点图</h2>
+                                        <div id="map-run-low"></div>
+                                    </div>
+
+                                    <div class="map">
+                                        <h2>走动热点图</h2>
+                                        <div id="map-run-static"></div>
+                                    </div>
+
+                                    <div class="map">
+                                        <h2>射门</h2>
+                                        <div id="map-shoot"></div>
+                                    </div>
+
+                                    <div class="map">
+                                        <h2>长传</h2>
+                                        <div id="map-pass-long"></div>
+                                    </div>
+
+                                    <div class="map">
+                                        <h2>短传</h2>
+                                        <div id="map-pass-short"></div>
+                                    </div>
+
+                                    <div class="map">
+                                        <h2>触球</h2>
+                                        <div id="map-touchball"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+
                 </table>
             </div>
 
         </div>
-
-
     </div>
 </div>
 
+
+<style>
+    .map{
+        float: left;
+        margin:10px;
+    }
+
+    .map h2{
+        text-align: center;
+        color:#fff;
+        background:#000;
+        line-height:2.5;
+    }
+
+    .map div{
+
+        background:#7FB558;
+        width:100%;
+        height:25vw;
+    }
+
+</style>
 <script src="../build/js/custom.min.js"></script>

@@ -712,8 +712,65 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
         $http.get(url).success(function(res)
         {
-             $scope.matchResult = res.data.matchResult;
+            $scope.matchResult = res.data.matchResult;
+
+            //显示热点图
+            var width = $('.map-box').css('width');
+                width = parseInt(width);
+                width = (width-40)/2;
+            $('.map').css('width',width+"px");
+            $('.map div').css('height',width/2 + "px");
+
+            console.log($scope.matchResult);
+
+            $scope.draw_hot_map("map-run-all",width,$scope.matchResult.map_gps_run);
+            $scope.draw_hot_map("map-run-high",width,$scope.matchResult.map_speed_high);
+            $scope.draw_hot_map("map-run-middle",width,$scope.matchResult.map_speed_middle);
+            $scope.draw_hot_map("map-run-low",width,$scope.matchResult.map_speed_low);
+            $scope.draw_hot_map("map-run-static",width,$scope.matchResult.map_speed_static);
+            $scope.draw_hot_map("map-shoot",width,$scope.matchResult.map_shoot);
+            $scope.draw_hot_map("map-pass-long",width,$scope.matchResult.map_pass_long);
+            $scope.draw_hot_map("map-pass-short",width,$scope.matchResult.map_pass_short);
+            $scope.draw_hot_map("map-touchball",width,$scope.matchResult.map_touchball);
+        
+        
         })
+    }
+
+    $scope.draw_hot_map = function(eleId,width,data)
+    {
+        data = JSON.parse(data);
+        var heatmap1 = h337.create({
+
+                container: document.querySelector('#'+eleId)
+
+            });
+
+        var data2   = [];
+        var max     = 0;
+        var scale   = width / 20;   //x为20分
+        
+            for(var y in data)
+            {
+              for(var x in data[y] )
+              {
+
+                  data2.push({"x":parseInt(x*scale),"y":parseInt(y*scale),"value":data[y][x]});
+                  max = Math.max(max,data[y][x]);
+              }
+            }
+
+            if(max == 0){
+
+                max = 100;
+
+            }else if(max < 10){
+
+                max = 2*max;
+            }
+
+            data3 = {"max":max,"data":data2};
+            heatmap1.setData(data3);
     }
 
     //比赛文件
