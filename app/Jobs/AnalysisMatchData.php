@@ -319,7 +319,7 @@ class AnalysisMatchData implements ShouldQueue
             ->where('match_source_id','>',$this->sourceId)
             ->orderBy('match_source_id')
             ->first();
-
+        logbug("host:".$this->host);
         if($nextData && $this->host)
         {
             $params = ['matchSourceId'  =>  $nextData->match_source_id];
