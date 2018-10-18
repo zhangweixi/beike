@@ -1233,3 +1233,21 @@ myapp.controller('sqmatchController',function($scope,$http,$location,$stateParam
 
 
 })
+
+
+myapp.controller('systemController',function($scope,$http,$location){
+
+    $scope.serviceLogs = [];
+    /*获得系统服务日至*/
+    $scope.get_system_logs = function()
+    {
+        var url = server + "system/service_logs";
+        $http.get(url).success(function(res){
+
+            $scope.serviceLogs = res.data.logs;
+
+        })
+    }
+
+
+})

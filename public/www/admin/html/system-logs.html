@@ -1,0 +1,23 @@
+<div class="col-md-12 col-sm-12 col-xs-12" ng-init="get_system_logs()">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>比赛文件</h2>
+            <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content">
+
+            <p class="btn btn-info">结果文件</p>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered jambo_table bulk_action">
+                    <tr  ng-repeat="file in serviceLogs">
+                        <td>{{file.name}}</td>
+                        <td><a target="_blank" href="{{file.url}}" class="btn-info btn btn-xs">打开</a></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../build/js/custom.min.js"></script>

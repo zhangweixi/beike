@@ -18,4 +18,6 @@ $api->version('v1',['prefix'=>"api/admin",'middleware'=>[],'namespace'=>"App\Htt
 
     $api->any('/sqmatch/{action}',      'SqMatchController@action');
 
+    $api->any('/system/{action}',       'SystemController@action');
+
 });

@@ -111,6 +111,11 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             url:'/sqmatch/users/:matchId',
             templateUrl:'sqmatch-users.html?t=' + Math.random(),
             controller:'sqmatchController'
+        })
+        .state('system/logs',{
+            url:'/system/logs',
+            templateUrl:'system-logs.html?t='+Math.random(),
+            controller:'systemController'
         });
 
 
