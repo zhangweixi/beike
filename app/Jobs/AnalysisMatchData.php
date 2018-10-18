@@ -46,6 +46,7 @@ class AnalysisMatchData implements ShouldQueue
     private $matchId    = 0;    //比赛ID
     private $type       = "";   //数据类型
     private $foot       = "";   //哪只脚
+    private $jxNext     = false;
 
 
 
@@ -183,10 +184,9 @@ class AnalysisMatchData implements ShouldQueue
             ->where('device_sn',$sourceData->device_sn)
             ->orderBy('match_source_id','desc')
             ->first();
-        logbug("解析数据：".$this->sourceId);
+
         if($prevSourceData != null && $prevSourceData->status < 2)
         {
-            logbug("解析数据：".$this->sourceId."但".$prevSourceData->match_source_id."未结束");
             return true;
         }
 
@@ -319,15 +319,11 @@ class AnalysisMatchData implements ShouldQueue
             ->where('match_source_id','>',$this->sourceId)
             ->orderBy('match_source_id')
             ->first();
-        logbug("host:".$this->host);
-        if($nextData && $this->host)
+
+        if($nextData && $this->jxNext == true)
         {
             $params = ['matchSourceId'  =>  $nextData->match_source_id];
-            $params = http_build_sign($params);
-            $url    = $this->host."/api/matchCaculate/jiexi_single_data?".$params;
-
-            logbug("请求解析下一条数据：".$nextData->match_source_id); //标记解析下一条数据
-            file_get_contents($url);
+            self::execute('jiexi_single_data',$params,'api');
         }
 
 

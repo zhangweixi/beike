@@ -168,7 +168,7 @@ class MatchController extends Controller
 
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
-        $data           = ['sourceId'=>$sourceId];
+        $data           = ['sourceId'=>$sourceId,'jxNext'=>true];
         AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
 
 
