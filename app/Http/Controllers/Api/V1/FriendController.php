@@ -89,7 +89,7 @@ class FriendController extends Controller
         $userInfo       = BaseUserModel::find($applyInfo->friend_user_id);
         //通知申请人处理情况
         $messageModel   = new MessageModel();
-        $messageModel->add_message("关注好友通知",$userInfo->nick_name.$result."了您的好友请求",'',$applyInfo->user_id);
+        $messageModel->add_message("系统通知",$userInfo->nick_name.$result."了您的好友请求",'system',$applyInfo->user_id);
 
 
         //修改消息为已读
