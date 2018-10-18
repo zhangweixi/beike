@@ -183,9 +183,10 @@ class AnalysisMatchData implements ShouldQueue
             ->where('device_sn',$sourceData->device_sn)
             ->orderBy('match_source_id','desc')
             ->first();
-
+        logbug("解析数据：".$this->sourceId);
         if($prevSourceData != null && $prevSourceData->status < 2)
         {
+            logbug("解析数据：".$this->sourceId."但".$prevSourceData->match_source_id."未结束");
             return true;
         }
 
@@ -1196,13 +1197,24 @@ class AnalysisMatchData implements ShouldQueue
             //5.带球与回追
             $dribbleResult  = $this->save_dribble_and_backrun($matchId);
         }
-        
+
         return "ok";
     }
     /*
      * @var 足球场信息
      * */
     private $courtInfo = false;
+    private static $tempMatchInfo = false;
+    private static function get_temp_match_info($matchId)
+    {
+        if(self::$tempMatchInfo == false){
+
+            self::$tempMatchInfo  = MatchModel::find($matchId);
+        }
+
+        return self::$tempMatchInfo;
+    }
+
 
 
     /**
@@ -1211,7 +1223,7 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function save_run_result($matchId)
     {
-        $matchInfo  = MatchModel::find($matchId);
+        $matchInfo  = self::get_temp_match_info($matchId);
 
         //1.速度信息
         $speedFile  = public_path("uploads/match/{$matchId}/result-run.txt");
@@ -1287,7 +1299,6 @@ class AnalysisMatchData implements ShouldQueue
         foreach ($speedType as $key => $type)
         {
             $speedType[$key]['gps'] = $this->gps_map($matchInfo->court_id,$type['gps']);
-
         }
 
         //11.修改单场比赛的结果
@@ -1345,7 +1356,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         $passFile   = public_path("uploads/match/{$matchId}/result-pass.txt");
         $passlist   = file($passFile);
-        $matchInfo  = MatchModel::find($matchId);
+        $matchInfo  = self::get_temp_match_info($matchId);
 
 
         //1：长传 2：短传 3：触球
@@ -1434,6 +1445,11 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function gps_map($courtId,$gpsList)
     {
+        if($courtId == 0)
+        {
+            return "";
+        }
+
         //创建GPS图谱
         if($this->courtInfo == false)
         {
@@ -1461,7 +1477,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         $shootFile  = self::matchdir($matchId)."result-shoot.txt";
         $shootData  = file_to_array($shootFile);
-        $matchInfo  = MatchModel::find($matchId);
+        $matchInfo  = self::get_temp_match_info($matchId);
 
         //射门类型临界距离
         $shootTypeDis   = 8;    //长短处的分割距离
@@ -1531,7 +1547,7 @@ class AnalysisMatchData implements ShouldQueue
         //类型，开始方向，结束方向，维度，经度 1	23	30	3131.2356	12132.256458
         $file       = self::matchdir($matchId)."result-direction-stop.txt";
         $resultData = file_to_array($file);
-        $matchInfo  = MatchModel::find($matchId);
+        $matchInfo  = self::get_temp_match_info($matchId);
 
         $matchResult    = [
             "change_direction_num"  => 0,   //转向
@@ -1583,7 +1599,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         $file       = self::matchdir($matchId)."result-dribble-backrun.txt";
         $matchData  = file_to_array($file);
-        $matchInfo  = MatchModel::find($matchId);
+        $matchInfo  = self::get_temp_match_info($matchId);
 
         $matchResult    = [
             "dribble_num"       => 0,
