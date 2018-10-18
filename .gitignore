@@ -26,7 +26,6 @@ public/vendors/
 app/python/python-queue.pid
 test.txt
 app/Http/Controllers/showdoc_api.sh
-app/python/matlabsrc/
 storage/
 app/python/pidfile.pid
 app/python/__pycache__/functions.cpython-35.pyc
