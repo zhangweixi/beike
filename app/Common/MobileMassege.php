@@ -87,7 +87,7 @@ class MobileMassege{
             'mobile'    => $this->mobile,
             'code'      => $this->code,
             'data'      => json_encode($this->aliResponse),
-            'end_time'  => time() + 600,
+            'end_time'  => time() + 1800,
             'created_at'=> $now,
             'updated_at'=> $now
         ];
@@ -135,12 +135,15 @@ class MobileMassege{
         }
 
         //一天最多10条 判断这一天是否足够
-        $toDay  = strtotime(date('Y-m-d 00:00:00',time()));
+        $dayBegin   = strtotime(date('Y-m-d 00:00:00',time()));
+        $dayEnd     = strtotime(date('Y-m-d 23:59:59',time()));
+
         $num    = $this->db
-            ->where('created_at',">",$toDay)
+            ->where('created_at',">=",$dayBegin)
+            ->where('created_at','<=',$dayEnd)
             ->where('mobile',$mobile)
             ->count();
-        
+
         if($num >= 10){
            
             //将短信的有效时间调整为1天
