@@ -490,7 +490,7 @@ class AdminController extends Controller{
                 ->where('user_sn',$user->user_sn)
                 ->where('status',2)
                 ->where('begin_time',">=",$beginDate)
-                ->where('end_at',"<=",$endDate)
+                ->where('end_time',"<=",$endDate)
                 ->count();
 
             $total    = DB::table('paper')
