@@ -902,4 +902,24 @@ function file_to_array($file,$delimiter=" ")
     }
     return $data;
 }
+
+/**
+ * 极光推送内容
+ * @param $title string 推送标题
+ * @param $msg string 推送消息
+ * @param $code integer 给前端的code，区分不同的接口
+ * @param $type integer 0：所有人，1：别名，2：标签
+ * @param $user mixed 用户
+ * @param $data array
+ * */
+function jpush_content($title,$msg,$code,$type,$user,$data=[])
+{
+    $jpush = new \App\Common\Jpush();
+    $jpush->pushContent($title,$msg,$code,$type,$user,$data);
+}
+
+
+
+
+
 ?>

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Common\Geohash;
+use App\Common\Jpush;
 use App\Models\Base\BaseFriendModel;
 use App\Models\Base\BaseUserModel;
 use App\Models\V1\MessageModel;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\DB;
 class FriendController extends Controller
 {
 
+    /**
+     * 申请添加为好友
+     * */
     public function add_friend(Request $request)
     {
         $userId         = $request->input('userId');
@@ -46,6 +50,9 @@ class FriendController extends Controller
         $messageModel   = new MessageModel();
         $messageModel->add_message("好友请求",$userInfo->nick_name."请求加您为好友",'focus',$friendUserId,$newFriend->apply_id);
 
+        //极光提示
+        jpush_content("申请好友提示",$userInfo->nick_name."请求加您为好友",5001,1,$friendUserId,["userId"=>$userId]);
+
         return apiData()->send(200,'已发送，请等待同意吧');
     }
 
@@ -67,13 +74,16 @@ class FriendController extends Controller
             return apiData()->send(2001,'您已经处理过该信息');
         }
 
-
-
-
         //同意：添加到好友列表
         if($status == 1)
         {
-            FriendModel::add_friend($applyInfo->user_id,$applyInfo->friend_user_id);
+            //检查是否已经成为好友
+            $isFriend = FriendModel::is_friend($applyInfo->user_id,$applyInfo->friend_user_id);
+            if($isFriend == false){
+
+                FriendModel::add_friend($applyInfo->user_id,$applyInfo->friend_user_id);
+            }
+
             $result     = "同意";
 
         }elseif($status == 0){
@@ -91,6 +101,9 @@ class FriendController extends Controller
         $messageModel   = new MessageModel();
         $messageModel->add_message("系统通知",$userInfo->nick_name.$result."了您的好友请求",'system',$applyInfo->user_id);
 
+
+        //极光提示
+        jpush_content("好友关注提示",$userInfo->nick_name.$result."了您的关注请求",5002,1,$applyInfo->user_id);
 
         //修改消息为已读
         MessageModel::read_message_by_type($applyInfo->friend_user_id,'focus',$applyId);
@@ -313,18 +326,6 @@ class FriendController extends Controller
         return apiData()->add('friends',$friends)->send();
     }
 
-    /**
-     * 邀请通讯录好友
-     * */
-    public function invite_mobile_friend(Request $request)
-    {
-        $mobile = $request->input('mobile');
-
-        //发送邀请短信
-
-
-        return apiData()->send(200,'已给您的好友发送了邀请信息');
-    }
 
     /**
      * 附近朋友

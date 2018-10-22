@@ -19,12 +19,9 @@ class SaveApiData
         $surl = substr($url,8);
 
         $excepUrl   = [
-            'homelist',
-            'home',
-            'mediaPlayLog',
             'memberOnlineLog',
             'match/uploadMatchData',
-            'match1/uploadMatchData'
+            'court/checkSingleGps'
         ];
 
         if(!in_array($surl,$excepUrl))
