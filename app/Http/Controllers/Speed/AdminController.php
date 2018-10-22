@@ -441,8 +441,8 @@ class AdminController extends Controller{
             //获得未答题的
             $finished = DB::table('paper as a')
                 ->leftJoin('user_department as b','b.user_sn','=','a.user_sn')
-                ->where('a.created_at',">=",$beginDate)
-                ->where('a.created_at','<=',$endDate)
+                ->where('a.begin_time',">=",$beginDate)
+                ->where('a.end_time','<=',$endDate)
                 ->where('b.department',$depart->id)
                 ->where('a.status',2)
                 ->count();
@@ -450,8 +450,8 @@ class AdminController extends Controller{
             //3.1总是试卷
             $total = DB::table('paper as a')
                 ->leftJoin('user_department as b','b.user_sn','=','a.user_sn')
-                ->where('a.created_at',">=",$beginDate)
-                ->where('a.created_at','<=',$endDate)
+                ->where('a.begin_time',">=",$beginDate)
+                ->where('a.end_time','<=',$endDate)
                 ->where('b.department',$depart->id)
                 ->count();
 
