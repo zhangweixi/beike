@@ -428,8 +428,8 @@ class AdminController extends Controller{
                     FROM paper as a
                     LEFT JOIN user_department as b ON b.user_sn = a.user_sn 
                     WHERE b.department = {$depart->id}
-                    AND a.created_at >= '{$beginDate}'
-                    AND a.created_at <= '{$endDate}' ";
+                    AND a.begin_time >= '{$beginDate}'
+                    AND a.end_time <= '{$endDate}' ";
 
             $avgInfo = DB::select($sql);
             $avgInfo = $avgInfo[0];
@@ -477,7 +477,7 @@ class AdminController extends Controller{
 
         //用户的总分
         $users = DB::table('user as a')
-            ->leftJoin('paper as b','b.user_sn','=',DB::raw("a.user_sn and b.created_at >= '{$beginDate}' and b.created_at <= '{$endDate}'"))
+            ->leftJoin('paper as b','b.user_sn','=',DB::raw("a.user_sn and b.begin_time >= '{$beginDate}' and b.end_time <= '{$endDate}'"))
             ->select("a.*",DB::raw('IFNULL(sum(b.grade),0) as totalGrade,IFNULL(sum(b.used_time),0) as usedTime'))
             ->groupBy('a.user_sn')
             ->orderBy('totalGrade','desc')
@@ -489,14 +489,14 @@ class AdminController extends Controller{
             $finished = DB::table('paper')
                 ->where('user_sn',$user->user_sn)
                 ->where('status',2)
-                ->where('created_at',">=",$beginDate)
-                ->where('created_at',"<=",$endDate)
+                ->where('begin_time',">=",$beginDate)
+                ->where('end_at',"<=",$endDate)
                 ->count();
 
             $total    = DB::table('paper')
                 ->where('user_sn',$user->user_sn)
-                ->where('created_at',">=",$beginDate)
-                ->where('created_at',"<=",$endDate)
+                ->where('begin_time',">=",$beginDate)
+                ->where('end_time',"<=",$endDate)
                 ->count();
 
 
