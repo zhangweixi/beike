@@ -202,6 +202,13 @@ class UserController extends Controller
         $userModel  = new UserModel();
         $userModel->update_user_info($userId,$userInfo);
         $userInfo   = $userModel->get_user_info($userId);
+        //球队信息
+        $userInfo['footballTeamName']   = "";
+        if($userInfo['footballTeam'] > 0)
+        {
+            $teamInfo = DB::table("football_team")->where('team_id',$userInfo['footballTeam'])->first();
+            $userInfo['footballTeamName']   = $teamInfo->team_name;
+        }
         return apiData()->set_data('userInfo',$userInfo)->send(200,'修改成功');
     }
 
