@@ -34,8 +34,7 @@ class App extends Controller{
 
         $deviceVersion      = [
             'version'   => $versionDevice->version,
-            'fileRight' => url($versionDevice->file_right),
-            'fileLeft'  => url($versionDevice->file_left)
+            'file'      => url($versionDevice->file),
         ];
 
 
