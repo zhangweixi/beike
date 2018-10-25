@@ -3,7 +3,7 @@
 namespace App\Models\V1;
 
 use Illuminate\Database\Eloquent\Model;
-
+use DB;
 
 class DeviceModel extends Model
 {
