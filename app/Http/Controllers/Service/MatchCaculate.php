@@ -185,7 +185,7 @@ class MatchCaculate extends Controller
                 $data         = DB::table('match_source_data')->where($condition)->orderBy('match_source_id')->first();
 
                 $host           = "http://".$request->getHost();
-                $data           = ['sourceId'=>$data->match_source_id,'host'=>$host];
+                $data           = ['sourceId'=>$data->match_source_id,'jxNext'=>true];
                 $delayTime      = now()->addSecond(1);
                 AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
             }
