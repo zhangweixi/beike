@@ -86,10 +86,14 @@ class Jpush{
      * */
     public function pushContent($title,$msg,$code,$type,$user,$data = [])
     {
-        $extras      = [
-            'code'   => $code,
-            'data'   => json_encode($data),
-        ];
+//        $extras      = [
+//            'code'   => $code,
+//            'data'   => json_encode($data),
+//        ];
+
+        //$extras      = ['code'   => $code];
+
+        $data['code']   = $code;
 
         $push   = $this->plushClient;
         $push->setPlatform('all')
