@@ -94,7 +94,7 @@ class Jpush{
         //$extras      = ['code'   => $code];
 
         $data['code']   = $code;
-
+        $extras         = $data;
         $push   = $this->plushClient;
         $push->setPlatform('all')
             ->options(['apns_production' => false])
