@@ -607,7 +607,6 @@ class MatchController extends Controller
 
         $matchInfo = DB::table('match')->where('user_id',$userId)
             ->where('time_end')
-            ->where('time_begin')
             ->orderBy('match_id','desc')
             ->first();
 
