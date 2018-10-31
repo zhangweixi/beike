@@ -21,6 +21,7 @@
                             <td class="column-title">时长</td>
                             <th class="column-title">球场</th>
                             <th class="column-title">热点图</th>
+                            <th class="column-title">备注(双击编辑)</th>
                             <th class="column-title">操作</th>
                         </tr>
                     </thead>
@@ -37,6 +38,10 @@
 
                             <td><a href="#match/court/{{match.match_id}}">{{match.address}}({{match.court_id}})</a></td>
                             <td><a href="#match/run/{{match.match_id}}">热点图</a></td>
+                            <td ng-class="match.isEdit == 1? 'editing': 'unedit'" ng-dblclick="enable_remark(match.match_id)">
+                                <p>{{match.admin_remark}}</p>
+                                <textarea cols="30" rows="10" ng-model="match.admin_remark" ng-blur="sure_edit_remark()"></textarea>
+                                </td>
                             <td>
                                 <a class="btn btn-info btn-xs" href="#match/result/{{match.match_id}}">结果</a>
                                 <a class="btn btn-info btn-xs" href="#match/files/{{match.match_id}}">文件</a>
@@ -54,3 +59,25 @@
 </div>
 
 <script src="../build/js/custom.min.js"></script>
+
+<style>
+    .editing , .unedit{
+        max-width:10vw;
+    }
+    .editing p{
+        display: none;
+    }
+    .unedit p{
+        max-width:15vw;
+        margin:0;
+        padding:0;
+        display: inline;
+    }
+    .unedit textarea{
+        display: none;
+    }
+
+
+
+
+</style>

@@ -1,4 +1,4 @@
-<div class="col-md-12 col-sm-12 col-xs-12">
+<div class="col-md-12 col-sm-12 col-xs-12" ng-init="get_user_list()">
     <div class="x_panel">
         <div class="x_title">
             <ul class="nav navbar-left panel_toolbox">
@@ -32,6 +32,7 @@
                         <th class="column-title">手机</th>
                         <th class="column-title">微信</th>
                         <th class="column-title">QQ</th>
+                        <th class="columb-title">设备</th>
                         <th class="column-title">分数</th>
                         <th class="column-title">跑动</th>
                         <th class="column-title">防御</th>
@@ -49,12 +50,13 @@
                         <td>{{user.mobile}}</td>
                         <td>{{user.wx_name}}</td>
                         <td>{{user.qq}}</td>
+                        <td>{{user.device_sn}}</td>
                         <td>{{user.grade}}</td>
-                        <td>{{user.run}}</td>
-                        <td>{{user.defense}}</td>
-                        <td>{{user.pass}}</td>
-                        <td>{{user.shoot}}</td>
-                        <td>{{user.strength}}</td>
+                        <td>{{user.grade_run}}</td>
+                        <td>{{user.grade_defense}}</td>
+                        <td>{{user.grade_pass}}</td>
+                        <td>{{user.grade_shoot}}</td>
+                        <td>{{user.grade_strength}}</td>
                         <td class=" last">
                             <button class="btn btn-danger">删除</button>
                         </td>

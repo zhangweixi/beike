@@ -81,7 +81,7 @@ myapp.controller('indexController', function ($scope, $location, $http) {
 });
 
 
-myapp.controller('deviceController', function ($scope, $http, $location,$stateParams) {
+myapp.controller('deviceController', function ($scope, $http, $location,$stateParams,$location) {
 
     setTimeout(init_DataTables, 1000);
 
@@ -99,7 +99,10 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
         perPageOptions: [10, 20, 30, 40, 50],
         onChange: function ()
         {
-            $scope.get_device_list($scope.paginationConf.currentPage);
+            if($scope.paginationConf.currentPage > 0)
+            {
+                $location.path('/device/list/'+$scope.paginationConf.currentPage);
+            }
         }
     };
 
@@ -107,7 +110,9 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 
 
     /*获得题目列表*/
-    $scope.get_device_list = function (page) {
+    $scope.get_device_list = function () {
+
+        var page = $stateParams.page;
 
         if (page == 0) {
 
@@ -300,12 +305,8 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 
 
     $scope.init = function () {
-        var path = $location.url();
+    
 
-        switch (path)
-        {
-            case '/device/list':    $scope.get_device_list(1);    break;
-        }
     }
 
     $scope.init();
@@ -313,7 +314,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 })
 
 
-myapp.controller('userController', function ($scope, $http, $location) {
+myapp.controller('userController', function ($scope, $http, $location,$stateParams) {
 
 
     $scope.users = [];
@@ -326,13 +327,19 @@ myapp.controller('userController', function ($scope, $http, $location) {
         pagesLength: 15,
         perPageOptions: [10, 20, 30, 40, 50],
         onChange: function () {
-            $scope.get_user_list($scope.paginationConf.currentPage);
+            if($scope.paginationConf.currentPage > 0)
+            {
+                $location.path('user/list/'+$scope.paginationConf.currentPage);
+            }
+            
         }
     };
 
 
     /*获得用户列表*/
-    $scope.get_user_list = function (page) {
+    $scope.get_user_list = function () {
+        var page = $stateParams.page;
+
         if (page == 0) {
             return;
         }
@@ -347,9 +354,9 @@ myapp.controller('userController', function ($scope, $http, $location) {
             {
                 var users = res.data.users;
 
-                $scope.paginationConf.currentPage   = users.page;
+                $scope.paginationConf.currentPage   = users.current_page;
                 $scope.paginationConf.totalItems    = users.total;
-                $scope.paginationConf.itemsPerPage  = users.pernumber;
+                $scope.paginationConf.itemsPerPage  = users.per_page;
                 $scope.users = users.data;
             }
         });
@@ -1072,6 +1079,48 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
     $scope.show_run_map = function(){
 
+    }
+
+    /**
+     * 开启备注的编辑状态
+     */
+    $scope.enable_remark = function(matchId){
+
+        for(var match of $scope.matches)
+        {
+            if(matchId == match.match_id)
+            {
+                match.isEdit = 1;
+                $scope.editMatchId = matchId;
+                break;
+            }
+        }
+    }
+
+    /**
+     * 确定编辑是否生效
+     */
+    $scope.sure_edit_remark = function()
+    {
+    
+        var data    = {matchId:$scope.editMatchId};
+
+        for(var match of $scope.matches)
+        {   
+            match.isEdit = 0;
+            if($scope.editMatchId == match.match_id)
+            {
+                data.admin_remark = match.admin_remark;    
+            }
+        }
+
+        var data    = http_query(data);
+        var url     = server + "match/update_match";
+
+            $http.post(url,data).success(function(res)
+            {
+                console.log(res);
+            })
     }
 
 })

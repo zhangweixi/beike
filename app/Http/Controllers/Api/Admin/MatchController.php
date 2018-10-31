@@ -211,4 +211,26 @@ class MatchController extends Controller
         return apiData()->set_data('points',$points)->send();
     }
 
+
+    public function update_match(Request $request){
+
+        $matchId    = $request->input('matchId');
+        $allData    = $request->all();
+        $validColum = ["admin_remark"];
+        $data       = [];
+        foreach($allData as $key => $v)
+        {
+            if(in_array($key,$validColum))
+            {
+                $data[$key] = $v;
+            }
+        }
+
+        MatchModel::where("match_id",$matchId)->update($data);
+
+
+        return apiData()->send();
+
+    }
+
 }
