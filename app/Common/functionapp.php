@@ -108,3 +108,67 @@ function logbug($content)
     }
     DB::table('debug')->insert(['debuginfo'=>$content,'created_at'=>date_time()]);
 }
+
+function matchdir($matchId)
+{
+    return public_path("uploads/match/{$matchId}/");
+}
+
+/**
+ * 由两个点获得直线方程系数
+ * */
+function get_fun_params_by_two_point($p1,$p2)
+{
+    $x1 = $p1[0];
+    $x2 = $p2[0];
+    $y1 = $p1[1];
+    $y2 = $p2[1];
+
+    $k = bcdiv(bcsub($y2,$y1),bcsub($x2,$x1));
+    $b = bcdiv(bcsub( bcmul($x1,$y2), bcmul($x2,$y1) ), bcsub($x2,$x1));
+
+    return [$k,$b];
+}
+
+
+
+function get_cycle_params_by_three_point($p1,$p2,$p3){
+
+    class point {
+
+        public function __construct($x=0,$y=0){
+            $this->x = $x;
+            $this->y = $y;
+        }
+
+        public $x;
+        public $y;
+    }
+
+
+    $center = new point();
+
+
+
+    $midp1 = new point();
+    $midp2 = new point();
+
+    $midp1->x = ($p2->x + $p1->x)/2;
+    $midp1->y = ($p2->y + $p1->y)/2;
+
+
+    $midp2->x = ($p3->x + $p1->x)/2;
+    $midp2->y = ($p3->y + $p1->y)/2;
+
+
+    $k1 = -($p2->x - $p1->x)/($p2->y - $p1->y);
+
+    $k2 = -($p3->x - $p1->x)/($p3->y - $p1->y);
+
+    $center->x = ($midp2->y - $midp1->y- $k2 * $midp2->x + $k1*$midp1->x)/($k1 - $k2);
+    $center->y = $midp1->y + $k1*( $midp2->y - $midp1->y - $k2*$midp2->x + $k2*$midp1->x)/($k1-$k2);
+
+    $radius    = sqrt(($center->x - $p1->x) * ($center->x - $p1->x) + ($center->y - $p1->y) * ($center->y - $p1->y));
+
+    return [$center->x,$center->y,$radius];
+}

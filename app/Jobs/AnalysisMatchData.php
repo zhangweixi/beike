@@ -785,6 +785,16 @@ class AnalysisMatchData implements ShouldQueue
 
 
     /**
+     * 获得比赛数据的文件夹
+     * @param $matchId integer
+     * @return string
+     * */
+    static function matchdir($matchId)
+    {
+        return public_path("uploads/match/{$matchId}/");
+    }
+
+    /**
      * 执行方法
      * @param $method string
      * @param $params array
@@ -796,16 +806,6 @@ class AnalysisMatchData implements ShouldQueue
         $params = http_build_query($params);
         $url    = $host."/api/matchCaculate/".$method."?".$params;
         file_get_contents($url);
-    }
-
-    /**
-     * 获得比赛数据的文件夹
-     * @param $matchId integer
-     * @return string
-     * */
-    static function matchdir($matchId)
-    {
-        return public_path("uploads/match/{$matchId}/");
     }
 
     /**
@@ -1047,25 +1047,15 @@ class AnalysisMatchData implements ShouldQueue
 
         $court      = new Court();
         $court->set_centers($points->center);
-
+        mylogger(time());
         $mapData    = $court->create_court_hot_map($gpsData);
 
 
         //把结果存储到比赛结果表中
         $resultInfo = BaseMatchResultModel::find($matchId);
 
-        if($resultInfo) {
-
-            $resultInfo->map_gps_run    = \GuzzleHttp\json_encode($mapData);
-            $resultInfo->save();
-
-        }else{
-
-            $resultInfo     = new BaseMatchResultModel();
-            $resultInfo->match_id   = $matchId;
-            $resultInfo->map_gps_run    = \GuzzleHttp\json_encode($mapData);
-            $resultInfo->save();
-        }
+        $resultInfo->map_gps_run    = \GuzzleHttp\json_encode($mapData);
+        $resultInfo->save();
 
         return true;
     }
@@ -1097,12 +1087,13 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //结果文件
-        $resultRun      = "result-run.txt";//跑动结果
-        $resultPass     = "result-pass.txt";//传球结果
-        $resultStep     = "result-step.txt";
+        $resultRun      = "result-run.txt";     //跑动结果
+        $resultPass     = "result-pass.txt";    //传球结果
+        $resultStep     = "result-step.txt";    //步频
+        $resultShoot    = "result-shoot.txt";   //射门
+        $resultTurn     = "result-turn.txt";    //转向
 
-
-        $callbackUrl    = urlencode(config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}&result=");//回调URL
+        $callbackUrl    = urlencode(config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}");//回调URL
 
         $files  = [
             "sensor_l"  =>  $baseSensorL,
@@ -1115,7 +1106,6 @@ class AnalysisMatchData implements ShouldQueue
 
         //===========将远程的文件拉取到本地来 开始==============
         //球场配置文件
-
 
         //数据文件
         foreach($files as $key  => $file)
@@ -1134,14 +1124,15 @@ class AnalysisMatchData implements ShouldQueue
 
         //===========将远程的文件拉取到本地来 结束==============
 
+        //LanQi('','sensor-R.txt', 'sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt','http://dev1.api.launchever.cn/api/admin/match/get_visual_match_court?matchId=123')
 
         $pythonfile = app_path('python/python_call_matlab.py');
-        $matlabCmd  = "LanQi('{$localDir}','{$baseSensorL}','{$baseSensorR}','{$baseCompassL}','{$baseCompassR}','{$baseGps}','{$resultRun}','{$resultPass}','{$resultStep}')";
+        $matlabCmd  = "LanQi('{$localDir}','{$baseSensorR}','{$baseSensorL}','{$baseCompassR}','{$baseCompassL}','{$baseGps}','{$resultRun}','{$resultTurn}',{$resultPass}','{$resultStep}','{$resultShoot}','{$callbackUrl}')";
         $command    = "python {$pythonfile} --command={$matlabCmd}";
 
         $result     = shell_exec($command."&& echo success");
-        mylogger("调用matlab成功：".$command);
 
+        mylogger("调用matlab成功：".$command);
 
         if(trim($result) == "success") {
 
@@ -1149,8 +1140,10 @@ class AnalysisMatchData implements ShouldQueue
             self::execute("save_matlab_result",$params,'api');
 
         }else{
+
             logbug("比赛:".$matchId."执行算法失败");
             mylogger($matchId."调用结果:".$result);
+
         }
     }
 
@@ -1222,9 +1215,9 @@ class AnalysisMatchData implements ShouldQueue
         $matchInfo  = self::get_temp_match_info($matchId);
 
         //1.速度信息
-        $speedFile  = public_path("uploads/match/{$matchId}/result-run.txt");
+        $speedFile  = self::matchdir($matchId)."result-run.txt";
 
-        $speedsInfo = file($speedFile);
+        $speedsInfo = file_to_array($speedFile);
 
         $maxSpeed   = 0;    //比赛最高速度
 
@@ -1243,19 +1236,19 @@ class AnalysisMatchData implements ShouldQueue
         $avgSpeed   = $speedsInfo[0][0];    //整场比赛的平均速度
         $svgSpeed2  = $speedsInfo[0][1];    //整场比赛的平均加速度
         $distance   = $speedsInfo[0][2];    //整场比赛的跑动距离
-        unset($speedsInfo[0]);
 
+        $gpsHz     = 100;   //频率 赫兹
+
+        array_splice($speedsInfo,0,1);  //去掉首行
 
         //区别出低速，中速，高速
         foreach ($speedsInfo as $key => &$speedInfo)
         {
-            if((trim($key)-1) % 20 != 0)
+            if($key % $gpsHz != 0)
             {
-                //continue;
+                continue;
             }
 
-            $speedInfo  = trim($speedInfo,"\r\n");
-            $speedInfo  = explode(' ',$speedInfo);
             $speed      = $speedInfo[1];
             $maxSpeed   = max($speed,$maxSpeed);
 
@@ -1277,19 +1270,15 @@ class AnalysisMatchData implements ShouldQueue
                 $type   = "static";
             }
 
-            //将gps恢复到原始状态
-            $lat    = gps_to_gps($speedInfo[3]*100);
-            $lon    = gps_to_gps($speedInfo[4]*100);
+            $lat    = $speedInfo[3];
+            $lon    = $speedInfo[4];
 
             array_push($speedType[$type]['gps'],['lat'=>$lat,'lon'=>$lon]);
 
-            if((trim($key)-1) % 20 == 0)
-            {
-                $speedType[$type]['time']++;
-                $speedType[$type]['dis'] += $speed;
-            }
-        }
+            $speedType[$type]['time']++;
+            $speedType[$type]['dis'] += $speed;
 
+        }
 
         //创建高、中、低速跑动热点图
         foreach ($speedType as $key => $type)
@@ -1350,13 +1339,12 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function save_pass_and_touch($matchId)
     {
-        $passFile   = public_path("uploads/match/{$matchId}/result-pass.txt");
-        $passlist   = file($passFile);
+        $passFile   = self::matchdir($matchId)."result-pass.txt";
+        $passlist   = file_to_array($passFile);
         $matchInfo  = self::get_temp_match_info($matchId);
 
-
         //1：长传 2：短传 3：触球
-        $typeData   = [
+        $typeDataes   = [
             "passLong"  =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]],
             "passShort" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]],
             "touchball" =>["data"=>[],'speedMax'=>0,'speedAvg'=>0,'num'=>0,'gps'=>[]]
@@ -1367,35 +1355,64 @@ class AnalysisMatchData implements ShouldQueue
         //7人制：18米
         //11人制：25米
 
-        foreach($passlist as $pass)
+        foreach($passlist as $passData)
         {
-            $pass   = trim($pass,"\r\n");
-            $pass   = explode(" ",$pass);
-            $type   = intval($pass[0]); //类型
+            $foot   = intval($passData[0]);//脚
+            $type   = intval($passData[1]);//类型
 
             switch ($type)
             {
-                case 1 : array_push($typeData['passLong']['data'],$pass);break;
-                case 2 : array_push($typeData['passShort']['data'],$pass);break;
-                case 3 : array_push($typeData['touchball']['data'],$pass);break;
+                case 1 : array_push($typeDataes['passLong']['data'],$passData);break;
+                case 2 : array_push($typeDataes['passShort']['data'],$passData);break;
+                case 3 : array_push($typeDataes['touchball']['data'],$passData);break;
             }
         }
 
+        $touchFlag = [
+            "list"      => [],//触球的数据列表
+            "prevTime"  => 0,//前一次的触球时间
+            "prevData"  => []
+        ];
 
-        foreach($typeData as &$pass)
+        foreach($typeDataes as $type => &$typdData)
         {
             $speeds = [0];
             $gps    = [];
 
-            foreach($pass['data'] as $type)
+
+            foreach($typdData['data'] as $singleData)
             {
-                $lat    = gps_to_gps($type[3]*100);
-                $lon    = gps_to_gps($type[4]*100);
-                array_push($speeds,$type[2]);
+                $time   = [2];
+                $lat    = $singleData[4];
+                $lon    = $singleData[5];
+                array_push($speeds,$singleData[3]);
                 array_push($gps,['lat'=>$lat,'lon'=>$lon]);
+
+
+                //如果是触球，则需要根据连续触球的时间来判断是否是带球，两次连续触球的时间间隔小于2秒，则当做带球一次
+                if($type == 'touchball'){
+
+                    if($time - $touchFlag['prevTime'] <=2 ){ //如果时间小于2，加入到之前中
+
+                        array_push($touchFlag['prevData'],$singleData);
+
+                        continue;
+
+                    }else{
+
+                        if(count($touchFlag['prevData']) > 1) {
+
+                            array_push($touchFlag['list'], $touchFlag['prevData']); //把以前的完整的带球放入到列表中
+                        }
+
+                        $touchFlag['prevData']  = [$singleData];
+                    }
+
+                    $touchFlag['prevTime']  = $time;
+                }
             }
 
-            $pass['num']        = count($pass['data']);
+            $pass['num']        = count($singleData['data']);
 
             $pass['speedMax']   = round(max($speeds));
             $pass['speedAvg']   = round(array_sum($speeds)/count($speeds));
@@ -1405,29 +1422,29 @@ class AnalysisMatchData implements ShouldQueue
 
 
         $matchResult    = [
-            'pass_s_num'            => $typeData['passShort']['num'],
-            'pass_s_speed_max'      => $typeData['passShort']['speedMax'],
-            'pass_s_speed_avg'      => $typeData['passShort']['speedAvg'],
-            'pass_l_num'            => $typeData['passLong']['num'],
-            'pass_l_speed_max'      => $typeData['passLong']['speedMax'],
-            'pass_l_speed_avg'      => $typeData['passLong']['speedAvg'],
-            'touchball_num'         => $typeData['touchball']['num'],
-            'touchball_speed_max'   => $typeData['touchball']['speedMax'],
-            'touchball_speed_avg'   => $typeData['touchball']['speedAvg'],
-            'map_pass_short'        => $typeData['passShort']['gps'],
-            'map_pass_long'         => $typeData['passLong']['gps'],
-            'map_touchball'         => $typeData['touchball']['gps']
+            'pass_s_num'            => $typeDataes['passShort']['num'],
+            'pass_s_speed_max'      => $typeDataes['passShort']['speedMax'],
+            'pass_s_speed_avg'      => $typeDataes['passShort']['speedAvg'],
+            'pass_l_num'            => $typeDataes['passLong']['num'],
+            'pass_l_speed_max'      => $typeDataes['passLong']['speedMax'],
+            'pass_l_speed_avg'      => $typeDataes['passLong']['speedAvg'],
+            'touchball_num'         => $typeDataes['touchball']['num'],
+            'touchball_speed_max'   => $typeDataes['touchball']['speedMax'],
+            'touchball_speed_avg'   => $typeDataes['touchball']['speedAvg'],
+            'map_pass_short'        => $typeDataes['passShort']['gps'],
+            'map_pass_long'         => $typeDataes['passLong']['gps'],
+            'map_touchball'         => $typeDataes['touchball']['gps']
         ];
 
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
         //存储用户全局性的数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
-        $userAbility->pass_num_short        += $typeData['passShort']['num'];
-        $userAbility->pass_num_long         += $typeData['passLong']['num'];
-        $userAbility->pass_num_total        += ($typeData['passShort']['num'] + $typeData['passLong']['num']);
-        $userAbility->pass_speed_max        =  max($userAbility->pass_speed_max,$typeData['passLong']['speedMax']);
-        $userAbility->touchball_num_total   += $typeData['touchball']['num'];
+        $userAbility->pass_num_short        += $typeDataes['passShort']['num'];
+        $userAbility->pass_num_long         += $typeDataes['passLong']['num'];
+        $userAbility->pass_num_total        += ($typeDataes['passShort']['num'] + $typeDataes['passLong']['num']);
+        $userAbility->pass_speed_max        =  max($userAbility->pass_speed_max,$typeDataes['passLong']['speedMax']);
+        $userAbility->touchball_num_total   += $typeDataes['touchball']['num'];
         $userAbility->save();
 
     }
