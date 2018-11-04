@@ -1093,7 +1093,8 @@ class AnalysisMatchData implements ShouldQueue
         $resultShoot    = "result-shoot.txt";   //射门
         $resultTurn     = "result-turn.txt";    //转向
 
-        $callbackUrl    = urlencode(config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}");//回调URL
+        //$callbackUrl    = urlencode(config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}");//回调URL
+        $callbackUrl    = config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}";//回调URL
 
         $files  = [
             "sensor_l"  =>  $baseSensorL,
