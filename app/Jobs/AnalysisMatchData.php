@@ -1434,13 +1434,13 @@ class AnalysisMatchData implements ShouldQueue
             "prevData"  => []
         ];
 
-        foreach($typeDataes as $type => &$typdData)
+        foreach($typeDataes as $type => &$typeData)
         {
             $speeds = [0];
             $gps    = [];
 
 
-            foreach($typdData['data'] as $singleData)
+            foreach($typeData['data'] as $singleData)
             {
                 $time   = $singleData[2];
                 $lat    = $singleData[4];
@@ -1471,11 +1471,11 @@ class AnalysisMatchData implements ShouldQueue
                 }
             }
 
-            $typdData['num']        = count($typdData['data']);
-            $typdData['speedMax']   = round(max($speeds));
-            $typdData['speedAvg']   = round(array_sum($speeds)/count($speeds));
-            $typdData['gps']        = $this->gps_map($matchInfo->court_id,$gps);
-            unset($typdData['data']);
+            $typeData['num']        = count($typeData['data']);
+            $typeData['speedMax']   = round(max($speeds));
+            $typeData['speedAvg']   = round(array_sum($speeds)/count($speeds));
+            $typeData['gps']        = $this->gps_map($matchInfo->court_id,$gps);
+            unset($typeData['data']);
         }
 
 
@@ -1495,7 +1495,7 @@ class AnalysisMatchData implements ShouldQueue
             'map_pass_long'         => $typeDataes['passLong']['gps'],      //长传图谱
             'map_touchball'         => $typeDataes['touchball']['gps']      //触球图谱
         ];
-
+        
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
         //存储用户全局性的数据
