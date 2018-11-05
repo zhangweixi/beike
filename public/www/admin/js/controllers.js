@@ -63,7 +63,7 @@ myapp.controller('indexController', function ($scope, $location, $http) {
                 $scope.admin = res.data.admin;
 
             }else{
-                setCookie("adminToken",null);
+                setCookie("adminToken","",-10);
                 location.href = "login.html";
                 
             }
