@@ -260,7 +260,6 @@ class MatchCaculate extends Controller
 
         //创建输入文件
         $srcFile    = Court::create_court_model_input_file($courtId);
-        mylogger($srcFile);
 
         //调用matlab
         $dir        = public_path("uploads/court-config/{$courtId}/");
@@ -271,7 +270,6 @@ class MatchCaculate extends Controller
         $matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
 
         $command = "python $pythonFile --command=$matlabCmd";
-        mylogger($command);
 
         if(!file_exists($dir.$inputFile))
         {
