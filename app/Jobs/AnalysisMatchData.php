@@ -1048,7 +1048,6 @@ class AnalysisMatchData implements ShouldQueue
 
         $court      = new Court();
         $court->set_centers($points->center);
-        mylogger(time());
         $mapData    = $court->create_court_hot_map($gpsData);
 
 
@@ -1495,7 +1494,7 @@ class AnalysisMatchData implements ShouldQueue
             'map_pass_long'         => $typeDataes['passLong']['gps'],      //长传图谱
             'map_touchball'         => $typeDataes['touchball']['gps']      //触球图谱
         ];
-        
+
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
         //存储用户全局性的数据
