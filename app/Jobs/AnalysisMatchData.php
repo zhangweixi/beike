@@ -1129,7 +1129,7 @@ class AnalysisMatchData implements ShouldQueue
         //LanQi('','sensor-R.txt', 'sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt','http://dev1.api.launchever.cn/api/admin/match/get_visual_match_court?matchId=123')
 
         $pythonfile = app_path('python/python_call_matlab.py');
-        $matlabCmd  = "LanQi('{$localDir}','{$baseSensorR}','{$baseSensorL}','{$baseCompassR}','{$baseCompassL}','{$baseGps}','{$resultRun}','{$resultTurn}','{$resultPass}','{$resultStep}','{$resultShoot}','{$callbackUrl}')";
+        $matlabCmd  = "LanQi('{$localDir}','{$baseSensorR}','{$baseSensorL}','{$baseCompassR}','{$baseCompassL}','{$baseGps}','{$baseConfig}','{$resultRun}','{$resultTurn}','{$resultPass}','{$resultStep}','{$resultShoot}','{$callbackUrl}')";
         $command    = "python {$pythonfile} --command={$matlabCmd}";
 
         $result     = shell_exec($command."&& echo success");
@@ -1138,8 +1138,8 @@ class AnalysisMatchData implements ShouldQueue
 
         if(trim($result) == "success") {
 
-            $params   = ['matchId'=>$matchId];
-            self::execute("save_matlab_result",$params,'api');
+            //$params   = ['matchId'=>$matchId];
+            //self::execute("save_matlab_result",$params,'api');
 
         }else{
 
