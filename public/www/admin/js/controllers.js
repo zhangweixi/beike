@@ -7,6 +7,14 @@ mylogin.controller('loginController', function ($scope, $http) {
     $scope.name = "";
     $scope.password = "";
 
+    var loginCookie = getCookie('adminToken');
+
+    if(loginCookie){
+
+        location.href = "index.html";
+
+        return;
+    }
 
     $scope.login = function () {
 
@@ -648,7 +656,7 @@ myapp.controller('adminController', function ($scope, $http, $location, $statePa
 })
 
 
-myapp.controller('matchController', function($scope, $http, $location,$stateParams,$timeout){
+myapp.controller('matchController', function($scope, $http, $location,$stateParams,$timeout,$interval){
 
     $scope.matches      = [];   //比赛列表
     $scope.map          = "";
@@ -744,6 +752,10 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
         })
     }
 
+
+    /**
+     * 显示热点图
+     */
     $scope.draw_hot_map = function(eleId,width,data)
     {
         data = JSON.parse(data);
@@ -755,7 +767,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
         var data2   = [];
         var max     = 0;
-        var scale   = width / 20;   //x为20分
+        var scale   = width / data[0].length;   //x为20分
         
             for(var y in data)
             {
@@ -884,6 +896,67 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
     }
 
+    //显示球场格子中心点
+    $scope.draw_court_center = function(){
+
+        var center = [];
+        var points  = $scope.court.boxs.baiduGps;
+        for(var p of points.center)
+        {
+            center.push(getpoint(p.lat,p.lon));
+        }
+        $scope.interval = $interval(function(){
+
+            if(center.length > 0){
+                
+                var p = center.splice(0,10);
+
+                $scope.draw_big_data(p,0);    
+                
+
+            }else{
+
+                $interval.cancel($scope.interval);
+
+            }
+
+        },100);
+
+        
+    }
+
+    /**
+     * 当GPS球场无效的时候，利用实际的点模拟出一个球场
+     * 模拟的标准是4个点的最大点
+     */
+    $scope.draw_visual_court = function()
+    {
+        var url = server + "match/get_visual_match_court?matchId="+$scope.matchId;
+
+        $http.get(url).success(function(res)
+        {
+        
+            var points  = [];
+            var data    = res.data.points; 
+
+            for(var p in data){
+
+                var newp = new BMap.Point(data[p].lon,data[p].lat);
+
+                points.push(newp);
+            }
+
+            
+
+            $scope.draw_big_data(points);
+
+            //$scope.draw_shape(points);
+
+
+        })
+
+    }
+
 
     //显示大量球场点
     $scope.draw_big_data = function(points)
@@ -894,7 +967,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             color: '#d340c3'
         }
         var pointCollection = new BMap.PointCollection(points, options);  // 初始化PointCollection
-        if(points.length > 0)
+        if(points.length > 0 && arguments.length == 1)
         {
             $scope.map.centerAndZoom(points[0],20);
         }
@@ -1081,6 +1154,26 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
     }
 
+
+    /**
+     * 绘制直线图
+     */
+    $scope.draw_shape = function(points)
+    {
+        var points1 = [
+            new BMap.Point(116.387112,39.920977),
+            new BMap.Point(116.385243,39.913063),
+            new BMap.Point(116.394226,39.917988),
+            new BMap.Point(116.401772,39.921364),
+            new BMap.Point(116.41248,39.927893)
+        ];
+
+        var option = {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5};
+
+        var polygon = new BMap.Polygon(points,option);  //创建多边形
+
+        $scope.map.addOverlay(polygon);   //增加多边形
+    }
     /**
      * 开启备注的编辑状态
      */
