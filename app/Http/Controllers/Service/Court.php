@@ -414,7 +414,7 @@ class Court{
 
         if($courtInfo->is_clockwise == 1){
 
-            $boxPoints  = array_reverse($boxPoints);
+            $boxPoints['center']  = array_reverse($boxPoints['center']);
         }
 
         return $boxPoints;
