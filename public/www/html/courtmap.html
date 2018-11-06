@@ -160,13 +160,13 @@
             var di = 6;
             for(var gps of res)
             {
-                var mp = getpoint(gps.mobile_lat,gps.mobile_lon);
+                //var mp = getpoint(gps.mobile_lat,gps.mobile_lon);
                 var dp = getpoint(gps.device_lat,gps.device_lon);
 
-                mobilepoints.push(mp);
+                //mobilepoints.push(mp);
                 devicepoints.push(dp);
 
-                addlabel(mp,gps.position,'red');
+                //addlabel(mp,gps.position,'red');
                 addlabel(dp,gps.position,'blue');
 
                 //map.addOverlay(new BMap.Marker(mp));
@@ -178,10 +178,9 @@
                 mi++;
                 di++;
             }
-
-            drawline(mobilepoints,'red');
+            console.log(devicepoints);
             drawline(devicepoints,'green');
-            map.setCenter(mobilepoints[0]);
+            map.setCenter(devicepoints[0]);
         })
     }
 
