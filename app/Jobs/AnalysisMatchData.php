@@ -41,7 +41,6 @@ class AnalysisMatchData implements ShouldQueue
     private $sourceId   = 0;    //要处理的比赛的数据
     private $userId     = 0;    //用户ID
     private $action     = "";   //要调用的方法
-    private $host       = "";   //当前域名，用于发起下一次网络请求
     private $infile     = "";   //转换角度的文件，转换角度的输入文件
     private $outfile    = "";   //转换角度的输出文件
     private $matchId    = 0;    //比赛ID

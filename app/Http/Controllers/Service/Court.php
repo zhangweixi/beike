@@ -136,7 +136,26 @@ class Court{
         return $courtMap;
     }
 
+    /**
+     * 判断球场是否是顺时针方向走动
+     * @param $A GPSPoint
+     * @param $D GPSPoint
+     * @param $E GPSPoint
+     * @return boolean
+     * */
+    static function judge_court_is_clockwise($A,$D,$E){
 
+        //以下是逆时针方向的判断
+        if(    ($A->lat <  $D->lat && $D->lon < $E->lon)
+            || ($A->lat >  $D->lat && $D->lon > $E->lon)
+            || ($A->lat == $D->lat && $A->lon > $D->lon && $D->lat < $E->lat)
+            || ($A->lat == $D->lat && $A->lon < $D->lon && $D->lat > $D->lat))
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * 间隔获得数组内容
@@ -391,7 +410,14 @@ class Court{
             $court->set_lon_num($lonNum);
         }
 
-        return $court->calculate_court($A,$B,$C,$D,$E,$F);
+        $boxPoints  = $court->calculate_court($A,$B,$C,$D,$E,$F);
+
+        if($courtInfo->is_clockwise == 1){
+
+            $boxPoints  = array_reverse($boxPoints);
+        }
+
+        return $boxPoints;
     }
 
 

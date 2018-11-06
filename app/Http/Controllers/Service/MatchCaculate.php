@@ -277,7 +277,8 @@ class MatchCaculate extends Controller
             mylogger($dir.$inputFile."不存在");
             exit;
         }
-        shell_exec($command);
+
+        $result     = shell_exec($command);
 
         $colums = [
             "A"     => 'p_a',
@@ -291,22 +292,36 @@ class MatchCaculate extends Controller
         ];
 
         //读取结果，存储到数据中
-        $courtResult    = file($dir.$outFile);
-        $courtPoints    = [];
+        $courtResult    = file_to_array($dir.$outFile);
+
+        $courtInfo      = [];
+
+        $positions      = array_keys($colums);
 
         foreach($courtResult as $point)
         {
-            $point  = explode(" ",trim($point,"\n"));
-            if(!isset($colums[$point[0]]))
+            $position   = $point[0];
+
+            if(in_array($position,$positions))
             {
-                continue;
+                $key                = $colums[$point[0]];
+                $courtInfo[$key]  = bcmul($point[1],100,5).",".bcmul($point[2],100,5);    //乘以100是为了还原GPS
             }
-            $key                = $colums[$point[0]];
-            $courtPoints[$key]  = bcmul($point[1],100,5).",".bcmul($point[2],100,5);
         }
 
-        CourtModel::where('court_id',$courtId)->update($courtPoints);
+        //判断球场是否是顺时针
+        $pa     = explode(",",$courtInfo['p_a']);
+        $pb     = explode(",",$courtInfo['p_b']);
+        $pe     = explode(",",$courtInfo['p_e']);
 
+        $PA     = new GPSPoint($pa[1],$pa[0]);
+        $PD     = new GPSPoint($pb[1],$pb[0]);
+        $PE     = new GPSPoint($pe[1],$pe[0]);
+
+        $isClockWise                = Court::judge_court_is_clockwise($PA,$PD,$PE);;
+        $courtInfo['is_clockwise']  = $isClockWise ? 1 : 0;
+
+        CourtModel::where('court_id',$courtId)->update($courtInfo);
 
         //调用matlab结束，开启其他工作
 
@@ -327,8 +342,8 @@ class MatchCaculate extends Controller
         $courtId        = $request->input('courtId');
 
         $courtService   = new Court();
-        $boxs           = $courtService->cut_court_to_small_box($courtId);      //划分球场成多个区域图
-        $configFile     = $courtService->create_court_gps_angle_config($courtId);//球场角度配置文件
+        $boxs           = $courtService->cut_court_to_small_box($courtId);          //划分球场成多个区域图
+        $configFile     = $courtService->create_court_gps_angle_config($courtId);   //球场角度配置文件
 
         $courtData      = ['boxs'=>\GuzzleHttp\json_encode($boxs),"config_file"=>$configFile];
 
