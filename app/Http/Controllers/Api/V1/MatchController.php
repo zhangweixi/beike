@@ -462,10 +462,10 @@ class MatchController extends Controller
         $midSpeed       = self::map_change($matchResult->map_speed_middle);
         $highSpeed      = self::map_change($matchResult->map_speed_high);
 
-        $shortPass      = self::map_change($matchResult->map_pass_short);
-        $longPass       = self::map_change($matchResult->map_pass_long);
-        $touchball      = self::map_change($matchResult->map_touchball);
-        $shoot          = self::map_change($matchResult->map_shoot);
+        $shortPass      = $matchResult->map_pass_short;
+        $longPass       = $matchResult->map_pass_long;
+        $touchball      = $matchResult->map_touchball;
+        $shoot          = $matchResult->map_shoot;
 
 
         //$sprint     = create_round_array(12,22);
