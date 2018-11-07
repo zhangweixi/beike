@@ -435,14 +435,18 @@ class MatchController extends Controller
     /**
      * 热点图转换
      * @param $map string
+     * @param $needScroll boolean 是否需要缩放
      * @return array
      * */
-    private static function map_change($map){
+    private static function map_change($map,$needScroll=true){
         if($map) {
 
             $map   = \GuzzleHttp\json_decode($map,true);
-            $map   = data_scroll_to($map,100);
 
+            if($needScroll){
+
+                $map   = data_scroll_to($map,100);
+            }
         }else{
 
             $map   = create_round_array(12,22,true);
@@ -462,10 +466,10 @@ class MatchController extends Controller
         $midSpeed       = self::map_change($matchResult->map_speed_middle);
         $highSpeed      = self::map_change($matchResult->map_speed_high);
 
-        $shortPass      = $matchResult->map_pass_short;
-        $longPass       = $matchResult->map_pass_long;
-        $touchball      = $matchResult->map_touchball;
-        $shoot          = $matchResult->map_shoot;
+        $shortPass      = self::map_change($matchResult->map_pass_short,false);
+        $longPass       = self::map_change($matchResult->map_pass_long,false);
+        $touchball      = self::map_change($matchResult->map_touchball,false);
+        $shoot          = self::map_change($matchResult->map_shoot,false);
 
 
         //$sprint     = create_round_array(12,22);
