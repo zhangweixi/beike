@@ -1443,7 +1443,7 @@ class AnalysisMatchData implements ShouldQueue
                 $time   = $singleData[2];
                 $lat    = $singleData[4];
                 $lon    = $singleData[5];
-                array_push($speeds,$singleData[3]);
+                array_push($speeds,$singleData[6]);
                 array_push($gps,['lat'=>$lat,'lon'=>$lon]);
 
                 //为触球时，根据连续触球的时间来判断是否是带球，连续触球的时间间隔小于2秒，当做带球一次
@@ -1560,6 +1560,11 @@ class AnalysisMatchData implements ShouldQueue
         $shootData  = file_to_array($shootFile);
         $matchInfo  = self::get_temp_match_info($matchId);
 
+        if(count($shootData) == 0){
+
+            return false;
+        }
+
         //射门类型临界距离
         $shootTypeDis   = 8;    //长短处的分割距离
 
@@ -1629,6 +1634,11 @@ class AnalysisMatchData implements ShouldQueue
         $file       = self::matchdir($matchId)."result-turn.txt";
         $resultData = file_to_array($file);
         $matchInfo  = self::get_temp_match_info($matchId);
+
+        if(count($resultData) == 0){
+
+            return false;
+        }
 
         $matchResult    = [
             "change_direction_num"  => 0,   //转向
