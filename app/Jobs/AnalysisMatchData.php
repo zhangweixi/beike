@@ -1272,7 +1272,7 @@ class AnalysisMatchData implements ShouldQueue
             {
                 continue;
             }
-            $speed      = $speedInfo[1]*1;
+            $speed      = abs($speedInfo[1]);
             $maxSpeed   = max($speed,$maxSpeed);
 
             //速度M/s
