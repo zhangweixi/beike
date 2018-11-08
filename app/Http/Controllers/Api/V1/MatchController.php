@@ -410,8 +410,8 @@ class MatchController extends Controller
             ],
 
             'run'        => [
-                'lowDis'       => $matchResult->run_low_dis,
-                'lowTime'      => $matchResult->run_low_time,
+                'lowDis'       => $matchResult->run_low_dis+$matchResult->run_static_dis,
+                'lowTime'      => $matchResult->run_low_time+$matchResult->run_static_time,
                 'midDis'       => $matchResult->run_mid_dis,
                 'midTime'      => $matchResult->run_mid_time,
                 'highDis'      => $matchResult->run_high_dis,
