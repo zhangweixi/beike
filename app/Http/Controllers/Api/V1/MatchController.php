@@ -516,10 +516,10 @@ class MatchController extends Controller
                         a.match_id,
                         b.shoot_num_total as shoot,
                         b.pass_s_num + b.pass_l_num as pass,
-                        b.run_static_time,
-                        b.run_low_time,
-                        b.run_mid_time,
-                        b.run_high_time,
+                        b.run_low_dis,
+                        b.run_mid_dis,
+                        b.run_high_dis,
+                        b.run_static_dis,
                         b.run_low_dis + b.run_mid_dis +  b.run_high_dis as run
                   FROM `match` as a 
                   LEFT JOIN match_result as b ON b.match_id = a.match_id 
@@ -533,10 +533,10 @@ class MatchController extends Controller
         }
         $matches = DB::select($sql);
 
-        $speedTimeLow   = 0;
-        $speedTimeMid   = 0;
-        $speedTimeHigh  = 0;
-        $staticTime     = 0;
+        $speedDisLow   = 0;
+        $speedDisMid   = 0;
+        $speedDisHigh  = 0;
+        $staticDis     = 0;
         $totalNum       = count($matches);
         foreach ($matches as $key => $match)
         {
@@ -544,30 +544,26 @@ class MatchController extends Controller
             $totalRun  += $match->run;
             $totalShoot+= $match->shoot;
 
-            $speedTimeHigh  += $match->run_high_dis;
-            $speedTimeMid   += $match->run_mid_dis;
-            $speedTimeLow   += $match->run_low_dis;
-            $staticTime     += $match->run_static_dis;
+            $speedDisHigh  += $match->run_high_dis;
+            $speedDisMid   += $match->run_mid_dis;
+            $speedDisLow   += $match->run_low_dis;
+            $staticDis     += $match->run_static_dis;
 
             $match->shoot   = $match->shoot ?? 0;
             $match->pass    = $match->pass ?? 0;
             $match->run     = $match->run ?? 0;
             $match->x       = $totalNum - $key;
-            unset($match->run_high_time);
-            unset($match->run_mid_time);
-            unset($match->run_low_time);
-            unset($match->run_static_time);
         }
 
 
         //计算百分比
 
-        $totalTime      = $speedTimeHigh + $speedTimeMid + $speedTimeLow + $staticTime;
-        $totalTime      = $totalTime > 1 ? $totalTime : 1;
+        $totalDis      = $speedDisLow + $speedDisMid + $speedDisHigh + $staticDis;
+        $totalDis      = $totalDis > 1 ? $totalDis : 1;
 
-        $perSpeedLow    = ceil($speedTimeLow / $totalTime);
-        $perSpeedMid    = ceil($speedTimeMid / $totalTime);
-        $perSpeedHigh   = ceil($speedTimeHigh / $totalTime);
+        $perSpeedLow    = ceil($speedDisLow / $totalDis);
+        $perSpeedMid    = ceil($speedDisMid / $totalDis);
+        $perSpeedHigh   = ceil($speedDisHigh / $totalDis);
         $perStatic      = 100 - ($perSpeedHigh + $perSpeedMid + $perSpeedLow);
 
         $matches        = array_reverse($matches);
