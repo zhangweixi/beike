@@ -544,10 +544,10 @@ class MatchController extends Controller
             $totalRun  += $match->run;
             $totalShoot+= $match->shoot;
 
-            $speedTimeHigh  += $match->run_high_time;
-            $speedTimeMid   += $match->run_mid_time;
-            $speedTimeLow   += $match->run_low_time;
-            $staticTime     += $match->run_static_time;
+            $speedTimeHigh  += $match->run_high_dis;
+            $speedTimeMid   += $match->run_mid_dis;
+            $speedTimeLow   += $match->run_low_dis;
+            $staticTime     += $match->run_static_dis;
 
             $match->shoot   = $match->shoot ?? 0;
             $match->pass    = $match->pass ?? 0;
