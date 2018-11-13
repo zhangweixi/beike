@@ -305,7 +305,7 @@ class MatchCaculate extends Controller
             if(in_array($position,$positions))
             {
                 $key                = $colums[$point[0]];
-                $courtInfo[$key]  = bcmul($point[1],100,5).",".bcmul($point[2],100,5);    //乘以100是为了还原GPS
+                $courtInfo[$key]    = implode(",",$point);
             }
         }
 
