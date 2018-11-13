@@ -305,7 +305,7 @@ class MatchCaculate extends Controller
             if(in_array($position,$positions))
             {
                 $key                = $colums[$point[0]];
-                $courtInfo[$key]    = implode(",",$point);
+                $courtInfo[$key]    = $point[1].",".$point[2];
             }
         }
 
