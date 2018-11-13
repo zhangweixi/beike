@@ -30,7 +30,6 @@ class CourtController extends Controller
             'user_id'       => $userId,
             'gps_group_id'  => $gpsGroupId,
         ];
-
         $courtModel     = new CourtModel();
         $courtId        = $courtModel->add_court($courtData);
 
@@ -77,18 +76,12 @@ class CourtController extends Controller
      * */
     public function remark_mesure_court(Request $request)
     {
-        $userId     = $request->input('userId');
-
-        //清空数据
-        //DB::table('football_court_point')->where('user_id',$userId)->delete();
-
         $uniqueId   = create_member_number();
         return  apiData()->add('gpsGroupId',$uniqueId)->send();
-
     }
 
     /**
-     * 检查单个jps是否有效
+     * 检查单个GPS是否有效
      * */
     public function check_single_gps(Request $request)
     {
@@ -98,7 +91,6 @@ class CourtController extends Controller
         $gpsGroupId = $request->input('gpsGroupId');
         $userId     = $request->input('userId');
         $position   = $request->input('position');
-
 
         if(empty($gps))
         {
@@ -113,6 +105,8 @@ class CourtController extends Controller
             $msg    = "GPS无效";
 
         }else{
+            $gpsInfo['lat'] = gps_to_gps($gpsInfo['lat']);
+            $gpsInfo['lon'] = gps_to_gps($gpsInfo['lon']);
 
             //存储GPS信息
             $gpsPoint   = [
@@ -140,9 +134,8 @@ class CourtController extends Controller
             }
 
 
-
             //将设备GPS转换成百度GPS
-            $gpsBaidu = gps_to_bdgps([['lat'=>gps_to_gps($gpsInfo['lat']),'lon'=>gps_to_gps($gpsInfo['lon'])]]);
+            $gpsBaidu = gps_to_bdgps([$gpsInfo]);
 
             $gpsBaidu  = $gpsBaidu[0];
 
@@ -151,7 +144,6 @@ class CourtController extends Controller
             $distance = gps_distance($lon,$lat,$gpsBaidu['lon'],$gpsBaidu['lat']);
 
             $msg    = "距离【{$distance}】";
-
 
             if($distance > 3 && $gpsNum < 20) {
 
@@ -268,9 +260,6 @@ class CourtController extends Controller
                     foreach($gpsList as $gps)
                     {
                         if($gps->lat == 0) continue;
-
-                        $gps->lat   = gps_to_gps($gps->lat);
-                        $gps->lon   = gps_to_gps($gps->lon);
                         array_push($allGps,$gps);
                     }
                 });
@@ -293,26 +282,38 @@ class CourtController extends Controller
     public function draw_court(Request $request)
     {
         $gpsGroupId = $request->input('gpsGroupId');
-        $sql = "SELECT `position`,
-                CONCAT(AVG(device_lon),',',AVG(device_lat)) AS device ,
-                CONCAT(AVG(mobile_lon),',',AVG(mobile_lat)) as  mobile,
-                AVG(device_lon) device_lon,
-                AVG(device_lat) device_lat,
-                AVG(mobile_lon) mobile_lon,
-                AVG(mobile_lat) mobile_lat
-                from football_court_point 
-                WHERE gps_group_id = '{$gpsGroupId}' 
-                GROUP BY `position`";
 
-        $gpsInfo    = DB::select($sql);
+        $gpsInfo    = DB::table('football_court')->where('gps_group_id',$gpsGroupId)->first();
 
 
-        foreach($gpsInfo as $point)
-        {
-            $info = gps_to_bdgps([['lat'=>gps_to_gps($point->device_lat),'lon'=>gps_to_gps($point->device_lon)]]);
-            $point->device_lat  = $info[0]['lat'];
-            $point->device_lon  = $info[0]['lon'];
+        $gpsInfo    = [
+            ["position"=>"A","gps"=>$gpsInfo->p_a],
+            //["position"=>"B","gps"=>$gpsInfo->p_b],
+            //["position"=>"C","gps"=>$gpsInfo->p_c],
+            ["position"=>"D","gps"=>$gpsInfo->p_d],
+            ["position"=>"A1","gps"=>$gpsInfo->p_a1],
+            ["position"=>"D1","gps"=>$gpsInfo->p_d1],
+        ];
+
+        foreach ($gpsInfo as &$data){
+
+            $gps    = explode(",",$data['gps']);
+            if($gps[0] > 1000){
+
+                $info = gps_to_bdgps([['lat'=>$gps[0],'lon'=>$gps[1])]);
+
+            }else{
+
+                $info = gps_to_bdgps([['lat'=>$gps[0],'lon'=>$gps[1]]]);
+            }
+
+
+
+            $data['device_lat']  = $info[0]['lat'];
+            $data['device_lon']  = $info[0]['lon'];
         }
+
+
 
         return $gpsInfo;
     }
@@ -336,7 +337,7 @@ class CourtController extends Controller
         foreach($gpsInfo as $point)
         {
             array_push($points['mobile'],['lat'=>$point->mobile_lat,'lon'=>$point->mobile_lon]);
-            array_push($points['device'],['lat'=>gps_to_gps($point->device_lat),'lon'=>gps_to_gps($point->device_lon)]);
+            array_push($points['device'],['lat'=>$point->device_lat,'lon'=>$point->device_lon]);
         }
 
         $points['device']   = gps_to_bdgps($points['device']);
@@ -357,7 +358,7 @@ class CourtController extends Controller
         foreach($gpsList as $key => $gps){
 
             $info = explode(" ",trim($gps,"\n"));
-            $gpsList[$key]  = ["lat"=>gps_to_gps($info[0]),'lon'=>gps_to_gps($info[1])];
+            $gpsList[$key]  = ["lat"=>$info[0],'lon'=>$info[1]];
         }
 
         $gpsList    = gps_to_bdgps($gpsList);
@@ -429,66 +430,4 @@ class CourtController extends Controller
         $job    = new AnalysisMatchData(0);
         $job->create_gps_map($matchId,$gpsData);
     }
-
-
-    public function temp()
-    {
-        return str_replace("http://","",config("app.matlabhost"));
-        Http::sock("matlab.launchever.cn","/api/v1/test/test?test=123");
-        //Http::sock("dev1.api.launchever.cn","/api/matchCaculate/call_matlab_create_court_top_point");
-        mylogger('xx');
-        return "ok";
-
-        return (new Court())->create_court_model_input_file(146);
-        //return $this->create_court_gps_config(145);
-
-
-        $a = [
-            ['lat'=>3109.7304,'lon'=>12125.1460],
-            ['lat'=>3109.7401,'lon'=>12125.1448],
-            ['lat'=>3109.7492,'lon'=>12125.1436],
-            ['lat'=>3109.7465,'lon'=>12125.1219],
-            ['lat'=>3109.7438,'lon'=>12125.1001],
-            ['lat'=>3109.7249,'lon'=>12125.1025],
-            ['lat'=>3109.7346,'lon'=>12125.1013],
-            ['lat'=>3109.7276,'lon'=>12125.1242]
-        ];
-
-
-        foreach($a as &$b)
-        {
-            $b['lat']   = gps_to_gps($b['lat']);
-            $b['lon']   = gps_to_gps($b['lon']);
-        }
-
-        $a = gps_to_bdgps($a);
-
-        $point  = [];
-        $litter = ['A','B','C','D','E','F','G','H'];
-
-
-        foreach($a as $k=> $p)
-        {
-            array_push($point,['mobile_lat'=>$p['lat'],'mobile_lon'=>$p['lon'],"device_lat"=>$p['lat'],'device_lon'=>$p['lon'],'gps_group_id'=>1234,'user_id'=>4,'position'=>$litter[$k]]);
-        }
-
-
-        DB::table('football_court_point')->insert($point);
-
-        return $a;
-        //file_get_contents("http://matlab.launchever.cn/api/matchCaculate/call_matlab?matchId=564&sign=4587d4bd9ba3ea31124bfa72474e44c5");
-
-        //return "ok";
-        //return $this->get_points_center("201809121504737483");
-        return $this->create_court_gps_config(117);
-
-        $ana    = new AnalysisMatchData(0);
-        $ana->create_gps_map(364);
-        return "ok";
-    }
-
-
-
-
-
 }

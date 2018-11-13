@@ -212,8 +212,8 @@ class MatchController extends Controller
             {
                 if($lats[$i]== '' || $lats[$i] == 0) continue;
                 $p = [
-                    'lat'   => gps_to_gps($lons[$i]),
-                    'lon'   => gps_to_gps($lats[$i])
+                    'lat'   => $lons[$i],
+                    'lon'   => $lats[$i]
                 ];
                 array_push($points,$p);
             }

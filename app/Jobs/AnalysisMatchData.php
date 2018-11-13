@@ -648,10 +648,9 @@ class AnalysisMatchData implements ShouldQueue
 
                 }else{
 
-                    $lat       = floatval($detailInfo[2]);
-                    $lon       = floatval($detailInfo[4]);
+                    $lat       = gps_to_gps(floatval($detailInfo[2]));
+                    $lon       = gps_to_gps(floatval($detailInfo[4]));
                 }
-
             }
 
             $otherInfo  = [
@@ -1532,15 +1531,7 @@ class AnalysisMatchData implements ShouldQueue
         $points     = $courtInfo->boxs;
         $points     =  \GuzzleHttp\json_decode($points);
         $court      = new Court();
-        foreach ($points->center as &$p){
-
-            foreach($p as &$p1){
-
-                $p1->lat = gps_to_gps($p1->lat);
-                $p1->lon = gps_to_gps($p1->lon);
-            }
-
-        }
+        
         $court->set_centers($points->center);
 
         $mapData    = $court->create_court_hot_map($gpsList);

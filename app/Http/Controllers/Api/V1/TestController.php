@@ -2,10 +2,16 @@
 namespace App\Http\Controllers\Api\V1;
 use App\Common\Jpush;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Service\Court;
+use App\Http\Controllers\Service\GPSPoint;
 use App\Http\Controllers\Service\MatchCaculate;
 use App\Http\Controllers\Service\MatchGrade;
+use App\Jobs\AnalysisMatchData;
+use App\Jobs\CommonJob;
 use App\Models\Base\BaseMatchDataProcessModel;
+use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
+use App\Models\V1\UserModel;
 use Dingo\Api\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Common\Geohash;
@@ -63,11 +69,7 @@ class TestController extends Controller
 
         if($isgps == 0)//转换成GPS
         {
-            foreach($points as $point)
-            {
-                $point->lat = gps_to_gps($point->lat);
-                $point->lon = gps_to_gps($point->lon);
-            }
+            
         }
 
 
@@ -174,14 +176,58 @@ class TestController extends Controller
     }
 
 
-    public function test(Request $request){
+    public function test(Request $request)
+    {
+        if(false)
+        {
+            $courtdata =  (new Court())->cut_court_to_small_box(246,40,20);
+            $courtData      = ['boxs'=>\GuzzleHttp\json_encode($courtdata)];
+            CourtModel::where('court_id',246)->update($courtData);
+            return "ok";
+        }
 
 
+        if(true){
+
+            //return (new AnalysisMatchData('xx'))->save_matlab_result(1102); //保存射门结果
+
+            //return (new AnalysisMatchData('xx'))->save_direction_result(1104); //转向转身
+            //return (new AnalysisMatchData('xx'))->save_run_result(1102); //保存射门结果
+            return (new AnalysisMatchData('xx'))->save_pass_and_touch(1104); //保存射门结果
+
+            return (new AnalysisMatchData('xx'))->save_shoot_result(1102); //保存射门结果
+            return (new AnalysisMatchData('xx'))->save_dribble_and_backrun(870);
+
+            ////计算比赛分数
+            return (new MatchGrade())->get_global_new_grade(10);
+            return (new MatchGrade())->get_match_new_grade(677);
+
+            //保存结果比赛结果
+            return (new AnalysisMatchData('xx'))->save_pass_and_touch(677);
+        }
+
+
+
+
+
+
+        return  $res === true ? "ok" : $res;
+
+
+
+        $userModel  = new UserModel();
+        $latitude   = "31.277551";
+        $longitude  = "121.487143";
+
+        //$latitude   = "31.235597";
+        //$longitude  = "121.55032";
+
+        $users  = $userModel->get_user_ids_by_geohash($latitude,$longitude,4);
+
+        return $users;
         $courtId    = $request->input('courtId');
         MatchCaculate::call_matlab_court_init($courtId);
-        return ;
-        sleep(10);
-        mylogger($request->all());
+
         return $request->all();
     }
 
@@ -197,9 +243,24 @@ class TestController extends Controller
     public function hex_to_time(Request $request)
     {
         $hex    = $request->input('hex');
+        //return HexToTime($hex);
         return date_time(HexToTime($hex)/1000);
     }
 
+
+    public function update_grade()
+    {
+        $matchGrade = new MatchGrade();
+        $globalData = $matchGrade->get_global_new_grade(23);
+        DB::table('user_global_ability')->where('user_id',23)->update($globalData);
+
+
+        $grade  = $matchGrade->get_match_new_grade(870);
+        DB::table('match_result')->where('match_id',870)->update($grade);
+
+        return $grade;
+
+    }
 }
 
 function floattostr( $val )

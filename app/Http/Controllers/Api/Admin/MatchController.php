@@ -18,6 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use DB;
 
+const    PI = 3.1415926;
+
 class MatchController extends Controller
 {
 
@@ -58,15 +60,7 @@ class MatchController extends Controller
 
             foreach($courtGps as $gpsType => $gpsData)
             {
-                if($gpsType != 'center') {
-
-                    foreach($gpsData as $gps)
-                    {
-                        $gps->lat   = gps_to_gps($gps->lat);
-                        $gps->lon   = gps_to_gps($gps->lon);
-                    }
-
-                }else{
+                if($gpsType == 'center') {
 
                     //切割的中心点 二维数组
                     $centers = [];
@@ -75,8 +69,6 @@ class MatchController extends Controller
                     {
                         foreach($gpsLine as $gps)
                         {
-                            $gps->lat   = gps_to_gps($gps->lat);
-                            $gps->lon   = gps_to_gps($gps->lon);
                             array_push($centers,$gps);
                         }
                     }
@@ -212,8 +204,8 @@ class MatchController extends Controller
                     continue;
                 }
 
-                $lat        = gps_to_gps($gpsInfo[0]);
-                $lon        = gps_to_gps($gpsInfo[1]);
+                $lat        = $gpsInfo[0];
+                $lon        = $gpsInfo[1];
                 array_push($allGps,['lat'=>$lat,'lon'=>$lon]);
             }
 
@@ -252,17 +244,19 @@ class MatchController extends Controller
     }
 
 
+
     /**
      * 获得虚拟球场
      * */
     public function get_visual_match_court(Request $request)
     {
 
-        mylogger($request->all());
-        return "ok";
+        //mylogger($request->all());
+
 
         $matchId    = $request->input('matchId');
         $file       = matchdir($matchId)."gps-L.txt";
+
 
         if(!file_exists($file))
         {
@@ -271,76 +265,422 @@ class MatchController extends Controller
 
         $gpsArr     = file_to_array($file);
 
-        $minLat     = [0,100000];
-        $maxLat     = [0,0];
-        $minLon     = [100000,0];
-        $maxLon     = [0,0];
+        $gpsNewArr  = [];
 
-        foreach($gpsArr as $gps)
-        {
-            if($gps[0] == 0 || $gps[1] == 0)
-            {
+        //转换成标准的GPS
+        foreach($gpsArr as $key => &$gps){
+
+            if($gps[0] * 1 == 0){
+
                 continue;
             }
-
-            $minLon = $gps[0] < $minLon[0] ? $gps : $minLon;
-            $maxLon = $gps[0] > $maxLon[0] ? $gps : $maxLon;
-
-            $minLat = $gps[1] < $minLat[1] ? $gps : $minLat;
-            $maxLat = $gps[1] > $maxLat[1] ? $gps : $maxLat;
+            array_push($gpsNewArr,[$gps[0],$gps[1]]);
         }
 
-        $points     = [
-            $minLat,
-            $maxLat,
-            $minLon,
-            $maxLon
+        $gpsArr = $gpsNewArr;
+        //每隔5S分段一次
+        $gpsNum     = count($gpsArr);
+        $gpsLines   = [];
+
+        $timeLength = 30;
+
+        $lineSlope  = [];//线条的斜率
+
+
+        //求得每条线的斜率
+        for($i=0; $i+$timeLength < $gpsNum; $i+=$timeLength){
+
+            $begin  = $gpsArr[$i];
+            $end    = $gpsArr[$i+$timeLength];
+
+            //如果两个点的距离太小，则不取
+
+            $distance   = gps_distance($begin[0],$begin[1],$end[0],$end[1]);
+
+            if($distance > 0.5 && $distance < 20)
+            {
+                if($end[1]-$begin[1] == 0){
+
+                    $slope = 90000;
+
+                }else{
+
+                    $slope = ($end[0]-$begin[0]) / ($end[1]-$begin[1]);
+                }
+
+                array_push($lineSlope,$slope);
+
+                //array_push($gpsLines,['lat'=>$begin[0],'lon'=>$begin[1]],['lat'=>$end[0],'lon'=>$end[1]]);
+            }
+        }
+
+        /*======================求球场斜率 begin =====================*/
+
+        //1.把所有的方向分成6个区间0-30-60-90-120-150-180
+        $angleRange     = [-10000000,10000000,-5.6713,5.6713,-2.7475,2.7475,-1.7321,1.7321,-1.1918,1.1918,-0.8391,0.8391,-0.5774,0.5774,-0.364,0.364,-0.1763,0.1763,0];
+        array_multisort($angleRange,SORT_ASC);
+
+        $angleRanges    = [];
+
+        for($i=0;$i<10;$i++){
+
+            array_push($angleRanges,["start"=>$angleRange[$i],"end"=>$angleRange[$i+9],'num'=>0]);
+        }
+
+        //查询在每个区间的方向的累积量
+        $angleRangeNumArr = [];
+        foreach($angleRanges as $key1 => $stage){
+
+            $star   = $stage["start"];
+            $end    = $stage["end"];
+
+            //是否在开始与结束之类
+            foreach($lineSlope as $key2 => $slope) {
+
+                if ($slope > $star && $slope < $end) {
+
+                    $angleRanges[$key1]['num']++;
+                }
+            }
+            array_push($angleRangeNumArr,$angleRanges[$key1]['num']);
+        }
+
+        //筛选两份最大的，之所以选两份最大的，是为了求得交集的地方的数量
+        array_multisort($angleRangeNumArr,SORT_DESC);
+
+        $maxNumber  = $angleRangeNumArr[0];
+
+        //过滤到数量比较少的区间
+        $maxAngleRange  = [];//最大范围角度
+        foreach($angleRanges as $key => $stage){
+
+            if($stage['num'] == $maxNumber){
+
+                array_push($maxAngleRange,$stage['start'],$stage['end']);
+
+            }
+        }
+
+        $maxAngle = $maxAngleRange[count($maxAngleRange)-1];
+        $minAngle = $maxAngleRange[0];
+
+        //求数量比较多的区间的平均角度
+        $angleInfo  = ["num"=>0,'sum'=>0];
+        foreach($lineSlope as $slope){
+
+            if($slope > $minAngle && $slope < $maxAngle){
+
+                $angleInfo['num']++;
+                $angleInfo['sum']+= (atan($slope)/PI*180);
+            }
+        }
+
+        $courtAngle = $angleInfo['sum'] /$angleInfo['num'];
+
+
+        $courtSlope = tan($courtAngle/180*PI);
+
+        /*====================求球场斜率 end =================*/
+
+
+
+        /*====================找上下方 最大点 begin =================*/
+        //设定一个中心
+        $lats   = [];
+        $lons   = [];
+        $num    = 0;
+
+        for($i = 0;$i< $gpsNum ;$i=$i+10)
+        {
+            array_push($lats,$gpsArr[$i][0]);
+            array_push($lons,$gpsArr[$i][1]);
+            $num++;
+        }
+
+        $centerLat      = array_sum($lats)/$num;
+        $centerLon      = array_sum($lons)/$num;
+        $courtCenter    = ['lon'=>$centerLon,'lat'=>$centerLat];
+
+        //球场方向直线偏移量
+        $courtB = $courtCenter['lat'] - $courtSlope * $courtCenter['lon'];  //y=k*x+b => b = y -k*x
+
+
+        //3.1把GPS分成两个方向，中心的上方和下方
+
+        $maxUpDis   = 0;
+        $maxDownDis = 0;
+        $pointUp    = null;   //球场最上的点
+        $pointDown  = null;   //球场最下的点
+
+        $sinAngle       = sin(angle_to_pi(90-abs($courtAngle)));
+
+        //经过球心把球场分成上下两部分 但是有可能有一方没有数据
+        foreach($gpsArr as $gps){
+
+            //如果当前点的x值对呀的Y小于直线上点的Y，则在下方，否则在上方
+            $currrentLat    = $courtSlope*$gps[1] + $courtB;                    //当前点的x对应的线的Y值
+            $pointToLineDis = abs(($currrentLat - $gps[0])) / $sinAngle;       //点到直线的距离
+            $direction      = $currrentLat > $gps[0] ?  'down':'up' ;
+
+            if($direction == "up" && $maxUpDis < $pointToLineDis){
+
+                $maxUpDis   = $pointToLineDis;
+                $pointUp    = $gps;
+
+            }elseif($direction == "down" && $maxDownDis < $pointToLineDis){
+
+                $maxDownDis = $pointToLineDis;
+                $pointDown  = $gps;
+            }
+        }
+        /*========================找上下方 最大点 end =====================*/
+
+
+
+        /*========================找左右方 最大点 begin ===================*/
+
+        //找到最左最右的点
+        $verticalSlope  = tan(angle_to_pi($courtAngle+90)); //球场垂直斜率
+        $verticalB      = $centerLat - $verticalSlope*$centerLon;
+        $sinAngle       = sin(angle_to_pi(90-abs($courtAngle)));
+        $pointLeft      = null;
+        $pointRight     = null;
+        $maxLeft        = 0;
+        $maxRight       = 0;
+
+        foreach($gpsArr as $gps){
+
+            //如果当前点的x值对呀的Y小于直线上点的Y，则在下方，否则在上方
+            $currentY   = $verticalSlope*$gps[1] + $verticalB;              //当前点的x对应的线的Y值
+
+            $pointToLineDis= abs(($currentY - $gps[0])) / $sinAngle;        //点到直线的距离
+
+
+            if(($verticalSlope > 0 && $currentY < $gps[0]) || ($verticalSlope < 0 && $currentY > $gps[0])){
+
+                $direction  = "left";
+
+            } else{
+
+                $direction = "right";
+            }
+
+            if($direction == "right"){ //位于右边
+
+                if($pointToLineDis > $maxRight){
+
+                    $maxRight      = $pointToLineDis;
+                    $pointRight    = $gps;
+                }
+
+            }else{ //位于中心下之下
+
+                if($pointToLineDis > $maxLeft){
+
+                    $maxLeft      = $pointToLineDis;
+                    $pointLeft    = $gps;
+                }
+            }
+        }
+
+        /*========================找左右方 最大点 end ===================*/
+
+
+
+
+        //==============求得球场边沿的函数值===============
+        $upBorderB      = $pointUp[0]       - $courtSlope   * $pointUp[1];
+        $downBorderB    = $pointDown[0]     - $courtSlope   * $pointDown[1];
+        $rightBorderB   = $pointRight[0]    - $verticalSlope* $pointRight[1];
+        $leftBorderB    = $pointLeft[0]     - $verticalSlope* $pointLeft[1];
+
+
+        //==============求得目前球场的4个顶点=================
+        //k1 * x + b1 = k2*x + b2
+        $leftTopPoint       = self::get_jiao_dian($verticalSlope,$leftBorderB,$courtSlope,$upBorderB);  //左上点
+        $leftBottomPoint    = self::get_jiao_dian($verticalSlope,$leftBorderB,$courtSlope,$downBorderB);//左下点
+        $rightTopPoint      = self::get_jiao_dian($verticalSlope,$rightBorderB,$courtSlope,$upBorderB); //右上点
+        $rightBottompoint   = self::get_jiao_dian($verticalSlope,$rightBorderB,$courtSlope,$downBorderB);//右下点
+
+
+        //4个顶点
+        $fourTopPoint = [
+            "left_top"       => ["lat"=>$leftTopPoint['y'],     "lon"=>$leftTopPoint['x']],
+            "left_bottom"    => ["lat"=>$leftBottomPoint['y'],  "lon"=>$leftBottomPoint['x']],
+            "right_top"      => ["lat"=>$rightTopPoint['y'],    "lon"=>$rightTopPoint['x']],
+            "right_bottom"   => ["lat"=>$rightBottompoint['y'], "lon"=>$rightBottompoint['x']],
+        ];
+
+        $borderArr       = [
+            "left_top_right_top"        => $upBorderB,
+            "right_top_left_top"        => $upBorderB,
+            "left_top_left_bottom"      => $leftBorderB,
+            "left_bottom_left_top"      => $leftBorderB,
+            "right_top_right_bottom"    => $rightBorderB,
+            "right_bottom_right_top"    => $rightBorderB,
+            "right_bottom_left_bottom"  => $downBorderB,
+            "left_bottom_right_bottom"  => $downBorderB
+        ];
+
+        $positionArr    = [
+            "left"  => "right",
+            "right" => "left",
+            "top"   => "bottom",
+            "bottom"=> "top"
         ];
 
 
+        //确定球场的起点-即图上的A-B-C-D-E-F
+        //把前面的点用来设置为开始比赛的起点
 
-        foreach($points as $key => $point)
+
+        //=======寻找A点==================
+
+        //获取前面50个点的坐标来设置为开始点
+        $latSum     = 0;
+        $lonSum     = 0;
+
+        for($i=0;$i<50;$i++)
         {
+            $latSum += $gpsArr[$i][0];
+            $lonSum += $gpsArr[$i][1];
+        }
 
-            $points[$key]   = ['lat'   => gps_to_gps($point[0]), 'lon'   => gps_to_gps($point[1])];
+        $beginLat = $latSum / 50;
+        $beginLon = $lonSum / 50;
 
+        $beginTopPoint  = null;
+        $beginDis       = 10000000;
+
+
+        foreach ($fourTopPoint as $pname => $point){
+
+            $dis    = gps_distance($beginLon,$beginLat,$point['lon'],$point['lat']);
+
+            if($dis < $beginDis){
+
+                $beginDis       = $dis;
+                $beginTopPoint  = $pname;
+            }
         }
 
 
-        $p1 = (object)["x"=>$points[0]['lon'],"y"=>$points[0]['lat']];
-        $p2 = (object)["x"=>$points[1]['lon'],"y"=>$points[1]['lat']];
-        $p3 = (object)["x"=>$points[3]['lon'],"y"=>$points[3]['lat']];
+        /*
+        * A           F              A1  A1
+        *
+        * B
+        *
+        * D
+        *
+        * D           E              D1
+        * */
 
-        $params = get_cycle_params_by_three_point($p1,$p2,$p3);
-        $x = $params[0];
-        $y = $params[1];
-        $radius = $params[2];
+        //按顺序获得球场4个点
+        $direction = explode("_",$beginTopPoint);
 
-        array_push($points,["lon"=>$params[0],'lat'=>$params[1]]);
-        array_push($points,["lat"=>$params[1]+$params[2],"lon"=>$params[0]]);
-        array_push($points,["lat"=>$params[1]-$params[2],"lon"=>$params[0]]);
 
-        array_push($points,["lon"=>$params[0]+$params[2],"lat"=>$params[1]]);
-        array_push($points,["lon"=>$params[0]-$params[2],"lat"=>$params[1]]);
+        $pa  = $fourTopPoint[$direction[0]."_".$direction[1]];
 
-        //y = sqrt(r^2-(x-a)^2)+b
-        $a = $x;
-        $b = $y;
+        //知道了pa,但是pb可能是旁边的两个点，究竟哪一个点才是，要根据他们的斜率
+        $pdSameLeft     = $fourTopPoint[$direction[0]."_".$positionArr[$direction[1]]]; //同样的左右方 如：左上 左下
+        $pdSameDown     = $fourTopPoint[$positionArr[$direction[0]]."_".$direction[1]]; //同样的上下方 如：左上 右下
 
-        $x = $a-$radius;
+        $slopeDown      = ($pa['lat'] - $pdSameDown['lat'])    / ($pa['lon'] - $pdSameDown['lon']);
+        $slopeLeft      = ($pa['lat'] - $pdSameLeft['lat'])    / ($pa['lon'] - $pdSameLeft['lon']);
 
-        $x = $x+0.000001;
+        if(abs($slopeLeft - $verticalSlope) < abs($slopeDown - $verticalSlope)){ //a d 在相同的左方
 
-        while($x < $a+$radius){
 
-            $y = sqrt($radius*$radius - ($x-$a)*($x-$a))+$b;
-            array_push($points,['lat'=>$y,'lon'=>$x]);
+            $pak  = $direction[0]."_".$direction[1];
+            $pdk  = $direction[0]."_".$positionArr[$direction[1]];
+            $pa1k = $positionArr[$direction[0]]."_".$direction[1];
+            $pd1k = $positionArr[$direction[0]]."_".$positionArr[$direction[1]];
 
-            $y = $b-sqrt($radius*$radius - ($x-$a)*($x-$a));
-            array_push($points,['lat'=>$y,'lon'=>$x]);
-
-            $x = $x+0.00001;
+        }else{ //相同的下方
+            $pak  = $direction[0]."_".$direction[1];
+            $pdk  = $positionArr[$direction[0]]."_".$direction[1];
+            $pa1k = $direction[0]."_".$positionArr[$direction[1]];
+            $pd1k = $positionArr[$direction[0]]."_".$positionArr[$direction[1]];
         }
+
+        $pa   = $fourTopPoint[$pak];
+        $pd   = $fourTopPoint[$pdk];
+        $pa1  = $fourTopPoint[$pa1k];
+        $pd1  = $fourTopPoint[$pd1k];
+
+
+        //获得球场比例
+        $width  = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
+        $length = gps_distance($pa['lon'],$pa['lat'],$pa1['lon'],$pa1['lat']);
+        $courtScale = $length / $width; //球场比例
+
+        //判断球场的长宽比例是否达到一个足球场的比例
+
+        //符合一个足球场的比例 1.3  2.2
+        if($courtScale < 1.3){ //长度不够，扩长度
+
+            //X移动步频 扩展的方向应该是起点的对立方向
+            $xStep          = ($pa1['lon'] - $pa['lon']) / abs($pa1['lon'] - $pa['lon']) * 0.000001;
+            $borderSelfB    = $borderArr[$pak."_".$pa1k];
+            $borderItB      = $borderArr[$pdk."_".$pd1k];
+
+            do{
+
+                $pa1['lon']      = $pa1['lon'] + $xStep;
+
+                $pa1['lat']      = $courtSlope * $pa1['lon'] + $borderSelfB;      //这里的b也要根据方向来判断
+
+                $pd1['lon']      = $pd1['lon'] + $xStep;
+
+                $pd1['lat']      = $courtSlope * $pd1['lon'] + $borderItB;
+
+                $length          = gps_distance($pa['lon'],$pa['lat'],$pa1['lon'],$pa1['lat']);
+
+                $courtScale      = $length / $width;
+
+            }while($courtScale <=2);
+
+        }elseif($courtScale > 2){ //宽度不够，扩宽度
+
+
+            $xStep          = ($pd['lon'] - $pa['lon']) / abs($pd['lon'] - $pa['lon']) * 0.000001;
+            $borderSelfB    = $borderArr[$pak."_".$pdk];
+            $borderItB      = $borderArr[$pa1k."_".$pd1k];
+
+            do{
+
+                $pd['lon']  = $pd['lon'] + $xStep;
+                $pd['lat']  = $verticalSlope * $pd['lon'] + $borderSelfB;
+
+                $pd1['lon'] = $pd1['lon'] + $xStep;
+                $pd1['lat'] = $verticalSlope * $pd1['lon'] + $borderItB;
+
+                $width      = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
+
+                $courtScale             = $length / $width;
+
+                //mylogger($courtScale);
+
+            }while($courtScale > 0.5);
+
+        }
+
+        $courtTopPoints = [
+            'p_a'   => $pa,
+            'p_d'   => $pd,
+            'p_a1'  => $pa1,
+            'p_d1'  => $pd1,
+        ];
+
+        foreach ($courtTopPoints as &$point){
+
+            $point = implode(",",$point);
+        }
+
+        //更新球场
+        DB::table("football_court")->where('court_id',311)->update($courtTopPoints);
+
+        return $courtTopPoints;
 
         if(0){
 
@@ -422,10 +762,8 @@ class MatchController extends Controller
             }while($i<20);
 
 
-
             $i=-20;
             do{
-
                 $lon = $points[4]['lon']+0.00005*$i;
                // array_push($points,['lat'=>$k3*$lon-$b3,'lon'=>$lon]);
                 $i++;
@@ -433,10 +771,29 @@ class MatchController extends Controller
 
         }
 
+
+
+        end:
+
         $points = gps_to_bdgps($points);
 
-
-
         return apiData()->add('points',$points)->send();
+    }
+
+    /**
+     * 获取两条直线的交点
+     * @param $k1 float
+     * @param $b1 float
+     * @param $k2 float
+     * @param $b2 float
+     * @return array
+     * **/
+    static function get_jiao_dian($k1,$b1,$k2,$b2){
+
+        $x = ($b2 - $b1) / ($k1 - $k2);
+
+        $y = $k1 * $x + $b1;
+
+        return ["x"=>$x,"y"=>$y];
     }
 }

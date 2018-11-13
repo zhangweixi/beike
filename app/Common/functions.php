@@ -919,7 +919,17 @@ function jpush_content($title,$msg,$code,$type,$user,$data=[])
 }
 
 
+function angle_to_pi($angle){
 
+    return $angle / 180 *3.1415926;
+
+}
+
+function pi_to_angle($pi){
+
+    return $pi / 3.1415926 * 180;
+
+}
 
 
 ?>

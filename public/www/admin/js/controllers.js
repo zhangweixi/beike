@@ -954,6 +954,31 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
 
         })
+    }
+
+    $scope.cut_court_to_line = function(){
+        
+
+        var url = server + "match/get_visual_match_court?matchId="+$scope.matchId;
+
+        $http.get(url).success(function(res)
+        {
+        
+            var points  = [];
+            var data    = res; 
+
+            for(var line in data){
+
+                
+                var points  = [];
+                    points.push(new BMap.Point(data[line][0].lon,data[line][0].lat));
+                    points.push(new BMap.Point(data[line][1].lon,data[line][1].lat));
+                $scope.draw_shape(points);
+                $scope.draw_big_data(points);
+            }
+
+        })
+
 
     }
 
