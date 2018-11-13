@@ -300,7 +300,7 @@ class CourtController extends Controller
             $gps    = explode(",",$data['gps']);
             if($gps[0] > 1000){
 
-                $info = gps_to_bdgps([['lat'=>$gps[0],'lon'=>$gps[1])]);
+                $info = gps_to_bdgps([['lat'=>$gps[0],'lon'=>$gps[1]]]);
 
             }else{
 
