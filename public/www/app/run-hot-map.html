@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Title</title>
+    <script src="../../vendors/jquery/dist/jquery.min.js"></script>
+    <script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
+</head>
+<body>
+    <div class="map-box">
+        <div class="map">
+            <h2>全局</h2>
+            <div id="map-run-all" class="canvas"></div>
+            <div class="colors">
+                <span>低</span>
+                <p></p>
+                <span>高</span>
+            </div>
+        </div>
+
+        <div class="map">
+            <h2>高速</h2>
+            <div id="map-run-high"  class="canvas"></div>
+            <div class="colors">
+                <span>低</span>
+                <p></p>
+                <span>高</span>
+            </div>
+        </div>
+
+
+        <div class="map">
+            <h2>中速</h2>
+            <div id="map-run-middle"  class="canvas"></div>
+            <div class="colors">
+                <span>低</span>
+                <p></p>
+                <span>高</span>
+            </div>
+        </div>
+
+        <div class="map">
+            <h2>低速</h2>
+            <div id="map-run-low"  class="canvas"></div>
+            <div class="colors">
+                <span>低</span>
+                <p></p>
+                <span>高</span>
+            </div>
+        </div>
+
+        <div class="map">
+            <h2>走动</h2>
+            <div id="map-run-static"  class="canvas"></div>
+            <div class="colors">
+                <span>低</span>
+                <p></p>
+                <span>高</span>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
+
+
+<script>
+    var matchId     = 1104;
+    var server      = location.origin + "/api/admin/";
+    var url         = server + "match/match_result?matchId=" + matchId;
+
+    $.get(url).success(function(res)
+    {
+        matchResult = res.data.matchResult;
+
+        //显示热点图
+        var width = $('.map-box').css('width');
+        width = parseInt(width);
+        width = width-40;
+
+        $('.map div.canvas').css('height',width/2 + "px");
+
+        console.log(matchResult);
+
+        draw_hot_map("map-run-all",width,matchResult.map_gps_run);
+        draw_hot_map("map-run-high",width,matchResult.map_speed_high);
+        draw_hot_map("map-run-middle",width,matchResult.map_speed_middle);
+        draw_hot_map("map-run-low",width,matchResult.map_speed_low);
+        draw_hot_map("map-run-static",width,matchResult.map_speed_static);
+        draw_hot_map("map-shoot",width,matchResult.map_shoot);
+        draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
+        draw_hot_map("map-pass-short",width,matchResult.map_pass_short);
+        draw_hot_map("map-touchball",width,matchResult.map_touchball);
+    })
+
+
+
+    /**
+     * 显示热点图
+     */
+    draw_hot_map = function(eleId,width,data)
+    {
+        data = JSON.parse(data);
+        var heatmap1 = h337.create({
+
+            container: document.querySelector('#'+eleId)
+
+        });
+
+        var data2   = [];
+        var max     = 0;
+        var scale   = width / data[0].length;   //x为20分
+
+        for(var y in data)
+        {
+            for(var x in data[y] )
+            {
+
+                data2.push({"x":parseInt(x*scale),"y":parseInt(y*scale),"value":data[y][x]});
+                max = Math.max(max,data[y][x]);
+            }
+        }
+
+        if(max < 100 && max > 0 ){
+
+            max = max*20;
+
+
+
+            for(var data of data2){
+
+                if(data.value > 0){
+
+                    data.value = data.value * 20;
+                }
+            }
+        }
+
+        console.log(max);
+        console.log(data2);
+        data3 = {"max":max,"data":data2};
+        heatmap1.setData(data3);
+    }
+
+
+
+
+</script>
+
+<style>
+    body{
+        padding:0;
+        margin:0;
+        background: #36374C;
+        padding-left:10px;
+        padding-right:10px;
+    }
+
+    .map{
+        overflow: hidden;
+        background:#43465E;
+        border-radius: 9px;
+        margin-top:10px;
+    }
+
+    .map h2{
+        font-size:1.1rem;
+        color:#fff;
+        background:rgba(196,227,255,0.1);
+        line-height:3;
+        font-weight: normal;
+        padding-left:20px;
+        margin:0;
+    }
+
+    .map div.canvas{
+
+        background:#7FB558;
+        background-image:url('../../beike/images/default/court-bg.png');
+        -webkit-background-size: 100% 100%;
+        background-size: 100% 100%;
+        background-position: center;
+        background-repeat:no-repeat;
+        height:50vw;
+        margin:20px;
+    }
+
+
+    .colors{
+        display: flex;
+        margin:20px;
+        align-items: center;
+    }
+
+    .colors p{
+        flex: 1;
+        display: inline-block;
+        height:10px;
+        margin:0;
+        margin-left:10px;
+        margin-right:10px;
+        padding:0;
+        border-radius: 5px;
+
+        background: -moz-linear-gradient(left, #57945C 0%, #FF0300 100%);
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#57945C), color-stop(100%,#FF0300));
+        background: -webkit-linear-gradient(top, #57945C 0%,#FF0300 100%);
+        background: -o-linear-gradient(left, #57945C 0%,#FF0300 100%);
+        background: -ms-linear-gradient(left, #57945C 0%,#FF0300 100%);
+        background: linear-gradient(to right, #57945C 0%,#FF0300 100%);
+    }
+
+    .colors span{
+        color:#fff;
+        font-size:15px;
+    }
+</style>
