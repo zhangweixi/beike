@@ -85,17 +85,18 @@
 
         $('.map div.canvas').css('height',width/2*1.1 + "px");
 
-        console.log(matchResult);
+
 
         draw_hot_map("map-run-all",width,matchResult.map_gps_run);
         draw_hot_map("map-run-high",width,matchResult.map_speed_high);
         draw_hot_map("map-run-middle",width,matchResult.map_speed_middle);
         draw_hot_map("map-run-low",width,matchResult.map_speed_low);
         draw_hot_map("map-run-static",width,matchResult.map_speed_static);
-        draw_hot_map("map-shoot",width,matchResult.map_shoot);
-        draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
-        draw_hot_map("map-pass-short",width,matchResult.map_pass_short);
-        draw_hot_map("map-touchball",width,matchResult.map_touchball);
+
+        //draw_hot_map("map-shoot",width,matchResult.map_shoot);
+        //draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
+        //draw_hot_map("map-pass-short",width,matchResult.map_pass_short);
+        //draw_hot_map("map-touchball",width,matchResult.map_touchball);
     })
 
 
@@ -128,7 +129,8 @@
 
         if(max < 100 && max > 0 ){
 
-            max = max*20;
+            var scale = 100;
+            max = max*scale;
 
 
 
@@ -136,13 +138,13 @@
 
                 if(data.value > 0){
 
-                    data.value = data.value * 20;
+                    data.value = data.value * scale;
                 }
             }
         }
 
         console.log(max);
-        console.log(data2);
+
         data3 = {"max":max,"data":data2,defaultRadius:5};
         heatmap1.setData(data3);
     }
