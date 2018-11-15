@@ -82,7 +82,7 @@
         width = parseInt(width);
         width = width-40;
 
-        $('.map div.canvas').css('height',width/2 + "px");
+        $('.map div.canvas').css('height',width/2*1.1 + "px");
 
         console.log(matchResult);
 
@@ -142,7 +142,7 @@
 
         console.log(max);
         console.log(data2);
-        data3 = {"max":max,"data":data2};
+        data3 = {"max":max,"data":data2,defaultRadius:5};
         heatmap1.setData(data3);
     }
 
@@ -168,10 +168,10 @@
     }
 
     .map h2{
-        font-size:1rem;
+        font-size:0.95rem;
         color:#fff;
         background:rgba(196,227,255,0.1);
-        line-height:2;
+        line-height:2.5;
         font-weight: normal;
         padding-left:20px;
         margin:0;
@@ -199,12 +199,12 @@
     .colors p{
         flex: 1;
         display: inline-block;
-        height:10px;
+        height:8px;
         margin:0;
         margin-left:10px;
         margin-right:10px;
         padding:0;
-        border-radius: 5px;
+        border-radius: 4px;
 
         background: -moz-linear-gradient(left, #57945C 0%, #FF0300 100%);
         background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#57945C), color-stop(100%,#FF0300));
@@ -216,6 +216,6 @@
 
     .colors span{
         color:#fff;
-        font-size:15px;
+        font-size:12px;
     }
 </style>
