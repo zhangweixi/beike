@@ -275,9 +275,9 @@ class AnalysisMatchData implements ShouldQueue
 
                 switch ($type)
                 {
-                    case "gps":     $str = [$data['lat'],   $data['lon'],$data['timestamp']];                  break;
-                    case "sensor":  $str = [$data['ax'],    $data['ay'],$data['az']];       break;
-                    case "compass": $str = [$data['x'],     $data['y'], $data['z']];        break;
+                    case "gps":     $str = [$data['lat'],   $data['lon'],               $data['timestamp']];        break;
+                    case "sensor":  $str = [$data['ax'],    $data['ay'],    $data['az'],$data['timestamp']];        break;
+                    case "compass": $str = [$data['x'],     $data['y'],     $data['z'], $data['timestamp']];        break;
                 }
 
                 file_put_contents($file,implode(" ",$str)."\n",FILE_APPEND);            //将数据写入到文件中
