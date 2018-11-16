@@ -931,5 +931,23 @@ function pi_to_angle($pi){
 
 }
 
+/**
+ * 坐标转换
+ * @param $centerX float 中心点X
+ * @param $centerY float 中心点Y
+ * @param $x float
+ * @param $y float
+ * @param $angle float 要转换的角度
+ * @return array
+ * */
+function change_coordinate($centerX,$centerY,$x,$y,$angle){
+
+    $a = angle_to_pi($angle);
+
+    $x0= ($x - $centerX)*cos($a) - ($y - $centerY)*sin($a) + $centerX ;
+    $y0= ($x - $centerX)*sin($a) + ($y - $centerY)*cos($a) + $centerY ;
+
+    return ["x"=>$x0,"y"=>$y0];
+}
 
 ?>

@@ -10,7 +10,17 @@
     <script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
 </head>
 <body>
+
+
     <div class="map-box">
+        <div class="map">
+            <h2>长传</h2>
+            <div id="map-pass-short" class="canvas">
+                <canvas  id="pass-long"></canvas>
+            </div>
+        </div>
+
+
         <div class="map">
             <h2>全局</h2>
             <div id="map-run-all" class="canvas"></div>
@@ -64,40 +74,44 @@
     </div>
 
 
+
 </body>
 </html>
 
 
 <script>
 
+    //设定球形的尺寸
+
     var matchId     = GetQueryString('matchId');
     var server      = location.origin + "/api/admin/";
     var url         = server + "match/match_result?matchId=" + matchId;
 
-    $.get(url).success(function(res)
-    {
-        matchResult = res.data.matchResult;
+    //球场高宽比 957*543
+    var courtWidth  = parseInt($('.canvas').css('width'));
+    var courtHeight = courtWidth / (975/543);
 
-        //显示热点图
-        var width = $('.map-box').css('width');
-        width = parseInt(width);
-        width = width-40;
+    $('.canvas').css('height',courtHeight+"px");
 
-        $('.map div.canvas').css('height',width/2*1.1 + "px");
+    function map_init(){
+        $.get(url).success(function(res)
+        {
+            matchResult = res.data.matchResult;
 
+            //显示热点图
+            draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
+            draw_hot_map("map-run-high",courtWidth,matchResult.map_speed_high);
+            draw_hot_map("map-run-middle",courtWidth,matchResult.map_speed_middle);
+            draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
+            draw_hot_map("map-run-static",courtWidth,matchResult.map_speed_static);
 
+            //draw_hot_map("map-shoot",width,matchResult.map_shoot);
+            //draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
+            //draw_hot_map("map-pass-short",width,matchResult.map_pass_short);
+            //draw_hot_map("map-touchball",width,matchResult.map_touchball);
+        })
+    }
 
-        draw_hot_map("map-run-all",width,matchResult.map_gps_run);
-        draw_hot_map("map-run-high",width,matchResult.map_speed_high);
-        draw_hot_map("map-run-middle",width,matchResult.map_speed_middle);
-        draw_hot_map("map-run-low",width,matchResult.map_speed_low);
-        draw_hot_map("map-run-static",width,matchResult.map_speed_static);
-
-        //draw_hot_map("map-shoot",width,matchResult.map_shoot);
-        //draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
-        //draw_hot_map("map-pass-short",width,matchResult.map_pass_short);
-        //draw_hot_map("map-touchball",width,matchResult.map_touchball);
-    })
 
 
 
@@ -158,6 +172,40 @@
         var r = window.location.search.substr(1).match(reg);
         if(r!=null)return  unescape(r[2]); return null;
     }
+
+
+    //绘制传球
+    function draw_canvas(){
+
+        var url = server + "match/build_new_court_coordinate";
+        var data = {
+            matchId:matchId,
+            courtHeight:courtHeight,
+            courtWidth:courtWidth
+        };
+
+        $.post(url,data).success(function(res){
+
+            var points = res.data.points;
+            var c=document.getElementById("pass-long");
+            var cxt=c.getContext("2d");
+
+            for(var p in points){
+
+                cxt.beginPath();
+                cxt.fillStyle="rgba(255,228,25,0.6)";
+                cxt.strokeStyle = "rgba(54,55,76,1)";
+                cxt.arc(points[p].x,points[p].y,4,0,Math.PI*2,true);
+                cxt.fill();
+                cxt.stroke();
+            }
+            cxt.closePath();
+        });
+    }
+
+    draw_canvas();
+    map_init();
+
 </script>
 
 <style>
@@ -165,8 +213,7 @@
         padding:0;
         margin:0;
         background: #36374C;
-        padding-left:10px;
-        padding-right:10px;
+        padding:0 2.5vw;
     }
 
     .map{
@@ -194,8 +241,7 @@
         background-size: 100% 100%;
         background-position: center;
         background-repeat:no-repeat;
-        height:50vw;
-        margin:20px;
+        margin:4vw;
     }
 
 

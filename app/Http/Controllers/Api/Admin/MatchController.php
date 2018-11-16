@@ -250,13 +250,8 @@ class MatchController extends Controller
      * */
     public function get_visual_match_court(Request $request)
     {
-
-        //mylogger($request->all());
-
-
         $matchId    = $request->input('matchId');
         $file       = matchdir($matchId)."gps-L.txt";
-
 
         if(!file_exists($file))
         {
@@ -274,18 +269,29 @@ class MatchController extends Controller
 
                 continue;
             }
-            array_push($gpsNewArr,[$gps[0],$gps[1]]);
+            if($gps[0]>100){
+
+                array_push($gpsNewArr,[gps_to_gps($gps[0]),gps_to_gps($gps[1])]);
+            }else{
+
+                array_push($gpsNewArr,[$gps[0],$gps[1]]);
+            }
+
         }
 
-        $gpsArr = $gpsNewArr;
-        //每隔5S分段一次
-        $gpsNum     = count($gpsArr);
-        $gpsLines   = [];
+        $gpsArr     = $gpsNewArr;
 
+        $gpsNum     = count($gpsArr);
+
+        $points     = [];
+
+        /*==============找出直线跑动的距离 begin=================*/
+
+        //每隔5S分段一次
         $timeLength = 30;
 
-        $lineSlope  = [];//线条的斜率
-
+        $lineAngles = [];
+        $distances  = [];
 
         //求得每条线的斜率
         for($i=0; $i+$timeLength < $gpsNum; $i+=$timeLength){
@@ -295,55 +301,92 @@ class MatchController extends Controller
 
             //如果两个点的距离太小，则不取
 
-            $distance   = gps_distance($begin[0],$begin[1],$end[0],$end[1]);
-
-            if($distance > 0.5 && $distance < 20)
+            //$distance   = gps_distance($begin[0],$begin[1],$end[0],$end[1]);
+            $distance   = gps_distance($begin[1],$begin[0],$end[1],$end[0]);
+            array_push($distances,$distance);
+            if($distance > 0.5 && $distance < 25)
             {
+                array_push($points,['lat'=>$begin[0],'lon'=>$begin[1]],['lat'=>$end[0],'lon'=>$end[1]]);
+
                 if($end[1]-$begin[1] == 0){
 
-                    $slope = 90000;
+                    $angle = 0;
 
                 }else{
 
                     $slope = ($end[0]-$begin[0]) / ($end[1]-$begin[1]);
+                    $angle = pi_to_angle(atan($slope));
                 }
-
-                array_push($lineSlope,$slope);
-
-                //array_push($gpsLines,['lat'=>$begin[0],'lon'=>$begin[1]],['lat'=>$end[0],'lon'=>$end[1]]);
+                array_push($lineAngles,$angle);
             }
         }
+
+
+        /*==============寻找球场的方向 end =================*/
+        //goto  end;
+        //return $lineAngles;
 
         /*======================求球场斜率 begin =====================*/
 
         //1.把所有的方向分成6个区间0-30-60-90-120-150-180
-        $angleRange     = [-10000000,10000000,-5.6713,5.6713,-2.7475,2.7475,-1.7321,1.7321,-1.1918,1.1918,-0.8391,0.8391,-0.5774,0.5774,-0.364,0.364,-0.1763,0.1763,0];
-        array_multisort($angleRange,SORT_ASC);
 
         $angleRanges    = [];
 
-        for($i=0;$i<10;$i++){
+        for($i=-90;$i<90;$i+=5){
 
-            array_push($angleRanges,["start"=>$angleRange[$i],"end"=>$angleRange[$i+9],'num'=>0]);
+            array_push($angleRanges,["start"=>$i,"end"=>$i+5,'num'=>0,'data'=>[]]);
         }
 
-        //查询在每个区间的方向的累积量
-        $angleRangeNumArr = [];
-        foreach($angleRanges as $key1 => $stage){
+        $angleRangesNum = count($angleRanges);
 
-            $star   = $stage["start"];
-            $end    = $stage["end"];
+        //查询在每个区间的方向的累积量  最小区间
+        foreach($lineAngles as $angle){
 
-            //是否在开始与结束之类
-            foreach($lineSlope as $key2 => $slope) {
+            $index  = (int)(($angle + 90) / 5);
 
-                if ($slope > $star && $slope < $end) {
+            if($index >= $angleRangesNum){
 
-                    $angleRanges[$key1]['num']++;
-                }
+                $index    = $index - 1;
             }
-            array_push($angleRangeNumArr,$angleRanges[$key1]['num']);
+
+            array_push($angleRanges[$index]['data'],$angle);
+            $angleRanges[$index]['num']++;
         }
+
+        //将首部的八个区间移动到尾部去，形成一个闭环
+        for($i=0;$i<=8;$i++){
+
+            array_push($angleRanges,$angleRanges[$i]);
+        }
+
+
+
+        //将小区间组合成大区间 每10个小区间构成一个大区间
+        $newAngleRanges     = [];
+        $angleRangesNum     = count($angleRanges);
+        $angleRangeNumArr   = [];
+
+        for($i=0;$i<=$angleRangesNum - 18 ;$i++){
+
+            $bigAngle   = [
+                'data'  => [],
+                'start' => $angleRanges[$i]['start'],
+                'end'   => $angleRanges[$i+17]['end'],
+                'num'   => 0
+            ];
+
+            for($j=$i;$j<$i+18;$j++){
+
+                $bigAngle['num']    +=  $angleRanges[$j]['num'];
+                $bigAngle['data']   =   array_merge($bigAngle['data'],$angleRanges[$j]['data']);
+            }
+
+            array_push($newAngleRanges,$bigAngle);
+            array_push($angleRangeNumArr,$bigAngle['num']);
+        }
+
+        $angleRanges    = $newAngleRanges;
+
 
         //筛选两份最大的，之所以选两份最大的，是为了求得交集的地方的数量
         array_multisort($angleRangeNumArr,SORT_DESC);
@@ -356,30 +399,28 @@ class MatchController extends Controller
 
             if($stage['num'] == $maxNumber){
 
-                array_push($maxAngleRange,$stage['start'],$stage['end']);
-
+                array_push($maxAngleRange,$stage);
             }
         }
 
-        $maxAngle = $maxAngleRange[count($maxAngleRange)-1];
-        $minAngle = $maxAngleRange[0];
+        //取各自的平均值
 
-        //求数量比较多的区间的平均角度
-        $angleInfo  = ["num"=>0,'sum'=>0];
-        foreach($lineSlope as $slope){
+        $sumAngle   = 0;
+        $numAngle   = 0;
 
-            if($slope > $minAngle && $slope < $maxAngle){
+        foreach($maxAngleRange as $angle){
 
-                $angleInfo['num']++;
-                $angleInfo['sum']+= (atan($slope)/PI*180);
-            }
+            $sumAngle   += array_sum($angle['data']);
+            $numAngle   += $angle['num'];
         }
 
-        $courtAngle = $angleInfo['sum'] /$angleInfo['num'];
+        $courtAngle   = $sumAngle/$numAngle;
+
 
 
         $courtSlope = tan($courtAngle/180*PI);
 
+        //return $courtSlope;
         /*====================求球场斜率 end =================*/
 
 
@@ -680,7 +721,8 @@ class MatchController extends Controller
         //更新球场
         DB::table("football_court")->where('court_id',311)->update($courtTopPoints);
 
-        return $courtTopPoints;
+        //return $courtTopPoints;
+        //$points = $courtTopPoints;
 
         if(0){
 
@@ -778,6 +820,108 @@ class MatchController extends Controller
         $points = gps_to_bdgps($points);
 
         return apiData()->add('points',$points)->send();
+    }
+
+
+    /**
+     * 创建新的二维坐标
+     *
+     * */
+    public function build_new_court_coordinate(Request $request){
+
+        $matchId        = $request->input('matchId');
+        $matchInfo      = MatchModel::find($matchId);
+        $courtDataObj   = DB::table('football_court')->select("p_a","p_d","p_a1","p_d1")->where('court_id',$matchInfo->court_id)->first();
+        $courtDataArr   = [];
+        $courtWidth     = $request->input('courtWidth',400);
+        $courtHeight    = $request->input('courtHeight',200);
+
+        foreach($courtDataObj as $key => $gps)
+        {
+            $gps    = explode(",",$gps);
+            $courtDataArr[$key] = ['lat'=>$gps[0],'lon'=>$gps[1]];
+        }
+
+        $centerLat  = $courtDataArr['p_a']['lat'] + ($courtDataArr['p_d1']['lat'] - $courtDataArr['p_a']['lat'])/2;
+        $centerLon  = $courtDataArr['p_a']['lon'] + ($courtDataArr['p_d1']['lon'] - $courtDataArr['p_a']['lon'])/2;
+
+
+
+
+        //获得要转动的角度
+        $slope      = ($courtDataArr['p_a']['lat'] - $courtDataArr['p_a1']['lat']) / ($courtDataArr['p_a']['lon'] - $courtDataArr['p_a1']['lon']);
+        $angle      = pi_to_angle(atan($slope));
+
+
+        //array_push($courtDataArr,['lon'=>$centerLon,'lat'=>$centerLat]);
+        $angle      = -$angle; //斜率大于0:减去角度  斜率小于0：加上角度
+        $origin     = ["dis"=>0,"point"=>null];
+
+        foreach($courtDataArr as $key => $gps)
+        {
+            $tempGps    = change_coordinate($centerLon,$centerLat,$gps['lon'],$gps['lat'],$angle);
+            $courtDataArr[$key]['lon'] = $tempGps['x'];
+            $courtDataArr[$key]['lat'] = $tempGps['y'];
+
+            $dis    = gps_distance(0,0,$tempGps['x'],$tempGps['y']);
+
+            if($origin['dis'] == 0 || $dis < $origin['dis'])
+            {
+                $origin['dis']          = $dis;
+                $origin['point']     = $courtDataArr[$key];
+            }
+        }
+
+        //新的矩形有一定的高度
+
+
+        //找一个最小的点作为远点
+        $perx   = $courtWidth / abs($courtDataArr['p_a']['lon'] - $courtDataArr['p_a1']['lon']);
+        $pery   = $courtHeight / abs($courtDataArr['p_a']['lat'] - $courtDataArr['p_d']['lat']);
+
+
+
+
+        $gpsList        = file_to_array(matchdir($matchId)."result-pass.txt");
+        $courtDataArr   = [];
+
+        foreach($gpsList as $key=> $gps){
+
+            if($gps[0]*1 == 0 || $key%9 != 0){
+                continue;
+            }
+
+            //$gps = change_coordinate($centerLon,$centerLat,gps_to_gps($gps[6]),gps_to_gps($gps[5]),$angle);
+            $gps = change_coordinate($centerLon,$centerLat,$gps[5],$gps[4],$angle);
+            array_push($courtDataArr,["lat"=>$gps['y'],"lon"=>$gps['x']]);
+        }
+
+        foreach($courtDataArr as $key => $gps){
+
+            $gps = self::move_and_scroll_point($origin['point']['lon'],$origin['point']['lat'],$gps['lon'],$gps['lat'],$perx,$pery);
+            $gps['y']   = -($gps['y'] - $courtHeight);
+            $courtDataArr[$key] = $gps;
+        }
+
+        end:
+        //$courtDataArr   = gps_to_bdgps($courtDataArr);
+        return apiData()->add('points',$courtDataArr)->send();
+    }
+
+    /**
+     *
+     * 移动和缩放数据
+     *
+     * */
+    static function move_and_scroll_point($originX,$originY,$x,$y,$perx,$pery){
+
+
+        $x = ($x - $originX) * $perx;
+
+        $y = ($y - $originY) * $pery;
+
+
+        return ['x'=>$x,'y'=>$y];
     }
 
     /**
