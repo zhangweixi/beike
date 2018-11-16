@@ -883,16 +883,20 @@ class MatchController extends Controller
 
 
         $gpsList        = file_to_array(matchdir($matchId)."result-pass.txt");
+        //$gpsList        = file_to_array(matchdir($matchId)."gps-L.txt");
         $courtDataArr   = [];
 
         foreach($gpsList as $key=> $gps){
 
-            if($gps[0]*1 == 0 || $key%9 != 0){
+            if($gps[0]*1 == 0){
                 continue;
             }
 
             //$gps = change_coordinate($centerLon,$centerLat,gps_to_gps($gps[6]),gps_to_gps($gps[5]),$angle);
             $gps = change_coordinate($centerLon,$centerLat,$gps[5],$gps[4],$angle);
+            //$gps = change_coordinate($centerLon,$centerLat,$gps[1],$gps[0],$angle);
+
+
             array_push($courtDataArr,["lat"=>$gps['y'],"lon"=>$gps['x']]);
         }
 
