@@ -81,7 +81,7 @@
 
 </head>
 <body>
-
+<img src="../../beike/images/default/football.png" style="display: none;" id="football">
 
     <div class="map-box">
         <div class="map">
@@ -145,7 +145,7 @@
     </div>
 
 
-
+    
 </body>
 </html>
 
@@ -269,17 +269,23 @@
         $.post(url,data).success(function(res){
 
             var points = res.data.points;
+            var img = document.getElementById('football');
             var c=document.getElementById("pass-long");
             var cxt=c.getContext("2d");
+
 
             for(var p in points){
 
                 var x = points[p].x;
                 var y = points[p].y;
 
+                cxt.drawImage(img,0,0,200,200,x,y,25,25);
+
+                continue;
+
                 cxt.beginPath();
                 cxt.fillStyle="rgba(255,228,25,0.6)";
-                cxt.strokeStyle = "rgba(54,55,76,0.4)";
+                cxt.strokeStyle = "rgba(54,55,76,0.2)";
 
                 var grd = cxt.createRadialGradient(x, y, 2, x, y, 20);
                 grd.addColorStop(0, 'rgba(255,228,25,1)');
