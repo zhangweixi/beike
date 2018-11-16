@@ -276,9 +276,10 @@
 
                 cxt.beginPath();
                 cxt.fillStyle="rgba(255,228,25,0.5)";
+                //cxt.fillStyle="rgba("+creatRandom(0,255)+","+creatRandom(0,255)+","+creatRandom(0,255)+",0.5)";
                 cxt.strokeStyle = "rgba(54,55,76,0.8)";
                 cxt.lineWidth  = 3;
-                cxt.arc(points[p].x,points[p].y,14,0,Math.PI*2,true);
+                cxt.arc(points[p].x,points[p].y,25,0,Math.PI*2,true);
                 cxt.fill();
                 cxt.stroke();
             }
@@ -286,7 +287,11 @@
         });
     }
 
-
+    creatRandom = function(startInt, endInt) { //生产随机数
+        var iResult;
+        iResult = startInt + (Math.floor(Math.random() * (endInt - startInt + 1)));
+        return iResult
+    }
 
 
 </script>
