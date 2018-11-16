@@ -6,8 +6,78 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
     <title>Title</title>
-    <script src="../../vendors/jquery/dist/jquery.min.js"></script>
-    <script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
+
+    <style>
+        body{
+            padding:0;
+            margin:0;
+            background: #36374C;
+            padding:0 2.5vw;
+        }
+        .self-canvas{
+
+            width:100%;
+            height:100%;
+        }
+        .map{
+            overflow: hidden;
+            background:#43465E;
+            border-radius: 9px;
+            margin-top:10px;
+        }
+
+        .map h2{
+            font-size:0.95rem;
+            color:#fff;
+            background:rgba(196,227,255,0.1);
+            line-height:2.5;
+            font-weight: normal;
+            padding-left:20px;
+            margin:0;
+        }
+
+        .map div.canvas{
+
+            background:#7FB558;
+            background-image:url('../../beike/images/default/court-bg.png');
+            -webkit-background-size: 100% 100%;
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat:no-repeat;
+            margin:4vw;
+        }
+
+
+        .colors{
+            display: flex;
+            margin:20px;
+            align-items: center;
+        }
+        .colors span{
+            color:#fff;
+            font-size:12px;
+        }
+        .colors p{
+            flex: 1;
+            display: inline-block;
+            height:8px;
+            margin:0;
+            margin-left:10px;
+            margin-right:10px;
+            padding:0;
+            border-radius: 4px;
+
+            background: -moz-linear-gradient(left, #57945C 0%, #FF0300 100%);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#57945C), color-stop(100%,#FF0300));
+            background: -webkit-linear-gradient(top, #57945C 0%,#FF0300 100%);
+            background: -o-linear-gradient(left, #57945C 0%,#FF0300 100%);
+            background: -ms-linear-gradient(left, #57945C 0%,#FF0300 100%);
+            background: linear-gradient(to right, #57945C 0%,#FF0300 100%);
+        }
+
+    </style>
+
+
 </head>
 <body>
 
@@ -16,7 +86,7 @@
         <div class="map">
             <h2>长传</h2>
             <div id="map-pass-short" class="canvas">
-                <canvas  id="pass-long"></canvas>
+                <canvas  id="pass-long" class="self-canvas" width="975" height="543"></canvas>
             </div>
         </div>
 
@@ -78,22 +148,33 @@
 </body>
 </html>
 
-
+<script src="../../vendors/jquery/dist/jquery.min.js"></script>
+<script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
 <script>
-
-    //设定球形的尺寸
-
     var matchId     = GetQueryString('matchId');
     var server      = location.origin + "/api/admin/";
-    var url         = server + "match/match_result?matchId=" + matchId;
+    var courtWidth  = 0;
+    var courtHeight = 0;
 
-    //球场高宽比 957*543
-    var courtWidth  = parseInt($('.canvas').css('width'));
-    var courtHeight = courtWidth / (975/543);
+    window.onload = function(){
 
-    $('.canvas').css('height',courtHeight+"px");
+        //设定球形的尺寸
+        //球场高宽比 957*543
+        courtWidth  = parseInt($('.canvas').css('width'));
+        console.log(courtWidth);
+        courtHeight = courtWidth / 1.8;
+
+        $('.canvas').css('height',courtHeight+"px");
+
+        draw_canvas();
+        map_init();
+
+    }
+
 
     function map_init(){
+
+        var url         = server + "match/match_result?matchId=" + matchId;
         $.get(url).success(function(res)
         {
             matchResult = res.data.matchResult;
@@ -180,8 +261,8 @@
         var url = server + "match/build_new_court_coordinate";
         var data = {
             matchId:matchId,
-            courtHeight:courtHeight,
-            courtWidth:courtWidth
+            courtHeight:543,
+            courtWidth:975
         };
 
         $.post(url,data).success(function(res){
@@ -195,7 +276,8 @@
                 cxt.beginPath();
                 cxt.fillStyle="rgba(255,228,25,0.6)";
                 cxt.strokeStyle = "rgba(54,55,76,1)";
-                cxt.arc(points[p].x,points[p].y,4,0,Math.PI*2,true);
+                cxt.lineWidth  = 3;
+                cxt.arc(points[p].x,points[p].y,10,0,Math.PI*2,true);
                 cxt.fill();
                 cxt.stroke();
             }
@@ -203,74 +285,7 @@
         });
     }
 
-    draw_canvas();
-    map_init();
+
+
 
 </script>
-
-<style>
-    body{
-        padding:0;
-        margin:0;
-        background: #36374C;
-        padding:0 2.5vw;
-    }
-
-    .map{
-        overflow: hidden;
-        background:#43465E;
-        border-radius: 9px;
-        margin-top:10px;
-    }
-
-    .map h2{
-        font-size:0.95rem;
-        color:#fff;
-        background:rgba(196,227,255,0.1);
-        line-height:2.5;
-        font-weight: normal;
-        padding-left:20px;
-        margin:0;
-    }
-
-    .map div.canvas{
-
-        background:#7FB558;
-        background-image:url('../../beike/images/default/court-bg.png');
-        -webkit-background-size: 100% 100%;
-        background-size: 100% 100%;
-        background-position: center;
-        background-repeat:no-repeat;
-        margin:4vw;
-    }
-
-
-    .colors{
-        display: flex;
-        margin:20px;
-        align-items: center;
-    }
-
-    .colors p{
-        flex: 1;
-        display: inline-block;
-        height:8px;
-        margin:0;
-        margin-left:10px;
-        margin-right:10px;
-        padding:0;
-        border-radius: 4px;
-
-        background: -moz-linear-gradient(left, #57945C 0%, #FF0300 100%);
-        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#57945C), color-stop(100%,#FF0300));
-        background: -webkit-linear-gradient(top, #57945C 0%,#FF0300 100%);
-        background: -o-linear-gradient(left, #57945C 0%,#FF0300 100%);
-        background: -ms-linear-gradient(left, #57945C 0%,#FF0300 100%);
-        background: linear-gradient(to right, #57945C 0%,#FF0300 100%);
-    }
-
-    .colors span{
-        color:#fff;
-        font-size:12px;
-    }
-</style>
