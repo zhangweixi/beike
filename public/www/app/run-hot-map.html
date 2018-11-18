@@ -14,11 +14,16 @@
             background: #36374C;
             padding:0 2.5vw;
         }
-        .self-canvas{
-
+        .point-map{
+            -moz-transform:scaleY(-1);
+            -webkit-transform:scaleY(-1);
+            -o-transform:scaleY(-1);
+            transform:scaleY(-1);
+            filter:FlipV();
             width:100%;
             height:100%;
         }
+
         .map{
             overflow: hidden;
             background:#43465E;
@@ -84,13 +89,6 @@
 <img src="../../beike/images/default/football.png" style="display: none;" id="football">
 
     <div class="map-box">
-        <div class="map">
-            <h2>长传</h2>
-            <div id="map-pass-short" class="canvas">
-                <canvas  id="pass-long" class="self-canvas" width="975" height="543"></canvas>
-            </div>
-        </div>
-
 
         <div class="map">
             <h2>全局</h2>
@@ -142,6 +140,29 @@
                 <span>高</span>
             </div>
         </div>
+
+        <div class="map">
+            <h2>长传</h2>
+            <div  class="canvas">
+                <canvas  id="pass-long" class="point-map" width="1000" height="557"></canvas>
+            </div>
+        </div>
+
+
+        <div class="map">
+            <h2>短传</h2>
+            <div  class="canvas">
+                <canvas  id="pass-short" class="point-map" width="1000" height="557"></canvas>
+            </div>
+        </div>
+
+
+        <div class="map">
+            <h2>触球</h2>
+            <div  class="canvas">
+                <canvas  id="touchball" class="point-map" width="1000" height="557"></canvas>
+            </div>
+        </div>
     </div>
 
 
@@ -167,7 +188,6 @@
 
         $('.canvas').css('height',courtHeight+"px");
 
-        draw_canvas();
         map_init();
 
     }
@@ -187,6 +207,10 @@
             draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
             draw_hot_map("map-run-static",courtWidth,matchResult.map_speed_static);
 
+            draw_point_map('pass-long',matchResult.map_pass_long);
+            draw_point_map('pass-short',matchResult.map_pass_short);
+            draw_point_map('touchball',matchResult.map_touchball);
+
             //draw_hot_map("map-shoot",width,matchResult.map_shoot);
             //draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
             //draw_hot_map("map-pass-short",width,matchResult.map_pass_short);
@@ -202,16 +226,13 @@
      */
     draw_hot_map = function(eleId,width,data)
     {
-        data = JSON.parse(data);
-        var heatmap1 = h337.create({
+        data            = JSON.parse(data);
+        var option      = {container: document.querySelector('#'+eleId)};
+        var heatmap1    = h337.create(option);
 
-            container: document.querySelector('#'+eleId)
-
-        });
-
-        var data2   = [];
-        var max     = 0;
-        var scale   = width / data[0].length;   //x为20分
+        var data2       = [];
+        var max         = 0;
+        var scale       = width / data[0].length;   //x为20分
 
         for(var y in data)
         {
@@ -227,8 +248,6 @@
 
             var scale = 100;
             max = max*scale;
-
-
 
             for(var data of data2){
 
@@ -257,50 +276,25 @@
 
 
     //绘制传球
-    function draw_canvas(){
+    function draw_point_map(eleId,points){
+        if(points.length == 0) {
 
-        var url = server + "match/build_new_court_coordinate";
-        var data = {
-            matchId:matchId,
-            courtHeight:543,
-            courtWidth:975
-        };
+            return;
+        }
+        points      = JSON.parse(points);
+        var img     = document.getElementById('football');
+        var c       = document.getElementById(eleId);
+        var cxt     = c.getContext("2d");
 
-        $.post(url,data).success(function(res){
-
-            var points = res.data.points;
-            var img = document.getElementById('football');
-            var c=document.getElementById("pass-long");
-            var cxt=c.getContext("2d");
-
-
-            for(var p in points){
-
-                var x = points[p].x;
-                var y = points[p].y;
-
-                cxt.drawImage(img,0,0,200,200,x,y,30,30);
-
-                continue;
-
-                cxt.beginPath();
-                cxt.fillStyle="rgba(255,228,25,0.6)";
-                cxt.strokeStyle = "rgba(54,55,76,0.2)";
-
-                var grd = cxt.createRadialGradient(x, y, 2, x, y, 20);
-                grd.addColorStop(0, 'rgba(255,228,25,1)');
-                grd.addColorStop(1, '#aaa');
-                cxt.fillStyle = grd;
-                cxt.lineWidth  = 3;
-                cxt.arc(x,y,20,0,Math.PI*2,true);
-
-
-                cxt.fill();
-                cxt.stroke();
-            }
-            cxt.closePath();
-        });
+        for(var p in points)
+        {
+            var x = points[p][0];
+            var y = points[p][1];
+            cxt.drawImage(img,0,0,200,200,x,y,30,30);
+        }
+        cxt.closePath();
     }
+
 
     creatRandom = function(startInt, endInt) { //生产随机数
         var iResult;

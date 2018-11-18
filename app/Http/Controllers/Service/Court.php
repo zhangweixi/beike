@@ -518,4 +518,107 @@ class Court{
     }
 
 
+    /**
+     * 坐标转换
+     * @param $centerX float 中心点X
+     * @param $centerY float 中心点Y
+     * @param $x float
+     * @param $y float
+     * @param $angle float 要转换的角度
+     * @return array
+     * */
+    function change_coordinate($centerX,$centerY,$x,$y,$angle){
+
+        $a = angle_to_pi($angle);
+
+        $x0= ($x - $centerX)*cos($a) - ($y - $centerY)*sin($a) + $centerX ;
+        $y0= ($x - $centerX)*sin($a) + ($y - $centerY)*cos($a) + $centerY ;
+
+        return ["x"=>$x0,"y"=>$y0];
+    }
+
+
+    /**
+     * 球场创建热点图
+     * @param $pa array
+     * @param $pa1 array
+     * @param $pd array
+     * @param $pd1 array
+     * @param $points array
+     * @param $width int 球场宽度
+     * @param $height int 球场高度
+     * @return array
+     * */
+    static function create_gps_map($pa,$pa1,$pd,$pd1,$points,$width=1000,$height=557)
+    {
+        $centerx    = $pa['x'] + ($pd1['x'] - $pa['x'])/2;
+        $centery    = $pa['y'] + ($pd1['y'] - $pa['y'])/2;
+
+        //获得要转动的角度
+        $slope      = ($pa['y'] - $pa1['y']) / ($pa['x'] - $pa1['x']);
+        $angle      = pi_to_angle(atan($slope));
+        $angle      = -$angle; //斜率大于0:减去角度  斜率小于0：加上角度
+
+        //将旋转后的数据缩放到前端界面要显示尺寸
+
+
+        //将最左最下的点设置为原点
+        $origin     = null;
+        $originDis  = 0;
+        $topPoint   = [
+            'pa'    => $pa,
+            "pa1"   => $pa1,
+            "pd"    => $pd,
+            "pd1"   => $pd1
+        ];
+
+        //将顶点置为新的坐标点
+        foreach($topPoint as $key => $gps)
+        {
+            $gps            = change_coordinate($centerx,$centery,$gps['x'],$gps['y'],$angle);
+            $topPoint[$key] = $gps;
+            $dis            = gps_distance(0,0,$gps['x'],$gps['y']);
+
+            if($originDis == 0 || $dis < $originDis)
+            {
+                $originDis  = $dis;
+                $origin     = $gps;
+            }
+        }
+
+        //找一个最小的点作为远点
+        $perx   = $width   / abs($topPoint['pa']['x'] - $topPoint['pa1']['x']);
+        $pery   = $height  / abs($topPoint['pa']['y'] - $topPoint['pd']['y']);
+
+
+        //旋转 缩放 每个点
+        foreach($points as $key => $p)
+        {
+            $gps   = change_coordinate($centerx,$centery,$p['x'],$p['y'],$angle);
+            $gps   = self::move_and_scroll_point($origin['x'],$origin['y'],$gps['x'],$gps['y'],$perx,$pery);
+            $points[$key] = $gps;
+        }
+        return $points;
+    }
+
+
+
+    /**
+     * 平移和缩放数据
+     * @param $originX float 原点x
+     * @param $originY float 原点Y
+     * @param $x float 要移动的X
+     * @param $y float 要移动的Y
+     * @param $perx float 移动后的没个X要缩放的倍数
+     * @param $pery float 移动后的每个Y要缩放的高度
+     * @return array
+     * */
+    static function move_and_scroll_point($originX,$originY,$x,$y,$perx,$pery)
+    {
+        $x = ($x - $originX) * $perx;
+
+        $y = ($y - $originY) * $pery;
+
+        return ['x'=>$x,'y'=>$y];
+    }
 }

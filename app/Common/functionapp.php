@@ -131,7 +131,9 @@ function get_fun_params_by_two_point($p1,$p2)
 }
 
 
-
+/**
+ * 通过三个点来获得一个圆形
+ * */
 function get_cycle_params_by_three_point($p1,$p2,$p3){
 
     class point {
@@ -171,4 +173,21 @@ function get_cycle_params_by_three_point($p1,$p2,$p3){
     $radius    = sqrt(($center->x - $p1->x) * ($center->x - $p1->x) + ($center->y - $p1->y) * ($center->y - $p1->y));
 
     return [$center->x,$center->y,$radius];
+}
+
+
+
+/**
+ * 旋转球场
+ * @param $centerX float 球场中心X
+ * @param $centerY float 球场中心Y
+ * @param $angle float 旋转的角度
+ * */
+function ratote_court($centerX,$centerY,$angle,$points){
+
+
+
+
+
+
 }

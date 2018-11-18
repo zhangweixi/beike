@@ -1202,17 +1202,51 @@ class AnalysisMatchData implements ShouldQueue
     /*
      * @var 足球场信息
      * */
-    private $courtInfo = false;
-    private static $tempMatchInfo = false;
+    static $courtInfo = null;
+
+    static function get_court_info($courtId)
+    {
+        if(self::$courtInfo == null){
+
+              $courtInfo    = CourtModel::find($courtId);
+              $points       = [
+                  'pa'  => $courtInfo->p_a,
+                  'pa1' => $courtInfo->p_a1,
+                  'pd'  => $courtInfo->p_d,
+                  'pd1' => $courtInfo->p_d1
+              ];
+
+              foreach ($points as $key => $p)
+              {
+                    $p = explode(",",$p);
+                    $points[$key] = ['x'=>$p[1],'y'=>$p[0]];
+              }
+
+              self::$courtInfo = (object)$points;
+        }
+
+        return self::$courtInfo;
+    }
+
+
+    /*
+     * var 比赛信息
+     * */
+    private static $tempMatchInfo = null;
+    /**
+     * 比赛信息
+     * */
     private static function get_temp_match_info($matchId)
     {
-        if(self::$tempMatchInfo == false){
+        if(self::$tempMatchInfo == null){
 
             self::$tempMatchInfo  = MatchModel::find($matchId);
         }
 
         return self::$tempMatchInfo;
     }
+
+
 
 
 
@@ -1443,7 +1477,8 @@ class AnalysisMatchData implements ShouldQueue
                 $lat    = $singleData[4];
                 $lon    = $singleData[5];
                 array_push($speeds,$singleData[6]);
-                array_push($gps,['lat'=>$lat,'lon'=>$lon]);
+                array_push($gps,['y'=>$lat,'x'=>$lon]);
+
 
                 //为触球时，根据连续触球的时间来判断是否是带球，连续触球的时间间隔小于2秒，当做带球一次
                 if($type == 'touchball'){
@@ -1471,7 +1506,17 @@ class AnalysisMatchData implements ShouldQueue
             $typeData['num']        = count($typeData['data']);
             $typeData['speedMax']   = round(max($speeds));
             $typeData['speedAvg']   = round(array_sum($speeds)/count($speeds));
-            $typeData['gps']        = $this->gps_map($matchInfo->court_id,$gps);
+
+            //$typeData['gps']        = $this->gps_map($matchInfo->court_id,$gps);
+
+            $court                  = self::get_court_info($matchInfo->court_id);
+            $gpsMap                 = Court::create_gps_map($court->pa,$court->pa1,$court->pd,$court->pd1,$gps);
+            foreach($gpsMap as $key => $gps)
+            {
+                $gpsMap[$key]      = [intval($gps['x']),intval($gps['y'])];
+            }
+            $typeData['gps']        = \GuzzleHttp\json_encode($gpsMap);
+
             unset($typeData['data']);
         }
 
@@ -1507,7 +1552,7 @@ class AnalysisMatchData implements ShouldQueue
         $userAbility->save();
     }
 
-
+    public $tempCourtInfo = null;
     /**
      * 创建各种项目的热点图
      * @param  $courtId integer 球场ID
@@ -1522,12 +1567,12 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         //创建GPS图谱
-        if($this->courtInfo == false)
+        if($this->tempCourtInfo == false)
         {
-            $this->courtInfo    = CourtModel::find($courtId);
+            $this->tempCourtInfo    = CourtModel::find($courtId);
         }
 
-        $courtInfo  = $this->courtInfo;
+        $courtInfo  = $this->tempCourtInfo;
         $points     = $courtInfo->boxs;
         $points     =  \GuzzleHttp\json_decode($points);
         $court      = new Court();
