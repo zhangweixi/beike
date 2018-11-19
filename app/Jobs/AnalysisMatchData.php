@@ -1375,7 +1375,7 @@ class AnalysisMatchData implements ShouldQueue
             'run_static_time'   => $speedType['static']['time'],
             'run_speed_max'     => $maxSpeed,
             "abrupt_stop_num"   => count($adruptStop['list']),
-            'run_high_speed_avg'=> $speedType['high']['dis']/$speedType['high']['time'],//高速平均跑动速度
+            'run_high_speed_avg'=> $speedType['high']['time'] > 0 ? $speedType['high']['dis']/$speedType['high']['time'] : 0,//高速平均跑动速度
             'map_speed_static'  => $speedType['static']['gps'],
             'map_speed_low'     => $speedType['low']['gps'],
             'map_speed_middle'  => $speedType['middle']['gps'],
