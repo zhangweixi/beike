@@ -226,7 +226,14 @@
      */
     draw_hot_map = function(eleId,width,data)
     {
+
+        if(data == null){
+
+            return 0;
+        }
+
         data            = JSON.parse(data);
+
         var option      = {container: document.querySelector('#'+eleId)};
         var heatmap1    = h337.create(option);
 
@@ -277,7 +284,8 @@
 
     //绘制传球
     function draw_point_map(eleId,points){
-        if(points.length == 0) {
+
+        if(points == null) {
 
             return;
         }
