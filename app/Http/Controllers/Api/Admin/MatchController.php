@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Service\Court;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\V1\CourtModel;
@@ -127,11 +128,18 @@ class MatchController extends Controller
 
         $resultFiles= [];
 
+        $lineNum    = 0;
         foreach($dirfile as $file)
         {
             if(preg_match("/^\w/",$file))
             {
-                array_push($resultFiles,['name'=>$file,'url'=>url("uploads/match/{$matchId}")."/".$file]);
+                if(!is_windows()){
+
+                    $lineNum = shell_exec("wc -l ".public_path("uploads/match/{$matchId}/".$file));
+                    $lineNum = explode(" ",$lineNum)[0];
+                }
+
+                array_push($resultFiles,['name'=>$file,'url'=>url("uploads/match/{$matchId}")."/".$file,'lineNum'=>$lineNum]);
             }
         }
 
@@ -832,89 +840,38 @@ class MatchController extends Controller
         $matchId        = $request->input('matchId');
         $matchInfo      = MatchModel::find($matchId);
         $courtDataObj   = DB::table('football_court')->select("p_a","p_d","p_a1","p_d1")->where('court_id',$matchInfo->court_id)->first();
-        $courtDataArr   = [];
         $courtWidth     = $request->input('courtWidth',400);
         $courtHeight    = $request->input('courtHeight',200);
 
+        $courtData      = [];
         foreach($courtDataObj as $key => $gps)
         {
-            $gps    = explode(",",$gps);
-            $courtDataArr[$key] = ['lat'=>$gps[0],'lon'=>$gps[1]];
+            $gps             = explode(",",$gps);
+            $courtData[$key] = ['x'=>$gps[1],'y'=>$gps[0]];
         }
 
-        $centerLat  = $courtDataArr['p_a']['lat'] + ($courtDataArr['p_d1']['lat'] - $courtDataArr['p_a']['lat'])/2;
-        $centerLon  = $courtDataArr['p_a']['lon'] + ($courtDataArr['p_d1']['lon'] - $courtDataArr['p_a']['lon'])/2;
+        $gpsList    = file_to_array(matchdir($matchId)."result-pass.txt");
+        $points     = [];
 
-
-
-
-        //获得要转动的角度
-        $slope      = ($courtDataArr['p_a']['lat'] - $courtDataArr['p_a1']['lat']) / ($courtDataArr['p_a']['lon'] - $courtDataArr['p_a1']['lon']);
-        $angle      = pi_to_angle(atan($slope));
-
-
-        //array_push($courtDataArr,['lon'=>$centerLon,'lat'=>$centerLat]);
-        $angle      = -$angle; //斜率大于0:减去角度  斜率小于0：加上角度
-        $origin     = ["dis"=>0,"point"=>null];
-
-        foreach($courtDataArr as $key => $gps)
+        foreach($gpsList as $key=> $gps)
         {
-            $tempGps    = change_coordinate($centerLon,$centerLat,$gps['lon'],$gps['lat'],$angle);
-            $courtDataArr[$key]['lon'] = $tempGps['x'];
-            $courtDataArr[$key]['lat'] = $tempGps['y'];
-
-            $dis    = gps_distance(0,0,$tempGps['x'],$tempGps['y']);
-
-            if($origin['dis'] == 0 || $dis < $origin['dis'])
-            {
-                $origin['dis']          = $dis;
-                $origin['point']     = $courtDataArr[$key];
-            }
-        }
-
-        //新的矩形有一定的高度
-
-
-        //找一个最小的点作为远点
-        $perx   = $courtWidth / abs($courtDataArr['p_a']['lon'] - $courtDataArr['p_a1']['lon']);
-        $pery   = $courtHeight / abs($courtDataArr['p_a']['lat'] - $courtDataArr['p_d']['lat']);
-
-
-
-
-        $gpsList        = file_to_array(matchdir($matchId)."result-pass.txt");
-        //$gpsList        = file_to_array(matchdir($matchId)."gps-L.txt");
-        $courtDataArr   = [];
-
-        foreach($gpsList as $key=> $gps){
-
-            if($gps[0]*1 == 0){
+            if($gps[0] * 1 == 0){
                 continue;
             }
-
-            //$gps = change_coordinate($centerLon,$centerLat,gps_to_gps($gps[6]),gps_to_gps($gps[5]),$angle);
-            $gps = change_coordinate($centerLon,$centerLat,$gps[5],$gps[4],$angle);
-            //$gps = change_coordinate($centerLon,$centerLat,$gps[1],$gps[0],$angle);
-
-
-            array_push($courtDataArr,["lat"=>$gps['y'],"lon"=>$gps['x']]);
+            array_push($points,['x'=>$gps[5],'y'=>$gps[4]]);
         }
 
-        foreach($courtDataArr as $key => $gps){
+        $points = Court::create_gps_map($courtData['p_a'],$courtData['p_a1'],$courtData['p_d'],$courtData['p_d1'],$points);
 
-            $gps = self::move_and_scroll_point($origin['point']['lon'],$origin['point']['lat'],$gps['lon'],$gps['lat'],$perx,$pery);
-            $gps['y']   = -($gps['y'] - $courtHeight);
-            $courtDataArr[$key] = $gps;
-        }
+        //$points = Court::create_gps_map($courtData['p_a'],$courtData['p_a1'],$courtData['p_d'],$courtData['p_d1'],$points,$courtWidth,$courtHeight);
 
-        end:
-        //$courtDataArr   = gps_to_bdgps($courtDataArr);
-        return apiData()->add('points',$courtDataArr)->send();
+
+        return apiData()->add('points',$points)->send();
     }
 
     /**
      *
-     * 移动和缩放数据
+     * 平移和缩放数据
      *
      * */
     static function move_and_scroll_point($originX,$originY,$x,$y,$perx,$pery){

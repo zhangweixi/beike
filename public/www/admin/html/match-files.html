@@ -12,8 +12,10 @@
                 <table class="table table-striped table-bordered jambo_table bulk_action">
                     <tr  ng-repeat="file in matchFiles.resultFile">
                         <td>{{file.name}}</td>
+                        <td>{{file.lineNum}}行</td>
                         <td><a target="_blank" href="{{file.url}}" class="btn-info btn btn-xs">打开</a></td>
                         <td><a href="#match/compass-map/{{file.url1}}">曲线图</a></td>
+
                     </tr>
                 </table>
             </div>
