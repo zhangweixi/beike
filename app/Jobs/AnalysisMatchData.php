@@ -1664,7 +1664,8 @@ class AnalysisMatchData implements ShouldQueue
         foreach ($shootData as $shoot)
         {
 
-            array_push($gpsArr,['lat'=>$shoot[0],'lon'=>$shoot[1]]);
+            array_push($gpsArr,['y'=>$shoot[0],'x'=>$shoot[1]]);
+            //array_push($gps,['y'=>$lat,'x'=>$lon]);
             $speed      = $shoot[4];
             $distance   = $shoot[7];
 
@@ -1678,8 +1679,16 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         //射门热点图
+        $court                  = self::get_court_info($matchInfo->court_id);
+        $gpsMap                 = Court::create_gps_map($court->pa,$court->pa1,$court->pd,$court->pd1,$gpsArr);
+        foreach($gpsMap as $key => $gps)
+        {
+            $gpsMap[$key]      = [intval($gps['x']),intval($gps['y'])];
+        }
+        $gpsMap                 = \GuzzleHttp\json_encode($gpsMap);
+        //$matchResult['map_shoot']       = $this->gps_map($matchInfo->court_id,$gpsArr);
+        $matchResult['map_shoot']       = $gpsMap;
 
-        $matchResult['map_shoot']       = $this->gps_map($matchInfo->court_id,$gpsArr);
         $matchResult['shoot_speed_avg'] = bcdiv($matchResult['shoot_speed_avg'], $matchResult['shoot_num_total'],2);
         $matchResult['shoot_dis_avg']   = bcdiv($matchResult['shoot_dis_avg'], $matchResult['shoot_num_total'],2);
 
