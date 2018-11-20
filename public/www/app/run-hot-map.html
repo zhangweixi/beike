@@ -185,12 +185,11 @@
     var server      = location.origin + "/api/admin/";
     var courtWidth  = 0;
     var courtHeight = 0;
-
+    var isWhole     = GetQueryString('all');
 
 
     window.onload = function(){
 
-        var isWhole     = GetQueryString('all');
         if(isWhole == 1){
 
             $('.whole-map').css('display',"block");
@@ -223,6 +222,11 @@
 
             //显示热点图
             draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
+
+            if(isWhole < 1){
+
+                return;
+            }
             draw_hot_map("map-run-high",courtWidth,matchResult.map_speed_high);
             draw_hot_map("map-run-middle",courtWidth,matchResult.map_speed_middle);
             draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
