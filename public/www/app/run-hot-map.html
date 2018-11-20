@@ -223,7 +223,7 @@
             //显示热点图
             draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
 
-            if(isWhole < 1){
+            if(isWhole > 0){
 
                 return;
             }
@@ -331,7 +331,7 @@
             var y = points[p][1];
 
             cxt.beginPath();
-            cxt.fillStyle = "RGBA(255,228,25,0.5)";
+            cxt.fillStyle = "RGBA(255,228,25,0.6)";
             cxt.strokeStyle = "#36374c";
 
             cxt.arc(x,y,20,0,2*Math.PI);
