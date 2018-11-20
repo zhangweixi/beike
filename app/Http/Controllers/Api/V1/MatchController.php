@@ -388,22 +388,22 @@ class MatchController extends Controller
 
         $data   = [
             'shoot'         => [
-                'speedMax'  => $matchResult->shoot_speed_max,
-                'speedAvg'  => $matchResult->shoot_speed_avg,
+                'speedMax'  => speed_second_to_hour($matchResult->shoot_speed_max),
+                'speedAvg'  => speed_second_to_hour($matchResult->shoot_speed_avg),
                 'disMax'    => $matchResult->shoot_dis_max,
                 'disAvg'    => $matchResult->shoot_dis_avg,
                 'number'    => $matchResult->shoot_num_total,
             ],
             'passShort'    => [
-                'speedMax'  => $matchResult->pass_s_speed_max,
-                'speedAvg'  => $matchResult->pass_s_speed_avg,
+                'speedMax'  => speed_second_to_hour($matchResult->pass_s_speed_max),
+                'speedAvg'  => speed_second_to_hour($matchResult->pass_s_speed_avg),
                 'disMax'    => $matchResult->pass_s_dis_max,
                 'disAvg'    => $matchResult->pass_s_dis_avg,
                 'number'    => $matchResult->pass_s_num
             ],
             'passLength'    => [
-                'speedMax'  => $matchResult->pass_l_speed_max,
-                'speedAvg'  => $matchResult->pass_l_speed_avg,
+                'speedMax'  => speed_second_to_hour($matchResult->pass_l_speed_max),
+                'speedAvg'  => speed_second_to_hour($matchResult->pass_l_speed_avg),
                 'disMax'    => $matchResult->pass_l_dis_max,
                 'disAvg'    => $matchResult->pass_l_dis_avg,
                 'number'    => $matchResult->pass_l_num
@@ -418,9 +418,9 @@ class MatchController extends Controller
                 'highTime'     => $matchResult->run_high_time
             ],
             'touchball' => [
-                "number"    => $matchResult->touchball_num,
-                "speedMax"  =>  $matchResult->touchball_speed_max,
-                "speedAvg"  =>  $matchResult->touchball_speed_avg,
+                "number"    =>  $matchResult->touchball_num,
+                "speedMax"  =>  speed_second_to_hour($matchResult->touchball_speed_max),
+                "speedAvg"  =>  speed_second_to_hour($matchResult->touchball_speed_avg),
                 "strengthMax"=> $matchResult->touchball_strength_max,
                 "strengthAvg"=> $matchResult->touchball_strength_avg
             ]
