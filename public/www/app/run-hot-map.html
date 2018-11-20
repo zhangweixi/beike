@@ -241,56 +241,7 @@
 
             if(isWhole > 0){ //绘制雷达图
 
-                var option = {
-
-                    tooltip : {
-                        trigger: 'axis'
-                    },
-                    legend: {
-                        x : 'center',
-                    },
-                    calculable : true,
-
-                    polar : [
-                        {
-                            indicator : [
-                                {text : '射门', max  : 100},
-                                {text : '防守', max  : 100},
-                                {text : '跑动', max  : 100},
-                                {text : '盘带', max  : 100},
-                                {text : '力量', max  : 100},
-                                {text : '传球', max  : 100}
-                            ],
-                            radius : 130
-                        }
-                    ],
-                    series : [
-                        {
-                            name: '完全实况球员数据',
-                            type: 'radar',
-                            itemStyle: {
-                                normal: {
-                                    color: 'rgba(0,255,214,1)', //边框
-                                    lineStyle: {
-                                        width : 1
-                                    },
-                                    areaStyle: {
-                                        type: 'default',
-                                        color:"rgba(0,255,214,0.99)", //背景色
-                                    },
-                                },
-                            },
-                            data : [
-                                {
-                                    value : [matchResult.grade_shoot, matchResult.grade_defense, matchResult.grade_run, matchResult.grade_dribble, matchResult.grade_strength,matchResult.grade_pass],
-                                }
-                            ]
-                        }
-                    ]
-                };
-
-                var myChart = echarts.init(document.getElementById('ability'));
-                myChart.setOption(option);
+                draw_leida_map(matchResult);
 
                 return;
             }
@@ -315,6 +266,75 @@
     }
 
 
+    function draw_leida_map(matchResult){
+        var option = {
+
+            tooltip : {
+                trigger: 'axis'
+            },
+            legend: {
+                x : 'center',
+            },
+            calculable : true,
+
+            polar : [
+                {
+                    indicator : [
+                        {text : '射门', max  : 100},
+                        {text : '防守', max  : 100},
+                        {text : '跑动', max  : 100},
+                        {text : '盘带', max  : 100},
+                        {text : '力量', max  : 100},
+                        {text : '传球', max  : 100}
+                    ],
+                    radius : 130,
+                    splitArea : {
+                        show : true,
+                        areaStyle : {
+                            color: ["rgba(255,255,255,0.05)"]  // 图表背景网格的颜色
+                        }
+                    },
+                    splitLine : {
+
+                        show : true,
+
+                        lineStyle : {
+
+                            width : 2,
+                            color : '#686B7E' // 图表背景网格线的颜色
+                        }
+
+                    }
+                }
+            ],
+            series : [
+                {
+                    name: '完全实况球员数据',
+                    type: 'radar',
+                    itemStyle: {
+                        normal: {
+                            color: 'rgba(0,255,214,1)', //边框
+                            lineStyle: {
+                                width:2,
+                            },
+                            areaStyle: {
+                                type: 'default',
+                                color:"rgba(0,255,214,0.99)", //背景色
+                            },
+                        },
+                    },
+                    data : [
+                        {
+                            value : [matchResult.grade_shoot, matchResult.grade_defense, matchResult.grade_run, matchResult.grade_dribble, matchResult.grade_strength,matchResult.grade_pass],
+                        }
+                    ]
+                }
+            ]
+        };
+
+        var myChart = echarts.init(document.getElementById('ability'));
+        myChart.setOption(option);
+    }
 
 
     /**
