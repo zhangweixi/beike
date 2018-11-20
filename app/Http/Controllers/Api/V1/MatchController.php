@@ -390,31 +390,31 @@ class MatchController extends Controller
             'shoot'         => [
                 'speedMax'  => speed_second_to_hour($matchResult->shoot_speed_max),
                 'speedAvg'  => speed_second_to_hour($matchResult->shoot_speed_avg),
-                'disMax'    => $matchResult->shoot_dis_max,
-                'disAvg'    => $matchResult->shoot_dis_avg,
+                'disMax'    => $matchResult->shoot_dis_max/1000,
+                'disAvg'    => $matchResult->shoot_dis_avg/1000,
                 'number'    => $matchResult->shoot_num_total,
             ],
             'passShort'    => [
                 'speedMax'  => speed_second_to_hour($matchResult->pass_s_speed_max),
                 'speedAvg'  => speed_second_to_hour($matchResult->pass_s_speed_avg),
-                'disMax'    => $matchResult->pass_s_dis_max,
-                'disAvg'    => $matchResult->pass_s_dis_avg,
+                'disMax'    => $matchResult->pass_s_dis_max/1000,
+                'disAvg'    => $matchResult->pass_s_dis_avg/1000,
                 'number'    => $matchResult->pass_s_num
             ],
             'passLength'    => [
                 'speedMax'  => speed_second_to_hour($matchResult->pass_l_speed_max),
                 'speedAvg'  => speed_second_to_hour($matchResult->pass_l_speed_avg),
-                'disMax'    => $matchResult->pass_l_dis_max,
-                'disAvg'    => $matchResult->pass_l_dis_avg,
+                'disMax'    => $matchResult->pass_l_dis_max/1000,
+                'disAvg'    => $matchResult->pass_l_dis_avg/1000,
                 'number'    => $matchResult->pass_l_num
             ],
 
             'run'        => [
-                'lowDis'       => $matchResult->run_low_dis+$matchResult->run_static_dis,
+                'lowDis'       => $matchResult->run_low_dis+$matchResult->run_static_dis/1000,
                 'lowTime'      => $matchResult->run_low_time+$matchResult->run_static_time,
-                'midDis'       => $matchResult->run_mid_dis,
+                'midDis'       => $matchResult->run_mid_dis/1000,
                 'midTime'      => $matchResult->run_mid_time,
-                'highDis'      => $matchResult->run_high_dis,
+                'highDis'      => $matchResult->run_high_dis/1000,
                 'highTime'     => $matchResult->run_high_time
             ],
             'touchball' => [
