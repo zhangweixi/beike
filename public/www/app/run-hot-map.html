@@ -55,6 +55,7 @@
         }
 
 
+
         .colors{
             display: flex;
             margin:20px;
@@ -91,7 +92,7 @@
 
     <div class="map-box">
 
-        <div class="map whole-map">
+        <div class="map whole run">
             <h2>全局</h2>
             <div id="map-run-all" class="canvas"></div>
             <div class="colors">
@@ -100,6 +101,15 @@
                 <span>高</span>
             </div>
         </div>
+
+        <!--雷达图-->
+        <div class="map whole leida">
+            <h2>雷达图</h2>
+            <div id="ability" style="width:100%;height:100vw;"></div>
+
+        </div>
+
+
 
         <div class="map">
             <h2>高速</h2>
@@ -180,6 +190,8 @@
 
 <script src="../../vendors/jquery/dist/jquery.min.js"></script>
 <script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
+<script  src="../../vendors/echarts/dist/echarts.min.js"></script>
+
 <script>
     var matchId     = GetQueryString('matchId');
     var server      = location.origin + "/api/admin/";
@@ -192,8 +204,10 @@
 
         if(isWhole == 1){
 
-            $('.whole-map').css('display',"block");
-            $('.whole-map h2').text('热点图');
+            $('.whole').css('display',"block");
+
+            $('.whole.run h2').text('热点图');
+
 
         }else{
 
@@ -223,10 +237,63 @@
             //显示热点图
             draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
 
-            if(isWhole > 0){
+            if(isWhole > 0){ //绘制雷达图
+
+                var option = {
+
+                    tooltip : {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        x : 'center',
+                    },
+                    calculable : true,
+
+                    polar : [
+                        {
+                            indicator : [
+                                {text : '射门', max  : 100},
+                                {text : '防守', max  : 100},
+                                {text : '跑动', max  : 100},
+                                {text : '盘带', max  : 100},
+                                {text : '力量', max  : 100},
+                                {text : '传球', max  : 100}
+                            ],
+                            radius : 130
+                        }
+                    ],
+                    series : [
+                        {
+                            name: '完全实况球员数据',
+                            type: 'radar',
+                            itemStyle: {
+                                normal: {
+                                    color: 'rgba(0,255,214,1)', //边框
+                                    lineStyle: {
+                                        width : 2
+                                    },
+                                    areaStyle: {
+                                        type: 'default',
+                                        color:"rgba(0,255,214,0.4)", //背景色
+                                    },
+                                },
+                            },
+                            data : [
+                                {
+                                    value : [matchResult.grade_shoot, matchResult.grade_defense, matchResult.grade_run, matchResult.grade_dribble, matchResult.grade_strength,matchResult.grade_pass],
+                                }
+                            ]
+                        }
+                    ]
+                };
+
+                var myChart = echarts.init(document.getElementById('ability'));
+                myChart.setOption(option);
 
                 return;
             }
+
+
             draw_hot_map("map-run-high",courtWidth,matchResult.map_speed_high);
             draw_hot_map("map-run-middle",courtWidth,matchResult.map_speed_middle);
             draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
