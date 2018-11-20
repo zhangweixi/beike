@@ -184,6 +184,7 @@ function get_cycle_params_by_three_point($p1,$p2,$p3){
 function speed_second_to_hour($speed){
 
     $speed  = $speed * 60 * 60 / 1000;
-    $speed  = bcmul($speed,1,2)*1;
+    $speed  = round($speed,2);
+
     return $speed;
 }
