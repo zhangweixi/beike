@@ -183,11 +183,18 @@ function get_cycle_params_by_three_point($p1,$p2,$p3){
  * @param $centerY float 球场中心Y
  * @param $angle float 旋转的角度
  * */
-function ratote_court($centerX,$centerY,$angle,$points){
+function ratote_court($centerX,$centerY,$angle,$points)
+{
 
+}
+/**
+ * 将速度由M/S改为KM/H
+ * @param $speed float
+ * @return float
+ * */
+function speed_second_to_hour($speed){
 
-
-
-
-
+    $speed  = $speed * 60 / 1000;
+    $speed  = bcmul($speed,1,2);
+    return $speed;
 }
