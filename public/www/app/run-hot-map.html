@@ -29,6 +29,7 @@
             background:#43465E;
             border-radius: 9px;
             margin-top:10px;
+            display:none;
         }
 
         .map h2{
@@ -90,7 +91,7 @@
 
     <div class="map-box">
 
-        <div class="map">
+        <div class="map whole-map">
             <h2>全局</h2>
             <div id="map-run-all" class="canvas"></div>
             <div class="colors">
@@ -185,7 +186,20 @@
     var courtWidth  = 0;
     var courtHeight = 0;
 
+
+
     window.onload = function(){
+
+        var isWhole     = GetQueryString('all');
+        if(isWhole == 1){
+
+            $('.whole-map').css('display',"block");
+            $('.whole-map h2').text('热点图');
+
+        }else{
+
+            $('.map').css('display','block');
+        }
 
         //设定球形的尺寸
         //球场高宽比 957*543
