@@ -112,6 +112,70 @@ class MatchController extends Controller
     }
 
 
+    /**
+     * 比赛单项结果
+     *
+     * */
+    public function get_match_single_result(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $type       = $request->input('type');
+
+        $dir        = matchdir($matchId);
+        $typeKey    = null;
+
+        if($type == 'shoot'){
+
+            $file   = $dir."result-shoot.txt";
+            $data   = file_to_array($file);
+            $latKey = 0;
+            $lonKey = 1;
+
+        }elseif($type == 'passLong'){
+
+            $file   = $dir."result-pass.txt";
+            $data   = file_to_array($file);
+            $latKey = 4;
+            $lonKey = 5;
+            $typeKey = 1;
+            $typeVal = 1;
+
+        }elseif($type == 'passShort'){
+
+            $file   = $dir."result-pass.txt";
+            $data   = file_to_array($file);
+            $latKey = 4;
+            $lonKey = 5;
+            $typeKey = 1;
+            $typeVal = 2;
+
+        }elseif ($type == 'touch'){
+
+            $file   = $dir."result-pass.txt";
+            $data   = file_to_array($file);
+            $latKey = 4;
+            $lonKey = 5;
+            $typeKey = 1;
+            $typeVal = 3;
+        }
+
+        $gps    = [];
+
+        foreach($data as $d)
+        {
+            if($typeKey != null && $d[$typeKey]*1 != $typeVal){
+
+                continue;
+            }
+            array_push($gps,['lon'=>$d[$lonKey],'lat'=>$d[$latKey]]);
+        }
+
+        $gps = gps_to_bdgps($gps);
+
+        return apiData()->add('gps',$gps)->send();
+    }
+
+
     public function match_files(Request $request){
 
         $matchId    = $request->input('matchId');

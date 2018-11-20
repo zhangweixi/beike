@@ -722,6 +722,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
     //比赛结果
     $scope.get_match_result = function(){
 
+        $scope.init_map();
 
         var url         = server + "match/match_result?matchId=" + $scope.matchId;
 
@@ -743,16 +744,34 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             $scope.draw_hot_map("map-run-middle",width,$scope.matchResult.map_speed_middle);
             $scope.draw_hot_map("map-run-low",width,$scope.matchResult.map_speed_low);
             $scope.draw_hot_map("map-run-static",width,$scope.matchResult.map_speed_static);
-            $scope.draw_hot_map("map-shoot",width,$scope.matchResult.map_shoot);
-            $scope.draw_hot_map("map-pass-long",width,$scope.matchResult.map_pass_long);
-            $scope.draw_hot_map("map-pass-short",width,$scope.matchResult.map_pass_short);
-            $scope.draw_hot_map("map-touchball",width,$scope.matchResult.map_touchball);
+            //$scope.draw_hot_map("map-shoot",width,$scope.matchResult.map_shoot);
+            //$scope.draw_hot_map("map-pass-long",width,$scope.matchResult.map_pass_long);
+            //$scope.draw_hot_map("map-pass-short",width,$scope.matchResult.map_pass_short);
+            //$scope.draw_hot_map("map-touchball",width,$scope.matchResult.map_touchball);
         
         
         })
     }
 
+    $scope.get_single_result = function(type,color){
 
+        var url     = server + "match/get_match_single_result";
+        var data    = {matchId:$scope.matchId,type:type};
+            data    = http_query(data);
+
+            $http.post(url,data).success(function(res){
+
+                var gps     = res.data.gps;
+                var points  = [];
+
+                for(var g of gps){
+
+                    points.push(getpoint(g.lat,g.lon));
+                }
+
+                $scope.draw_big_data(points,color);
+            })
+    }
     /**
      * 显示热点图
      */
@@ -779,15 +798,23 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
               }
             }
 
-            if(max == 0){
+            if(max < 100 && max > 0 ){
+
+                max = max*20;
+
+
+
+                for(var data of data2){
+
+                    if(data.value > 0){
+
+                        data.value = data.value * 20;
+                    }
+                }
+            } else if(max == 0){
 
                 max = 100;
-
-            }else if(max < 10){
-
-                max = 2*max;
             }
-
             data3 = {"max":max,"data":data2};
             heatmap1.setData(data3);
     }
@@ -931,7 +958,10 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
      */
     $scope.draw_visual_court = function()
     {
-        var url = server + "match/get_visual_match_court?matchId="+$scope.matchId;
+        //var url = server + "match/get_visual_match_court?matchId="+$scope.matchId;
+        var url = server + "match/build_new_court_coordinate?matchId="+$scope.matchId;
+
+        
 
         $http.get(url).success(function(res)
         {
@@ -986,10 +1016,18 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
     //显示大量球场点
     $scope.draw_big_data = function(points)
     {
+        if(arguments.length > 1){
+
+            var color = arguments[1];
+
+        }else{
+            var color = "#d340c3";
+        }
+
         var options = {
             size: BMAP_POINT_SIZE_SMALL,
             shape: BMAP_POINT_SHAPE_STAR,
-            color: '#d340c3'
+            color: color
         }
         var pointCollection = new BMap.PointCollection(points, options);  // 初始化PointCollection
         if(points.length > 0 && arguments.length == 1)
