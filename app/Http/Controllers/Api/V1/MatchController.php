@@ -577,7 +577,7 @@ class MatchController extends Controller
 
         $matchInfo = [
             'totalPass' => $totalPass,
-            'totalRun'  => $totalRun,
+            'totalRun'  => speed_second_to_hour($totalRun),
             'totalShoot'=> $totalShoot,
             'matches'   => $matches
         ];
