@@ -817,8 +817,9 @@ class AnalysisMatchData implements ShouldQueue
         $dataDir        = self::matchdir($matchId);
 
 
+
         //1.与球场相关
-        if($matchInfo->court_id >0 )
+        if($matchInfo->court_id >0)
         {
             //1.0 生成热点图占用时间比较久，异步调用
             $params = ['matchId'=>$matchId,'foot'=>"L"];
@@ -858,20 +859,105 @@ class AnalysisMatchData implements ShouldQueue
     private function sync_file_num_same($matchId)
     {
         $dataDir        = self::matchdir($matchId);
-        $compassNumL    = get_file_line_num($dataDir."compass-L.txt");
-        $compassNumR    = get_file_line_num($dataDir."compass-R.txt");
 
-        //如果两个文件数量差别大于400，发出警报
-        if(abs($compassNumL - $compassNumR) > 400)
+        $files  = [
+            "sensorL"   => "sensor-L.txt",
+            "sensorR"   => "sensor-R.txt",
+            "compassL"  => "compass-L.txt",
+            "compassR"  => "compass-R.txt",
+            "gpsL"      => "gps-L.txt"
+        ];
+
+        $beginTimes     = [];
+        $endTimes       = [];
+
+        foreach($files as $key => $fileName)
         {
-            $wechat     = new Wechat();
-            $template   = WechatTemplate::warningTemplate();
-            $template->openId   = config('app.adminOpenId');
-            $template->first    = "系统警告";
-            $template->warnType = "比赛数据量不一致";
-            $template->warnTime = date_time();
-            $template->remark   = "比赛ID:$matchId,罗盘左脚：{$compassNumL},罗盘右脚：{$compassNumR}";
-            $wechat->template_message($template);
+            $filePath       = $dataDir.$fileName;
+            $data           = file($filePath);
+            $num            = count($data);
+            $beginTime      = substr(rtrim($data[0]),-13);
+            $endTime        = substr(rtrim($data[$num-1]),-13);
+            $file           = [ 'num'       => $num,
+                                'data'      => $data,
+                                'beginTime' => $beginTime,
+                                'endTime'   => $endTime,
+                                'file'      => $filePath];
+
+            $files[$key]    = $file;
+
+            array_push($beginTimes,$beginTime);
+            array_push($endTimes,$endTime);
+
+            $oldFile                = $dataDir."old-".$fileName;
+            copy($filePath,$oldFile); //拷贝原文件
+        }
+
+        $wechat     = new Wechat();
+        $template   = WechatTemplate::warningTemplate();
+        $template->openId   = config('app.adminOpenId');
+        $template->first    = "系统警告";
+        $template->warnType = "比赛数据量不一致";
+        $template->warnTime = date_time();
+        $tempmsg            = "比赛ID:$matchId,类型:%s,左脚：%d,右脚：%d";
+
+        //如果数据量差别太大，进行系统报警提示
+        if(abs($files['sensorL']['num'] - $files['sensorR']['num']) > 250){ //相当于时间差超过2.5秒
+
+            $template->remark   = sprintf($tempmsg,"sensor",$files['sensorL']['num'],$files['sensorR']['num']);
+            if($wechat->template_message($template))
+            {
+                $wechat->send();
+            }
+
+        }
+
+        if(abs($files['compassL']['num'] - $files['compassR']['num']) > 100){ //时间超过2.5秒
+
+            $template->remark   = sprintf($tempmsg,"compass",$files['compassL']['num'],$files['compassR']['num']);
+            if($wechat->template_message($template))
+            {
+                $wechat->send();
+            }
+        }
+
+
+        //截去不相等的头部
+        $maxTime    = max($beginTimes);
+        $minTime    = min($beginTimes);
+
+        //如果时间差大于100毫秒，则保持一致
+        if($maxTime - $minTime >= 500)
+        {
+            foreach($files as $fileType => $fileInfo)
+            {
+                foreach($fileInfo['data'] as  $data)
+                {
+                    $time = substr(rtrim($data),-13);
+
+                    if($time >= $beginTime)
+                    {
+                        break;
+                    }
+                    array_splice($fileInfo['data'],0,1);
+                    $fileInfo['num']--;
+                }
+                $files[$fileType]   = $fileInfo;
+            }
+        }
+
+
+
+        //另外一种问题，一只脚的数据不足，则采用最少的
+        //根据GPS的时间来作为基础,把超出的截取掉
+
+        $timeLength = $files['gpsL']['num']/10;
+
+
+        //将最新的文件写入数据
+        foreach($files as $file)
+        {
+            file_put_contents($file['file'],implode("",$file['data']));
         }
     }
 
@@ -1384,7 +1470,6 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
-        return "";
 
         //修改个人的整体数据 在此前一定会创建用户的个人数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);

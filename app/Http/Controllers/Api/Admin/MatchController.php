@@ -175,7 +175,9 @@ class MatchController extends Controller
         return apiData()->add('gps',$gps)->send();
     }
 
-
+    /**
+     * 比赛文件
+     * */
     public function match_files(Request $request){
 
         $matchId    = $request->input('matchId');
@@ -192,17 +194,11 @@ class MatchController extends Controller
 
         $resultFiles= [];
 
-        $lineNum    = 0;
         foreach($dirfile as $file)
         {
             if(preg_match("/^\w/",$file))
             {
-                if(!is_windows()){
-
-                    $lineNum = shell_exec("wc -l ".public_path("uploads/match/{$matchId}/".$file));
-                    $lineNum = explode(" ",$lineNum)[0];
-                }
-
+                $lineNum = get_file_line_num(public_path("uploads/match/{$matchId}/".$file));
                 array_push($resultFiles,['name'=>$file,'url'=>url("uploads/match/{$matchId}")."/".$file,'lineNum'=>$lineNum]);
             }
         }
@@ -210,7 +206,9 @@ class MatchController extends Controller
         return apiData()->add('matchFiles',$matchFiles)->add('resultFiles',$resultFiles)->send();
     }
 
-
+    /**
+     * 获取罗盘数据
+     * */
     public function get_compass_data(Request $request)
     {
         $url        = $request->input('file');

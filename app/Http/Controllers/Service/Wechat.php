@@ -20,6 +20,7 @@ class Wechat extends Controller
      * @var \EasyWeChat\OfficialAccount\Application
      */
     public $wechat ;
+    public $templateData;
 
     public function __construct()
     {
@@ -58,10 +59,18 @@ class Wechat extends Controller
             'url'           => $template->url,
             'data'          => $template->data,
         ];
-        $this->wechat->template_message->send($data);
+        $this->templateData = $data;
+
+        return $this;
     }
 
-
+    /**
+     * 发送消息
+     * */
+    public function send()
+    {
+        $this->wechat->template_message->send($this->templateData);
+    }
 
     /*
      * 登录
@@ -155,7 +164,7 @@ class Wechat extends Controller
         $template->warnType= "左右脚数据不一致";
         $template->warnTime= date_time();
         $template->openId = "o1zLM0daxBjdzyYwFxQ9YxPs7O6Q";
-        $this->template_message($template);
+        $this->template_message($template)->send();
 
         return 'ok';
 
@@ -170,6 +179,6 @@ class Wechat extends Controller
         $serviceTemplate->workTime = "工作时间";
         $serviceTemplate->url = "http://www.baidu.com";
 
-        $this->template_message($serviceTemplate);
+        $this->template_message($serviceTemplate)->send();
     }
 }
