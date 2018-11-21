@@ -178,6 +178,22 @@ class TestController extends Controller
 
     public function test(Request $request)
     {
+
+        if(false){
+
+            $gpsArr     = DB::table('football_court_point')->where('gps_group_id',"201811051634295501")->get();
+            foreach($gpsArr as $gps){
+
+                $lat = gps_to_gps($gps->device_lat);
+                $lon = gps_to_gps($gps->device_lon);
+
+                DB::table('football_court_point')->where('point_id',$gps->point_id)->update(['device_lat'=>$lat,'device_lon'=>$lon]);
+            }
+
+            return "success";
+        }
+
+
         if(false)
         {
             $courtdata =  (new Court())->cut_court_to_small_box(246,40,20);
@@ -188,11 +204,13 @@ class TestController extends Controller
 
 
         if(true){
+            return (new AnalysisMatchData('xx'))->finish_parse_data(1130); //保存射门结果
 
+            return Court::create_visual_match_court(1130);
             //return (new AnalysisMatchData('xx'))->save_matlab_result(1102); //保存射门结果
 
             //return (new AnalysisMatchData('xx'))->save_direction_result(1104); //转向转身
-            //return (new AnalysisMatchData('xx'))->save_run_result(1102); //保存射门结果
+            return (new AnalysisMatchData('xx'))->save_run_result(1130); //保存射门结果
             return (new AnalysisMatchData('xx'))->save_pass_and_touch(1104); //保存射门结果
 
             return (new AnalysisMatchData('xx'))->save_shoot_result(1102); //保存射门结果
