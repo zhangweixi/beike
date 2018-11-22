@@ -479,7 +479,7 @@ class Court{
      * */
     public static function create_court_model_input_file($courtId)
     {
-        $useMobileGps = true;
+        $useMobileGps = false;
 
         $gpsGroupId = CourtModel::where('court_id',$courtId)->value('gps_group_id');
         $db         = DB::table('football_court_point');
