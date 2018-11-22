@@ -69,6 +69,11 @@ class MatchCaculate extends Controller
         $matchId    = $request->input('matchId');
         $delayTime  = now()->addSecond(1);
         $data       = ['matchId'=>$matchId];
+
+        //检查球场是否合格，如果不合格则根据GPS来生成球场
+
+
+        
         AnalysisMatchData::dispatch("finish_parse_data",$data)->delay($delayTime);
 
         return apiData()->send();
@@ -293,11 +298,9 @@ class MatchCaculate extends Controller
 
         //读取结果，存储到数据中
         $courtResult    = file_to_array($dir.$outFile);
-
         $courtInfo      = [];
 
         $positions      = array_keys($colums);
-
         foreach($courtResult as $point)
         {
             $position   = $point[0];

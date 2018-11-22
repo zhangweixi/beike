@@ -61,9 +61,15 @@ function text_to_credit($text)
     return $credit;
 }
 
+/**
+ * 百度GPS和国标GPS的互换
+ * @param $gpsArr 要转换的GPS数组
+ * @param $from int 原始坐标类型
+ * @param $to 转换后的坐标类型
+ * @return array
+ * */
+function bdgps_gbgps($gpsArr,$from,$to){
 
-function gps_to_bdgps($gpsArr)
-{
     $gpsArr = json_encode($gpsArr);
     $gpsArr = json_decode($gpsArr,true);
 
@@ -80,7 +86,7 @@ function gps_to_bdgps($gpsArr)
         }
 
         $str    = implode(";",$tempArr);
-        $url    = "http://api.map.baidu.com/geoconv/v1/?coords={$str}&from=1&to=5&ak=zZSGyxZgUytdiKG135BcnaP6";
+        $url    = "http://api.map.baidu.com/geoconv/v1/?coords={$str}&from={$from}&to={$to}&ak=zZSGyxZgUytdiKG135BcnaP6";
 
         $bdgps  = file_get_contents($url);
         $bdgps  = \GuzzleHttp\json_decode($bdgps,true);
@@ -91,7 +97,29 @@ function gps_to_bdgps($gpsArr)
         }
     }
     return $result;
+
 }
+
+/**
+ * GPS转换成百度GPS
+ * @param $gpsArr array 要转换的数据
+ * @return array
+ * */
+function gps_to_bdgps($gpsArr)
+{
+    return bdgps_gbgps($gpsArr,1,5);
+}
+
+/**
+ * 百度GPS转换到GPS
+ * @param $gpsArr array 转换的数据
+ * @return array
+ * */
+function bdgps_to_gps($gpsArr)
+{
+    return bdgps_gbgps($gpsArr,5,1);
+}
+
 
 
 function logbug($content)

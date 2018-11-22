@@ -479,12 +479,40 @@ class Court{
      * */
     public static function create_court_model_input_file($courtId)
     {
-        $gpsGroupId = CourtModel::where('court_id',$courtId)->value('gps_group_id');
+        $useMobileGps = true;
 
-        $points     = DB::table('football_court_point')
-            ->where('gps_group_id',$gpsGroupId)
-            ->select('position','device_lat','device_lon')
-            ->get()->toArray();
+        $gpsGroupId = CourtModel::where('court_id',$courtId)->value('gps_group_id');
+        $db         = DB::table('football_court_point');
+
+        if($useMobileGps == true){
+
+            $db->select('position','mobile_lat as lat','mobile_lon as lon');
+
+        }else{
+
+            $db->select('position','device_lat as lat','device_lon as lon');
+        }
+
+        $points     = $db->where('gps_group_id',$gpsGroupId)->get()->toArray();
+
+
+        //将百度坐标转换成标准坐标
+        if($useMobileGps == true){
+
+            $gpsArr = [];
+            foreach($points as $p){
+
+                array_push($gpsArr,['lat'=>$p['lat'],'lon'=>$p['lon']]);
+            }
+
+            $gpsArr = bdgps_gbgps($gpsArr);
+
+            foreach($gpsArr as $key => $gps)
+            {
+                $gpsArr[$key]['lat'] = $gps['lat'];
+                $gpsArr[$key]['lon'] = $gps['lon'];
+            }
+        }
 
         foreach($points as $key => $p)
         {

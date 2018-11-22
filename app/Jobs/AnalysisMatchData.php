@@ -816,8 +816,6 @@ class AnalysisMatchData implements ShouldQueue
         $matchInfo      = MatchModel::find($matchId);
         $dataDir        = self::matchdir($matchId);
 
-
-
         //1.与球场相关
         if($matchInfo->court_id >0)
         {
@@ -1270,6 +1268,7 @@ class AnalysisMatchData implements ShouldQueue
         $changeDictResult = $this->save_direction_result($matchId);
 
 
+
         //5.带球与回追
         //$dribbleResult  = $this->save_backrun_result($matchId);
 
@@ -1280,6 +1279,7 @@ class AnalysisMatchData implements ShouldQueue
 
         $globalGrade    = $gradeService->get_global_new_grade($matchInfo->user_id);
 
+
         BaseMatchResultModel::where('match_id',$matchId)->update($matchGrade);
 
         BaseUserAbilityModel::where('user_id',$matchInfo->user_id)->update($globalGrade);
@@ -1289,7 +1289,8 @@ class AnalysisMatchData implements ShouldQueue
     /*
      * @var 足球场信息
      * */
-    static $courtInfo = null;
+    static $courtInfo       = null;
+    public $tempCourtInfo   = null;
 
     static function get_court_info($courtId)
     {
@@ -1320,6 +1321,7 @@ class AnalysisMatchData implements ShouldQueue
      * var 比赛信息
      * */
     private static $tempMatchInfo = null;
+
     /**
      * 比赛信息
      * */
@@ -1639,76 +1641,6 @@ class AnalysisMatchData implements ShouldQueue
         $userAbility->save();
     }
 
-    public $tempCourtInfo = null;
-    /**
-     * 创建各种项目的热点图
-     * @param  $courtId integer 球场ID
-     * @param  $gpsData array GPS列表
-     * @return string
-     * */
-    public function gps_map($courtId,$gpsData)
-    {
-        if($courtId == 0)
-        {
-            return "";
-        }
-
-        foreach ($gpsData as $key => $gps){
-
-            $gpsData[$key]  = ['x'=>$gps['lon'],'y'=>$gps['lat']];
-        }
-
-        $courtInfo  = self::get_court_info($courtId);
-
-        $gpsData    = Court::create_gps_map($courtInfo->pa,$courtInfo->pa1,$courtInfo->pd,$courtInfo->pd1,$gpsData);
-
-        //长20 宽10
-        $result   = [];
-
-        //初始化一个二维数组
-        for($i=0;$i<10;$i++)
-        {
-            for($j=0;$j<20;$j++)
-            {
-                $result[$i][$j] = 0;
-            }
-        }
-
-        //1000/20=50   557/10 =57.7
-
-        foreach($gpsData as $gps){
-
-            $x = intval($gps['x'] / 50);
-            $y = intval($gps['y'] / 57.7);
-
-            if($x > 0 && $x < 20 && $y > 0 && $y < 10)
-            {
-                $result[$y][$x] ++ ;
-            }
-        }
-
-
-        return $result;
-
-        /*==== 以下部分为老算法 ===*/
-
-        //创建GPS图谱
-        if($this->tempCourtInfo == false)
-        {
-            $this->tempCourtInfo    = CourtModel::find($courtId);
-        }
-
-        $courtInfo  = $this->tempCourtInfo;
-        $points     = $courtInfo->boxs;
-        $points     =  \GuzzleHttp\json_decode($points);
-        $court      = new Court();
-        
-        $court->set_centers($points->center);
-
-        $mapData    = $court->create_court_hot_map($gpsList);
-        $mapData    = \GuzzleHttp\json_encode($mapData);
-        return $mapData;
-    }
 
 
     /**
@@ -1871,6 +1803,95 @@ class AnalysisMatchData implements ShouldQueue
         return true;
     }
 
+    /**
+     * 保存步数结果
+     * @param $matchId integer
+     * */
+    public function save_step_result($matchId){
 
+        $stepFile   = matchdir($matchId)."result-step.txt";
+
+        $data       = file_get_contents($stepFile);
+
+        $data       = substr($data,0,20);
+
+        if(strlen($data) == 0){
+
+            return ;
+        }
+
+        $data       = explode(" ",$data);
+        return $data[0];
+    }
+
+    /**
+     * 创建各种项目的热点图
+     * @param  $courtId integer 球场ID
+     * @param  $gpsData array GPS列表
+     * @return string
+     * */
+    public function gps_map($courtId,$gpsData)
+    {
+        if($courtId == 0)
+        {
+            return "";
+        }
+
+        foreach ($gpsData as $key => $gps){
+
+            $gpsData[$key]  = ['x'=>$gps['lon'],'y'=>$gps['lat']];
+        }
+
+        $courtInfo  = self::get_court_info($courtId);
+
+        $gpsData    = Court::create_gps_map($courtInfo->pa,$courtInfo->pa1,$courtInfo->pd,$courtInfo->pd1,$gpsData);
+
+        //长20 宽10
+        $result   = [];
+
+        //初始化一个二维数组
+        for($i=0;$i<10;$i++)
+        {
+            for($j=0;$j<20;$j++)
+            {
+                $result[$i][$j] = 0;
+            }
+        }
+
+        //1000/20=50   557/10 =57.7
+
+        foreach($gpsData as $gps){
+
+            $x = intval($gps['x'] / 50);
+            $y = intval($gps['y'] / 57.7);
+
+            if($x > 0 && $x < 20 && $y > 0 && $y < 10)
+            {
+                $result[$y][$x] ++ ;
+            }
+        }
+
+
+        return $result;
+
+        /*==== 以下部分为老算法 ===*/
+
+        //创建GPS图谱
+        if($this->tempCourtInfo == false)
+        {
+            $this->tempCourtInfo    = CourtModel::find($courtId);
+        }
+
+        $courtInfo  = $this->tempCourtInfo;
+        $points     = $courtInfo->boxs;
+        $points     =  \GuzzleHttp\json_decode($points);
+        $court      = new Court();
+
+        $court->set_centers($points->center);
+
+        $mapData    = $court->create_court_hot_map($gpsList);
+        $mapData    = \GuzzleHttp\json_encode($mapData);
+        return $mapData;
+    }
 }
 
