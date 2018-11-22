@@ -3,6 +3,7 @@
 namespace App\Models\V1;
 
 use App\Common\Geohash;
+use App\Models\Base\BaseUserAbilityModel;
 use Illuminate\Database\Eloquent\Model;
 use DB;
 use PhpParser\Node\Expr\Cast\Object_;
@@ -94,6 +95,12 @@ class UserModel extends Model
         }
         $userInfo['age']        = $age;
         $userInfo['headImg']    = get_default_head($userInfo['headImg']);
+
+        $ability = BaseUserAbilityModel::where('user_id',$id)->select('grade')->first();
+        $userInfo['grade'] = 0;
+        if($ability){
+            $userInfo['grade']  = $ability->grade;
+        }
         return $userInfo;
     }
 
