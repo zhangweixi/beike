@@ -25,8 +25,11 @@ turn_result = Turn(gps,3);
 %% sensor 数据处理
 % 计算步数
 Step_result =  Step_calculate(Sensor_R,Sensor_L,sensor_fs);
+
 % 触球数据：第一列代表左右脚1-右脚、0-左脚,第二列代表有球状态：1-长传、2-短传、3-触球。
-pass = BALL(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
+pass = Total_ball(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
+% pass = BALL(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
+
 % 射门数据
 shoot_result = Shoot(pass,Compass_R,Compass_L,compass_fs,Court_config);
 

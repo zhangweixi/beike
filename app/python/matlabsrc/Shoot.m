@@ -28,7 +28,7 @@ for i = 1:n
     end
     A = round((pass_data(i,3)-0.5)*compass_fs);
     B = round((pass_data(i,3)+0.5)*compass_fs);  
-    if length(find(min(C)<compass_data(A:B,1)&compass_data(A:B,1)<max(C))) > 3
+    if length(find(min(C)<compass_data(A:B,1)&compass_data(A:B,1)<max(C))) > 5
         distance = (distance1+distance2)/2;
         angle = mean(compass_data(A:B,1));
         shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),angle,distance];

@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 2018-10-31
 % 判断震荡程度
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,7 +20,7 @@ if (nargin < 4)
     end 
 else  
     i = 1; % 判断动荡程度（第二种）
-    while i<=n
+    while i <= n
         if data(i) ~= 1
             flag = length(find(data(i:i+sigma2-1) ~= 1));
             if flag >= lamda
@@ -32,23 +32,27 @@ else
         i = i+1;
     end
 end
-% 判断是否有数据
-if isempty(data)
-    output = [];
-    return;
-else
 %% 延迟机制
 DATA(:,1) = find(data~=1); DATA(:,2) = data(data~=1);
-output = []; j = 1; output(j,:) = DATA(1,:);
-for i = 2:length(DATA)
-    if  DATA(i,1)-output(j,1) < sigma1
+% 判断是否有数据
+if isempty(DATA)
+    output = [];
+    return;
+end
+output = []; j = 1; output(j,:) = DATA(1,:); [l,~] = size(DATA);
+if l > 2
+    for i = 2:l
+        if  DATA(i,1)-output(j,1) < sigma1
         [~,m] = max([DATA(i,2) output(j,2)]);
         if m == 1
             output(j,:) = DATA(i,:);
         end
-    else
-        j = j+1;
-        output(j,:) = DATA(i,:);
+        else
+            j = j+1;
+            output(j,:) = DATA(i,:);
+        end
     end
+else
+    output = DATA;
 end
 end

@@ -14,7 +14,7 @@ longpass1 = data(data(:,6) >= amplitude,:);
 % 判断有没有数据
 if isempty(longpass1)
     longpass3 = [];
-    return 
+    return;
 end
 %% 按照时间间隔筛选第二次
 [m,~] = size(longpass1); 
@@ -33,7 +33,7 @@ end
 % 判断有没有数据
 if isempty(longpass2)
     longpass3 = [];
-    return 
+    return;
 end
 % 按照间隔触球次数筛选第三次
 [m,~] = size(longpass2); longpass3 = [];
@@ -56,8 +56,7 @@ while i <= m
         end
     end
     if number <= touchnumber
-        longpass3(k,:) = longpass2(i,:); 
-        k = k+1;
+        longpass3(k,:) = longpass2(i,:); k = k+1;
     end
     i = i+1;
 end

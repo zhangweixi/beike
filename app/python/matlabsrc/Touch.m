@@ -16,7 +16,7 @@ for i = 1:m
 end
 singular = error_ellipse3(sensor(:,1),sensor(:,2),sensor(:,3),0.999); % 第一次筛选
 if isempty(singular)
-    Output = null;
+    Output = [];
     return;
 end
 singular(:,5) = A(singular(:,1)); D = ones(m,1); X_Y = zeros(m,1);
@@ -50,7 +50,7 @@ end
 output = vibrate(D,lamda,sigma1,sigma2);  % 第二次筛选
 % 判断有没有数据
 if isempty(output)
-    Output = null;
+    Output = [];
     return;
 end
 % 第三次选择

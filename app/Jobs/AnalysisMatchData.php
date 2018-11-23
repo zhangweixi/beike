@@ -821,7 +821,7 @@ class AnalysisMatchData implements ShouldQueue
 
         //2.将国际GPS转换成百度GPS
         $inputGps   = $dataDir."gps-L.txt";
-        $outGps     = $dataDir."gps-N.txt";
+        $outGps     = $dataDir."gps-L.txt";
         $cmd        = "node ". app_path('node/gps.js') . " --outtype=file --input={$inputGps} --output={$outGps} ";
         $cmd        = str_replace("\\","/",$cmd);
         $result     = shell_exec($cmd);
