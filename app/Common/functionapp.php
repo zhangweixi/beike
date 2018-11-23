@@ -102,12 +102,18 @@ function bdgps_gbgps($gpsArr,$from,$to){
 
 /**
  * GPS转换成百度GPS
- * @param $gpsArr array 要转换的数据
+ * @param $gps array gps
  * @return array
  * */
-function gps_to_bdgps($gpsArr)
+function gps_to_bdgps($gps)
 {
-    return bdgps_gbgps($gpsArr,1,5);
+    $cmd        = "node ". app_path('node/gps.js') . " --outtype=str --lat={$gps['lat']} --lon={$gps['lon']}";
+    $cmd        = str_replace("\\","/",$cmd);
+    $result     = shell_exec($cmd);
+    $result     = json_decode($result,true);
+
+    return ['lat'=>$result[1],'lon'=>$result[0]];
+
 }
 
 /**
@@ -117,7 +123,7 @@ function gps_to_bdgps($gpsArr)
  * */
 function bdgps_to_gps($gpsArr)
 {
-    return bdgps_gbgps($gpsArr,5,1);
+    return bdgps_gbgps($gpsArr,5,3);
 }
 
 

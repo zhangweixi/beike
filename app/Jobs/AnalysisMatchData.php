@@ -816,22 +816,31 @@ class AnalysisMatchData implements ShouldQueue
         $matchInfo      = MatchModel::find($matchId);
         $dataDir        = self::matchdir($matchId);
 
-        //1.与球场相关
+        //1.同步两台设备的数据一致性
+        $this->sync_file_num_same($matchId);
+
+        //2.将国际GPS转换成百度GPS
+        $inputGps   = $dataDir."gps-L.txt";
+        $outGps     = $dataDir."gps-N.txt";
+        $cmd        = "node ". app_path('node/gps.js') . " --outtype=file --input={$inputGps} --output={$outGps} ";
+        $cmd        = str_replace("\\","/",$cmd);
+        $result     = shell_exec($cmd);
+
+
+        //3.与球场相关
         if($matchInfo->court_id >0)
         {
-            //1.0 生成热点图占用时间比较久，异步调用
+            //3.0 生成热点图占用时间比较久，异步调用
             $params = ['matchId'=>$matchId,'foot'=>"L"];
             self::execute("create_gps_map",$params);
 
 
-            //1.1 拷贝一份球场配置文件到数据比赛中
+            //3.1 拷贝一份球场配置文件到数据比赛中
             $courtInfo  = CourtModel::find($matchInfo->court_id);
             $configFile = "/".$courtInfo->config_file;
             copy(public_path($configFile),$dataDir."court-config.txt");
         }
 
-        //2.同步两台设备的数据一致性
-        $this->sync_file_num_same($matchId);
 
         //3.计算方向角
         $foots      = ["L","R"];

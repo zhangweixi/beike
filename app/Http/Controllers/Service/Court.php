@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Service;
 
+use App\Common\GPS;
 use App\Http\Controllers\Service\GPSPoint;
 use App\Models\V1\CourtModel;
 use DB;
@@ -495,34 +496,15 @@ class Court{
 
         $points     = $db->where('gps_group_id',$gpsGroupId)->get()->toArray();
 
-
-        //将百度坐标转换成标准坐标
-        if($useMobileGps == true){
-
-            $gpsArr = [];
-            foreach($points as $p){
-
-                array_push($gpsArr,['lat'=>$p['lat'],'lon'=>$p['lon']]);
-            }
-
-            $gpsArr = bdgps_gbgps($gpsArr);
-
-            foreach($gpsArr as $key => $gps)
-            {
-                $gpsArr[$key]['lat'] = $gps['lat'];
-                $gpsArr[$key]['lon'] = $gps['lon'];
-            }
-        }
-
         foreach($points as $key => $p)
         {
             $points[$key]   = implode(" ",object_to_array($p));
         }
         $points     = implode("\n",$points);
-        $file       = "uploads/court-config/{$courtId}/border-src.txt";
-        mk_dir(public_path("uploads/court-config/{$courtId}"));
-
-        file_put_contents(public_path($file),$points);
+        $dir        = public_path("uploads/court-config/{$courtId}");
+        $file       = $dir."/border-src.txt";
+        mk_dir($dir);
+        file_put_contents($file,$points);
         return $file;
     }
 

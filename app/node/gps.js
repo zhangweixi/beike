@@ -1,8 +1,15 @@
-
+/*
+* 调用命令
+* 单个GPS node gps.js --outtype=str  --lat=31.344 --lon=121.344
+* 文件GPS node gps.js --outtype=file --input=gps-src.txt --output=reuslt.txt
+*
+* */
 //var arguments 	=  process.argv.splice(2);
 var argv 		= require('../../public/node_modules/yargs').argv;
 var gcoord 		= require('../../public/node_modules/gcoord');
 var fs 			= require('fs');
+var path 		= require('path');
+
 
 
 
