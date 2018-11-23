@@ -1,42 +1,67 @@
-var arguments 	=  process.argv.splice(2);
+
+//var arguments 	=  process.argv.splice(2);
+var argv 		= require('../../public/node_modules/yargs').argv;
 var gcoord 		= require('../../public/node_modules/gcoord');
 var fs 			= require('fs');
 
-if(arguments.length < 2){
 
-	console.log('命令形式: node gps.js data.txt result.txt');
 
-	return;
+if(typeof(argv.outtype) == 'undefined'){
+
+	console.log('need input a output type:--outtype file ,--outtype str');
+
 }
 
-var sourceFile = arguments[0];
-var resultFile = arguments[1];
+var outType = argv.outtype;
 
+if(outType == 'file'){  //文件的形式保存
 
+	var inputFile 	= argv.input;
+	var outputFile 	= argv.output;
 
+	if(typeof(inputFile) == 'undefined' || typeof(outputFile) == 'undefined'){
 
+		console.log('need input file or output file');
 
-
-
-var data = fs.readFileSync(sourceFile);
-	data = data.toString().split("\n");
-
-	data.splice(data.length-1,1);
-
-
-var zeroKeys = [];	
-for(var i in data){
-
-	var d 	= data[i].split(" ");
-	var lon = d[1] * 1;
-	var lat = d[0] * 1;
-
-	data[i] = [lon,lat];
-
-	if(lon == 0)
-	{
-		zeroKeys.push(i);
+		return;
 	}
+
+
+	var data = fs.readFileSync(inputFile);
+		data = data.toString().split("\n");
+
+		data.splice(data.length-1,1);
+
+
+	var zeroKeys = [];	
+	for(var i in data){
+
+		var d 	= data[i].split(" ");
+		var lon = d[1] * 1;
+		var lat = d[0] * 1;
+
+		data[i] = [lon,lat];
+
+		if(lon == 0)
+		{
+			zeroKeys.push(i);
+		}
+	}
+
+}else if(outType == 'str'){ //字符串的形式返回
+
+
+	var lat = argv.lat;
+	var lon = argv.lon;
+
+	if(typeof(lat) == 'undefined' || typeof(lon) == 'undefined'){
+
+		console.log('need lat or lon');
+
+		return;
+	}
+
+	var data = [[lon,lat]];
 }
 
 
@@ -53,6 +78,14 @@ var result = gcoord.transform(
 
 data = result.coordinates;
 
+if(outType == 'str'){
+
+	console.log(data[0]);
+	return;
+}
+
+
+//以下以文件的形式保存
 for(var zeroKey of zeroKeys){
 
 	data[zeroKey] = [0,0];
@@ -66,9 +99,9 @@ for(var gps of data){
 
 }
 
-fs.writeFile(resultFile,gpsString,function(){
+fs.writeFile(outputFile,gpsString,function(){
 
-	console.log('ok');
+	console.log('1');
 });
 
 
