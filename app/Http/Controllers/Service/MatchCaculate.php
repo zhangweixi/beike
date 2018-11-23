@@ -275,7 +275,7 @@ class MatchCaculate extends Controller
         $matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
 
         $command = "python $pythonFile --command=$matlabCmd";
-        mylogger("分析球场数据:".$command);
+        mylogger("分析球场数据:".$command);dd($command);
         if(!file_exists($dir.$inputFile))
         {
 
