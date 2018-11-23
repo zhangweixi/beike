@@ -135,9 +135,10 @@ class CourtController extends Controller
 
 
             //将设备GPS转换成百度GPS
-            $gpsBaidu = gps_to_bdgps([$gpsInfo]);
+            $gpsBaidu = gps_to_bdgps($gpsInfo);
+            //$gpsBaidu  = $gpsBaidu[0];
 
-            $gpsBaidu  = $gpsBaidu[0];
+
 
 
             //检查手机的GPS和设备的GPS的距离
