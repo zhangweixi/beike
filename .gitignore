@@ -3,6 +3,7 @@
 /public/storage
 /storage/*.key
 /vendor
+/access.log
 /.idea
 /.vscode
 /.vagrant
@@ -10,6 +11,8 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+composer.phar
+dump.rdb
 .env
 /app/Http/Controllers/TestController.php
 public/my.txt
@@ -24,7 +27,7 @@ public/python-queue.pid
 app/python/queue.py
 public/vendors/
 app/python/python-queue.pid
-test.txt
+public/MP_verify_CjMqeULNVydelcq8.txt
 app/Http/Controllers/showdoc_api.sh
 storage/
 app/python/pidfile.pid
@@ -32,6 +35,6 @@ app/python/__pycache__/functions.cpython-35.pyc
 app/python/__pycache__/matlabserver.cpython-35.pyc
 app/python/matlabserver.pyc
 public/code/
-
-
+public/git.pull.php
+public/demo.php
 public/node_modules/
