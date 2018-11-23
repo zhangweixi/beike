@@ -502,6 +502,7 @@ class Court{
         }
         $points     = implode("\n",$points);
         $dir        = public_path("uploads/court-config/{$courtId}");
+        mylogger($dir);
         $file       = $dir."/border-src.txt";
         mk_dir($dir);
         file_put_contents($file,$points);
