@@ -99,14 +99,16 @@ class CourtController extends Controller
 
         $gpsInfo    = $this->str_to_gps($gps);
 
-        if($gpsInfo['lon'] == 0 || $gpsInfo['lat'] == 0)
-        {
+        if($gpsInfo['lon'] == 0 || $gpsInfo['lat'] == 0) {
+
             $code   = 2001;
             $msg    = "GPS无效";
 
         }else{
+
             $gpsInfo['lat'] = gps_to_gps($gpsInfo['lat']);
             $gpsInfo['lon'] = gps_to_gps($gpsInfo['lon']);
+            $gpsInfo        = gps_to_bdgps($gpsInfo);
 
             //存储GPS信息
             $gpsPoint   = [
@@ -133,16 +135,8 @@ class CourtController extends Controller
                 $gpsNum = 1000;
             }
 
-
-            //将设备GPS转换成百度GPS
-            $gpsBaidu = gps_to_bdgps($gpsInfo);
-            //$gpsBaidu  = $gpsBaidu[0];
-
-
-
-
             //检查手机的GPS和设备的GPS的距离
-            $distance = gps_distance($lon,$lat,$gpsBaidu['lon'],$gpsBaidu['lat']);
+            $distance = gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
 
             $msg    = "距离【{$distance}】";
 
