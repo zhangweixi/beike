@@ -38,3 +38,4 @@ public/code/
 public/git.pull.php
 public/demo.php
 public/node_modules/
+public/package-lock.json
