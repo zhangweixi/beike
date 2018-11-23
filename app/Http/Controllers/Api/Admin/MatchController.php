@@ -78,21 +78,15 @@ class MatchController extends Controller
 
             //将GPS转成百度GPS
             $baiduGps   = [];
-            $baiduGps['A_D']    = gps_to_bdgps($courtGps->A_D);
-            $baiduGps['AF_DE']  = gps_to_bdgps($courtGps->AF_DE);
-            $baiduGps['F_E']    = gps_to_bdgps($courtGps->F_E);
-            $baiduGps['center'] = gps_to_bdgps($centers);
-
-
+            $baiduGps['A_D']    = $courtGps->A_D;
+            $baiduGps['AF_DE']  = $courtGps->AF_DE;
+            $baiduGps['F_E']    = $courtGps->F_E;
+            $baiduGps['center'] = $centers;
 
             $newGps             = \GuzzleHttp\json_decode($courtInfo->boxs,true);
-            $newGps['baiduGps'] = $baiduGps;
 
-            $courtGps->baiduGps = $baiduGps;
             $courtInfo->boxs    = $courtGps;
-            
-            //更改数据
-            //CourtModel::where('court_id',$matchInfo->court_id)->update(['boxs'=>\GuzzleHttp\json_encode($newGps)]);
+
         }
 
         return apiData()->add('court',$courtInfo)->send();
@@ -170,8 +164,6 @@ class MatchController extends Controller
             array_push($gps,['lon'=>$d[$lonKey],'lat'=>$d[$latKey]]);
         }
 
-        $gps = gps_to_bdgps($gps);
-
         return apiData()->add('gps',$gps)->send();
     }
 
@@ -247,6 +239,7 @@ class MatchController extends Controller
 
         $baiduGpsFile    = "match/".$matchId."/bd-gps.json";
 
+
         if(!Storage::disk('web')->has($baiduGpsFile)) {
 
             $allGps     = [];
@@ -280,7 +273,7 @@ class MatchController extends Controller
             }
 
 
-            $allGps = gps_to_bdgps($allGps);
+            //$allGps = gps_to_bdgps($allGps);
 
             Storage::disk('web')->put($baiduGpsFile,\GuzzleHttp\json_encode($allGps));
         }

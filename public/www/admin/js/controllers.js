@@ -855,7 +855,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
     $scope.draw_court_border = function()
     {
         var AD  = [];
-        var points  = $scope.court.boxs.baiduGps;
+        var points  = $scope.court.boxs;
         for(var p of points.A_D)
         {
             AD.push(getpoint(p.lat,p.lon));
@@ -927,11 +927,16 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
     $scope.draw_court_center = function(){
 
         var center = [];
-        var points  = $scope.court.boxs.baiduGps;
+        var points  = $scope.court.boxs;
+
         for(var p of points.center)
         {
-            center.push(getpoint(p.lat,p.lon));
+            for(var p1 of p){
+
+                center.push(getpoint(p1.lat,p1.lon));    
+            }
         }
+
         $scope.interval = $interval(function(){
 
             if(center.length > 0){

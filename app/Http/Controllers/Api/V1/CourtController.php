@@ -293,30 +293,16 @@ class CourtController extends Controller
         foreach ($gpsInfo as &$data){
 
             $gps    = explode(",",$data['gps']);
-            if($gps[0] > 1000){
-
-                $info = gps_to_bdgps([['lat'=>$gps[0],'lon'=>$gps[1]]]);
-
-            }else{
-
-                $info = gps_to_bdgps([['lat'=>$gps[0],'lon'=>$gps[1]]]);
-            }
-
-
-
-            $data['device_lat']  = $info[0]['lat'];
-            $data['device_lon']  = $info[0]['lon'];
+            $data['device_lat']  = $gps[0];
+            $data['device_lon']  = $gps[1];
         }
-
-
-
         return $gpsInfo;
     }
 
 
-    /*
-   * 绘制球场
-   * */
+    /**
+    * 绘制球场
+    * */
     public function draw_court_all(Request $request)
     {
         $gpsGroupId = $request->input('gpsGroupId');
@@ -334,9 +320,6 @@ class CourtController extends Controller
             array_push($points['mobile'],['lat'=>$point->mobile_lat,'lon'=>$point->mobile_lon]);
             array_push($points['device'],['lat'=>$point->device_lat,'lon'=>$point->device_lon]);
         }
-
-        $points['device']   = gps_to_bdgps($points['device']);
-
         return $points;
     }
 
