@@ -291,6 +291,8 @@ class MatchCaculate extends Controller
             "D"     => 'p_d',
             "E"     => 'p_e',
             "F"     => 'p_f',
+            "Sym_B" => 'p_b1',
+            'Sym_C' => 'P_c1',
             "Sym_A" => 'p_a1',
             "Sym_D" => 'p_d1'
         ];

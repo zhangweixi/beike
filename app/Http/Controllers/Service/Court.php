@@ -463,8 +463,11 @@ class Court{
 
         $b = explode(",",$courtInfo->p_b);
         $c = explode(",",$courtInfo->p_c);
+        $b1= explode(",",$courtInfo->p_b1);
+        $c1= explode(",",$courtInfo->p_c1);
 
-        $config .= implode(" ",$b)." ".implode(" ",$c)." 0";
+        $config .= implode(" ",$b)." ".implode(" ",$c)." 0\n";
+        $config .= implode(" ",$b1)." ".implode(" ",$c1)." 0";
 
         file_put_contents($courtAngleConfiFile,$config);
 
