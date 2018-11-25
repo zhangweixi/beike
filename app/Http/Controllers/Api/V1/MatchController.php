@@ -553,6 +553,12 @@ class MatchController extends Controller
             $match->pass    = $match->pass ?? 0;
             $match->run     = $match->run ?? 0;
             $match->x       = $totalNum - $key;
+
+            $match->run_low_dis = $match->run_low_dis / 1000;
+            $match->run_mid_dis = $match->run_mid_dis / 1000;
+            $match->run_high_dis = $match->run_high_dis / 1000;
+            $match->run_static_dis = $match->run_static_dis / 1000;
+
         }
 
 
