@@ -271,6 +271,16 @@ class ShequMatchController extends Controller
 
         BaseShequMatchModel::where('sq_match_id',$matchId)->decrement('joined_num');
 
+
+        //如果是管理员退出，则将本次活动删除
+
+        $matchInfo      = BaseShequMatchModel::find($matchId);
+
+        if($matchInfo->user_id == $userId)
+        {
+            $matchInfo->deleted_at  = date_time();
+            $matchInfo->save();
+        }
         return apiData()->send(200,'已退出该场比赛');
     }
 
