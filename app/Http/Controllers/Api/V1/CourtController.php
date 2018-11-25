@@ -105,6 +105,10 @@ class CourtController extends Controller
             $gpsInfo['lat'] = gps_to_gps($gpsInfo['lat']);
             $gpsInfo['lon'] = gps_to_gps($gpsInfo['lon']);
             $gpsInfo        = gps_to_bdgps($gpsInfo);
+
+        }else{
+            $gpsInfo['lat'] = 0;
+            $gpsInfo['lon'] = 0;
         }
 
         //2存储GPS信息
