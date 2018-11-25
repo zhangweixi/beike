@@ -520,7 +520,7 @@ class MatchController extends Controller
                         b.run_mid_dis,
                         b.run_high_dis,
                         b.run_static_dis,
-                        b.run_low_dis + b.run_mid_dis +  b.run_high_dis as run
+                        b.run_low_dis + b.run_mid_dis +  b.run_high_dis + b.run_static_dis as run
                   FROM `match` as a 
                   LEFT JOIN match_result as b ON b.match_id = a.match_id 
                   WHERE a.user_id = $userId 
