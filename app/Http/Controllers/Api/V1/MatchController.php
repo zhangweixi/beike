@@ -551,7 +551,7 @@ class MatchController extends Controller
 
             $match->shoot   = $match->shoot ?? 0;
             $match->pass    = $match->pass ?? 0;
-            $match->run     = $match->run ?? 0;
+            $match->run     = $match->run/1000 ?? 0;
             $match->x       = $totalNum - $key;
 
             $match->run_low_dis = $match->run_low_dis / 1000;
