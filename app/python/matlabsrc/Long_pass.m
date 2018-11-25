@@ -55,7 +55,7 @@ while i <= m
             number = number+1;
         end
     end
-    if number <= touchnumber
+    if number < touchnumber
         longpass3(k,:) = longpass2(i,:); k = k+1;
     end
     i = i+1;

@@ -2,13 +2,20 @@
 % 射门判断
 % 2018-09-28
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function shoot_result = Shoot(pass_data,compass_r,compass_l,compass_fs,court)
+function shoot_result = Shoot_Z(pass_data,compass_r,compass_l,compass_fs,court)
 % 判断有没有数据 
 if isempty(pass_data)
     shoot_result = [];
     return;
 end
 [m,~] = size(court); [n,~] = size(pass_data); k = 1; shoot_result = [];
+% 判断每一次触球所在的球场区域
+
+
+
+
+
+
 LAT = (court(m,1)+court(m,3))/2; LON = (court(m,2)+court(m,4))/2;
 Court1 = court(m,1); Court2 = court(m,2); Court3 = court(m,3); Court4 = court(m,4);
 for i = 1:n

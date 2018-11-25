@@ -15,9 +15,10 @@ end
 Total = sortrows(pass,[3 4]); 
 [m,~] = size(Total); j = 1; PASS = []; PASS(j,:) = Total(1,:);
 for i = 2:m
-    if PASS(j,2) == 3 % ¥•«Ú≈–∂œ
-            if Total(i,3) - PASS(j,3) < 1
-                [~,z] = max([Total(i,4),PASS(j,4)]);
+    switch  PASS(j,2)
+        case 3 % ¥•«Ú≈–∂œ
+            if Total(i,3) - PASS(j,3) < 2
+                [~,z] = max([Total(i,7),PASS(j,7)]);
                 if z == 1
                     PASS(j,:) = Total(i,:);
                 end
@@ -25,10 +26,9 @@ for i = 2:m
                 j = j+1;
                 PASS(j,:) = Total(i,:);
             end
-    end
-    if PASS(j,2) == 2   % ∂Ã¥´≈–∂œ
-            if Total(i,3) - PASS(j,3) < 4
-                [~,z] = max([Total(i,4),PASS(j,4)]);
+        case 2   % ∂Ã¥´≈–∂œ
+            if Total(i,3) - PASS(j,3) < 5
+                [~,z] = max([Total(i,7),PASS(j,7)]);
                 if z == 1
                     PASS(j,:) = Total(i,:);
                 end
@@ -36,10 +36,9 @@ for i = 2:m
                 j = j+1;
                 PASS(j,:) = Total(i,:);
             end
-    end
-    if PASS(j,2) == 1    % ≥§¥´≈–∂œ
+        case 1    % ≥§¥´≈–∂œ
             if Total(i,3) - PASS(j,3) < 10
-                [~,z] = max([Total(i,4),PASS(j,4)]);
+                [~,z] = max([Total(i,7),PASS(j,7)]);
                 if z == 1
                     PASS(j,:) = Total(i,:);
                 end
@@ -47,6 +46,6 @@ for i = 2:m
                 j = j+1;
                 PASS(j,:) = Total(i,:);
             end 
-    end  
+    end
 end
 end

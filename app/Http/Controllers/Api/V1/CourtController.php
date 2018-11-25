@@ -94,65 +94,53 @@ class CourtController extends Controller
 
         if(empty($gps))
         {
-            return apiData()->send(2001,"GPS为空");
+            return apiData()->send(2001,"缺少GPS");
         }
 
         $gpsInfo    = $this->str_to_gps($gps);
 
-        if($gpsInfo['lon'] == 0 || $gpsInfo['lat'] == 0) {
-
-            $code   = 2001;
-            $msg    = "GPS无效";
-
-        }else{
+        //1手机PGS一直有效,即便设备无效也要存储
+        if($gpsInfo['lon'] != 0 && $gpsInfo['lat'] != 0) {
 
             $gpsInfo['lat'] = gps_to_gps($gpsInfo['lat']);
             $gpsInfo['lon'] = gps_to_gps($gpsInfo['lon']);
             $gpsInfo        = gps_to_bdgps($gpsInfo);
-
-            //存储GPS信息
-            $gpsPoint   = [
-                "user_id"       => $userId,
-                "gps_group_id"  => $gpsGroupId,
-                "position"      => $position,
-                "mobile_lat"    => $lat,
-                "mobile_lon"    => $lon,
-                "device_lat"    => $gpsInfo['lat'],
-                "device_lon"    => $gpsInfo['lon'],
-                'created_at'    => date_time()
-            ];
-
-            DB::table('football_court_point')->insert($gpsPoint);
-
-            //检查点数是否达到一定要求
-
-            if($position == 'A')
-            {
-                $gpsNum = DB::table('football_court_point')->where('gps_group_id',$gpsGroupId)->where('position',$position)->count();
-
-            }else{
-
-                $gpsNum = 1000;
-            }
-
-            //检查手机的GPS和设备的GPS的距离
-            $distance = gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
-
-            $msg    = "距离【{$distance}】";
-
-            if($distance > 3 && $gpsNum < 20) {
-
-                $code   = 2004;
-                $msg    = $msg;
-
-            } else {
-
-                $code   = 200;
-                $msg    = $msg."，开始";
-            }
         }
 
-        return apiData()->send($code,$msg);
+        //2存储GPS信息
+        $gpsPoint   = [
+            "user_id"       => $userId,
+            "gps_group_id"  => $gpsGroupId,
+            "position"      => $position,
+            "mobile_lat"    => $lat,
+            "mobile_lon"    => $lon,
+            "device_lat"    => $gpsInfo['lat'],
+            "device_lon"    => $gpsInfo['lon'],
+            'created_at'    => date_time()
+        ];
+
+        DB::table('football_court_point')->insert($gpsPoint);
+
+        //3检查手机的GPS和设备的GPS的距离
+        $distance = gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
+
+        //如果是A点，检查数量是否达到20次检查
+
+        $gpsNum = 1000;
+
+        if($position == 'A' && $distance > 1) {
+
+            $gpsNum     = DB::table('football_court_point')->where(["gps_group_id"=>$gpsGroupId,"position"=>"A"])->count();
+        }
+
+        if($gpsNum < 20){
+
+            return apiData()->send(2004,"偏差" . $distance);
+
+        }else {
+
+            return apiData()->send(200, "偏差:" . $distance);
+        }
     }
 
     /**

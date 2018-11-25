@@ -5,7 +5,7 @@ angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt';
 % 添加路径
 addpath(genpath(pathname)); 
 % Sensor
-sensor_r = importdata(sensor_L)/1000; Time = 1/100:1/100:length(sensor_r)/100;
+sensor_r = importdata(sensor_R)/1000; Time = 1/100:1/100:length(sensor_r)/100;
 sensor_l = importdata(sensor_L)/1000; 
 
 GPS = importdata(gps_L)/100;
@@ -122,11 +122,11 @@ plot(Output(:,1),Output(:,2),'r.'); hold on
 % plot(longpass3(:,1),longpass3(:,6),'*'); 
 %% 判断长短传球
 % 按照幅值筛选第一次
-longpass1 = Output(Output(:,6) >= 0.003,:);
+longpass1 = Output(Output(:,6) >= 0.01,:);
 plot(longpass1(:,1),longpass1(:,2),'ko'); hold on
 % 按照时间间隔筛选第二次
 [m,~] = size(longpass1); 
-j = 1; interval = 4;
+j = 1; interval = 5;
 longpass2 = []; longpass2(j,:) = longpass1(1,:);
 for i = 2:m
     if  longpass1(i,1) - longpass2(j,1) < interval * fs
@@ -166,7 +166,11 @@ while i <= m
     end
     i = i+1;
 end
-plot(longpass3(:,1),longpass3(:,2),'r*'); 
+plot(longpass3(:,1),longpass3(:,2),'r*'); hold on
 
-longpass3 = Long_pass(Output,0.25,10,6,100,n_r); % 判断长传
+% longpass3 = Long_pass(Output,0.25,10,6,100,n_r); % 判断长传
+% plot(longpass3(:,1),longpass3(:,2),'r*-'); 
+
+shortpass3 = Long_pass(Output,0.01,5,3,100,n_r); % 判断短传
+plot(shortpass3(:,1),shortpass3(:,2),'r*-'); 
 
