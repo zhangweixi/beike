@@ -60,6 +60,7 @@ class ShequMatchModel extends Model{
         $db = DB::table('shequ_match_user as a')
             ->leftJoin('shequ_match as b','b.sq_match_id','=','a.sq_match_id')
             ->select("b.*")
+            ->whereNull('b.deleted_at')
             ->where('a.user_id',$userId);
 
         if($beginTime)
@@ -91,6 +92,7 @@ class ShequMatchModel extends Model{
     {
         $matches    = DB::table('shequ_match')
             ->select($this->matchColum)
+            ->whereNull('deleted_at')
             ->orderBy('begin_time','desc')
             ->paginate(20);
 
