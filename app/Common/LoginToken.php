@@ -71,7 +71,7 @@ class LoginToken
 
 
 
-    public function get_toke()
+    public function get_token()
     {
         return $this->_token;
     }

@@ -242,7 +242,7 @@ class UserController extends Controller
     private function login_action($userInfo,$isNewUser=false)
     {
         $loginToken             = new LoginToken();
-        $token                  = $loginToken->user($userInfo['id'])->cache()->get_toke();
+        $token                  = $loginToken->user($userInfo['id'])->create_token()->cache()->get_token();
         $userInfo['token']      = $token;
         $userInfo['isNewUser']  = $isNewUser == true ? 1 : 0;
         $userInfo['birthday']   = $userInfo['birthday'] == "0000-00-00" ? "" : $userInfo['birthday'];
