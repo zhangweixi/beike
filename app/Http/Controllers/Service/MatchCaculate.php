@@ -208,10 +208,10 @@ class MatchCaculate extends Controller
         $matchId        = $request->input('matchId');
         $data           = ['matchId'=>$matchId];
 
-        (new AnalysisMatchData("run_matlab"))->run_matlab($matchId);
+        //(new AnalysisMatchData("run_matlab"))->run_matlab($matchId);
 
-        //$delayTime      = now()->addSecond(1);
-        //AnalysisMatchData::dispatch('run_matlab',$data)->delay($delayTime);
+        $delayTime      = now()->addSecond(1);
+        AnalysisMatchData::dispatch('run_matlab',$data)->delay($delayTime);
 
         return apiData()->send();
     }
