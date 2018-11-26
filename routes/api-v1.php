@@ -1,18 +1,10 @@
 <?php
-
-use Illuminate\Http\Request;
-
 $api = app('Dingo\Api\Routing\Router');
-//,'apiSign'
-$api->version('v1',['prefix'=>"api/v1",'middleware'=>['saveApiData'],'namespace'=>"App\Http\Controllers\Api\V1"],function ($api)
+//$middleware = ['saveApiData','apiSign','checkToken'];
+$middleware = ['saveApiData','checkToken'];
+$api->version('v1',['prefix'=>"api/v1","middleware"=>$middleware,'namespace'=>"App\Http\Controllers\Api\V1"],function ($api)
 {
-    $api->post("test","RestFulController@test");
-    $api->post("checkCode","RestFulController@check_mobile_code");
-
-    //$api->post('/match/uploadMatchData','MatchController@upload_match_data');
     $api->any('/match/{action}',       'MatchController@action');
-    $api->post('/match1/{action}',      'Match1Controller@action');
-
 
     $api->post('/user/{action}',        'UserController@action');
 
@@ -33,7 +25,5 @@ $api->version('v1',['prefix'=>"api/v1",'middleware'=>['saveApiData'],'namespace'
 
 
     $api->any('/test/{action}',         'TestController@action');
-
-
 
 });

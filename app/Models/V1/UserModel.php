@@ -135,17 +135,6 @@ class UserModel extends Model
     }
 
 
-    /**
-     * 刷新token
-     * @param $userId   integer 用户ID
-     * @return string
-     * */
-    public function fresh_token($userId)
-    {
-        $token  = create_token($userId);
-        $this->update_user_info($userId,['token'=>$token]);
-        return $token;
-    }
 
 
     /**

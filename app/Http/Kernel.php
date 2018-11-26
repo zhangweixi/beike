@@ -59,6 +59,7 @@ class Kernel extends HttpKernel
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'apiSign'=>\App\Http\Middleware\ApiSign::class,
-        'saveApiData'=>\App\Http\Middleware\SaveApiData::class
+        'saveApiData'=>\App\Http\Middleware\SaveApiData::class,
+        'checkToken'=> \App\Http\Middleware\CheckToken::class,
     ];
 }

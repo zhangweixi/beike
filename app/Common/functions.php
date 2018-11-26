@@ -545,44 +545,6 @@ function tofeng_to_line($str)
 }
 
 
-/**
- * 创建token
- * */
-function create_token($userId)
-{
-    $prev   = 10000000 + $userId;
-    $token  = $prev.md5(create_member_number());
-    return base64_encode($token);
-}
-
-class ParseToken{
-
-    public $userId;
-    public $token;
-}
-
-/**
- * 解析token
- * */
-function parse_token(\Illuminate\Http\Request $request)
-{
-    $token  = $request->header('token');
-    if($token)
-    {
-
-        $token  = base64_decode($token);
-        $userId = substr($token,0,8);
-        $userId = $userId - 10000000;
-        $tokenInfo = new ParseToken();
-        $tokenInfo->token   = $token;
-        $tokenInfo->userId  = $userId;
-        return $tokenInfo;
-    }
-
-    return false;
-}
-
-
 
 /**
  * 反转十六进制

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Common\LoginToken;
 use App\Models\Base\BaseFootballCourtTypeModel;
 use App\Models\V1\DeviceModel;
 use App\Models\V1\FriendModel;
@@ -121,18 +122,9 @@ class UserController extends Controller
     public function login_out(Request $request){
 
         $userID     = $request->input('userId');
-        $tokenInfo  = parse_token($request);
-
-        if($userID == $tokenInfo->userId)
-        {
-            $userModel  = new UserModel();
-            $userModel->update_user_info($userID,['token'=>'']);
-            return apiData()->send();
-
-        }else{
-
-            return apiData()->send(3001,'无法退出，您没有权限');
-        }
+        $loginToken = new LoginToken();
+        $loginToken->user($userID)->forget();
+        return apiData()->send();
     }
 
     /**
@@ -249,9 +241,9 @@ class UserController extends Controller
      * */
     private function login_action($userInfo,$isNewUser=false)
     {
-        $userModel  = new UserModel();
-        $token      = $userModel->fresh_token($userInfo['id']);
-        $userInfo['token'] = $token;
+        $loginToken             = new LoginToken();
+        $token                  = $loginToken->user($userInfo['id'])->cache()->get_toke();
+        $userInfo['token']      = $token;
         $userInfo['isNewUser']  = $isNewUser == true ? 1 : 0;
         $userInfo['birthday']   = $userInfo['birthday'] == "0000-00-00" ? "" : $userInfo['birthday'];
         header('Token:'.$token);
