@@ -122,7 +122,7 @@
         </div>
 
 
-        <div class="map">
+     <!--    <div class="map">
             <h2>中速</h2>
             <div id="map-run-middle"  class="canvas"></div>
             <div class="colors">
@@ -131,7 +131,7 @@
                 <span>高</span>
             </div>
         </div>
-
+ -->
         <div class="map">
             <h2>低速</h2>
             <div id="map-run-low"  class="canvas"></div>
@@ -142,6 +142,7 @@
             </div>
         </div>
 
+<!-- 
         <div class="map">
             <h2>走动</h2>
             <div id="map-run-static"  class="canvas"></div>
@@ -151,7 +152,7 @@
                 <span>高</span>
             </div>
         </div>
-
+ -->
         <div class="map">
             <h2>射门</h2>
             <div  class="canvas">
@@ -248,9 +249,33 @@
 
 
             draw_hot_map("map-run-high",courtWidth,matchResult.map_speed_high);
-            draw_hot_map("map-run-middle",courtWidth,matchResult.map_speed_middle);
-            draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
-            draw_hot_map("map-run-static",courtWidth,matchResult.map_speed_static);
+
+            //将中低速度放在一个热点图
+
+            var mapData = JSON.parse(matchResult.map_speed_low);
+
+            var dataArr = [
+                JSON.parse(matchResult.map_speed_middle),
+                JSON.parse(matchResult.map_speed_static)
+            ];
+
+            for(var singleData of dataArr){
+
+                for(var key1 in singleData){
+
+                    for(key2 in singleData[key1]){
+
+                        mapData[key1][key2] += singleData[key1][key2];
+
+                    }
+                }
+            }
+            
+            draw_hot_map("map-run-low",courtWidth,mapData);
+
+            //draw_hot_map("map-run-middle",courtWidth,matchResult.map_speed_middle);
+            //draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
+            //draw_hot_map("map-run-static",courtWidth,matchResult.map_speed_static);
 
             draw_point_map('pass-long',matchResult.map_pass_long);
             draw_point_map('pass-short',matchResult.map_pass_short);
@@ -348,7 +373,11 @@
             return 0;
         }
 
-        data            = JSON.parse(data);
+        if(typeof(data) == 'string'){
+
+            data            = JSON.parse(data);
+        }
+        
 
         var option      = {container: document.querySelector('#'+eleId)};
         var heatmap1    = h337.create(option);
