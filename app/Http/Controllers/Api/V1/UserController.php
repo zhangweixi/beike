@@ -440,7 +440,7 @@ class UserController extends Controller
             [
                 'name'      => "跑动距离",
                 'key'       => 'runDis',
-                'y_title'   => "KM",
+                'y_title'   => "km",
                 'x_title'   => "时间",
                 'data'      => [],
             ],
@@ -480,7 +480,7 @@ class UserController extends Controller
 
             $match->passNum         = $match->pass_s_num + $match->pass_l_num;
             $match->runDis          = ($match->run_low_dis + $match->run_mid_dis + $match->run_high_dis + $match->run_static_dis)/1000;
-            $match->run_speed_max   = (int)($match->run_speed_max*60*60/1000);
+            $match->run_speed_max   = speed_second_to_hour($match->run_speed_max);
 
             foreach($maps as &$map)
             {
