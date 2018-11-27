@@ -27,7 +27,7 @@ class AdminController extends Controller
 
         }
 
-        $token  = create_token($adminInfo->admin_id);
+        $token  = create_member_number($adminInfo->admin_id);
 
         AdminModel::where('admin_id',$adminInfo->admin_id)->update(['token'=>$token]);
 
