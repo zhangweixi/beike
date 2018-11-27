@@ -1293,7 +1293,10 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseUserAbilityModel::where('user_id',$matchInfo->user_id)->update($globalGrade);
 
-        return "ok";
+        //通知客户端
+        jpush_content("比赛通知","亲，您的比赛已经出结果啦!",4001,1,$matchInfo->user_id,['matchId'=>$matchId]);
+
+        return "success";
     }
     /*
      * @var 足球场信息
@@ -1458,6 +1461,7 @@ class AnalysisMatchData implements ShouldQueue
         foreach ($speedType as $key => $type)
         {
             $speedType[$key]['gps'] = \GuzzleHttp\json_encode($this->gps_map($matchInfo->court_id,$type['gps']));
+
         }
 
         //11.修改单场比赛的结果
