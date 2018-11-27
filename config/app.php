@@ -180,7 +180,7 @@ return [
         Dingo\Api\Provider\LaravelServiceProvider::class,
         Overtrue\LaravelWeChat\ServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
-
+        SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
 
     ],
 
@@ -232,7 +232,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'EasyWeChat' => Overtrue\LaravelWeChat\Facade::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
-
+        'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
     ],
 
 ];

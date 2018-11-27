@@ -1255,6 +1255,14 @@ class AnalysisMatchData implements ShouldQueue
         $baseUrl    = config('app.matlabhost')."/uploads/match/{$matchId}/";
         $matchInfo  = self::get_temp_match_info($matchId);
 
+        //比赛数据处理完毕，将比赛数量增加1 检查是否有了分数，有分数表示已经累积过
+        $grade      = BaseMatchResultModel::where('match_id',$matchId)->pluck("grade");
+        if($grade == 0){
+
+            BaseUserAbilityModel::where('user_id',$matchInfo->user_id)->increment("match_num");
+        }
+
+
         foreach($files as $file)
         {
             file_put_contents($matchDir.$file,file_get_contents($baseUrl.$file));
