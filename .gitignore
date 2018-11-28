@@ -41,3 +41,5 @@ public/node_modules/
 public/package-lock.json
 *.asv
 public/qr/
+public/gitupdate.php
+composer-setup.php
