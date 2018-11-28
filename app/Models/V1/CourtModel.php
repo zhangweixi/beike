@@ -22,5 +22,17 @@ class CourtModel extends Model
         return $courtId;
     }
 
+    /**
+     * @param $userId integer 用户ID
+     * @return integer
+     * */
+    public function add_empty_court($userId)
+    {
+        $courtData  = [
+            'user_id'       => $userId,
+            'gps_group_id'  => 0
+        ];
 
+        return $this->add_court($courtData);
+    }
 }

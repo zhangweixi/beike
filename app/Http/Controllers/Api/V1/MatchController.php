@@ -6,6 +6,7 @@ use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\Base\BaseUserAbilityModel;
+use App\Models\V1\CourtModel;
 use App\Models\V1\UserModel;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;
@@ -36,11 +37,21 @@ class MatchController extends Controller
         return $this->create_match($request);
     }
 
+
+    /**
+     * 创建比赛
+     *
+     * */
     public function create_match(Request $request)
     {
+        $courtModel = new CourtModel();
+        $courtId    = $request->input('courtId',0);
+        $userId     = $request->input('userId',0);
+        $courtId    = $courtId > 0 ? $courtId : $courtModel->add_empty_court($userId);
+
         $matchInfo  = [
-            'user_id'   => $request->input('userId'),
-            'court_id'  => $request->input('courtId',0),
+            'user_id'   => $userId,
+            'court_id'  => $courtId
         ];
 
         $matchModel = new MatchModel();
@@ -82,6 +93,7 @@ class MatchController extends Controller
         {
             BaseUserAbilityModel::create(['user_id'=>$userId]);
         }
+
 
         //初始化比赛结果表
         BaseMatchResultModel::create(['match_id'=>$matchId]);
