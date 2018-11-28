@@ -279,9 +279,9 @@ class AnalysisMatchData implements ShouldQueue
 
             foreach($matchData['data'] as $data){
 
-                $type   = $data['type'];
+                $flagType   = $data['type'];
 
-                if($type == ""){
+                if($flagType == ""){
 
                     switch ($type)
                     {
@@ -293,7 +293,7 @@ class AnalysisMatchData implements ShouldQueue
 
                 }else{
 
-                    if($data['type'] == "E")    //END 数据结束
+                    if($flagType == "E")    //END 数据结束
                     {
                         $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
                     }
