@@ -150,7 +150,7 @@
         {
             gpsGroupId = getQueryVariable('gpsGroupId');
         }
-        var url = "/api/v1/court/draw_court?gpsGroupId="+gpsGroupId;
+        var url = "/api/admin/court/draw_court?gpsGroupId="+gpsGroupId;
         $.post(url).success(function(res){
 
 
@@ -193,7 +193,7 @@
             gpsGroupId = getQueryVariable('gpsGroupId');
         }
 
-        var url = "/api/v1/court/draw_court_all?gpsGroupId="+gpsGroupId;
+        var url = "/api/admin/court/draw_court_all?gpsGroupId="+gpsGroupId;
         $.post(url).success(function(res){
 
 

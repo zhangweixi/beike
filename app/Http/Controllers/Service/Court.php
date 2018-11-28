@@ -398,20 +398,17 @@ class Court{
         $E          = new GPSPoint($pe[0],$pe[1]);
         $F          = new GPSPoint($pf[0],$pf[1]);
 
-
-        $court      = new Court();
-
         if($latNum > 0)
         {
-            $court->set_lat_num($latNum);
+            $this->set_lat_num($latNum);
         }
 
         if($lonNum > 0)
         {
-            $court->set_lon_num($lonNum);
+            $this->set_lon_num($lonNum);
         }
 
-        $boxPoints  = $court->calculate_court($A,$B,$C,$D,$E,$F);
+        $boxPoints  = $this->calculate_court($A,$B,$C,$D,$E,$F);
 
         if($courtInfo->is_clockwise == 1){
 
@@ -538,7 +535,7 @@ class Court{
      * @param $matchId int 球场ID
      * @return mixed
      * */
-    static function create_visual_match_court($matchId)
+    static function create_visual_match_court($matchId,$courtId)
     {
         $file       = matchdir($matchId)."gps-L.txt";
         $gpsArr     = file_to_array($file);
@@ -688,7 +685,7 @@ class Court{
 
 
         /*
-        * A           F              A1  A1
+        * A           F              A1
         *
         * B
         *
@@ -783,22 +780,47 @@ class Court{
             }while($courtScale > 1.7);
         }
 
+        //计算球门的位置
+
+        $blat   = $pa['lat'] + (($pd['lat'] - $pa['lat']) / 10 * 3);
+        $blon   = $pa['lon'] + (($pd['lon'] - $pa['lon']) / 10 * 3);
+
+        $clat   = $pa['lat'] + (($pd['lat'] - $pa['lat']) / 10 * 7);
+        $clon   = $pa['lon'] + (($pd['lon'] - $pa['lon']) / 10 * 7);
+
+        $b1lat  = $pa1['lat'] + (($pd1['lat'] - $pa1['lat']) / 10 * 3);
+        $b1lon  = $pa1['lon'] + (($pd1['lon'] - $pa1['lon']) / 10 * 3);
+
+        $c1lat  = $pa1['lat'] + (($pd1['lat'] - $pa1['lat']) / 10 * 7);
+        $c1lon  = $pa1['lon'] + (($pd1['lon'] - $pa1['lon']) / 10 * 7);
+        $pb     = ['lat'=>$blat,'lon'=>$blon];
+        $pc     = ['lat'=>$clat,'lon'=>$clon];
+        $pb1    = ['lat'=>$b1lat,'lon'=>$b1lon];
+        $pc1    = ['lat'=>$c1lat,'lon'=>$c1lon];
+
         $courtTopPoints = [
             'p_a'   => $pa,
+            'p_b'   => $pb,
+            'p_c'   => $pc,
             'p_d'   => $pd,
             'p_a1'  => $pa1,
-            'p_d1'  => $pd1,
+            'p_b1'  => $pb1,
+            'p_c1'  => $pc1,
+            'p_d1'  => $pd1
         ];
 
-
-        //计算球门的位置
         foreach ($courtTopPoints as &$point)
         {
-            $point = implode(",",$point);
+            $point = $point['lat'].",".$point['lon'];
+
         }
 
+        //计算高宽
+        $courtTopPoints['width']        = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
+        $courtTopPoints['length']       = gps_distance($pa['lon'],$pa['lat'],$pa1['lon'],$pa1['lat']);
+
         //更新球场
-        DB::table("football_court")->where('court_id',311)->update($courtTopPoints);
+        DB::table("football_court")->where('court_id',$courtId)->update($courtTopPoints);
     }
 
 
@@ -1106,5 +1128,44 @@ class Court{
         $y = ($y - $originY) * $pery;
 
         return ['x'=>$x,'y'=>$y];
+    }
+
+    /**
+     * 切割球场和配置射门角度
+     * 1.切割球场
+     * 2.创建球场配置文件
+     * @param $courtId integer 球场ID
+     *
+     * */
+    public function cut_court_to_box_and_create_config($courtId)
+    {
+        $boxs           = $this->cut_court_to_small_box($courtId);          //划分球场成多个区域图
+
+        $configFile     = $this->create_court_gps_angle_config($courtId);   //球场角度配置文件
+
+        $courtData      = ['boxs'=>\GuzzleHttp\json_encode($boxs),"config_file"=>$configFile];
+
+        CourtModel::where('court_id',$courtId)->update($courtData);
+    }
+
+
+
+    /**
+     * 检查球场是否符合标准
+     * @param $width integer 宽度
+     * @param $length integer 高度
+     * @return integer
+     * */
+    static function check_court_is_valid($width,$length)
+    {
+        //检验球场是否合格
+        $scale  = $length / $width;
+
+        if($width < 2 || $width > 100 || $length < 4  || $length > 200 || $scale < 1.2 || $scale > 2.5 ) {
+
+            return false;
+        }
+
+        return true;
     }
 }

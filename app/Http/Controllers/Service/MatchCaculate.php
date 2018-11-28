@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Service;
 use App\Common\Http;
 use App\Http\Controllers\Controller;
 use App\Models\V1\CourtModel;
+use App\Models\V1\MatchModel;
 use Dingo\Api\Http\Request;
 use App\Jobs\AnalysisMatchData;
 use DB;
@@ -65,17 +66,28 @@ class MatchCaculate extends Controller
      * */
     public function finish_parse_data(Request $request)
     {
-
         $matchId    = $request->input('matchId');
-        $delayTime  = now()->addSecond(1);
-        $data       = ['matchId'=>$matchId];
+
+        $courtInfo  = MatchModel::get_match_court($matchId);
+
+        $courtId    = $courtInfo->court_id;
 
         //检查球场是否合格，如果不合格则根据GPS来生成球场
+        if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
+        {
+            Court::create_visual_match_court($matchId,$courtId);
+        }
 
+        (new Court())->cut_court_to_box_and_create_config($courtId); //创建配置文件
+
+        $delayTime  = now()->addSecond(1);
+        $data       = ['matchId'=>$matchId];
         AnalysisMatchData::dispatch("finish_parse_data",$data)->delay($delayTime);
 
         return apiData()->send();
     }
+
+
 
     /**
      * 创建罗盘和sensor的文件
@@ -108,13 +120,6 @@ class MatchCaculate extends Controller
 
         //创建角度转换文件
         $job->compass_translate($infile,$outfile);
-
-
-        //计算角度
-        //$job->compass_translate()
-
-        //调用算法系统
-
 
         return apiData()->send();
     }
@@ -333,30 +338,11 @@ class MatchCaculate extends Controller
 
         CourtModel::where('court_id',$courtId)->update($courtInfo);
 
-        //调用matlab结束，开启其他工作
+        //球场解析结束
+        mylogger("球场解析成功,courtId:".$courtId);
 
-        $host   = str_replace("http://","",config('app.apihost'));
-        $path   = "/api/matchCaculate/call_matlab_court_finish?courtId=".$courtId;
-        Http::sock($host,$path);
     }
 
 
-    /**
-     * 球场工作结束
-     * 1.切割球场
-     * 2.创建球场配置文件
-     * @param $request Request
-     * */
-    public function call_matlab_court_finish(Request $request)
-    {
-        $courtId        = $request->input('courtId');
 
-        $courtService   = new Court();
-        $boxs           = $courtService->cut_court_to_small_box($courtId);          //划分球场成多个区域图
-        $configFile     = $courtService->create_court_gps_angle_config($courtId);   //球场角度配置文件
-
-        $courtData      = ['boxs'=>\GuzzleHttp\json_encode($boxs),"config_file"=>$configFile];
-
-        CourtModel::where('court_id',$courtId)->update($courtData);
-    }
 }

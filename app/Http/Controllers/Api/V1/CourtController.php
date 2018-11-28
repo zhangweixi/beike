@@ -263,57 +263,8 @@ class CourtController extends Controller
     }
 
 
-    /*
-     * 绘制球场
-     * */
-    public function draw_court(Request $request)
-    {
-        $gpsGroupId = $request->input('gpsGroupId');
-
-        $gpsInfo    = DB::table('football_court')->where('gps_group_id',$gpsGroupId)->first();
 
 
-        $gpsInfo    = [
-            ["position"=>"A","gps"=>$gpsInfo->p_a],
-            //["position"=>"B","gps"=>$gpsInfo->p_b],
-            //["position"=>"C","gps"=>$gpsInfo->p_c],
-            ["position"=>"D","gps"=>$gpsInfo->p_d],
-            ["position"=>"A1","gps"=>$gpsInfo->p_a1],
-            ["position"=>"D1","gps"=>$gpsInfo->p_d1],
-        ];
-
-        foreach ($gpsInfo as &$data){
-
-            $gps    = explode(",",$data['gps']);
-            $data['device_lat']  = $gps[0];
-            $data['device_lon']  = $gps[1];
-        }
-        return $gpsInfo;
-    }
-
-
-    /**
-    * 绘制球场
-    * */
-    public function draw_court_all(Request $request)
-    {
-        $gpsGroupId = $request->input('gpsGroupId');
-        $sql = "SELECT * from football_court_point 
-                WHERE gps_group_id = '{$gpsGroupId}' ";
-
-        $gpsInfo    = DB::select($sql);
-        $points     = [
-            'device'=>[],
-            'mobile'=>[]
-        ];
-
-        foreach($gpsInfo as $point)
-        {
-            array_push($points['mobile'],['lat'=>$point->mobile_lat,'lon'=>$point->mobile_lon]);
-            array_push($points['device'],['lat'=>$point->device_lat,'lon'=>$point->device_lon]);
-        }
-        return $points;
-    }
 
 
     /*
