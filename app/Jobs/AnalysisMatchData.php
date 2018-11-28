@@ -1185,7 +1185,7 @@ class AnalysisMatchData implements ShouldQueue
      * @param $matchId
      * */
     public function run_matlab($matchId)
-    {
+    {   mylogger("准备计算工作:".$matchId);
         $matchInfo      = MatchModel::find($matchId);
         $courtId        = $matchInfo->court_id;
         $localDir       = self::matchdir($matchId);
@@ -1238,7 +1238,7 @@ class AnalysisMatchData implements ShouldQueue
 
             file_put_contents($file,$content);
         }
-
+        mylogger("文件拷贝完毕");
         //===========将远程的文件拉取到本地来 结束==============
 
         //LanQi('','sensor-R.txt', 'sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt','http://dev1.api.launchever.cn/api/admin/match/get_visual_match_court?matchId=123')
