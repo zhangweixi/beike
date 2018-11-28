@@ -327,8 +327,8 @@ class MatchCaculate extends Controller
         $isClockWise                = Court::judge_court_is_clockwise($PA,$PD,$PE);;
         $courtInfo['is_clockwise']  = $isClockWise ? 1 : 0;
 
-        $courtInfo['width']     = gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat);
-        $courtInfo['length']    = gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat);
+        $courtInfo['width']     = round(gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat),2);
+        $courtInfo['length']    = round(gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat),2);
 
 
         CourtModel::where('court_id',$courtId)->update($courtInfo);
