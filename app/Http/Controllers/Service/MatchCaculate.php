@@ -72,8 +72,6 @@ class MatchCaculate extends Controller
 
         //检查球场是否合格，如果不合格则根据GPS来生成球场
 
-
-        
         AnalysisMatchData::dispatch("finish_parse_data",$data)->delay($delayTime);
 
         return apiData()->send();
@@ -313,17 +311,25 @@ class MatchCaculate extends Controller
             }
         }
 
+
+
         //判断球场是否是顺时针
         $pa     = explode(",",$courtInfo['p_a']);
-        $pb     = explode(",",$courtInfo['p_b']);
+        $pd     = explode(",",$courtInfo['p_d']);
         $pe     = explode(",",$courtInfo['p_e']);
+        $pa1    = explode(",",$courtInfo['p_a1']);
 
         $PA     = new GPSPoint($pa[1],$pa[0]);
-        $PD     = new GPSPoint($pb[1],$pb[0]);
+        $PD     = new GPSPoint($pd[1],$pd[0]);
         $PE     = new GPSPoint($pe[1],$pe[0]);
+        $PA1    = new GPSPoint($pa1[1],$pa1[0]);
 
         $isClockWise                = Court::judge_court_is_clockwise($PA,$PD,$PE);;
         $courtInfo['is_clockwise']  = $isClockWise ? 1 : 0;
+
+        $courtInfo['width']     = gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat);
+        $courtInfo['height']    = gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat);
+
 
         CourtModel::where('court_id',$courtId)->update($courtInfo);
 

@@ -249,43 +249,51 @@ class AnalysisMatchData implements ShouldQueue
         //多场数据
         $matchesData    = [];
 
-        foreach($datas as $key=>$data)
+        foreach($datas as $data)
         {
-            //获得比赛场次 开始时间 结束时间  如果在两者之间 则为该场比赛的
             $matchId    = $data['match_id'];
-            if(!isset($matchesData[$matchId]))
-            {
-                $matchesData[$matchId]  = [
 
+            if(isset($matchesData[$matchId]))
+            {
+                array_push($matchesData[$matchId]['data'],array_merge($data,$dataBaseInfo));
+
+            }else{
+
+                $matchesData[$matchId]  = [
                     'isFinish'  => 0,
                     'matchId'   => $matchId,
                     'data'      => []
                 ];
-
-                $file   = public_path('uploads/match/'.$matchId."/".$type."-".$foot.".txt");
-                mk_dir(dirname($file));
             }
+        }
 
 
-            if($data['type'] == "E")    //END 数据结束
-            {
-                $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
+        foreach($matchesData as $matchData)
+        {
+            $matchId    = $matchData['matchId'];
+            $dir        = matchdir($matchId);mk_dir($dir);
+            $file       = $dir.$type."-".$foot.".txt";
+            $fd         = fopen($file,'a');
 
-            } elseif($data['type'] == ''){
+            foreach($matchData['data'] as $data){
 
-                switch ($type)
+                if($data['type'] == "E")    //END 数据结束
                 {
-                    case "gps":     $str = [$data['lat'],   $data['lon'],               $data['timestamp']];        break;
-                    case "sensor":  $str = [$data['ax'],    $data['ay'],    $data['az'],$data['timestamp']];        break;
-                    case "compass": $str = [$data['x'],     $data['y'],     $data['z'], $data['timestamp']];        break;
+                    $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
+
+                } elseif($data['type'] == '') {
+
+                    switch ($type)
+                    {
+                        case "gps":     $str = self::join_array($data,['lat','lon','timestamp']);   break;
+                        case "sensor":  $str = self::join_array($data,['ax','ay','az','timestamp']);break;
+                        case "compass": $str = self::join_array($data,['x','y','z','timestamp']);   break;
+                    }
+                    fwrite($fd,$str."\n");//将数据写入到文件中
                 }
-
-                file_put_contents($file,implode(" ",$str)."\n",FILE_APPEND);            //将数据写入到文件中
-
-                continue;
             }
 
-            array_push($matchesData[$matchId]['data'],array_merge($data,$dataBaseInfo));
+            fclose($fd);
         }
 
 
@@ -362,8 +370,24 @@ class AnalysisMatchData implements ShouldQueue
         return true;
     }
 
+    /* *
+     * 连接数组中的某些值
+     * @param $array array
+     * @param $keys array
+     * @flag string
+     * @return string
+     * */
+    static function join_array($array,$keys,$flag=' '){
 
+        $tempArr = [];
 
+        foreach($keys as $key){
+
+            $tempArr[$key] = $array[$key];
+        }
+
+        return implode($flag,$tempArr);
+    }
 
 
 
