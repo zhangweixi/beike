@@ -253,9 +253,11 @@ class AnalysisMatchData implements ShouldQueue
         {
             $matchId    = $data['match_id'];
 
-            if(isset($matchesData[$matchId]))
-            {
-                array_push($matchesData[$matchId]['data'],array_merge($data,$dataBaseInfo));
+            if(isset($matchesData[$matchId])) {
+
+                array_push($matchesData[$matchId]['data'],$data);
+
+
 
             }else{
 
@@ -268,20 +270,18 @@ class AnalysisMatchData implements ShouldQueue
         }
 
 
-        foreach($matchesData as $matchData)
+        foreach($matchesData as $matchId => $matchData)
         {
-            $matchId    = $matchData['matchId'];
             $dir        = matchdir($matchId);mk_dir($dir);
             $file       = $dir.$type."-".$foot.".txt";
             $fd         = fopen($file,'a');
+            $flags      = [];
 
             foreach($matchData['data'] as $data){
 
-                if($data['type'] == "E")    //END 数据结束
-                {
-                    $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
+                $type   = $data['type'];
 
-                } elseif($data['type'] == '') {
+                if($type == ""){
 
                     switch ($type)
                     {
@@ -290,23 +290,23 @@ class AnalysisMatchData implements ShouldQueue
                         case "compass": $str = self::join_array($data,['x','y','z','timestamp']);   break;
                     }
                     fwrite($fd,$str."\n");//将数据写入到文件中
+
+                }else{
+
+                    if($data['type'] == "E")    //END 数据结束
+                    {
+                        $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
+                    }
+
+                    array_push($flags,array_merge($data,$dataBaseInfo));
                 }
             }
 
             fclose($fd);
-        }
 
-
-        //将数据存入到数据库中
-        //如果是分批传输，则解析后的内容必须存储在数据库
-
-
-        //分批插入
-        foreach($matchesData as $key => $matchData)
-        {
-            $multyData  = array_chunk($matchData['data'],1000);
-
-            foreach($multyData as $key => $data)
+            //插入标记，比如同步时间，暂停标记等
+            $flags  = array_chunk($flags,1000);
+            foreach($flags as $key => $data)
             {
                 $db->insert($data);
             }
