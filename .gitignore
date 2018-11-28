@@ -40,3 +40,5 @@ public/demo.php
 public/node_modules/
 public/package-lock.json
 *.asv
+public/gitupdate.php
+composer-setup.php
