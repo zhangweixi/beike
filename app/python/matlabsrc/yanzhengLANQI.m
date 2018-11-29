@@ -1,5 +1,5 @@
 clc; clear all;
-pathname = 'G:\1137';
+pathname = 'G:\1129';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % 添加路径
@@ -176,7 +176,6 @@ plot(longpass3(:,1),longpass3(:,2),'r*'); hold on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pass = Total_ball(sensor_r,sensor_l,GPS(:,1),GPS(:,2),100);
 shoot_result = Shoot_Z(pass,Compass_R,Compass_L,40,Court_config);
-plot(shoot_result(:,1)*100,shoot_result(:,7),'k*'); hold on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % longpass3 = Long_pass(Output,0.25,10,6,100,n_r); % 判断长传
 % plot(longpass3(:,1),longpass3(:,2),'r*-'); 
@@ -193,5 +192,13 @@ for i = 1:1000
         plot(Court_config(i,1),Court_config(i,2),'r*'); hold on
     end
 end
-plot(pass(:,5),pass(:,6),'o'); hold on
-plot(shoot_result(:,2),shoot_result(:,3),'k*');
+[m,~] = size(pass);
+for j = 1:m
+    if pass(j,2) == 1
+        plot(pass(j,5),pass(j,6),'ro'); hold on
+    end
+    if pass(j,2) == 2
+        plot(pass(j,5),pass(j,6),'ko'); hold on
+    end
+end
+plot(shoot_result(:,1),shoot_result(:,2),'k*');

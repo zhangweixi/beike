@@ -32,6 +32,9 @@ pass = Total_ball(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
 % 射门数据
 shoot_result = Shoot_Z(pass,Compass_R,Compass_L,compass_fs,Court_config);
 
+% 去掉传球中的射门数据
+Pass = DIV(pass,shoot_result);
+
 %% 存数据到指定文件夹
 % 步数
 B = [pathname,stepresult];
@@ -45,9 +48,9 @@ dlmwrite(B,real(GPS_result),'precision', '%.6f','delimiter',' ','newline','pc');
 B = [pathname,turnresult];
 dlmwrite(B,real(turn_result),'precision', '%.6f','delimiter',' ','newline','pc');
 
-% 触球
+% 传球
 B = [pathname,passresult];
-dlmwrite(B,real(pass),'precision', '%.6f','delimiter',' ','newline','pc');
+dlmwrite(B,real(Pass),'precision', '%.6f','delimiter',' ','newline','pc');
 
 % 射门
 B = [pathname,real(shootresult)];
