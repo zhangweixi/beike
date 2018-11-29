@@ -851,24 +851,19 @@ class AnalysisMatchData implements ShouldQueue
         $result     = shell_exec($cmd);
 
 
-        //3.与球场相关
-        if($matchInfo->court_id >0)
-        {
-            //3.0 生成热点图占用时间比较久，异步调用
-            $params = ['matchId'=>$matchId,'foot'=>"L"];
-            self::execute("create_gps_map",$params);
+        //3.0 生成热点图占用时间比较久，异步调用
+        self::execute("create_gps_map",['matchId'=>$matchId,'foot'=>"L"]);
 
 
-            //3.1 拷贝一份球场配置文件到数据比赛中
-            $courtInfo  = CourtModel::find($matchInfo->court_id);
-            $configFile = "/".$courtInfo->config_file;
-            copy(public_path($configFile),$dataDir."court-config.txt");
-        }
+        //3.1 拷贝一份球场配置文件到数据比赛中
+        $courtInfo  = CourtModel::find($matchInfo->court_id);
+        $configFile = "/".$courtInfo->config_file;
+        copy(public_path($configFile),$dataDir."court-config.txt");
+
 
 
         //3.计算方向角
-        $foots      = ["L","R"];
-        foreach($foots as $foot)
+        foreach(["L","R"] as $foot)
         {
             $compassSensorFile  = $this->create_compass_sensor($matchId,$foot);
             $outFile            = $dataDir."angle-{$foot}.txt";
