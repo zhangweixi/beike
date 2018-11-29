@@ -30,7 +30,7 @@ Step_result =  Step_calculate(Sensor_R,Sensor_L,sensor_fs);
 pass = Total_ball(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
 
 % 射门数据
-shoot_result = Shoot(pass,Compass_R,Compass_L,compass_fs,Court_config);
+shoot_result = Shoot_Z(pass,Compass_R,Compass_L,compass_fs,Court_config);
 
 %% 存数据到指定文件夹
 % 步数

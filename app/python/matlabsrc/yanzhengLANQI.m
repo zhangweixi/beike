@@ -1,14 +1,20 @@
 clc; clear all;
-pathname = 'G:\1129';
+pathname = 'G:\1137';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
-angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; 
+angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % 添加路径
 addpath(genpath(pathname)); 
 % Sensor
 sensor_r = importdata(sensor_R)/1000; Time = 1/100:1/100:length(sensor_r)/100;
 sensor_l = importdata(sensor_L)/1000; 
+Compass_R = importdata(angle_R); Compass_L = importdata(angle_L); 
+GPS = importdata(gps_L);
+Court_config = importdata(court_config);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+R_J = Touch(sensor_r,3,100,100,4); % 判断右脚触球
 
-GPS = importdata(gps_L)/100;
+L_J = Touch(sensor_l,3,100,100,4); % 判断右脚触球
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fs = 100; lat = 0; n_r = length(sensor_r);
 for i = 1:n_r
     A(i) = sqrt(sensor_r(i,1)^2+sensor_r(i,2)^2+sensor_r(i,3)^2);
@@ -122,11 +128,11 @@ plot(Output(:,1),Output(:,2),'r.'); hold on
 % plot(longpass3(:,1),longpass3(:,6),'*'); 
 %% 判断长短传球
 % 按照幅值筛选第一次
-longpass1 = Output(Output(:,6) >= 0.01,:);
+longpass1 = Output(Output(:,6) >= 0.25,:);
 plot(longpass1(:,1),longpass1(:,2),'ko'); hold on
 % 按照时间间隔筛选第二次
 [m,~] = size(longpass1); 
-j = 1; interval = 5;
+j = 1; interval = 10;
 longpass2 = []; longpass2(j,:) = longpass1(1,:);
 for i = 2:m
     if  longpass1(i,1) - longpass2(j,1) < interval * fs
@@ -161,16 +167,31 @@ while i <= m
             number = number+1;
         end
     end
-    if number < 3
+    if number < 6
         longpass3(k,:) = longpass2(i,:); k = k+1;
     end
     i = i+1;
 end
 plot(longpass3(:,1),longpass3(:,2),'r*'); hold on
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+pass = Total_ball(sensor_r,sensor_l,GPS(:,1),GPS(:,2),100);
+shoot_result = Shoot_Z(pass,Compass_R,Compass_L,40,Court_config);
+plot(shoot_result(:,1)*100,shoot_result(:,7),'k*'); hold on
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % longpass3 = Long_pass(Output,0.25,10,6,100,n_r); % 判断长传
 % plot(longpass3(:,1),longpass3(:,2),'r*-'); 
 
-shortpass3 = Long_pass(Output,0.01,5,3,100,n_r); % 判断短传
-plot(shortpass3(:,1),shortpass3(:,2),'r*-'); 
-
+% shortpass3 = Long_pass(Output,0.01,5,3,100,n_r); % 判断短传
+% plot(shortpass3(:,1),shortpass3(:,2),'r*'); 
+figure
+plot(Court_config(:,1),Court_config(:,2),'.'); hold on
+for i = 1:1000 
+    if Court_config(i,3) == 1
+        plot(Court_config(i,1),Court_config(i,2),'y*'); hold on
+    end
+    if Court_config(i,4) == 1
+        plot(Court_config(i,1),Court_config(i,2),'r*'); hold on
+    end
+end
+plot(pass(:,5),pass(:,6),'o'); hold on
+plot(shoot_result(:,2),shoot_result(:,3),'k*');

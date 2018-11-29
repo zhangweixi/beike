@@ -17,7 +17,7 @@ Total = sortrows(pass,[3 4]);
 for i = 2:m
     switch  PASS(j,2)
         case 3 % ¥•«Ú≈–∂œ
-            if Total(i,3) - PASS(j,3) < 2
+            if Total(i,3) - PASS(j,3) < 1.4
                 [~,z] = max([Total(i,7),PASS(j,7)]);
                 if z == 1
                     PASS(j,:) = Total(i,:);
