@@ -43,3 +43,4 @@ public/package-lock.json
 public/qr/
 public/gitupdate.php
 composer-setup.php
+app/Console/Commands/zhangweixi.php
