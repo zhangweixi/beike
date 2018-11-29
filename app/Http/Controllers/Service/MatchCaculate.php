@@ -294,9 +294,9 @@ class MatchCaculate extends Controller
             "D"     => 'p_d',
             "E"     => 'p_e',
             "F"     => 'p_f',
+            "Sym_A" => 'p_a1',
             "Sym_B" => 'p_b1',
             'Sym_C' => 'P_c1',
-            "Sym_A" => 'p_a1',
             "Sym_D" => 'p_d1'
         ];
 
@@ -324,17 +324,16 @@ class MatchCaculate extends Controller
         $pe     = explode(",",$courtInfo['p_e']);
         $pa1    = explode(",",$courtInfo['p_a1']);
 
-        $PA     = new GPSPoint($pa[1],$pa[0]);
-        $PD     = new GPSPoint($pd[1],$pd[0]);
-        $PE     = new GPSPoint($pe[1],$pe[0]);
-        $PA1    = new GPSPoint($pa1[1],$pa1[0]);
+        $PA     = new GPSPoint($pa[0],$pa[1]);
+        $PD     = new GPSPoint($pd[0],$pd[1]);
+        $PE     = new GPSPoint($pe[0],$pe[1]);
+        $PA1    = new GPSPoint($pa1[0],$pa1[1]);
 
         $isClockWise                = Court::judge_court_is_clockwise($PA,$PD,$PE);;
         $courtInfo['is_clockwise']  = $isClockWise ? 1 : 0;
 
         $courtInfo['width']     = round(gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat),2);
         $courtInfo['length']    = round(gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat),2);
-
 
         CourtModel::where('court_id',$courtId)->update($courtInfo);
 

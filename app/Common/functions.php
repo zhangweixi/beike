@@ -763,8 +763,8 @@ function http_build_sign($arr)
 
 /**
  * 更加经纬度获取距离
- * @param $lon1 double
- * @param $lat1 double
+ * @param $lon1 double 大数在前 121
+ * @param $lat1 double 小数在后 31
  * @param $lat2 double
  * @param $lon2 double
  * @return float
