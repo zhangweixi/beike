@@ -1161,7 +1161,7 @@ class Court{
         //检验球场是否合格
         $scale  = $length / $width;
 
-        if($width < 2 || $width > 100 || $length < 4  || $length > 200 || $scale < 1.2 || $scale > 2.5 ) {
+        if($width < 2 || $width > 100 || $length < 4  || $length > 200 || $scale < 1.1 || $scale > 2.5 ) {
 
             return false;
         }
