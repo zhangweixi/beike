@@ -841,7 +841,7 @@ class AnalysisMatchData implements ShouldQueue
         $dataDir        = self::matchdir($matchId);
 
         //1.同步两台设备的数据一致性
-        //$this->sync_file_num_same($matchId);
+        $this->sync_file_num_same($matchId);
 
         //2.将国际GPS转换成百度GPS
         $inputGps   = $dataDir."gps-L.txt";
