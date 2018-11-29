@@ -210,7 +210,7 @@ class MatchModel extends Model
     public static function get_match_court($matchId){
 
         $courtInfo  = DB::table('match as a')
-            ->leftJoin('court as b','b.court_id','=','a.court_id')
+            ->leftJoin('football_court as b','b.court_id','=','a.court_id')
             ->where('a.match_id',$matchId)
             ->where('b.court_id',">",0)
             ->select('b.*')
