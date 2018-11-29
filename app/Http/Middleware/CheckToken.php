@@ -42,7 +42,13 @@ class CheckToken
     static $except =[
 
         'user'=>[
-            "login",
+            "login",//登录
         ],
+        "match"=>[
+            ""
+        ],
+        'test'=>[
+            "test"
+        ]
     ];
 }
