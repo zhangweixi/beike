@@ -7,21 +7,25 @@ if (nargin < 5)
     error('Input error');
 end
 %% ≈–∂œÃﬂ«ÚΩ≈
-R_J = Touch(sensor_r,3,100,100,4); % ≈–∂œ”“Ω≈¥•«Ú
-L_J = Touch(sensor_l,3,100,100,4); % ≈–∂œ”“Ω≈¥•«Ú
+R_J = Touch(sensor_r,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
+L_J = Touch(sensor_l,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
 [R,~] = size(R_J); [L,~] = size(L_J);
-adept = round(R/L);
 %% RIGHT
-switch adept
-    case 3
-        [output,n] = Touch(sensor_r,3,100,100,4); 
-    case 2
-        [output,n] = Touch(sensor_r,10,300,100,11); 
-    case 1
-        [output,n] = Touch(sensor_r,15,500,100,16);
-    case 0
-        [output,n] = Touch(sensor_r,30,2000,100,36); 
+if R > L
+    [output,n] = Touch(sensor_r,3,100,100,4); 
+else
+    [output,n] = Touch(sensor_r,30,2000,100,31); 
 end
+% switch adept
+%     case 3
+%         [output,n] = Touch(sensor_r,3,100,100,4); 
+%     case 2
+%         [output,n] = Touch(sensor_r,10,300,100,11); 
+%     case 1
+%         [output,n] = Touch(sensor_r,15,500,100,16);
+%     case 0
+%         [output,n] = Touch(sensor_r,30,2000,100,36); 
+% end
 % ≈–∂œ”–√ª”–¥•«Ú
 if  ~isempty(output)
     [z,~] = size(output); pass_r_l = []; pass_r_s = []; pass_r_t = [];
@@ -85,16 +89,21 @@ else
     pass_r = [];
 end
 %% LEFT
-switch adept
-    case 0
-        [output,n] = Touch(sensor_l,3,100,100,4);
-    case 1
-        [output,n] = Touch(sensor_l,15,300,100,16); 
-    case 2
-        [output,n] = Touch(sensor_l,25,1000,100,26); 
-    case 3
-        [output,n] = Touch(sensor_l,30,2000,100,36);
+if L > R
+    [output,n] = Touch(sensor_l,3,100,100,4);
+else
+    [output,n] = Touch(sensor_l,30,2000,100,31);
 end
+% switch adept
+%     case 0
+%         [output,n] = Touch(sensor_l,3,100,100,4);
+%     case 1
+%         [output,n] = Touch(sensor_l,15,300,100,16); 
+%     case 2
+%         [output,n] = Touch(sensor_l,25,1000,100,26); 
+%     case 3
+%         [output,n] = Touch(sensor_l,30,2000,100,36);
+% end
 % ≈–∂œ”–√ª”–¥•«Ú
 if  ~isempty(output)
     [z,~] = size(output); pass_l_l = []; pass_l_s = []; pass_l_t = [];

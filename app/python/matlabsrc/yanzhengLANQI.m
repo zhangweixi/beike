@@ -1,5 +1,5 @@
 clc; clear all;
-pathname = 'G:\1129';
+pathname = 'G:\1128';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % ÃÌº”¬∑æ∂
@@ -11,9 +11,12 @@ Compass_R = importdata(angle_R); Compass_L = importdata(angle_L);
 GPS = importdata(gps_L);
 Court_config = importdata(court_config);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-R_J = Touch(sensor_r,3,100,100,4); % ≈–∂œ”“Ω≈¥•«Ú
+R_J = Touch(sensor_r,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
 
-L_J = Touch(sensor_l,3,100,100,4); % ≈–∂œ”“Ω≈¥•«Ú
+L_J = Touch(sensor_l,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
+
+
+PASS = Total_ball(sensor_r,sensor_l,GPS(:,1),GPS(:,2),100);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fs = 100; lat = 0; n_r = length(sensor_r);
 for i = 1:n_r

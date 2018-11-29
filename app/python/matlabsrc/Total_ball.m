@@ -12,7 +12,7 @@ if isempty(pass)
     return;
 end
 % 按照时间间隔排序
-Total = sortrows(pass,[3 4]); 
+Total = sortrows(pass,[3 4]); % PASS = Total ;
 [m,~] = size(Total); j = 1; PASS = []; PASS(j,:) = Total(1,:);
 for i = 2:m
     switch  PASS(j,2)
