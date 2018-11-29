@@ -152,7 +152,7 @@ class AnalysisMatchData implements ShouldQueue
     /**
      * 解析数据
      * */
-    private function parse_data()
+    public function parse_data()
     {
         //获得数据信息
         $sourceData = BaseMatchSourceDataModel::find($this->sourceId);
@@ -234,7 +234,6 @@ class AnalysisMatchData implements ShouldQueue
             case "compass": $datas = $this->handle_compass_data($dataStr,$matchId,$syncTime);   break;
         }
 
-
         //mylogger("解析完毕:".time());
 
         $createdAt      = date_time();
@@ -269,14 +268,13 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
-
         foreach($matchesData as $matchId => $matchData)
         {
             $dir        = matchdir($matchId);mk_dir($dir);
             $file       = $dir.$type."-".$foot.".txt";
             $fd         = fopen($file,'a');
             $flags      = [];
-
+		
             foreach($matchData['data'] as $data){
 
                 $flagType   = $data['type'];
