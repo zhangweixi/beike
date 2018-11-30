@@ -648,6 +648,10 @@ class AnalysisMatchData implements ShouldQueue
                 if($length == "00000000"){
 
                     $matchId    = $this->find_match_by_time($timestamp);
+                    if($matchId == 1130)
+                    {
+                        mylogger("error:".$this->sourceId.",time:".$timestamp);
+                    }
                 }
 
                 switch ($length)
