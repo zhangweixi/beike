@@ -895,6 +895,7 @@ class AnalysisMatchData implements ShouldQueue
         $beginTimes     = [];
         $endTimes       = [];
 
+        //找出每种数据的信息：开始时间，结束时间，数据量,数据内容
         foreach($files as $key => $fileName)
         {
             $filePath       = $dataDir.$fileName;
@@ -913,8 +914,8 @@ class AnalysisMatchData implements ShouldQueue
             array_push($beginTimes,$beginTime);
             array_push($endTimes,$endTime);
 
-            $oldFile                = $dataDir."old-".$fileName;
-            copy($filePath,$oldFile); //拷贝原文件
+            //$oldFile                = $dataDir."old-".$fileName;
+            //copy($filePath,$oldFile); //拷贝原文件
         }
 
         $wechat     = new Wechat();
@@ -933,7 +934,6 @@ class AnalysisMatchData implements ShouldQueue
             {
                 $wechat->send();
             }
-
         }
 
         if(abs($files['compassL']['num'] - $files['compassR']['num']) > 100){ //时间超过2.5秒
@@ -981,7 +981,7 @@ class AnalysisMatchData implements ShouldQueue
         //将最新的文件写入数据
         foreach($files as $file)
         {
-            file_put_contents($file['file'],implode("",$file['data']));
+            file_put_contents($file['file'],implode("",$file['data'])); //这里没有加换行符是以为原始数据每行末都有换行符
         }
     }
 
