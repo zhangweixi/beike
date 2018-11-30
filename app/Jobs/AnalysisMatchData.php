@@ -162,7 +162,7 @@ class AnalysisMatchData implements ShouldQueue
 
             return true;
         }
-        mylogger($sourceData->match_id."-----".$this->sourceId);
+
 
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
@@ -251,7 +251,7 @@ class AnalysisMatchData implements ShouldQueue
         foreach($datas as $data)
         {
             $matchId    = $data['match_id'];
-
+            mylogger($matchId."-----".$this->sourceId);
             if(isset($matchesData[$matchId])) {
 
                 array_push($matchesData[$matchId]['data'],$data);
