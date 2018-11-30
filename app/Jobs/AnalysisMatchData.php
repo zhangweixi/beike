@@ -274,7 +274,7 @@ class AnalysisMatchData implements ShouldQueue
                 unset($matchesData[$matchId]);
                 continue;
             }
-            
+
             $dir        = matchdir($matchId);mk_dir($dir);
             $file       = $dir.$type."-".$foot.".txt";
             $fd         = fopen($file,'a');
@@ -350,7 +350,7 @@ class AnalysisMatchData implements ShouldQueue
             {
                 continue;
             }
-            mylogger("解析结束比赛ID:".$matchId);
+
             //更新数据解析进度
             BaseMatchDataProcessModel::where('match_id',$matchId)->update([$type."_".$foot => 1]);
 
