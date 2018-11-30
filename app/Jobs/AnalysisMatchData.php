@@ -162,7 +162,7 @@ class AnalysisMatchData implements ShouldQueue
 
             return true;
         }
-
+        mylogger($sourceData->match_id."-----".$this->sourceId);
 
         $type       = $sourceData->type;
         $userId     = $sourceData->user_id;
