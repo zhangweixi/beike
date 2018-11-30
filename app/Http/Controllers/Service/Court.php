@@ -1158,6 +1158,10 @@ class Court{
      * */
     static function check_court_is_valid($width,$length)
     {
+        if($width == 0 || $length == 0){
+
+            return false;
+        }
         //检验球场是否合格
         $scale  = $length / $width;
 
