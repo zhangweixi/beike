@@ -26,6 +26,7 @@ Route::prefix("web")->namespace("Web")->group(function()
 {
 
 	Route::any('match/{action}',"MatchController@action");
+	Route::any('test/{action}',"TestController@action");
 
 });
 

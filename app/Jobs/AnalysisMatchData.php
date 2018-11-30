@@ -276,7 +276,6 @@ class AnalysisMatchData implements ShouldQueue
             $file       = $dir.$type."-".$foot.".txt";
             $fd         = fopen($file,'a');
             $flags      = [];
-            mylogger($matchId."-----".$this->sourceId);
             foreach($matchData['data'] as $data){
 
                 $flagType   = $data['type'];
