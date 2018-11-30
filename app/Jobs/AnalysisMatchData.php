@@ -248,10 +248,12 @@ class AnalysisMatchData implements ShouldQueue
         //多场数据
         $matchesData    = [];
 
+
+
         foreach($datas as $data)
         {
             $matchId    = $data['match_id'];
-            mylogger($matchId."-----".$this->sourceId);
+
             if(isset($matchesData[$matchId])) {
 
                 array_push($matchesData[$matchId]['data'],$data);
@@ -274,7 +276,7 @@ class AnalysisMatchData implements ShouldQueue
             $file       = $dir.$type."-".$foot.".txt";
             $fd         = fopen($file,'a');
             $flags      = [];
-		
+            mylogger($matchId."-----".$this->sourceId);
             foreach($matchData['data'] as $data){
 
                 $flagType   = $data['type'];
