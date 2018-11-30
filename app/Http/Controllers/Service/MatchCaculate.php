@@ -114,7 +114,7 @@ class MatchCaculate extends Controller
         //检查球场是否合格，如果不合格则根据GPS来生成球场
         if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
         {
-            Court::create_visual_match_court($matchId,$courtId);
+            //Court::create_visual_match_court($matchId,$courtId);
         }
 
         (new Court())->cut_court_to_box_and_create_config($courtId); //创建配置文件

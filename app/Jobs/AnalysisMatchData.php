@@ -839,7 +839,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         $matchInfo      = MatchModel::find($matchId);
         $dataDir        = self::matchdir($matchId);
-        mylogger("比赛ID：".$matchId);
+
         //1.同步两台设备的数据一致性
         $this->sync_file_num_same($matchId);
 
@@ -916,8 +916,8 @@ class AnalysisMatchData implements ShouldQueue
             array_push($beginTimes,$beginTime);
             array_push($endTimes,$endTime);
 
-            //$oldFile                = $dataDir."old-".$fileName;
-            //copy($filePath,$oldFile); //拷贝原文件
+            $oldFile                = $dataDir."old-".$fileName;
+            copy($filePath,$oldFile); //拷贝原文件
         }
 
         $wechat     = new Wechat();
