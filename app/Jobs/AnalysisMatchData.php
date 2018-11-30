@@ -245,10 +245,8 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //这里将数据产生了两份  一份是原始数据datas,一份是新的数据 $matchesData
-        //多场数据
+        //多场数据 按比赛场次来对数据进行分组
         $matchesData    = [];
-
-
 
         foreach($datas as $data)
         {
@@ -257,8 +255,6 @@ class AnalysisMatchData implements ShouldQueue
             if(isset($matchesData[$matchId])) {
 
                 array_push($matchesData[$matchId]['data'],$data);
-
-
 
             }else{
 
@@ -272,6 +268,13 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($matchesData as $matchId => $matchData)
         {
+            //检查数据是否为空
+            if(count($matchData['data']) == 0){
+
+                unset($matchesData[$matchId]);
+                continue;
+            }
+
             $dir        = matchdir($matchId);mk_dir($dir);
             $file       = $dir.$type."-".$foot.".txt";
             $fd         = fopen($file,'a');
