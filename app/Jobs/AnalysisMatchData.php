@@ -253,36 +253,17 @@ class AnalysisMatchData implements ShouldQueue
 
             if(!isset($matchesData[$matchId])) {
 
-		  $matchesData[$matchId]  = [
+                $matchesData[$matchId]  = [
                     'isFinish'  => 0,
                     'matchId'   => $matchId,
                     'data'      => []
                 ];
-
-
             }
-                array_push($matchesData[$matchId]['data'],$data);
+            array_push($matchesData[$matchId]['data'],$data);
         }
-	if($type == 'gps'){
-
-		foreach($matchesData as $matchId => $matchData){
-			mylogger("begin");
-			for($i=0;$i<3;$i++){
-				
-				mylogger($matchData['data'][$i]);
-			}	
-		}
-	}	
-	exit();
 
         foreach($matchesData as $matchId => $matchData)
         {
-
-		if($matchId==1130){
-	
-			mylogger("1130:".$this->sourceId);
-			exit;
-		}
             //检查数据是否为空
             if(count($matchData['data']) == 0){
 
@@ -315,28 +296,16 @@ class AnalysisMatchData implements ShouldQueue
                     {
                         $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
                     }
-			if($type == 'gps'){
-
-				mylogger($data);
-			}	
                     array_push($flags,array_merge($data,$dataBaseInfo));
                 }
             }
 
             fclose($fd);
-		if($type == 'gps'){
-
-			mylogger($flags);
-			exit();
-		}
 
             //插入标记，比如同步时间，暂停标记等
             $flags  = array_chunk($flags,1000);
 
-		if($this->sourceId == 13846){
-			mylogger('-----13846');
-			mylogger($flags);
-		}
+
             foreach($flags as $key => $data)
             {
                 $db->insert($data);
@@ -661,26 +630,20 @@ class AnalysisMatchData implements ShouldQueue
         $dataList    = array_filter($dataList);
 
         $insertData     = [];
-	$oldMatchId = $matchId;
+
         foreach($dataList as $key =>  $single)
         {
             //时间（16）长度（8）数据部分（n）
             $timestamp  = substr($single,0,16);
             $length     = substr($single,16,8);
             $timestamp  = HexToTime($timestamp);
-		if(strlen($timestamp) > 13){
-			continue;
-		}
+
 	
             if($length == "00000000" || $length == "01000000" || $length == "02000000" || $length == "03000000"){
 
                 if($length == "00000000"){
 
                     $matchId    = $this->find_match_by_time($timestamp);
-                    if($matchId == 1130)
-                    {
-                        mylogger("error:".$this->sourceId.",time:".$timestamp);
-                    }
                 }
 
                 switch ($length)
@@ -722,12 +685,6 @@ class AnalysisMatchData implements ShouldQueue
                 'match_id'      => $matchId,
                 'type'          => $type
             ];
-
-		if($matchId == 1130){
-			mylogger("1130的数据,sourceId:".$this->sourceId."oldmatchId:".$oldMatchId);
-			mylogger($otherInfo);
-			exit();
-		}
 
             array_push($insertData,$otherInfo);
         }
