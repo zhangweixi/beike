@@ -274,9 +274,7 @@ class AnalysisMatchData implements ShouldQueue
                 unset($matchesData[$matchId]);
                 continue;
             }
-            if($matchId == 1130){
-                mylogger($matchData);
-            }
+            
             $dir        = matchdir($matchId);mk_dir($dir);
             $file       = $dir.$type."-".$foot.".txt";
             $fd         = fopen($file,'a');
