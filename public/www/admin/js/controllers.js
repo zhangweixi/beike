@@ -718,6 +718,33 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             });
     }
 
+    //解析数据
+    $scope.parse_data = function(matchId){
+
+        var url = server + "match/parse_data?matchId="+matchId;
+
+        $http.get(url).success(function(res)
+        {
+            if(res.code == 200){
+
+                alert('已开始解析');
+            }
+        });
+    }
+
+    //调用算法计算
+    $scope.caculate_data = function(matchId){
+
+        var url = server + "match/caculate_match?matchId="+matchId;
+
+        $http.get(url).success(function(res)
+        {   
+            if(res.code == 200){
+
+                alert('一开始运算');
+            }
+        })
+    }
 
     //比赛结果
     $scope.get_match_result = function(){
@@ -769,7 +796,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                     points.push(getpoint(g.lat,g.lon));
                 }
 
-                $scope.draw_big_data(points,color);
+                bdmap.draw_big_data($scope.map,points,color);
             })
     }
     /**
@@ -860,10 +887,10 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
         {
             AD.push(getpoint(p.lat,p.lon));
         }
-        //map.setCenter();
+
         $scope.map.centerAndZoom(AD[0],20);  //初始化地图,设置城市和地图级别。
 
-        $scope.drawline(AD);
+        bdmap.drawline($scope.map,AD);
 
 
         var FE = [];
@@ -871,7 +898,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
         {
             FE.push(getpoint(p.lat,p.lon));
         }
-        $scope.drawline(FE);
+        bdmap.drawline($scope.map,FE);
 
 
         var GH = [];
@@ -879,8 +906,8 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
         {
             GH.push(getpoint(p.lat,p.lon));
         }
-        $scope.drawline(GH);
-
+        bdmap.drawline($scope.map,GH);
+        
         return;
 
         var centers = [];
@@ -917,8 +944,8 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                 var newp = new BMap.Point(res.data.points[p].lon,res.data.points[p].lat);
                 points.push(newp);
             }
-            $scope.draw_big_data(points);
 
+            bdmap.draw_big_data($scope.map,points);
         });
 
     }
@@ -943,7 +970,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                 
                 var p = center.splice(0,10);
 
-                $scope.draw_big_data(p,0);    
+                bdmap.draw_big_data($scope.map,p);                    
                 
 
             }else{
@@ -981,11 +1008,8 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                 points.push(newp);
             }
 
-            
-
-            $scope.draw_big_data(points);
-
-            //$scope.draw_shape(points);
+            bdmap.draw_big_data($scope.map,points);
+            //bdmap.draw_shape($scope.map,points);
 
 
         })
@@ -1008,48 +1032,16 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                 var points  = [];
                     points.push(new BMap.Point(data[line][0].lon,data[line][0].lat));
                     points.push(new BMap.Point(data[line][1].lon,data[line][1].lat));
-                $scope.draw_shape(points);
-                $scope.draw_big_data(points);
+
+                bdmap.draw_shape($scope.map,points);
+                bdmap.draw_big_data($scope.map,points);
+
             }
 
         })
 
 
     }
-
-
-    //显示大量球场点
-    $scope.draw_big_data = function(points)
-    {
-        if(arguments.length > 1){
-
-            var color = arguments[1];
-
-        }else{
-            var color = "#d340c3";
-        }
-
-        var options = {
-            size: BMAP_POINT_SIZE_SMALL,
-            shape: BMAP_POINT_SHAPE_STAR,
-            color: color
-        }
-        var pointCollection = new BMap.PointCollection(points, options);  // 初始化PointCollection
-        if(points.length > 0 && arguments.length == 1)
-        {
-            $scope.map.centerAndZoom(points[0],20);
-        }
-        $scope.map.addOverlay(pointCollection);  // 添加Overlay
-    }
-
-
-    //地图划线
-    $scope.drawline = function(points)
-    {
-        var polyline = new BMap.Polyline(points, {strokeColor:"green", strokeWeight:2, strokeOpacity:0.5});  //定义折线
-        $scope.map.addOverlay(polyline);     //添加折线到地图上
-    }
-
 
     $scope.clean_overlay = function()
     {
@@ -1218,30 +1210,8 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
         });
     }
 
-    $scope.show_run_map = function(){
 
-    }
-
-
-    /**
-     * 绘制直线图
-     */
-    $scope.draw_shape = function(points)
-    {
-        var points1 = [
-            new BMap.Point(116.387112,39.920977),
-            new BMap.Point(116.385243,39.913063),
-            new BMap.Point(116.394226,39.917988),
-            new BMap.Point(116.401772,39.921364),
-            new BMap.Point(116.41248,39.927893)
-        ];
-
-        var option = {strokeColor:"blue", strokeWeight:2, strokeOpacity:0.5};
-
-        var polygon = new BMap.Polygon(points,option);  //创建多边形
-
-        $scope.map.addOverlay(polygon);   //增加多边形
-    }
+   
     /**
      * 开启备注的编辑状态
      */
@@ -1283,6 +1253,9 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                 console.log(res);
             })
     }
+
+
+    
 
 })
 

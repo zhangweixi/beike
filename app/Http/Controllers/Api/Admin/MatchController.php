@@ -11,6 +11,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Service\Court;
+use App\Http\Controllers\Service\MatchCaculate;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\V1\CourtModel;
@@ -24,6 +25,9 @@ const    PI = 3.1415926;
 class MatchController extends Controller
 {
 
+    /**
+     * 比赛列表
+     * */
     public function matches(Request $request)
     {
         $matches = DB::table('match as a')
@@ -35,6 +39,31 @@ class MatchController extends Controller
     }
 
 
+    //解析数据
+    public function parse_data(Request $request){
+
+        $matchId    = $request->input('matchId');
+
+        //将之前的数据删除
+        $dir        = matchdir($matchId);deldir($dir);
+
+        $caculate   = new MatchCaculate();
+        $caculate->jiexi_match($request);
+
+        return apiData()->send();
+    }
+
+
+    /**
+     * 运算比赛结果
+     * */
+    public function caculate_match(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $dir        = matchdir($matchId);deldir($dir);
+
+        return (new MatchCaculate())->run_matlab($request);
+    }
 
     /**
      * 球场信息

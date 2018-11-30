@@ -20,6 +20,45 @@ class MatchCaculate extends Controller
         set_time_limit(300);
     }
 
+    /**
+     * 解析比赛数据
+     * */
+    public function jiexi_match(Request $request)
+    {
+        $matchId    = $request->input('matchId');
+        $types      = ['compass','sensor','gps'];
+        $foots      = ["R","L"];
+
+        //1.将之前的数据设置为未解析状态
+        DB::table('match_source_data')->where('match_id',$matchId)->update(['status'=>0]);
+
+
+        //2.将数据进度设置为未解完
+        $data = ["gps_L"=>0,"gps_R"=>0,"sensor_L"=>0,"sensor_R"=>0,"compass_L"=>0,"compass_R"=>0];
+        DB::table('match_data_process')->where('match_id',$matchId)->update($data);
+
+        foreach($types as $type)
+        {
+            foreach($foots as $foot)
+            {
+                if($type == 'gps' && $foot == 'R'){
+
+                    continue;
+                }
+
+                $condition      = ['match_id'=>$matchId,'type'=>$type,'foot'=>$foot];
+                $data         = DB::table('match_source_data')->where($condition)->orderBy('match_source_id')->first();
+
+                $host           = "http://".$request->getHost();
+                $data           = ['sourceId'=>$data->match_source_id,'jxNext'=>true];
+                $delayTime      = now()->addSecond(1);
+                AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
+            }
+        }
+
+        return apiData()->send();
+    }
+
 
     /**
      * 解析单条数据，不传递
@@ -169,38 +208,6 @@ class MatchCaculate extends Controller
 
 
 
-    /**
-     * 解析比赛数据
-     * */
-    public function jiexi_match(Request $request)
-    {
-        $matchId    = $request->input('matchId');
-        $types      = ['compass','sensor','gps'];
-        $foots      = ["R","L"];
-
-
-
-        foreach($types as $type)
-        {
-            foreach($foots as $foot)
-            {
-                if($type == 'gps' && $foot == 'R'){
-
-                    continue;
-                }
-
-                $condition      = ['match_id'=>$matchId,'type'=>$type,'foot'=>$foot];
-                $data         = DB::table('match_source_data')->where($condition)->orderBy('match_source_id')->first();
-
-                $host           = "http://".$request->getHost();
-                $data           = ['sourceId'=>$data->match_source_id,'jxNext'=>true];
-                $delayTime      = now()->addSecond(1);
-                AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
-            }
-        }
-
-        return apiData()->send();
-    }
 
 
     /**
