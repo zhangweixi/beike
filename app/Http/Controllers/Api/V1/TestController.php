@@ -9,14 +9,16 @@ use App\Http\Controllers\Service\MatchGrade;
 use App\Jobs\AnalysisMatchData;
 use App\Jobs\CommonJob;
 use App\Models\Base\BaseMatchDataProcessModel;
+use App\Models\Base\BaseMatchResultModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
 use App\Models\V1\UserModel;
 use Dingo\Api\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Common\Geohash;
+use Illuminate\Support\Facades\Redis;
 use Maatwebsite\Excel\Facades\Excel;
-
+use QrCode;
 
 class TestController extends Controller
 {
@@ -175,9 +177,80 @@ class TestController extends Controller
         return $matchGrade->get_global_single_option_grade(1,'touchball_num_total',true);
     }
 
+    public function test1(){
+
+
+    }
 
     public function test(Request $request)
     {
+        set_time_limit(0);
+
+
+
+        //合成文字
+        if(false){
+            $dirs = ["8121","9010","9011","9020","9021"];
+            foreach($dirs as $dir ){
+
+                $dir  = public_path("qr/".$dir);
+                $imgs = scandir($dir);
+                $len  = count($imgs);
+
+                for($i=2;$i<$len;$i++)
+                {
+                    $bg     = imagecreatetruecolor(1000,1100);
+                    $path   = $dir."/".$imgs[$i];
+                    $source = imagecreatefrompng($path);
+
+                    $white  = imagecolorallocate($bg, 255, 255, 255);
+                    imagefilledrectangle($bg, 0, 0, 1000, 1200, $white);
+                    $black = imagecolorallocate($bg, 0, 0, 0);
+                    imagecopy($bg,$source,0,0,0,0,1000,1000);
+                    imagettftext($bg,70,0,300,1060,$black,public_path("PingFangRegular.ttf"),substr($imgs[$i],0,8));
+                    imagepng($bg,$path);
+                    imagedestroy($bg);
+                    imagedestroy($source);
+                }
+            }
+            return;
+        }
+
+
+
+        //创建二维码
+        if(false){
+
+            $arr = ["8121","9010","9011","9020","9021"];
+            foreach($arr as $single)
+            {
+                $dir = public_path("qr/".$single);
+                mkdir($dir);
+                $tempArr = [];
+
+                $total  = 0;
+                for($i=0;$i<10000;$i++)
+                {
+                    $sn = $single.rand(1000,9000);
+                    if(in_array($sn,$tempArr)){
+                        continue;
+                    }
+
+                    array_push($tempArr,$sn);
+
+                    QrCode::format('png')->size(1000)->margin(1)->generate($sn,$dir."/".$sn.".png");
+
+                    $total ++;
+
+                    if($total == 2000){
+                        break;
+                    }
+                }
+            }
+            return;
+        }
+
+
 
         if(false){
 
@@ -204,13 +277,13 @@ class TestController extends Controller
 
 
         if(true){
-            return (new AnalysisMatchData('xx'))->finish_parse_data(1130); //保存射门结果
+            //return (new AnalysisMatchData('xx'))->finish_parse_data(1130); //保存射门结果
 
             return Court::create_visual_match_court(1130);
             //return (new AnalysisMatchData('xx'))->save_matlab_result(1102); //保存射门结果
 
             //return (new AnalysisMatchData('xx'))->save_direction_result(1104); //转向转身
-            return (new AnalysisMatchData('xx'))->save_run_result(1130); //保存射门结果
+            return (new AnalysisMatchData('xx'))->save_run_result(1134); //保存射门结果
             return (new AnalysisMatchData('xx'))->save_pass_and_touch(1104); //保存射门结果
 
             return (new AnalysisMatchData('xx'))->save_shoot_result(1102); //保存射门结果

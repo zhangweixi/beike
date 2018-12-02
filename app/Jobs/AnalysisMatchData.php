@@ -1898,10 +1898,10 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
-        //1000/20=50   557/10 =57.7
+        //1000/20=50   557/10 =57.7 这里的意思是球场比例为1000:557,把球场长度切分为20分，宽度切分为10分，如此得到每份的坐标
 
-        foreach($gpsData as $gps){
-
+        foreach($gpsData as $gps)
+        {
             $x = intval($gps['x'] / 50);
             $y = intval($gps['y'] / 57.7);
 
@@ -1910,8 +1910,6 @@ class AnalysisMatchData implements ShouldQueue
                 $result[$y][$x] ++ ;
             }
         }
-
-
         return $result;
 
         /*==== 以下部分为老算法 ===*/
