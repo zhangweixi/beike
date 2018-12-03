@@ -519,7 +519,15 @@
             img.style.width = window.innerWidth+"px";
 
             //document.body.appendChild(img);
-            android.createBitmap(saveImage);
+            if("undefined" != typeof android)
+            {
+                android.createBitmap(saveImage);
+
+            } else if(window.webkit.messageHandlers.iOS) {
+
+                window.webkit.messageHandlers.iOS.postMessage({img:saveImage});
+            }
+
             //var b64 = saveImage.substring(22);
 
         });
