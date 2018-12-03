@@ -155,33 +155,24 @@
  -->
         <div class="map">
             <h2>射门</h2>
-            <div  class="canvas" id="shoot">
-                <!--<canvas  id="shoot" class="point-map" width="1000" height="557"></canvas>-->
-
-            </div>
+            <div  class="canvas" id="shoot"></div>
         </div>
 
         <div class="map">
             <h2>长传</h2>
-            <div  class="canvas">
-                <canvas  id="pass-long" class="point-map" width="1000" height="557"></canvas>
-            </div>
+            <div  class="canvas" id="pass-long"></div>
         </div>
 
 
         <div class="map">
             <h2>短传</h2>
-            <div  class="canvas">
-                <canvas  id="pass-short" class="point-map" width="1000" height="557"></canvas>
-            </div>
+            <div  class="canvas" id="pass-short"></div>
         </div>
 
 
         <div class="map">
             <h2>触球</h2>
-            <div  class="canvas">
-                <canvas  id="touchball" class="point-map" width="1000" height="557" onclick="cut()"></canvas>
-            </div>
+            <div  class="canvas" id="touchball"></div>
         </div>
     </div>
 
@@ -277,9 +268,9 @@
             //draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
             //draw_hot_map("map-run-static",courtWidth,matchResult.map_speed_static);
 
-            //draw_point_map('pass-long',matchResult.map_pass_long);
-            //draw_point_map('pass-short',matchResult.map_pass_short);
-            //draw_point_map('touchball',matchResult.map_touchball);
+            draw_point_map('pass-long',matchResult.map_pass_long);
+            draw_point_map('pass-short',matchResult.map_pass_short);
+            draw_point_map('touchball',matchResult.map_touchball);
             draw_point_map('shoot',matchResult.map_shoot);
 
 
