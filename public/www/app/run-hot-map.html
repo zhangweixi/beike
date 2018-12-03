@@ -201,7 +201,6 @@
     var courtHeight = 0;
     var isWhole     = GetQueryString('all');
 
-
     window.onload = function(){
 
         if(isWhole == 1){
@@ -488,7 +487,7 @@
 
     function cut(){
 
-
+        alert('You are great');
 
         if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
         {
@@ -512,11 +511,11 @@
             var saveImage = canvas.toDataURL('image/png');
 
             //console.log(saveImage);
-            //var img     = document.createElement("img");
-            //img.setAttribute('src',saveImage);
-            //img.style.width = window.innerWidth+"px";
+            var img     = document.createElement("img");
+            img.setAttribute('src',saveImage);
+            img.style.width = window.innerWidth+"px";
 
-            //document.body.appendChild(img);
+            document.body.appendChild(img);
 
 
 
@@ -533,7 +532,7 @@
             }else{
 
                 alert('web界面');
-                location.href = saveImage;
+
             }
 
             //var b64 = saveImage.substring(22);
