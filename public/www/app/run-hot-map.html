@@ -527,7 +527,7 @@
             } else if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined") {
 
                 saveImage = saveImage.replace("data:image/png;base64,","");
-                window.webkit.messageHandlers.iOS.postMessage({img:saveImage});
+                window.webkit.messageHandlers.iOS.postMessage(saveImage);
 
             }else{
 
