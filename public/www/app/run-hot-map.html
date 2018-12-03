@@ -504,7 +504,8 @@
             width:window.innerWidth,
             height:document.body.clientHeight,
             scrollX:0,
-            scrollY:0
+            scrollY:0,
+            backgroundColor:"#36374C"
         }).then(function(canvas) {
             //document.body.appendChild(canvas);
             //canvas.drawImage();
@@ -517,19 +518,22 @@
 
             //document.body.appendChild(img);
 
-            saveImage = saveImage.replace("data:image/png;base64,","");
-            
+
+
             if("undefined" != typeof android)
             {
+                saveImage = saveImage.replace("data:image/png;base64,","");
                 android.createBitmap(saveImage);
 
             } else if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined") {
 
+                saveImage = saveImage.replace("data:image/png;base64,","");
                 window.webkit.messageHandlers.iOS.postMessage({img:saveImage});
 
             }else{
 
                 alert('web界面');
+                window.open(saveImage);
             }
 
             //var b64 = saveImage.substring(22);
