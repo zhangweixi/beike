@@ -524,9 +524,12 @@
             {
                 android.createBitmap(saveImage);
 
-            } else if(typeof window.webkit.messageHandlers.iOS == 'undefined') {
+            } else if(typeof window.webkit.messageHandlers.iOS != 'undefined') {
 
                 window.webkit.messageHandlers.iOS.postMessage({img:saveImage});
+            }else{
+
+                alert('web');
             }
 
             //var b64 = saveImage.substring(22);
