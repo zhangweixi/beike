@@ -487,15 +487,16 @@
 
     function cut(){
 
-        //&& typeof window.webkit.messageHandlers != "undefined"
-        alert('ok');
-        $.post("/api/v1/user/getUserInfo?userId=23");
 
 
-        if(typeof window.webkit != "undefined")
+
+
+
+        if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined")
         {
-            alert('ios ok');
 
+            $.post("/api/v1/user/getUserInfo?userId=23");
+            alert('ios ok');
             //window.webkit.messageHandlers.iOS.postMessage({imgs:imgs,index:index});
         }
 
