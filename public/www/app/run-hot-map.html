@@ -487,16 +487,8 @@
 
     function cut(){
 
-
-
-
-
-
         if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
         {
-
-            $.post("/api/v1/user/getUserInfo?userId=23");
-            alert('ios ok');
             //window.webkit.messageHandlers.iOS.postMessage({imgs:imgs,index:index});
         }
 
@@ -532,7 +524,7 @@
 
                 saveImage = saveImage.replace("data:image/png;base64,","");
                 //window.webkit.messageHandlers.iOS.postMessage(saveImage);
-                window.webkit.messageHandlers.ipostMessage(saveImage);
+                window.webkit.messageHandlers.iOS.postMessage(saveImage);
 
             }else{
 
