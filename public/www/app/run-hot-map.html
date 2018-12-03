@@ -495,7 +495,7 @@
             alert('android ok');
 
         }
-        else if(typeof window.webkit.messageHandlers.iOS != "undefined")
+        else if(typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
         {
             alert('ios ok');
 
