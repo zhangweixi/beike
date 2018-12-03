@@ -516,6 +516,9 @@
             //img.style.width = window.innerWidth+"px";
 
             //document.body.appendChild(img);
+
+            saveImage = saveImage.replace("data:image/png;base64,","");
+            
             if("undefined" != typeof android)
             {
                 android.createBitmap(saveImage);
