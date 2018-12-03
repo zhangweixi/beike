@@ -495,7 +495,7 @@
             alert('android ok');
 
         }
-        else if(typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
+        else if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
         {
             alert('ios ok');
 
@@ -514,10 +514,11 @@
             //document.body.appendChild(canvas);
             //canvas.drawImage();
             var saveImage = canvas.toDataURL('image/png');
+
             //console.log(saveImage);
-            var img     = document.createElement("img");
-            img.setAttribute('src',saveImage);
-            img.style.width = window.innerWidth+"px";
+            //var img     = document.createElement("img");
+            //img.setAttribute('src',saveImage);
+            //img.style.width = window.innerWidth+"px";
 
             //document.body.appendChild(img);
             if("undefined" != typeof android)
@@ -527,6 +528,7 @@
             } else if(typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined") {
 
                 window.webkit.messageHandlers.iOS.postMessage({img:saveImage});
+
             }else{
 
                 alert('web');
