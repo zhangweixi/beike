@@ -155,8 +155,9 @@
  -->
         <div class="map">
             <h2>射门</h2>
-            <div  class="canvas">
-                <canvas  id="shoot" class="point-map" width="1000" height="557"></canvas>
+            <div  class="canvas" id="shoot">
+                <!--<canvas  id="shoot" class="point-map" width="1000" height="557"></canvas>-->
+
             </div>
         </div>
 
@@ -277,9 +278,9 @@
             //draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
             //draw_hot_map("map-run-static",courtWidth,matchResult.map_speed_static);
 
-            draw_point_map('pass-long',matchResult.map_pass_long);
-            draw_point_map('pass-short',matchResult.map_pass_short);
-            draw_point_map('touchball',matchResult.map_touchball);
+            //draw_point_map('pass-long',matchResult.map_pass_long);
+            //draw_point_map('pass-short',matchResult.map_pass_short);
+            //draw_point_map('touchball',matchResult.map_touchball);
             draw_point_map('shoot',matchResult.map_shoot);
 
 
@@ -440,7 +441,21 @@
         }
         points      = JSON.parse(points);
         var img     = document.getElementById('football');
-        var c       = document.getElementById(eleId);
+        //var c       = document.getElementById(eleId);
+
+        var c       = document.createElement("canvas");
+
+            c.setAttribute('class','point-map');
+            c.setAttribute('id',eleId+"-child");
+
+        var box       = document.getElementById(eleId);
+        box.appendChild(c);
+
+        //c = document.getElementById(eleId + '-child');
+        c.setAttribute('width',1000);
+        c.setAttribute('height', 557);
+
+
         var cxt     = c.getContext("2d");
 
         for(var p in points)
@@ -458,6 +473,9 @@
 
             //cxt.drawImage(img,0,0,200,200,x,y,30,30);
         }
+
+
+
         cxt.closePath();
     }
 
