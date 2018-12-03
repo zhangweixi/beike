@@ -488,6 +488,7 @@
     function cut(){
 
         //&& typeof window.webkit.messageHandlers != "undefined"
+        alert('ok');
         if(typeof window.webkit != "undefined")
         {
             alert('ios ok');
@@ -527,7 +528,7 @@
 
                 saveImage = saveImage.replace("data:image/png;base64,","");
                 //window.webkit.messageHandlers.iOS.postMessage(saveImage);
-                window.webkit.messageHandlers.postMessage(saveImage);
+                window.webkit.messageHandlers.ipostMessage(saveImage);
 
             }else{
 
