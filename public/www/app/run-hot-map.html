@@ -487,7 +487,21 @@
     }
 
     function cut(){
-        alert("ok");
+
+        if("undefined" != typeof android)
+        {
+            alert('android ok');
+
+
+        }
+        else if(window.webkit.messageHandlers.iOS)
+        {
+            alert('ios ok');
+
+            //window.webkit.messageHandlers.iOS.postMessage({imgs:imgs,index:index});
+        }
+
+        return;
         html2canvas(document.body,{
             windowWidth:window.innerWidth,
             windowHeight:document.body.clientHeight*2,
@@ -502,12 +516,14 @@
             //console.log(saveImage);
             var img     = document.createElement("img");
             img.setAttribute('src',saveImage);
-            img.style.width = "414px";
+            img.style.width = window.innerWidth+"px";
 
             document.body.appendChild(img);
 
             //var b64 = saveImage.substring(22);
 
         });
+
+
     }
 </script>
