@@ -490,13 +490,12 @@
 
 
 
-        if("undefined" != typeof android)
+        if(typeof android != "undefined")
         {
             alert('android ok');
 
-
         }
-        else if(window.webkit.messageHandlers.iOS)
+        else if(typeof window.webkit.messageHandlers.iOS != "undefined")
         {
             alert('ios ok');
 
@@ -525,7 +524,7 @@
             {
                 android.createBitmap(saveImage);
 
-            } else if(window.webkit.messageHandlers.iOS) {
+            } else if(typeof window.webkit.messageHandlers.iOS == 'undefined') {
 
                 window.webkit.messageHandlers.iOS.postMessage({img:saveImage});
             }
