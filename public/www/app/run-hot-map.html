@@ -490,12 +490,7 @@
 
 
 
-        if(typeof android != "undefined")
-        {
-            alert('android ok');
-
-        }
-        else if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
+        if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
         {
             alert('ios ok');
 
