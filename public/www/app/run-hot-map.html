@@ -501,7 +501,7 @@
             //window.webkit.messageHandlers.iOS.postMessage({imgs:imgs,index:index});
         }
 
-        return;
+
         html2canvas(document.body,{
             windowWidth:window.innerWidth,
             windowHeight:document.body.clientHeight*2,
@@ -518,8 +518,8 @@
             img.setAttribute('src',saveImage);
             img.style.width = window.innerWidth+"px";
 
-            document.body.appendChild(img);
-
+            //document.body.appendChild(img);
+            android.createBitmap(saveImage);
             //var b64 = saveImage.substring(22);
 
         });
