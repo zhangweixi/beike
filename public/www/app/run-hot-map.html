@@ -492,7 +492,7 @@
 
 
 
-        if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined")
+        if(typeof window.webkit != "undefined" && typeof window.webkit.messageHandlers != "undefined" && typeof window.webkit.messageHandlers.iOS != "undefined")
         {
 
             $.post("/api/v1/user/getUserInfo?userId=23");
