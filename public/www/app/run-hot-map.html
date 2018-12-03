@@ -489,6 +489,9 @@
 
         //&& typeof window.webkit.messageHandlers != "undefined"
         alert('ok');
+        $.post("/api/v1/user/getUserInfo?userId=23");
+
+
         if(typeof window.webkit != "undefined")
         {
             alert('ios ok');
