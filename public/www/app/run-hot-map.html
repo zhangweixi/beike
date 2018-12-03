@@ -93,7 +93,7 @@
     <div class="map-box">
 
         <div class="map whole run">
-            <h2>全局</h2>
+            <h2 onclick="cut()">全局</h2>
             <div id="map-run-all" class="canvas"></div>
             <div class="colors">
                 <span>低</span>
@@ -180,7 +180,7 @@
         <div class="map">
             <h2>触球</h2>
             <div  class="canvas">
-                <canvas  id="touchball" class="point-map" width="1000" height="557"></canvas>
+                <canvas  id="touchball" class="point-map" width="1000" height="557" onclick="cut()"></canvas>
             </div>
         </div>
     </div>
@@ -193,7 +193,7 @@
 <script src="../../vendors/jquery/dist/jquery.min.js"></script>
 <script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
 <script  src="../../vendors/echarts/dist/echarts.min.js"></script>
-
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script>
     var matchId     = GetQueryString('matchId');
     var server      = location.origin + "/api/admin/";
@@ -486,5 +486,27 @@
         return iResult
     }
 
+    function cut(){
+        html2canvas(document.body,{
+            windowWidth:window.innerWidth,
+            windowHeight:document.body.clientHeight*2,
+            width:window.innerWidth,
+            height:document.body.clientHeight,
+            scrollX:0,
+            scrollY:0
+        }).then(function(canvas) {
+            //document.body.appendChild(canvas);
+            //canvas.drawImage();
+            var saveImage = canvas.toDataURL('image/png');
+            //console.log(saveImage);
+            var img     = document.createElement("img");
+            img.setAttribute('src',saveImage);
+            img.style.width = "414px";
 
+            document.body.appendChild(img);
+
+            //var b64 = saveImage.substring(22);
+
+        });
+    }
 </script>
