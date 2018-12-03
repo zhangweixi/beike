@@ -125,11 +125,12 @@ class MatchModel extends Model
      * */
     public function get_match_list($userId)
     {
-        $colums = ["match_id",'time_begin','weather','temperature','mood','time_length'];
-        $matchs = DB::table('match')
+        $colums = ["a.match_id",'a.time_begin','a.weather','a.temperature','a.mood','a.time_length','b.grade'];
+        $matchs = DB::table('match as a')
+            ->leftJoin('match_result as b','b.match_id','=','a.match_id')
             ->select($colums)
-            ->where('user_id',$userId)
-            ->orderBy('match_id','desc')
+            ->where('a.user_id',$userId)
+            ->orderBy('a.match_id','desc')
             ->paginate(10);
         return $matchs;
     }
