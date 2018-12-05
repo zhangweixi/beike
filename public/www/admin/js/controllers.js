@@ -101,7 +101,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
     $scope.showAddDeviceQr = false;
     $scope.newQrData = {
         prefix:"",
-        num:1000,
+        num:1,
         length:4,
         addnum:true
     };
