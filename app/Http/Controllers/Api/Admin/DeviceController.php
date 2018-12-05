@@ -171,7 +171,7 @@ class DeviceController extends Controller
             $id = DB::table('device_qr')->insertGetId(['prefix'=>$prefix,'length'=>$length,'num'=>$qrnum,'created_at'=>date_time()]);
 
             $dir        = public_path("qr/" . $id);
-            is_dir($dir)?   '' : mkdir($dir);
+            is_dir($dir)?   '' : mk_dir($dir);
 
             $tempArr    = [];
             $total      = 0;
