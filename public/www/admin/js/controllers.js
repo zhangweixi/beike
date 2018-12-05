@@ -98,6 +98,13 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
     $scope.hasQuestion = false;
     $scope.addBtnText = "若检查无误，点此提交题库";
     $scope.disableAddBtn = false;
+    $scope.showAddDeviceQr = false;
+    $scope.newQrData = {
+        prefix:"",
+        num:1000,
+        length:4,
+        addnum:true
+    };
 
     $scope.paginationConf = {
         currentPage: 0,
@@ -115,6 +122,8 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
     };
 
     $scope.deviceInfo   = {};
+
+    $scope.deviceQrs    = {};
 
 
     /*获得题目列表*/
@@ -176,14 +185,11 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
     //编辑设备
     $scope.edit_device  = function()
     {
-
         var url = server + "device/edit_device";
         var data = http_query($scope.deviceInfo);
         $http.post(url,data).success(function(res)
         {
-
             alert(res.message);
-
         })
     }
 
@@ -203,6 +209,96 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 
             $scope.get_device_list($scope.paginationConf.currentPage);
         })
+    }
+
+    $scope.delete_qrs = function(){
+
+        alert('待开发');
+    }
+
+    $scope.download_qr = function(prefix){
+
+    var url = server + "device/download_qr?prefix="+prefix;
+
+    
+    const xhr = new XMLHttpRequest();
+
+    xhr.open('POST', url, true);        // 定义请求方式
+
+    xhr.setRequestHeader('X-CSRF-TOKEN',$('meta[name="csrf-token"]').attr('content'));  // 添加 csrf 令牌
+
+    xhr.responseType = "blob";    // 返回类型blob
+
+    // 定义请求完成的处理函数，请求前也可以增加加载框/禁用下载按钮逻辑
+
+    xhr.onload = function () {};
+
+    // 发送ajax请求
+
+    xhr.send()
+
+    return;
+
+        $http.get(url,{},{responseType: "blob"}).success(function(res){
+
+        });
+
+    }
+    //添加新批次的二维码
+    $scope.add_new_qrs = function(){
+
+        if(!confirm('确定添加吗')){
+
+            return false;
+        }
+
+        var url = server + "device/create_device_qr";
+        var data = http_query($scope.newQrData);
+
+        $http.post(url,data).success(function(res)
+        {
+            alert('已完成');
+            $scope.get_device_qr();
+            $scope.triggle_show_qr_from();
+        });
+
+    }
+
+    $scope.triggle_show_qr_from = function(){
+
+        $scope.showAddDeviceQr = !$scope.showAddDeviceQr;
+    }
+
+   
+
+    $scope.get_device_qr = function(){
+
+        var url = server + "device/get_device_qrs";
+
+        $http.get(url).success(function(res){
+
+            $scope.deviceQrs = res.data.qrs.data;
+
+        });
+    }
+
+     //解绑设备
+    $scope.unbind_device = function(deviceId){
+
+        if(!confirm("确定解除绑定吗")){
+
+            return false;
+        }
+
+        var url = server + "device/unbind_device?deviceId="+deviceId;
+
+        $http.post(url).success(function(res)
+        {
+            if(res.code == 200){
+                alert('已解绑');
+                $scope.get_device_list();
+            }
+        });
     }
 
     $scope.upload_excel = function () {
@@ -310,24 +406,18 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
                 }
             });
     }
-
-
-    $scope.init = function () {
-    
-
-    }
-
-    $scope.init();
-
 })
 
 
 myapp.controller('userController', function ($scope, $http, $location,$stateParams) {
 
 
-    $scope.users = [];
-    $scope.departments = [];
+    $scope.users        = [];
+    $scope.departments  = [];
     $scope.userKeyWrods = "";//搜索用户关键字
+    $scope.suggestions  = [];
+
+    // 用户列表分页配置
     $scope.paginationConf = {
         currentPage: 0,
         totalItems: 8000,
@@ -339,7 +429,21 @@ myapp.controller('userController', function ($scope, $http, $location,$statePara
             {
                 $location.path('user/list/'+$scope.paginationConf.currentPage);
             }
-            
+        }
+    };
+
+    // 用户反馈分页配置
+    $scope.suggestionConf = {
+        currentPage: 0,
+        totalItems: 8000,
+        itemsPerPage: 15,
+        pagesLength: 15,
+        perPageOptions: [10, 20, 30, 40, 50],
+        onChange: function () {
+            if($scope.suggestionConf.currentPage > 0)
+            {
+                $location.path('user/suggestions/'+$scope.suggestionConf.currentPage);
+            }
         }
     };
 
@@ -371,16 +475,19 @@ myapp.controller('userController', function ($scope, $http, $location,$statePara
     }
 
 
-    $scope.down_department = function () {
+    $scope.get_suggestions = function () {
 
+        var url = server + "user/suggestions?page=" + $stateParams.page;
 
-        var url = server + "down_department";
-        $http.get(url).success(function () {
+        $http.post(url).success(function(res){
 
-            alert('同步完成');
-            $scope.get_department_list();
+            var suggestion = res.data.suggestions;
+
+            $scope.suggestions                  = suggestion.data;
+            $scope.suggestionConf.currentPage   = suggestion.current_page;
+            $scope.suggestionConf.totalItems    = suggestion.total;
+            $scope.suggestionConf.itemsPerPage  = suggestion.per_page;
         })
-
     }
 
     $scope.down_user = function () {
@@ -444,23 +551,6 @@ myapp.controller('userController', function ($scope, $http, $location,$statePara
         });
 
     }
-
-
-    $scope.init = function () {
-        var path = $location.url();
-        switch (path) {
-            case '/user/list':
-                $scope.get_user_list(1);
-                break;
-            case '/department':
-                $scope.get_department_list();
-                break;
-        }
-    }
-
-    $scope.init();
-
-
 })
 
 myapp.controller('countController', function ($scope, $http, $location) {
@@ -1285,34 +1375,45 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
     };
 
 
+   
+    $scope.init_court_type = function(){
 
-    var line = 21;
-    var list = 25;
+        //初始化球场配置
+        var line = 42;
+        var list = 26;
 
-    for(var i=1;i<list;i++)
-    {
-        $scope.courtTable.line.push(i);
-    }
-
-
-    for(var i=65;i<65+line;i++)
-    {
-        $scope.courtTable.list.push(String.fromCharCode(i));
-
-    }
-
-    for(var i=0;i<line-1;i++)
-    {
-        var singline = [];
-
-        for(var j=0;j<list-1;j++)
+        for(var i=1;i<list;i++)
         {
-            singline.push({"b":(Math.random()*10).toFixed(2),"l":(Math.random()*10).toFixed(2)});
+            $scope.courtTable.line.push(i);
         }
-        $scope.courtTable.table.push(singline);
+
+        var mid = 65+ line/2 -1;
+        for(var i=65;i<65+line;i++){
+
+            if(i < mid){
+                
+                $scope.courtTable.list.push(String.fromCharCode(i));    
+
+            }else{
+
+                $scope.courtTable.list.push(String.fromCharCode(mid-(i-(mid-1))));    
+            }
+        }
+
+        for(var i=0;i<line-1;i++){
+
+            var singline = [];
+
+            for(var j=0;j<list-1;j++)
+            {
+                singline.push({"b":(Math.random()*10).toFixed(2),"l":(Math.random()*10).toFixed(2)});
+            }
+            $scope.courtTable.table.push(singline);
+        }
+
+
+        $scope.get_court_type_detail();
     }
-
-
 
 
     $scope.tdhover = function(line,list)
@@ -1324,10 +1425,37 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
     }
 
 
-
+    /*保存球场角度配置信息*/
     $scope.save_court_config = function()
     {
-        console.log($scope.courtTable.table);
+        var angles  = $scope.courtTable.table;
+
+        var angleArr= [];
+
+        for(var line in angles){
+
+            angleArr[line] = [];
+
+            for(var p of angles[line]){
+
+                angleArr[line].push(p.angle);
+            }
+        }
+
+        var url = server + "court/edit_court_config";
+
+        var data = {
+            courtTypeId:$scope.courtTypeId,
+            angles: JSON.stringify(angleArr)
+        };
+
+        data = http_query(data);
+        $http.post(url,data).success(function(res){
+
+
+            alert('ok');
+
+        })
     }
 
     /*
@@ -1335,7 +1463,22 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
     */
     $scope.get_court_type_detail = function()
     {
-        var url = server + "/court/typeDetail?courtTypeId="+$scope.courtTypeId;
+
+        var url = server + "court/typeDetail?courtTypeId="+$scope.courtTypeId;
+
+        $http.post(url).success(function(res){
+
+            //把角度信息存入到球场数据中
+            var angles = res.data.configInfo.angles;
+            for(var line in angles){
+
+                for(var td of angles[line]){
+                    td.angle = td.type + td.angle;
+                }
+            }
+
+            $scope.courtTable.table = angles;
+        });
 
     }
 
@@ -1343,27 +1486,20 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
     /*
     *球场列表
     */
-    $scope.get_court_list = function(page)
-    {
+    $scope.get_court_list = function(page){
 
         var url = server + "court/court_list?page=" + page;
 
         $http.post(url).success(function(res)
         {
-
             var courtData = res.data.courtList;
 
             $scope.courtList = courtData.data;
             $scope.courtListPaginationConf.currentPage = courtData.current_page;
             $scope.courtListPaginationConf.totalItems = courtData.total;
             $scope.courtListPaginationConf.itemsPerPage = courtData.per_page;
-
-
         })
-
     }
-
-
 })
 
 myapp.controller('sqmatchController',function($scope,$http,$location,$stateParams){

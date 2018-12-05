@@ -27,6 +27,11 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl: 'device-add.html?t=' + Math.random(),
             controller: 'deviceController'
         })
+        .state('device/device-qr',{
+            url:"/device/device-qr",
+            templateUrl:'device-qr.html?t=' + Math.random(),
+            controller:'deviceController'
+        })
         .state('question-upload', {
             url: '/question-upload',
             templateUrl: 'question-upload.html?t=' + Math.random(),
@@ -38,7 +43,11 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl: 'user-list.html?t=' + Math.random(),
             controller: 'userController'
         })
-
+        .state("user/suggestions/:page",{ //用户反馈
+            url:"/user/suggestions/:page",
+            templateUrl:"user-suggestion.html?t=" + Math.random(),
+            controller:"userController"
+        })
         //比赛
         .state('match/list/:page', {
             url: "/match/list/:page",

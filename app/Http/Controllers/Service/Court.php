@@ -1102,8 +1102,12 @@ class Court{
         //旋转 缩放 每个点
         foreach($points as $key => $p)
         {
+            //旋转
             $gps   = change_coordinate($centerx,$centery,$p['x'],$p['y'],$angle);
+
+            //缩放
             $gps   = self::move_and_scroll_point($origin['x'],$origin['y'],$gps['x'],$gps['y'],$perx,$pery);
+
             $points[$key] = $gps;
         }
         return $points;

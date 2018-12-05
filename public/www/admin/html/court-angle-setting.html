@@ -1,4 +1,4 @@
-<div>
+<div ng-init="init_court_type()">
 
     <table class="table table-bordered court-table">
         <tr>
@@ -9,9 +9,11 @@
 
         <tr ng-repeat="line in courtTable.table" ng-init="lineIndex = $index">
             <td class="list-{{lineIndex}}">{{courtTable.list[lineIndex]}}</td>
-            <td ng-repeat="td in line" ng-init="listIndex = $index" class="td{{lineIndex}}{{listIndex}}" data-line="{{lineIndex}}" data-list="{{listIndex}}" ng-mouseover="tdhover(listIndex,lineIndex)">
-                <p><input  ng-model="td.b"></p>
-                <p><input  ng-model="td.l"></p>
+            <td ng-repeat="td in line" ng-init="listIndex = $index" class="td{{lineIndex}}{{listIndex}} " data-line="{{lineIndex}}" data-list="{{listIndex}}" ng-mouseover="tdhover(listIndex,lineIndex)">
+                <!-- <p><input  ng-model="td.b"></p>
+                <p><input  ng-model="td.l"></p> -->
+                <!-- <p><input  ng-model="td.type"></p> -->
+                <p ><input class="shoot-{{td.angle.substr(0,1)}}" ng-model="td.angle"></p>
             </td>
         </tr>
 
@@ -33,6 +35,19 @@
 </div>
 
 <style>
+    .shoot-N{
+        background: #7AC228;
+        color:#000;
+    }
+    .shoot-D{
+        background: green;
+        color:#fff;
+    }
+
+    .shoot-X{
+        background: red;
+        color:#fff;   
+    }
     .court-table p
     {
         margin:0;

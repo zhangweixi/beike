@@ -10,6 +10,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseSuggestionModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,6 +37,17 @@ class UserController extends Controller
         $users  = $users->paginate(20);
 
         return apiData()->add('users',$users)->send();
+    }
+
+
+    /**
+     * 用户反馈列表
+     * */
+    public function suggestions(Request $request){
+
+        $suggestions = BaseSuggestionModel::suggestions();
+
+        return apiData()->add("suggestions",$suggestions)->send();
     }
 }
 

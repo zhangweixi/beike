@@ -69,6 +69,7 @@
                         <td class="last">
                             <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_device(d.device_id)">删除</button></a>
                             <a href="#device/edit/{{d.device_id}}"><button class="btn btn-xs btn-info">编辑</button></a>
+                            <button ng-if="d.owner > 0" class="btn btn-xs btn-warning" ng-click="unbind_device(d.device_id)">解绑</button>
                         </td>
                     </tr>
                     </tbody>
