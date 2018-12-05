@@ -167,7 +167,10 @@ class DeviceController extends Controller
         //创建二维码
         foreach($prefixArr as $prefix)
         {
-            $dir        = public_path("qr/" . $prefix);
+
+            $id = DB::table('device_qr')->insertGetId(['prefix'=>$prefix,'length'=>$length,'num'=>$qrnum,'created_at'=>date_time()]);
+
+            $dir        = public_path("qr/" . $id);
             is_dir($dir)?   '' : mkdir($dir);
 
             $tempArr    = [];
@@ -192,8 +195,6 @@ class DeviceController extends Controller
                     break;
                 }
             }
-
-            DB::table('device_qr')->insert(['prefix'=>$prefix,'length'=>$length,'num'=>$qrnum,'created_at'=>date_time()]);
 
             if($addNum){
 
@@ -221,7 +222,7 @@ class DeviceController extends Controller
             imagefilledrectangle($bg, 0, 0, 1000, 1200, $white);
             $black = imagecolorallocate($bg, 0, 0, 0);
             imagecopy($bg,$source,0,0,0,0,1000,1000);
-            imagettftext($bg,70,0,300,1060,$black,public_path("fonts/PingFangRegular.ttf"),substr($imgs[$i],0,8));
+            imagettftext($bg,85,0,50,1060,$black,public_path("fonts/PingFangRegular.ttf"),"匹配码:".substr($imgs[$i],0,8));
             imagepng($bg,$path);
             imagedestroy($bg);
             imagedestroy($source);
@@ -229,13 +230,13 @@ class DeviceController extends Controller
     }
 
     public function download_qr(Request $request){
-        header ( "Content-Type: application/zip" ); // zip格式的
 
         $prefix     = $request->input('prefix');
+        $id         = $request->input('id');
 
-        $dir        = public_path("qr/".$prefix);
+        $dir        = public_path("qr/".$id);
 
-        $zipFile    = $dir.".zip"; // 最终生成的文件名（含路径）
+        $zipFile    = $dir."-".$prefix.".zip"; // 最终生成的文件名（含路径）
 
         if(!file_exists($zipFile)){
 
@@ -260,17 +261,14 @@ class DeviceController extends Controller
             $zip->close(); // 关闭
         }
 
-        response($zipFile)->header('Content-Type','application/octet-stream');
-
+        response($zipFile)->header('Content-Type','application/zip');
         return response()->download($zipFile);
+    }
 
-        //下面是输出下载;
-        header ( "Cache-Control: max-age=0" );
-        header ( "Content-Description: File Transfer" );
-        header ( 'Content-disposition: attachment; filename=' . basename ( $zipFile ) ); // 文件名
 
-        header ( "Content-Transfer-Encoding: binary" ); // 告诉浏览器，这是二进制文件
-        header ( 'Content-Length: ' . filesize ( $zipFile ) ); // 告诉浏览器，文件大小
-        @readfile ( $zipFile );//输出文件;
+    public function delete_qr(Request $request)
+    {
+        $prefix     = $request->input('id');
+        DB::table('device_qr')->where('id',$prefix)->delete();
     }
 }

@@ -213,37 +213,10 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 
     $scope.delete_qrs = function(){
 
-        alert('待开发');
+        
     }
-
-    $scope.download_qr = function(prefix){
-
-    var url = server + "device/download_qr?prefix="+prefix;
 
     
-    const xhr = new XMLHttpRequest();
-
-    xhr.open('POST', url, true);        // 定义请求方式
-
-    xhr.setRequestHeader('X-CSRF-TOKEN',$('meta[name="csrf-token"]').attr('content'));  // 添加 csrf 令牌
-
-    xhr.responseType = "blob";    // 返回类型blob
-
-    // 定义请求完成的处理函数，请求前也可以增加加载框/禁用下载按钮逻辑
-
-    xhr.onload = function () {};
-
-    // 发送ajax请求
-
-    xhr.send()
-
-    return;
-
-        $http.get(url,{},{responseType: "blob"}).success(function(res){
-
-        });
-
-    }
     //添加新批次的二维码
     $scope.add_new_qrs = function(){
 
@@ -257,7 +230,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 
         $http.post(url,data).success(function(res)
         {
-            alert('已完成');
+            alert('生成完成');
             $scope.get_device_qr();
             $scope.triggle_show_qr_from();
         });
