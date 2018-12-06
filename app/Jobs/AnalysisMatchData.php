@@ -1103,25 +1103,67 @@ class AnalysisMatchData implements ShouldQueue
     {
         //sensor数据
         $dataDir    = self::matchdir($matchId);
-        $sensorPath = $dataDir."sensor-{$foot}.txt";
-        $fsensor    = fopen($sensorPath,'r');
+
 
         //将所有数据读取到数组中
-        $sensors    = file($sensorPath);
+        $sensorPath = $dataDir."sensor-{$foot}.txt";
+        $sensor     = file_to_array($sensorPath);
+        $sensors    = [];
+
+        foreach($sensor as $data){
+
+            $timeStage  = $data[4];
+
+            if(!isset($sensors[$timeStage]))
+            {
+                $sensors[$timeStage] = [];
+            }
+            array_push($sensors[$timeStage],$data);
+        }
 
 
         //罗盘数据
         $compassPath= $dataDir."compass-{$foot}.txt";
-        $fcompass   = fopen($compassPath,'r');
+        $compass    = file_to_array($compassPath);
 
 
         //结果文件
         $resultPath = $dataDir."sensor-compass-{$foot}.txt";
-        $fresult    = fopen($resultPath,'a+');
+        $fresult    = fopen($resultPath,'w+');
 
-        $maxlength  = count($sensors)-1;
-        $p=1;
 
+        foreach($compass as $singleCompass){
+
+            $stage          = $singleCompass[4];
+            $time           = $singleCompass[3];
+            $currentSensor  = null;
+
+            foreach($sensors[$stage] as $sensor){
+
+                if($sensor[3] > $time){
+
+                    $currentSensor  = $sensor;
+                }
+            }
+            
+            if(is_null($currentSensor)){ //如果找不到，则取最后一条
+
+                $total          = count($sensors[$stage]);
+
+                $currentSensor  = $sensors[$stage][$total-1];
+            }
+
+            $data   = array_merge(array_splice($currentSensor,0,3),$singleCompass);
+            fwrite($fresult,implode(",",$data));
+        }
+        fclose($fresult);
+
+        return $resultPath;
+
+        $fcompass = "";
+        $maxlength = "";
+        $p = "";
+        $fsensor = "";
         while(!feof($fcompass))
         {
             $linecompass    = fgets($fcompass);
