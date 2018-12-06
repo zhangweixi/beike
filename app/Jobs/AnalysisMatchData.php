@@ -626,10 +626,11 @@ class AnalysisMatchData implements ShouldQueue
      * */
     private function handle_gps_data($dataSource,$matchId)
     {
-        $dataList    = explode("23232323",$dataSource); //gps才有232323
-        $dataList    = array_filter($dataList);
+        $dataList       = explode("23232323",$dataSource); //gps才有232323
+        $dataList       = array_filter($dataList);
 
         $insertData     = [];
+        $types          = ["00000000","01000000","02000000","03000000","04000000"];
 
         foreach($dataList as $key =>  $single)
         {
@@ -639,7 +640,7 @@ class AnalysisMatchData implements ShouldQueue
             $timestamp  = HexToTime($timestamp);
 
 	
-            if($length == "00000000" || $length == "01000000" || $length == "02000000" || $length == "03000000"){
+            if(in_array($length,$types)){
 
                 if($length == "00000000"){
 
@@ -652,6 +653,7 @@ class AnalysisMatchData implements ShouldQueue
                     case "01000000": $type = "P";break;
                     case "02000000": $type = "C";break;
                     case "03000000": $type = "E";break;
+                    case "04000000": $type = "T";break;
                 }
 
                 $lon    = 0;

@@ -200,6 +200,8 @@ class DeviceController extends Controller
 
                 $this->add_qr_num($dir);
             }
+
+            DB::table('device_qr')->where("id",$id)->update(['status'=>1]);
         }
 
         return apiData()->add('data',$request->all())->send();
