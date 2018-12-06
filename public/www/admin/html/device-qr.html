@@ -67,6 +67,7 @@
                         <th class="column-title">长度</th>
                         <th class="column-title">数量</th>
                         <th class="column-title">生产日期</th>
+                        <th class="column-title">状态</th>
                         <th class="column-title">下载</th>
                         <th class="column-title">操作</th>
                     </tr>
@@ -79,9 +80,10 @@
                         <td class="col-sm">{{d.length}}</td>
                         <td class="col-sm">{{d.num}}</td>
                         <td class=" ">{{d.created_at}}</td>
+                        <td class=" "><text ng-if="d.status == 1">完成</text></td>
                         <td class="col-sm"><a class="btn btn-xs btn-primary" href="/api/admin/device/download_qr?prefix={{d.prefix}}&id={{d.id}}" target="downqr">下载</a></td>
                         <td class="last">
-                            <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_qrs(d.id)">删除</button></a>
+                            <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_qr(d.id)">删除</button></a>
                         </td>
                     </tr>
                     </tbody>

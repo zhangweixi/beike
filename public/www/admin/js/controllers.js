@@ -211,9 +211,18 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
         })
     }
 
-    $scope.delete_qrs = function(){
-
+    $scope.delete_qr = function(id){
         
+        if(!confirm("确定删除吗")){
+
+            return false;
+        }
+        var url = server + "device/delete_qr?id=" + id;
+
+        $http.post(url).success(function(){
+
+            $scope.get_device_qr();
+        });
     }
 
     

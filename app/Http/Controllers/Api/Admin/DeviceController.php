@@ -131,7 +131,7 @@ class DeviceController extends Controller
      * */
     public function get_device_qrs(Request $request){
 
-        $qrs    = DB::table('device_qr')->paginate(40);
+        $qrs    = DB::table('device_qr')->where('deleted_at')->paginate(40);
 
         return apiData()->add('qrs',$qrs)->send();
     }
@@ -271,6 +271,8 @@ class DeviceController extends Controller
     public function delete_qr(Request $request)
     {
         $prefix     = $request->input('id');
-        DB::table('device_qr')->where('id',$prefix)->delete();
+        DB::table('device_qr')->where('id',$prefix)->update(['deleted_at'=>date_time()]);
+
+        return apiData()->send();
     }
 }
