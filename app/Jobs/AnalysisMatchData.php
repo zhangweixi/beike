@@ -298,8 +298,11 @@ class AnalysisMatchData implements ShouldQueue
 
                 }else{
 
-                    if($flagType == 'T'){
-                        $isSyncTime = 1;
+                    $isSyncTime = 1;
+
+                    if($flagType == 'T')
+                    {
+
                     }
 
                     if($flagType == "E")    //END 数据结束
