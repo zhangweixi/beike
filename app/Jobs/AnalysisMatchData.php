@@ -1104,7 +1104,6 @@ class AnalysisMatchData implements ShouldQueue
         //sensor数据
         $dataDir    = self::matchdir($matchId);
 
-
         //将所有数据读取到数组中
         $sensorPath = $dataDir."sensor-{$foot}.txt";
         $sensor     = file_to_array($sensorPath);
@@ -1125,84 +1124,60 @@ class AnalysisMatchData implements ShouldQueue
         //罗盘数据
         $compassPath= $dataDir."compass-{$foot}.txt";
         $compass    = file_to_array($compassPath);
+        $compassArr = [];
+
+        foreach($compass as $data){
+
+            $timeStage  = $data[4];
+
+            if(!isset($compassArr[$timeStage]))
+            {
+                $compassArr[$timeStage] = [];
+            }
+            array_push($compassArr[$timeStage],$data);
+        }
+
 
 
         //结果文件
         $resultPath = $dataDir."sensor-compass-{$foot}.txt";
         $fresult    = fopen($resultPath,'w+');
 
-
-        foreach($compass as $singleCompass){
-
-            $stage          = $singleCompass[4];
-            $time           = $singleCompass[3];
-            $currentSensor  = null;
-
-            foreach($sensors[$stage] as $sensor){
-
-                if($sensor[3] > $time){
-
-                    $currentSensor  = $sensor;
-                }
-            }
-            
-            if(is_null($currentSensor)){ //如果找不到，则取最后一条
-
-                $total          = count($sensors[$stage]);
-
-                $currentSensor  = $sensors[$stage][$total-1];
-            }
-
-            $data   = array_merge(array_splice($currentSensor,0,3),$singleCompass);
-            fwrite($fresult,implode(",",$data));
-        }
-        fclose($fresult);
-
-        return $resultPath;
-
-        $fcompass = "";
-        $maxlength = "";
-        $p = "";
-        $fsensor = "";
-        while(!feof($fcompass))
+        foreach($compassArr as $stage   => $compass)
         {
-            $linecompass    = fgets($fcompass);
-            if(!$linecompass)
+            $stageSensors   = $sensors[$stage];
+            $sensorNum      = count($stageSensors);
+            $begin          = 0;
+
+            foreach($compass as $singleCompass)
             {
-                break;
+                $time           = $singleCompass[3];
+                $currentSensor  = null;
+
+                for($i=$begin;$i<$sensorNum;$i++){
+
+                    $begin++;
+
+                    $sensor     = $stageSensors[$i];
+
+                    if($sensor[3] > $time){
+
+                        $currentSensor  = $sensor;
+                        break;
+                    }
+                }
+
+                if(is_null($currentSensor)){ //如果找不到，则取最后一条
+
+                    $currentSensor  = $stageSensors[$sensorNum-1];
+                }
+
+                $data   = array_merge(array_splice($currentSensor,0,3),$singleCompass);
+                fwrite($fresult,implode(",",$data)."\n");
             }
-            //移动三条 读一条
-
-            $newp = intval($p*2.5);
-
-            if($newp > $maxlength)
-            {
-                break;
-            }
-
-            //$linesensor = fgets($fsensor);
-            $linesensor   = $sensors[$newp];
-
-            //$str = "[".$p.",".$newp."]".trim($linecompass,"\n")."------------".$linesensor;
-            $linesensor = str_replace(" ",",",$linesensor);
-            $linecompass= str_replace(" ",",",$linecompass);
-
-            $str = trim(trim($linesensor,"\n")).",".trim(trim($linecompass,"\n"));
-
-            if($str)
-            {
-                $str .= "\n";
-            }
-
-            fputs($fresult,$str);
-
-            $p++;
         }
 
-        fclose($fcompass);
-        fclose($fsensor);
         fclose($fresult);
-
         return $resultPath;
     }
 
