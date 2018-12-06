@@ -171,5 +171,46 @@ class CourtController extends Controller
         return $points;
     }
 
+    /**
+     * 球场配置详情
+     * */
+    public function type_detail(Request $request){
+
+        $courtTypeId    = $request->input('courtTypeId');
+
+        $courtTypeInfo  = DB::table('football_court_type')->where('court_type_id',$courtTypeId)->first();
+        $courtTypeInfo->angles  = \GuzzleHttp\json_decode($courtTypeInfo->angles);
+
+        return apiData()->add("configInfo",$courtTypeInfo)->send();
+    }
+
+    /**
+     * 编辑球场信息
+     * */
+    public function edit_court_config(Request $request){
+
+        $courtTypeId    = $request->input('courtTypeId');
+
+        $angles         = $request->input('angles');
+        $angles         = \GuzzleHttp\json_decode($angles);
+
+        foreach($angles as $key => $line){
+
+            $lineAngles = [];
+
+            foreach($line as $p){
+
+                array_push($lineAngles,['type'=>substr($p,0,1),'angle'=>substr($p,1)]);
+            }
+
+            $angles[$key] = $lineAngles;
+        }
+
+        $data           = ['angles'=>\GuzzleHttp\json_encode($angles)];
+
+        DB::table('football_court_type')->where('court_type_id',$courtTypeId)->update($data);
+
+        return apiData()->add('d',$data)->send();
+    }
 
 }
