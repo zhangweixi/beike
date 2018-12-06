@@ -276,6 +276,8 @@ class AnalysisMatchData implements ShouldQueue
             $fd         = fopen($file,'a');
             $flags      = [];
 
+            $isSyncTime = 0;
+
             foreach($matchData['data'] as $data){
 
                 $flagType   = $data['type'];
@@ -284,18 +286,25 @@ class AnalysisMatchData implements ShouldQueue
 
                     switch ($type)
                     {
-                        case "gps":     $str = self::join_array($data,['lat','lon','timestamp']);   break;
-                        case "sensor":  $str = self::join_array($data,['ax','ay','az','timestamp']);break;
-                        case "compass": $str = self::join_array($data,['x','y','z','timestamp']);   break;
+                        case "gps":     $str = self::join_array($data,['lat','lon','timestamp',$isSyncTime]);   break;
+                        case "sensor":  $str = self::join_array($data,['ax','ay','az','timestamp',$isSyncTime]);break;
+                        case "compass": $str = self::join_array($data,['x','y','z','timestamp',$isSyncTime]);   break;
                     }
+
                     fwrite($fd,$str."\n");//将数据写入到文件中
+                    $isSyncTime = 0;
 
                 }else{
+
+                    if($flagType == 'T'){
+                        $isSyncTime = 1;
+                    }
 
                     if($flagType == "E")    //END 数据结束
                     {
                         $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
                     }
+
                     array_push($flags,array_merge($data,$dataBaseInfo));
                 }
             }
