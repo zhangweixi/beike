@@ -54,6 +54,8 @@ class MatchController extends Controller
             'court_id'  => $courtId
         ];
 
+        $weather    = $this->get_weather();
+        $matchInfo  = array_merge($matchInfo,$weather);
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
         $timestamp  = getMillisecond();
@@ -66,6 +68,49 @@ class MatchController extends Controller
             ->send();
     }
 
+    /**
+     * 获取天气
+     * */
+    public function get_weather(){
+        $host = "https://ali-weather.showapi.com";
+        $path = "/gps-to-weather";
+        $method = "GET";
+        $appcode = config('aliyun.appCode');
+        $headers = array();
+        array_push($headers, "Authorization:APPCODE " . $appcode);
+        $querys = "from=5&lat=31.169959&lng=121.427668";
+
+        $bodys = "";
+        $url = $host . $path . "?" . $querys;
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl, CURLOPT_FAILONERROR, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        if (1 == strpos("$".$host, "https://"))
+        {
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+        }
+
+        $result     = curl_exec($curl);
+        $result     = \GuzzleHttp\json_decode($result);
+
+        if($result->showapi_res_code != 0){
+
+            return [];
+        }
+
+        $weather    = $result->showapi_res_body->now;
+        $weather    = [
+            "temperature"   => $weather->temperature,
+            "weather"       => $weather->weather
+        ];
+        return $weather;
+    }
 
     /*
      * 结束比赛
@@ -152,7 +197,7 @@ class MatchController extends Controller
 
         if($hasFile)
         {
-            //return apiData()->send(2001,'数据重复上传');
+            return apiData()->send(2001,'数据重复上传');
         }
 
         //数据文件存储在磁盘中
