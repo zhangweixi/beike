@@ -229,7 +229,7 @@ class AnalysisMatchData implements ShouldQueue
         switch ($type)
         {
             case  "sensor": $datas = $this->handle_sensor_data($dataStr,$matchId,$syncTime);    break;
-            case     "gps": $datas = $this->handle_gps_data($dataStr,$matchId);                 break;
+            case     "gps": $datas = $this->handle_gps_data($dataStr,$matchId,$syncTime);       break;
             case "compass": $datas = $this->handle_compass_data($dataStr,$matchId,$syncTime);   break;
         }
 
@@ -638,14 +638,14 @@ class AnalysisMatchData implements ShouldQueue
      * @param $matchId integer 比赛ID
      * @return Array
      * */
-    private function handle_gps_data($dataSource,$matchId)
+    private function handle_gps_data($dataSource,$matchId,$syncTime)
     {
         $dataList       = explode("23232323",$dataSource); //gps才有232323
         $dataList       = array_filter($dataList);
 
         $insertData     = [];
         $types          = ["00000000","01000000","02000000","03000000","04000000"];
-
+        $validDataNum   = 0;
         foreach($dataList as $key =>  $single)
         {
             //时间（16）长度（8）数据部分（n）
@@ -654,7 +654,7 @@ class AnalysisMatchData implements ShouldQueue
             $timestamp  = HexToTime($timestamp);
 
 	
-            if(in_array($length,$types)){
+            if(in_array($length,$types)){ //非GPS正式内容
 
                 if($length == "00000000"){
 
@@ -672,6 +672,7 @@ class AnalysisMatchData implements ShouldQueue
 
                 $lon    = 0;
                 $lat    = 0;
+                $syncTime   = $timestamp;
 
             }else{
 
@@ -681,6 +682,9 @@ class AnalysisMatchData implements ShouldQueue
                 $type       = "";
 
                 //数据即便不合格，也不能丢弃
+                $validDataNum++;
+                $timestamp  = $syncTime + $validDataNum * 10;
+
                 if(count($detailInfo)<15) {
 
                     $lat    = 0;
