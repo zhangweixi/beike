@@ -308,6 +308,7 @@ class AnalysisMatchData implements ShouldQueue
                     if($flagType == "E")    //END 数据结束
                     {
                         $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
+
                     }
 
                     array_push($flags,array_merge($data,$dataBaseInfo));
@@ -868,7 +869,20 @@ class AnalysisMatchData implements ShouldQueue
         $dataDir        = self::matchdir($matchId);
 
         //1.同步两台设备的数据一致性
-        $this->sync_file_num_same($matchId);
+        //$this->sync_file_num_same($matchId);
+        $files  = [
+            ['file'=>'gps-L.txt',       'typeKey'  => 3,'timeKey'  =>2,'hz'=>100],
+            ['file'=>'sensor-L.txt',    'typeKey'  => 4,'timeKey'  =>3,'hz'=>10],
+            ['file'=>'sensor-R.txt',    'typeKey'  => 4,'timeKey'  =>3,'hz'=>10],
+            ['file'=>'compass-L.txt',   'typeKey'  => 4,'timeKey'  =>3,'hz'=>25],
+            ['file'=>'compass-R.txt',   'typeKey'  => 4,'timeKey'  =>3,'hz'=>25],
+        ];
+
+        foreach($files as $file)
+        {
+            self::reset_data_time($dataDir.$file['file'],$file['typeKey'],$file['timeKey'],$file['hz']);
+        }
+
 
         //2.将国际GPS转换成百度GPS
         //$inputGps   = $dataDir."gps-L.txt";
@@ -904,6 +918,69 @@ class AnalysisMatchData implements ShouldQueue
 
     }
 
+    /**
+     * 重置数据的时间
+     * @param $file string 文件路径
+     * @param $typeKey integer 类型KEY
+     * @param $timeKey integer 时间主键
+     * @param $hz integer 数据频率
+     * */
+    public static function reset_data_time($file,$typeKey,$timeKey,$hz){
+
+        $dataArr    = file_to_array($file);
+
+        //拆分成许多同步段
+        $stagesData  = [];
+
+        $synctimeNum = -1;
+
+        foreach($dataArr as $data){
+
+            if($data[$typeKey] == 1){
+
+
+                if($synctimeNum > -1){
+
+                    $stagesData[$synctimeNum]['endTime'] = $data[$timeKey];
+                }
+
+                $synctimeNum++;
+
+                $stagesData[$synctimeNum] = [
+                    'data'      => [],
+                    'beginTime' => $data[$timeKey],
+                    'endTime'   => 0,
+                    'num'       => 0
+                ];
+            }
+            $stagesData[$synctimeNum]['num']++;
+            array_push($stagesData[$synctimeNum]['data'],$data);
+        }
+
+        $fs         = fopen($file,'w+');
+
+        foreach ($stagesData as $type => $stage){
+
+            if($stage['endTime'] > 0){
+
+                $perTime    = ($stage['endTime'] - $stage['beginTime']) / $stage['num'];
+
+            }else{
+
+                $perTime    = $hz;
+            }
+
+            foreach($stage['data'] as $num => $data)
+            {
+
+                $data[$timeKey] = substr($stage['beginTime'] + $perTime * $num,0,13);
+                $data[$typeKey] = $type;
+                fwrite($fs,implode(" ",$data)."\n");
+            }
+        }
+
+        fclose($fs);
+    }
 
     /**
      * 同步文件数量一致
