@@ -647,6 +647,8 @@ class AnalysisMatchData implements ShouldQueue
         $insertData     = [];
         $types          = ["00000000","01000000","02000000","03000000","04000000"];
         $validDataNum   = 0;
+
+
         foreach($dataList as $key =>  $single)
         {
             //时间（16）长度（8）数据部分（n）
@@ -654,7 +656,6 @@ class AnalysisMatchData implements ShouldQueue
             $length     = substr($single,16,8);
             $timestamp  = HexToTime($timestamp);
 
-	
             if(in_array($length,$types)){ //非GPS正式内容
 
                 if($length == "00000000"){
@@ -696,9 +697,10 @@ class AnalysisMatchData implements ShouldQueue
                     $lat       = gps_to_gps(floatval($detailInfo[2]));
                     $lon       = gps_to_gps(floatval($detailInfo[4]));
 
-                    if($lat == 0 || $lon == 0){
+                    if($lat != 0 && $lon != 0 && false){
 
                         $gps    = gps_to_bdgps(['lat'=>$lat,'lon'=>$lon]);
+
                         $lat    = $gps['lat'];
                         $lon    = $gps['lon'];
                     }
@@ -716,7 +718,6 @@ class AnalysisMatchData implements ShouldQueue
 
             array_push($insertData,$otherInfo);
         }
-	
         return $insertData;
     }
 
