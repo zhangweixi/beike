@@ -276,7 +276,7 @@ class AnalysisMatchData implements ShouldQueue
             $fd         = fopen($file,'a');
             $flags      = [];
 
-            $isSyncTime = 0;
+            $isSyncTime = "";
 
             foreach($matchData['data'] as $data){
 
@@ -284,11 +284,13 @@ class AnalysisMatchData implements ShouldQueue
 
                 if($flagType == ""){
 
+                    $data['type'] = $isSyncTime;
+
                     switch ($type)
                     {
-                        case "gps":     $str = self::join_array($data,['lat','lon','timestamp',$isSyncTime]);   break;
-                        case "sensor":  $str = self::join_array($data,['ax','ay','az','timestamp',$isSyncTime]);break;
-                        case "compass": $str = self::join_array($data,['x','y','z','timestamp',$isSyncTime]);   break;
+                        case "gps":     $str = self::join_array($data,['lat','lon','timestamp',"type"]);   break;
+                        case "sensor":  $str = self::join_array($data,['ax','ay','az','timestamp',"type"]);break;
+                        case "compass": $str = self::join_array($data,['x','y','z','timestamp',"type"]);   break;
                     }
 
                     fwrite($fd,$str."\n");//将数据写入到文件中
