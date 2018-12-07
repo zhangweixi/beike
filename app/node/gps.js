@@ -11,12 +11,17 @@ var fs 			= require('fs');
 var path 		= require('path');
 
 
-
+if(typeof(argv.h) != 'undefined'){
+	
+	console.log('single gps: node gps.js --outtype=str --lat=31.344  --lon=121.34323');
+	console.log('file   gps: node gps.js --outtype=file --input=inputfile --output=outfile');
+	return;
+}
 
 if(typeof(argv.outtype) == 'undefined'){
 
-	console.log('need input a output type:--outtype file ,--outtype str');
-
+	console.log('need input a output type:--outtype file or --outtype str');
+	return;
 }
 
 var outType = argv.outtype;
@@ -39,8 +44,8 @@ if(outType == 'file'){  //文件的形式保存
 
 		data.splice(data.length-1,1);
 
+	var originGps= []; //原始GPS
 
-	var zeroKeys = [];	
 	for(var i in data){
 
 		var d 	= data[i].split(" ");
@@ -48,11 +53,7 @@ if(outType == 'file'){  //文件的形式保存
 		var lat = d[0] * 1;
 
 		data[i] = [lon,lat];
-
-		if(lon == 0)
-		{
-			zeroKeys.push(i);
-		}
+		originGps.push(d);
 	}
 
 }else if(outType == 'str'){ //字符串的形式返回
@@ -83,27 +84,28 @@ var result = gcoord.transform(
   	gcoord.BD09               // 目标坐标系
 );
 
-data = result.coordinates;
+var resultGps = result.coordinates;
 
 if(outType == 'str'){
 
-	console.log(data[0]);
+	console.log(resultGps[0]);
 	return;
-}
-
-
-//以下以文件的形式保存
-for(var zeroKey of zeroKeys){
-
-	data[zeroKey] = [0,0];
 }
 
 var gpsString = "";
 
-for(var gps of data){
 
-	gpsString  = gpsString +  gps[1] + " " + gps[0] + "\n";
+for(var key in originGps){
 
+	var gps 	= originGps[key];
+
+	if(gps[0] != 0 || gps[1] != 0)
+	{
+        gps[0] = resultGps[key][1];
+        gps[1] = resultGps[key][0];
+	}
+
+	gpsString  = gpsString +  gps.join(" ") + "\n";
 }
 
 fs.writeFile(outputFile,gpsString,function(){
