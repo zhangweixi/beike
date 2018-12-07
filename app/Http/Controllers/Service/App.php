@@ -68,7 +68,7 @@ class App extends Controller{
         return apiData()
             ->set_data('appVersion',$appVersion)
             ->set_data('deviceVersion',$deviceVersion)
-            ->set_data("deviceMustUpgrade",0)
+            ->set_data("deviceMustUpgrade",$deviceVersion->must_upgrade)
             ->send();
     }
 
