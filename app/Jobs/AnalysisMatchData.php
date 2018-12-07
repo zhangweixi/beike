@@ -697,13 +697,6 @@ class AnalysisMatchData implements ShouldQueue
                     $lat       = gps_to_gps(floatval($detailInfo[2]));
                     $lon       = gps_to_gps(floatval($detailInfo[4]));
 
-                    if($lat != 0 && $lon != 0 && false){
-
-                        $gps    = gps_to_bdgps(['lat'=>$lat,'lon'=>$lon]);
-
-                        $lat    = $gps['lat'];
-                        $lon    = $gps['lon'];
-                    }
                 }
             }
 		
@@ -886,11 +879,11 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //2.将国际GPS转换成百度GPS
-        //$inputGps   = $dataDir."gps-L.txt";
-        //$outGps     = $dataDir."gps-L.txt";
-        //$cmd        = "node ". app_path('node/gps.js') . " --outtype=file --input={$inputGps} --output={$outGps} ";
-        //$cmd        = str_replace("\\","/",$cmd);
-        //$result     = shell_exec($cmd);
+        $inputGps   = $dataDir."gps-L.txt";
+        $outGps     = $dataDir."gps-L.txt";
+        $cmd        = "node ". app_path('node/gps.js') . " --outtype=file --input={$inputGps} --output={$outGps} ";
+        $cmd        = str_replace("\\","/",$cmd);
+        $result     = shell_exec($cmd);
 
 
         //3.0 生成热点图占用时间比较久，异步调用
