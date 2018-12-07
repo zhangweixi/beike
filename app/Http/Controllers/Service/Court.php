@@ -44,8 +44,6 @@ class Court{
     private $lonNum = 10;
     private $latNum = 20;
 
-    private $centerPoints = [];
-
     public function __construct()
     {
         bcscale (10);
@@ -210,169 +208,10 @@ class Court{
     }
 
 
-    /**
-     * 设置中心点
-     * @param $points array 中心点集合
-     * */
-    public function set_centers(array $points)
-    {
-        $this->centerPoints = $points;
-    }
-
-    /**
-     * 找到最近的点
-     * @param $point GPSPoint 要找的点
-     * @return array
-     * */
-    public function find_nearest_point(GPSPoint $point)
-    {
-        $minDis     = 100000000;
-
-        $position   = [0,0];
-
-        foreach($this->centerPoints as $key1 => $line)
-        {
-            $preDis = 100000000;
-
-            foreach($line as $key2 => $p)
-            {
-                $a      = bcmul(bcsub($point->lat,$p->lat),10000);
-                $b      = bcmul(bcsub($point->lon,$p->lon),10000);
-
-                $dis    = bcadd(bcmul($a,$a),bcmul($b,$b));
-
-                if($dis < $minDis)
-                {
-                    $minDis = $dis;
-                    $position = [$key1,$key2];
-                }
-
-                //如果当前距离大于上一个点的距离，说明越来越远，则不用计算后面的点了
-                if($dis > $preDis)
-                {
-                    break;
-                }
-                $preDis = $dis;
-            }
-        }
-
-        return $position;
-    }
-
-    public  $middlePoints   = [];
-
-    /**
-     * 找到最近的点
-     * @param $point GPSPoint 要找的点
-     * @return array
-     * */
-    public function find_nearest_point1(GPSPoint $point)
-    {
-        //找到中间一列
-        if($this->middlePoints == [])
-        {
-            foreach($this->centerPoints as $key=>$line)
-            {
-                array_push($this->middlePoints,$line[ceil($this->latNum/2)]);
-            }
-        }
-
-        //寻找最近的那一列
-        $key1    = $this->min_dis_position($point,$this->middlePoints);
-
-
-
-        $linePoints = $this->centerPoints[$key1];
-
-
-        $key2   = $this->min_dis_position($point,$linePoints);
-        $position   = [$key1,$key2];
-
-        return $position;
-    }
-
-    /**
-     * 获得最小距离的位置
-     * @param $p GPSPoint
-     * @param $points GPSPoint
-     * @return integer
-     * */
-    private function min_dis_position($p,$points)
-    {
-        $minDis = 100000000;
-        $preDis = 100000000;
-
-        $posi   = null;
-
-        foreach($points as $key => $point)
-        {
-            $a      = bcmul(bcsub($point->lat,$p->lat),1000);
-            $b      = bcmul(bcsub($point->lon,$p->lon),1000);
-
-            $dis    = bcadd(bcmul($a,$a),bcmul($b,$b));
-
-            if($dis < $minDis)
-            {
-                $minDis     = $dis;
-                $posi       = $key;
-            }
-
-            //如果当前距离大于上一个点的距离，说明越来越远，则不用计算后面的点了
-            if($dis > $preDis)
-            {
-                break;
-            }
-            $preDis = $dis;
-        }
-
-        return $posi;
-    }
-
-
-
     public $maxLat  = 0;
     public $minLat  = 0;
     public $maxLon  = 0;
     public $minLon  = 0;
-
-
-
-    /**
-     * 创建球场热点图
-     * @param $points GPSPoint[]
-     * @return  array
-     * */
-    public function create_court_hot_map($points)
-    {
-        $result   = [];
-
-        //初始化一个二维数组
-        for($i=0;$i<$this->lonNum;$i++)
-        {
-            for($j=0;$j<$this->latNum;$j++)
-            {
-                $result[$i][$j] = 0;
-            }
-        }
-
-        foreach($points as $point)
-        {
-            if(intval($point['lat']) == 0 ) {
-
-                continue;
-            }
-
-            $gpsPoint   = new GPSPoint($point['lat'],$point['lon']);
-
-            $position   = $this->find_nearest_point($gpsPoint);
-
-            $result[$position[0]][$position[1]]++;
-        }
-
-        return $result;
-    }
-
-
 
 
     /**
@@ -1174,5 +1013,26 @@ class Court{
         }
 
         return true;
+    }
+
+
+    /**
+     * 判断是否在球场
+     * 注意，这里一定是经过转换过的坐标
+     * @param $minx float
+     * @param $maxx float
+     * @param $miny float
+     * @param $maxy float
+     * @param $x float
+     * @param $y float
+     * @return boolean
+     * */
+    static function judge_in_court($minx,$maxx,$miny,$maxy,$x,$y)
+    {
+        if($x > $minx && $x < $maxx && $y > $miny && $y <$maxy){
+
+            return true;
+        }
+        return false;
     }
 }

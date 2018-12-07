@@ -1273,16 +1273,6 @@ class AnalysisMatchData implements ShouldQueue
 
         /***************/
 
-        /*======一下为老算法======*/
-        //$court      = new Court();
-        //$court->set_centers($points->center);
-        //$mapData    = $court->create_court_hot_map($gpsData);
-        //把结果存储到比赛结果表中
-        //$resultInfo = BaseMatchResultModel::find($matchId);
-
-        //$resultInfo->map_gps_run    = \GuzzleHttp\json_encode($mapData);
-        //$resultInfo->save();
-
         return true;
     }
 
@@ -2028,26 +2018,8 @@ class AnalysisMatchData implements ShouldQueue
                 $result[$y][$x] ++ ;
             }
         }
+
         return $result;
-
-        /*==== 以下部分为老算法 ===*/
-
-        //创建GPS图谱
-        if($this->tempCourtInfo == false)
-        {
-            $this->tempCourtInfo    = CourtModel::find($courtId);
-        }
-
-        $courtInfo  = $this->tempCourtInfo;
-        $points     = $courtInfo->boxs;
-        $points     =  \GuzzleHttp\json_decode($points);
-        $court      = new Court();
-
-        $court->set_centers($points->center);
-
-        $mapData    = $court->create_court_hot_map($gpsList);
-        $mapData    = \GuzzleHttp\json_encode($mapData);
-        return $mapData;
     }
 }
 
