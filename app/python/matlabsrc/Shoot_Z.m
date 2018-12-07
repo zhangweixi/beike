@@ -17,10 +17,6 @@ for i = 1:n
     end
     [~,location] = min(DIS); pass_data(i,8) = location;
 end
-% 判断球门位置
-
-LAT = (court(m,1)+court(m,3))/2; LON = (court(m,2)+court(m,4))/2; % 计算距离
-Court1 = court(m,1); Court2 = court(m,2); Court3 = court(m,3); Court4 = court(m,4); % 计算角度
 % 判断射门
 k = 1; shoot_result = [];
 for i = 1:n
@@ -31,21 +27,17 @@ for i = 1:n
     end
     if court(pass_data(i,8),4) == 1 % 近射进球
         if pass_data(i,2) == 1 % 长传
-            [distance,angle] = GPS_calculate(pass_data(i,5),pass_data(i,6),LAT,LON);
-            shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),angle,distance];
+            [LAT,LON,Distance,Angle,~] = Goal(pass_data(i,5),pass_data(i,6),court);
+            shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),Angle,Distance];
             k = k+1;
         end
         if pass_data(i,2) == 2 % 短传
             % 判断角度
-            [distance1,azimuth1] = GPS_calculate(pass_data(i,5),pass_data(i,6),Court1,Court2);
-            [distance2,azimuth2] = GPS_calculate(pass_data(i,5),pass_data(i,6),Court3,Court4);
-            C = [azimuth1,azimuth2];
+            [LAT,LON,Distance,Angle,C] = Goal(pass_data(i,5),pass_data(i,6),court);
             A = round((pass_data(i,3)-0.5)*compass_fs);
             B = round((pass_data(i,3)+0.5)*compass_fs); 
             if length(find(min(C)<compass_data(A:B,1)&compass_data(A:B,1)<max(C))) >= 1
-                distance = (distance1+distance2)/2;
-                angle = mean(compass_data(A:B,1));
-                shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),angle,distance];
+                shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),Angle,Distance];
                 k = k+1;
             end
         end
@@ -53,15 +45,11 @@ for i = 1:n
     if court(pass_data(i,8),3) == 1 % 远射进球
         if pass_data(i,2) == 1 % 长传
             % 判断角度
-            [distance1,azimuth1] = GPS_calculate(pass_data(i,5),pass_data(i,6),Court1,Court2);
-            [distance2,azimuth2] = GPS_calculate(pass_data(i,5),pass_data(i,6),Court3,Court4);
-            C = [azimuth1,azimuth2];
+            [LAT,LON,Distance,Angle,C] = Goal(pass_data(i,5),pass_data(i,6),court);
             A = round((pass_data(i,3)-0.5)*compass_fs);
             B = round((pass_data(i,3)+0.5)*compass_fs); 
             if length(find(min(C)<compass_data(A:B,1)&compass_data(A:B,1)<max(C))) >= 1
-                distance = (distance1+distance2)/2;
-                angle = mean(compass_data(A:B,1));
-                shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),angle,distance];
+                shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),Angle,Distance];
                 k = k+1;
             end
         end

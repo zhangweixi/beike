@@ -7,6 +7,7 @@ function LanQi(pathname,sensor_R,sensor_L,angle_R,angle_L,gps_L,court_config,gps
 addpath(genpath(pathname)); 
 % Sensor
 Sensor_R = importdata(sensor_R)/1000; Sensor_L = importdata(sensor_L)/1000;
+Sensor_R(:,4:5) = Sensor_R(:,4:5)*1000; Sensor_L(:,4:5) = Sensor_L(:,4:5)*1000;
 % Compass
 Compass_R = importdata(angle_R); Compass_L = importdata(angle_L); 
 % GPS
@@ -17,7 +18,7 @@ Court_config = importdata(court_config);
 gps_fs = 10; compass_fs = 40; sensor_fs = 100;
 
 %% GPS 数据处理
-[GPS_result,filterlat,filterlon] = GPS_handle(gps,gps_fs);
+[GPS_result,~,~] = GPS_handle(gps,gps_fs);
 
 %% 转向
 turn_result = Turn(gps,3);
@@ -27,7 +28,7 @@ turn_result = Turn(gps,3);
 Step_result =  Step_calculate(Sensor_R,Sensor_L,sensor_fs);
 
 % 触球数据：第一列代表左右脚1-右脚、0-左脚,第二列代表有球状态：1-长传、2-短传、3-触球。
-pass = Total_ball(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
+pass = Total_ball(Sensor_R,Sensor_L,gps);
 
 % 射门数据
 shoot_result = Shoot_Z(pass,Compass_R,Compass_L,compass_fs,Court_config);

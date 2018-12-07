@@ -2,10 +2,10 @@
 % 左右脚传球数据对比
 % 2018-11-20
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-function PASS = Total_ball(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs)
+function PASS = Total_ball(Sensor_R,Sensor_L,gps)
 % 左右脚的触球数据
-% pass = BALL(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
-pass = BALL_Z(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs);
+% pass = BALL(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs); BALL_Z(sensor_r,sensor_l,gps)
+pass = BALL_Z(Sensor_R,Sensor_L,gps);
 % 判断有没有数据
 if isempty(pass) 
     PASS = [];

@@ -54,8 +54,8 @@ if isempty(output)
     return;
 end
 % 第三次选择
-i = 1; k = 1; Flag = sigma2/4;
-while i <= length(output)
+i = 1; k = 1; Flag = sigma2/4; [U,~] = size(output);
+while i <= U
     if output(i,1)+Flag <= m
         B = find(D(output(i,1)-Flag : output(i,1)+Flag)~=1)+output(i,1)-Flag-1;
     else
@@ -92,7 +92,8 @@ while i <= length(output)
     i = i+1;
 end
 % 计算速度
-for i = 1:length(Output)
+[E,~] = size(Output);
+for i = 1:E
     [row,~] = find(Z == Output(i,2));
 %     V(i) = (sum(Z(row,1:column)) - column)/10; % 最高点数据
     V(i) = (sum(Z(row,:))-length(find(Z(row,:) ~= 0)))/10; % 全部数据

@@ -1,22 +1,22 @@
 clc; clear all;
-pathname = 'G:\1128';
+pathname = 'G:\1246';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % ÃÌº”¬∑æ∂
 addpath(genpath(pathname)); 
 % Sensor
-sensor_r = importdata(sensor_R)/1000; Time = 1/100:1/100:length(sensor_r)/100;
-sensor_l = importdata(sensor_L)/1000; 
+sensor_r = importdata(sensor_R)/1000; sensor_l = importdata(sensor_L)/1000; 
+sensor_r(:,4:5) = sensor_r(:,4:5)*1000; sensor_l(:,4:5) = sensor_l(:,4:5)*1000;
 Compass_R = importdata(angle_R); Compass_L = importdata(angle_L); 
 GPS = importdata(gps_L);
 Court_config = importdata(court_config);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-R_J = Touch(sensor_r,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
+% R_J = Touch(sensor_r,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
+% 
+% L_J = Touch(sensor_l,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
 
-L_J = Touch(sensor_l,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
 
-
-PASS = Total_ball(sensor_r,sensor_l,GPS(:,1),GPS(:,2),100);
+% PASS = Total_ball(sensor_r,sensor_l,GPS(:,1),GPS(:,2),100);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fs = 100; lat = 0; n_r = length(sensor_r);
 for i = 1:n_r
@@ -177,7 +177,7 @@ while i <= m
 end
 plot(longpass3(:,1),longpass3(:,2),'r*'); hold on
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-pass = Total_ball(sensor_r,sensor_l,GPS(:,1),GPS(:,2),100);
+pass = Total_ball(sensor_r,sensor_l,GPS);
 shoot_result = Shoot_Z(pass,Compass_R,Compass_L,40,Court_config);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % longpass3 = Long_pass(Output,0.25,10,6,100,n_r); % ≈–∂œ≥§¥´
@@ -186,22 +186,29 @@ shoot_result = Shoot_Z(pass,Compass_R,Compass_L,40,Court_config);
 % shortpass3 = Long_pass(Output,0.01,5,3,100,n_r); % ≈–∂œ∂Ã¥´
 % plot(shortpass3(:,1),shortpass3(:,2),'r*'); 
 figure
-plot(Court_config(:,1),Court_config(:,2),'.'); hold on
+plot(Court_config(1:1000,1),Court_config(1:1000,2),'.'); hold on
 for i = 1:1000 
     if Court_config(i,3) == 1
-        plot(Court_config(i,1),Court_config(i,2),'y*'); hold on
+        plot(Court_config(i,1),Court_config(i,2),'*'); hold on  % …‰√≈«¯”Ú
     end
     if Court_config(i,4) == 1
-        plot(Court_config(i,1),Court_config(i,2),'r*'); hold on
+        plot(Court_config(i,1),Court_config(i,2),'y*'); hold on  % Ω˚«¯
     end
 end
 [m,~] = size(pass);
 for j = 1:m
     if pass(j,2) == 1
-        plot(pass(j,5),pass(j,6),'ro'); hold on
+        plot(pass(j,5),pass(j,6),'ro'); hold on % ≥§¥´
     end
     if pass(j,2) == 2
-        plot(pass(j,5),pass(j,6),'ko'); hold on
+        plot(pass(j,5),pass(j,6),'ko'); hold on % ∂Ã¥´
     end
 end
-plot(shoot_result(:,1),shoot_result(:,2),'k*');
+plot(shoot_result(:,1),shoot_result(:,2),'k*'); hold on % …‰√≈
+% «Ú√≈
+plot(Court_config(1001,1),Court_config(1001,2),'r*'); hold on 
+plot(Court_config(1001,3),Court_config(1001,4),'r*'); hold on 
+plot(Court_config(1002,1),Court_config(1002,2),'r*'); hold on 
+plot(Court_config(1002,3),Court_config(1002,4),'r*'); axis equal
+
+
