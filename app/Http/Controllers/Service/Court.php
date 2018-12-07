@@ -1095,9 +1095,6 @@ class Court{
         }
 
         //找一个最小的点作为远点
-        mylogger("pay=".$topPoint['pa']['y']);
-        mylogger('pdy='.$topPoint['pd']['y']);
-
         $perx   = $width   / abs($topPoint['pa']['x'] - $topPoint['pa1']['x']);
         $pery   = $height  / abs($topPoint['pa']['y'] - $topPoint['pd']['y']);
 
