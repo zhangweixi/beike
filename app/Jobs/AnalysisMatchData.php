@@ -2017,8 +2017,11 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($gpsData as $gps)
         {
-            $x = intval($gps['x'] / 50);
-            $y = intval($gps['y'] / 57.7);
+            $x =    $gps['x'] / 50;
+            $y =    $gps['y'] / 57.7;
+
+            $x =    abs($x) >= 1 ? intval($x) : ceil($x);
+            $y =    abs($y) >= 1 ? intval($y) : ceil($y);
 
             if($x > 0 && $x < 20 && $y > 0 && $y < 10)
             {
