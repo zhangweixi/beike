@@ -1293,7 +1293,9 @@ class AnalysisMatchData implements ShouldQueue
         deldir($localDir);
         mk_dir($localDir);
 
-        $baseApiUrl     = config('app.apihost')."/uploads/match/{$matchId}/";
+        //$baseApiUrl     = config('app.apihost')."/uploads/match/{$matchId}/";
+        $baseApiUrl     = "http://172.19.48.1/uploads/match/{$matchId}/";
+
 
         //数据文件
         $baseSensorL    = "sensor-L.txt";
