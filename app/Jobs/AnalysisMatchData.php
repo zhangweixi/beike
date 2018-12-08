@@ -1331,7 +1331,7 @@ class AnalysisMatchData implements ShouldQueue
 
         //数据文件
 
-        /*
+        mylogger('copybeign');
         foreach($files as $key  => $file)
         {
             if ($file == "")
@@ -1345,8 +1345,9 @@ class AnalysisMatchData implements ShouldQueue
 
             file_put_contents($file,$content);
         }
-        */
+        mylogger('copyend');
 
+       /*
         foreach($files as $f){
 
             $oldFile    = $baseApiUrl.$f;
@@ -1375,9 +1376,8 @@ class AnalysisMatchData implements ShouldQueue
             }
             sleep(1);
         }
-
-
-        mylogger("文件拷贝完毕");
+    */
+        
         exit();
         //===========将远程的文件拉取到本地来 结束==============
 
