@@ -1326,19 +1326,22 @@ class AnalysisMatchData implements ShouldQueue
         //球场配置文件
 
         //数据文件
-        foreach($files as $key  => $file)
-        {
-            if ($file == "")
+        if(false){
+            foreach($files as $key  => $file)
             {
-                continue;
+                if ($file == "")
+                {
+                    continue;
+                }
+
+                $content    = file_get_contents($baseApiUrl.$file);
+
+                $file       = $localDir.$file;
+
+                file_put_contents($file,$content);
             }
-
-            $content    = file_get_contents($baseApiUrl.$file);
-
-            $file       = $localDir.$file;
-
-            file_put_contents($file,$content);
         }
+
         mylogger("文件拷贝完毕");
         //===========将远程的文件拉取到本地来 结束==============
 
