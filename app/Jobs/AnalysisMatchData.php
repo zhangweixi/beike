@@ -1290,9 +1290,11 @@ class AnalysisMatchData implements ShouldQueue
         $matchInfo      = MatchModel::find($matchId);
         $courtId        = $matchInfo->court_id;
         $localDir       = self::matchdir($matchId);
+        deldir($localDir);
+        mk_dir($localDir);
 
         $baseApiUrl     = config('app.apihost')."/uploads/match/{$matchId}/";
-        mk_dir($localDir);
+
         //数据文件
         $baseSensorL    = "sensor-L.txt";
         $baseSensorR    = "sensor-R.txt";
@@ -1319,7 +1321,7 @@ class AnalysisMatchData implements ShouldQueue
             "compass_l" =>  $baseCompassL,
             "compass_r" =>  $baseCompassR,
             "gps"       =>  $baseGps,
-            "config"    => $baseConfig
+            "config"    =>  $baseConfig
         ];
 
         //===========将远程的文件拉取到本地来 开始==============
@@ -1353,7 +1355,28 @@ class AnalysisMatchData implements ShouldQueue
             pclose(popen('start /B php '.$phpfile." ".$oldFile." ".$newFile, 'r'));       //windows
         }
 
+        //检查是否拷贝完毕
+        $i=0;
+        $logFIle = $localDir."log.txt";
+        while(true){
+
+            if(file_exists($logFIle)){
+
+                $logs = file_to_array($logFIle);
+                if(count($logs) == 6){
+
+                    break;
+                }
+            }
+            if($i==250){
+                die("拷贝文件超时");
+            }
+            sleep(1);
+        }
+
+
         mylogger("文件拷贝完毕");
+        exit();
         //===========将远程的文件拉取到本地来 结束==============
 
         //LanQi('','sensor-R.txt', 'sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt','http://dev1.api.launchever.cn/api/admin/match/get_visual_match_court?matchId=123')
