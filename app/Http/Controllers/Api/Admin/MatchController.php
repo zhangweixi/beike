@@ -265,51 +265,49 @@ class MatchController extends Controller
     public function match_gps(Request $request)
     {
         $matchId    = $request->input('matchId');
+        $gpsfile    = matchdir($matchId)."gps-L.txt";
 
-        $baiduGpsFile    = "match/".$matchId."/bd-gps.json";
+        if(!file_exists($gpsfile)){
 
-
-        if(!Storage::disk('web')->has($baiduGpsFile)) {
-
-            $allGps     = [];
-
-            $gpsFile    =public_path('uploads/match/'.$matchId."/gps-L.txt");
-
-            if(!file_exists($gpsFile))
-            {
-                $gpsFile    =public_path('uploads/match/'.$matchId."/gps-R.txt");
-            }
-
-            if(!file_exists($gpsFile))
-            {
-                return apiData()->send(2001,"没有PGS数据");
-            }
-
-
-            $gpsList    = file($gpsFile);
-            foreach($gpsList as $gps)
-            {
-                $gpsInfo    = explode(" ",trim($gps,"\n"));
-
-                if($gpsInfo[0] == 0 || $gpsInfo[1] == 0)
-                {
-                    continue;
-                }
-
-                $lat        = $gpsInfo[0];
-                $lon        = $gpsInfo[1];
-                array_push($allGps,['lat'=>$lat,'lon'=>$lon]);
-            }
-
-
-            //$allGps = gps_to_bdgps($allGps);
-
-            Storage::disk('web')->put($baiduGpsFile,\GuzzleHttp\json_encode($allGps));
+            return apiData()->send(2001,"GPS文件不存在");
         }
 
-        $points = Storage::disk('web')->get($baiduGpsFile);
-        $points = \GuzzleHttp\json_decode($points);
+        $allGps        = file_to_array($gpsfile);
 
+        $points     = [];
+        foreach($allGps as $gpsInfo)
+        {
+            $lat        = $gpsInfo[0];
+            $lon        = $gpsInfo[1];
+
+            if($lat == 0 || $lon == 0)
+            {
+                continue;
+            }
+            array_push($points,['lat'=>$lat,'lon'=>$lon,'x'=>$lon,'y'=>$lat]);
+        }
+
+        //对GPS进行坐标转换
+        $str = "";
+        if(true){
+
+            $matchInfo  = MatchModel::find($matchId);
+            $courtInfo  = CourtModel::find($matchInfo->court_id);
+            $ps         = ['p_a','p_a1',"p_d","p_d1"];
+            foreach($ps as $key){
+                $p          = explode(",",$courtInfo->$key);
+                $ps[$key]   = ["x"=>$p[1],'y'=>$p[0]];
+            }
+
+            $points = Court::create_gps_map($ps['p_a'],$ps['p_a1'],$ps['p_d'],$ps["p_d1"],$points);
+
+            foreach($points as $key => $p)
+            {
+                $points[$key] = ['lat'=>$p['y'],'lon'=>$p['x']];
+                //$str .= ($p['y'] ." ".$p['x']."\n");
+            }
+        }
+        mylogger($str);
         return apiData()->set_data('points',$points)->send();
     }
 
