@@ -36,7 +36,7 @@ class AnalysisMatchData implements ShouldQueue
      * @return void
      */
     public $tries   = 1;
-    public $timeout = 80;
+    public $timeout = 250;
 
     private $sourceId   = 0;    //要处理的比赛的数据
     private $userId     = 0;    //用户ID
