@@ -1326,20 +1326,31 @@ class AnalysisMatchData implements ShouldQueue
         //球场配置文件
 
         //数据文件
-        if(false){
-            foreach($files as $key  => $file)
+
+        /*
+        foreach($files as $key  => $file)
+        {
+            if ($file == "")
             {
-                if ($file == "")
-                {
-                    continue;
-                }
-
-                $content    = file_get_contents($baseApiUrl.$file);
-
-                $file       = $localDir.$file;
-
-                file_put_contents($file,$content);
+                continue;
             }
+
+            $content    = file_get_contents($baseApiUrl.$file);
+
+            $file       = $localDir.$file;
+
+            file_put_contents($file,$content);
+        }
+        */
+
+        foreach($files as $f){
+
+            $oldFile    = $baseApiUrl.$f;
+            $newFile    = $localDir.$f;
+
+            $phpfile    = app_path("Http/Controllers/Service/DownMatchData.php");
+
+            pclose(popen('start /B php '.$phpfile." ".$oldFile." ".$newFile, 'r'));       //windows
         }
 
         mylogger("文件拷贝完毕");
