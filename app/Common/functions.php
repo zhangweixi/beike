@@ -912,4 +912,30 @@ function change_coordinate($centerX,$centerY,$x,$y,$angle){
     return ["x"=>$x0,"y"=>$y0];
 }
 
+
+function tail($filename, $num)
+{
+    if (!$fp = fopen($filename, 'r')) {
+        echo "open file fail";
+        return false;
+    }
+    $pos = -2;
+    $eof = "";
+    $str = "";
+    while ($num > 0) {
+        while ($eof != "\n") {//这里控制从文件的最后一行开始读
+            if (!fseek($fp, $pos, SEEK_END)) {
+                $eof = fgetc($fp);
+                $pos--;
+            } else {
+                break;
+            }
+        }
+        $str .= fgets($fp);//读取一行数据
+        $eof = "";
+        $num--;
+    }
+    return $str;
+}
+
 ?>

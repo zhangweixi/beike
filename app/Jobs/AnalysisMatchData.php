@@ -877,6 +877,8 @@ class AnalysisMatchData implements ShouldQueue
             self::reset_data_time($dataDir.$file['file'],$file['typeKey'],$file['timeKey'],$file['hz']);
         }
 
+        //同步时间阶段
+        self::sync_file_time_stage($matchId);
 
         //2.将国际GPS转换成百度GPS
         $inputGps   = $dataDir."gps-L.txt";
@@ -912,6 +914,60 @@ class AnalysisMatchData implements ShouldQueue
 
     }
 
+    public static function sync_file_time_stage($matchId){
+
+        ini_set('memory_limit', '512M');
+        $dir = matchdir($matchId);
+
+        $files = [
+            ['file'=>$dir."gps-L.txt"],
+            ['file'=>$dir."sensor-L.txt"],
+            ['file'=>$dir."sensor-R.txt"],
+            ['file'=>$dir."compass-L.txt"],
+            ['file'=>$dir."compass-R.txt"]
+        ];
+
+        $nums   = [];
+
+        //找到最小的时间
+        foreach($files as $key=> $f){
+
+            $data = trim(tail($f['file'],1));
+            $data = explode(" ",$data);
+
+            $num  = $data[count($data)-1];
+
+            $files[$key]['num'] = $num;
+
+            array_push($nums,$num);
+        }
+
+        $minNum = min($nums);
+
+        //同步为最小的时间
+        foreach($files as $f){
+
+            if($f['num'] > $minNum){
+
+                $data   = file_to_array($f['file']);
+
+                $fd     = fopen($f['file'],'w+');
+                $count  = count($data[0])-1;
+
+                foreach($data as $d){
+
+                    if($d[$count] <= $minNum){
+
+                        fwrite($fd,implode(" ",$d)."\n");
+                    }else{
+                        break;
+                    }
+                }
+
+                fclose($fd);
+            }
+        }
+    }
     /**
      * 重置数据的时间
      * @param $file string 文件路径
