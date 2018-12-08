@@ -226,7 +226,7 @@ class MatchCaculate extends Controller
 
         $delayTime      = now()->addSecond(1);
         AnalysisMatchData::dispatch('run_matlab',$data)->delay($delayTime);
-
+        mylogger('计算任务设置成功');
         return apiData()->send();
     }
 
