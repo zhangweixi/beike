@@ -1286,6 +1286,7 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function run_matlab($matchId)
     {   mylogger("准备计算工作:".$matchId);
+        set_time_limit(0);
         $matchInfo      = MatchModel::find($matchId);
         $courtId        = $matchInfo->court_id;
         $localDir       = self::matchdir($matchId);
