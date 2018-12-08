@@ -1331,7 +1331,6 @@ class AnalysisMatchData implements ShouldQueue
 
         //数据文件
 
-        mylogger('copybeign');
         foreach($files as $key  => $file)
         {
             if ($file == "")
@@ -1345,40 +1344,8 @@ class AnalysisMatchData implements ShouldQueue
 
             file_put_contents($file,$content);
         }
-        mylogger('copyend');
 
-       /*
-        foreach($files as $f){
 
-            $oldFile    = $baseApiUrl.$f;
-            $newFile    = $localDir.$f;
-
-            $phpfile    = app_path("Http/Controllers/Service/DownMatchData.php");
-
-            pclose(popen('start /B php '.$phpfile." ".$oldFile." ".$newFile, 'r'));       //windows
-        }
-
-        //检查是否拷贝完毕
-        $i=0;
-        $logFIle = $localDir."log.txt";
-        while(true){
-
-            if(file_exists($logFIle)){
-
-                $logs = file_to_array($logFIle);
-                if(count($logs) == 6){
-
-                    break;
-                }
-            }
-            if($i==250){
-                die("拷贝文件超时");
-            }
-            sleep(1);
-        }
-    */
-        
-        exit();
         //===========将远程的文件拉取到本地来 结束==============
 
         //LanQi('','sensor-R.txt', 'sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt','http://dev1.api.launchever.cn/api/admin/match/get_visual_match_court?matchId=123')
