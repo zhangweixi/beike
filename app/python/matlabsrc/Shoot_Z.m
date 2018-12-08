@@ -34,8 +34,9 @@ for i = 1:n
         if pass_data(i,2) == 2 % 短传
             % 判断角度
             [LAT,LON,Distance,Angle,C] = Goal(pass_data(i,5),pass_data(i,6),court);
-            A = round((pass_data(i,3)-0.5)*compass_fs);
-            B = round((pass_data(i,3)+0.5)*compass_fs); 
+            [A,B] = Loc_compass(pass_data(i,:),compass_data,compass_fs);
+%             A = round((pass_data(i,3)-0.5)*compass_fs);
+%             B = round((pass_data(i,3)+0.5)*compass_fs); 
             if length(find(min(C)<compass_data(A:B,1)&compass_data(A:B,1)<max(C))) >= 1
                 shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),Angle,Distance];
                 k = k+1;
@@ -46,8 +47,9 @@ for i = 1:n
         if pass_data(i,2) == 1 % 长传
             % 判断角度
             [LAT,LON,Distance,Angle,C] = Goal(pass_data(i,5),pass_data(i,6),court);
-            A = round((pass_data(i,3)-0.5)*compass_fs);
-            B = round((pass_data(i,3)+0.5)*compass_fs); 
+            [A,B] = Loc_compass(pass_data(i,:),compass_data,compass_fs);
+%             A = round((pass_data(i,3)-0.5)*compass_fs);
+%             B = round((pass_data(i,3)+0.5)*compass_fs); 
             if length(find(min(C)<compass_data(A:B,1)&compass_data(A:B,1)<max(C))) >= 1
                 shoot_result(k,:) = [pass_data(i,5),pass_data(i,6),LAT,LON,pass_data(i,7),pass_data(i,4),Angle,Distance];
                 k = k+1;

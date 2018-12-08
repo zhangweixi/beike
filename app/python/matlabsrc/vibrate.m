@@ -22,7 +22,12 @@ else
     i = 1; % 判断动荡程度（第二种）
     while i <= n
         if data(i) ~= 1
-            flag = length(find(data(i:i+sigma2-1) ~= 1));
+            Top = i+sigma2-1;
+            if Top > n
+                flag = length(find(data(i:n) ~= 1));
+            else
+                flag = length(find(data(i:Top) ~= 1));
+            end
             if flag >= lamda
                 i = i+sigma2;
             else

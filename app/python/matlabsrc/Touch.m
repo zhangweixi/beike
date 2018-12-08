@@ -92,10 +92,11 @@ while i <= U
     i = i+1;
 end
 % 计算速度
-[E,~] = size(Output);
+[E,~] = size(Output); V = []; V_xy = [];
 for i = 1:E
     [row,~] = find(Z == Output(i,2));
 %     V(i) = (sum(Z(row,1:column)) - column)/10; % 最高点数据
+    row = max(row);
     V(i) = (sum(Z(row,:))-length(find(Z(row,:) ~= 0)))/10; % 全部数据
     V_xy(i) = (sum(F(row,:)))/10; % 全部数据
 end

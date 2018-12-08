@@ -1,5 +1,5 @@
 clc; clear all;
-pathname = 'G:\1246';
+pathname = 'G:\1257';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % 添加路径
@@ -108,9 +108,11 @@ while i <= length(output)
     i = i+1;
 end 
 % 计算速度
+V = []; V_xy = [];
 for i = 1:length(Output)
     [row,column] = find(Z == Output(i,2));
 %     V(i) = (sum(Z(row,1:column)) - column)/10; % 最高点数据
+    row = max(row);
     V(i) = (sum(Z(row,:))-length(find(Z(row,:) ~= 0)))/10; % 全部数据
     V_xy(i) = sum(F(row,:))/10; % 全部数据
 end
