@@ -14,8 +14,8 @@ $fileUrl   = $argv[1];
 $fileNew   = $argv[2];
 $begin = time();
 
-//file_put_contents($fileNew,file_get_contents($fileUrl));
-if(1){
+file_put_contents($fileNew,file_get_contents($fileUrl));
+if(0){
 
     $file = fopen($fileUrl, "rb");
 
@@ -37,7 +37,6 @@ if(1){
     }
 }
 
-
 $time = time()-$begin;
-file_put_contents("log.txt",$time."-".basename($fileNew)."\n",FILE_APPEND);
+file_put_contents(dirname($fileNew)."/log.txt",$time."-".basename($fileNew)."\n",FILE_APPEND);
 
