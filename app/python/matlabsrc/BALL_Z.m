@@ -13,7 +13,7 @@ L_J = Touch(sensor_l,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
 if R > L
     [output,n] = Touch(sensor_r,3,100,100,4); 
 else
-    [output,n] = Touch(sensor_r,45,2000,100,46); 
+    [output,n] = Touch(sensor_r,55,3000,100,56); 
 end
 %% RIGHT
 % ≈–∂œ”–√ª”–¥•«Ú
@@ -82,7 +82,7 @@ end
 if L > R
     [output,n] = Touch(sensor_l,3,100,100,4);
 else
-    [output,n] = Touch(sensor_l,65,5000,100,66);
+    [output,n] = Touch(sensor_l,55,3000,100,56);
 end
 % ≈–∂œ”–√ª”–¥•«Ú
 if  ~isempty(output)

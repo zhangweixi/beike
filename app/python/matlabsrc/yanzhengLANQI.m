@@ -132,11 +132,11 @@ plot(Output(:,1),Output(:,2),'r.'); hold on
 
 % plot(longpass3(:,1),longpass3(:,6),'*'); 
 %%
-[OUT,n] = Touch(sensor_r,3,100,100,4); 
-longpass3 = Long_pass(OUT,0.25,10,6,100,n_r); % 判断长传
-shortpass3 = Long_pass(OUT,0.01,5,3,100,n_r); % 判断短传
-pass = BALL_Z(sensor_r,sensor_l,GPS);
-PASS = Total_ball(sensor_r,sensor_l,GPS);
+% [OUT,n] = Touch(sensor_r,3,100,100,4); 
+% longpass3 = Long_pass(OUT,0.25,10,6,100,n_r); % 判断长传
+% shortpass3 = Long_pass(OUT,0.01,5,3,100,n_r); % 判断短传
+% pass = BALL_Z(sensor_r,sensor_l,GPS);
+% PASS = Total_ball(sensor_r,sensor_l,GPS);
 %% 判断长短传球
 % 按照幅值筛选第一次
 longpass1 = Output(Output(:,6) >= 0.25,:);
@@ -203,20 +203,26 @@ for i = 1:1000
         plot(Court_config(i,1),Court_config(i,2),'r.'); hold on  % 禁区
     end
 end
-[m,~] = size(pass);
+[m,~] = size(pass); chu = 0; chang = 0; duan = 0;
 for j = 1:m
     if pass(j,2) == 1
-        plot(pass(j,5),pass(j,6),'b*'); hold on % 长传
+        plot(pass(j,5),pass(j,6),'r*','markersize',12); hold on % 长传  
+        chang = chang+1;
     end
     if pass(j,2) == 2
-        plot(pass(j,5),pass(j,6),'ko'); hold on % 短传
+        plot(pass(j,5),pass(j,6),'kp','markersize',10); hold on % 短传
+        duan = duan+1;
     end
+    if pass(j,2) == 3
+        plot(pass(j,5),pass(j,6),'b*','markersize',5); hold on % 触球
+        chu = chu+1;
+    end    
 end
-plot(shoot_result(:,1),shoot_result(:,2),'rh'); hold on % 射门
+plot(shoot_result(:,1),shoot_result(:,2),'rh','markersize',15); hold on % 射门
 % 球门
-plot(Court_config(1001,1),Court_config(1001,2),'bs'); hold on 
-plot(Court_config(1001,3),Court_config(1001,4),'bs'); hold on 
-plot(Court_config(1002,1),Court_config(1002,2),'bs'); hold on 
-plot(Court_config(1002,3),Court_config(1002,4),'bs'); axis equal
+plot(Court_config(1001,1),Court_config(1001,2),'b<','markersize',15); hold on 
+plot(Court_config(1001,3),Court_config(1001,4),'b<','markersize',15); hold on 
+plot(Court_config(1002,1),Court_config(1002,2),'b>','markersize',15); hold on 
+plot(Court_config(1002,3),Court_config(1002,4),'b>','markersize',15); axis equal
 
 
