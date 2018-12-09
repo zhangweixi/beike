@@ -1129,6 +1129,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             var map = new BMap.Map("map");    // 创建Map实例
             map.centerAndZoom("上海",16);  //初始化地图,设置城市和地图级别。
             map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
+            map.addControl(new BMap.MapTypeControl());
             $scope.map = map;
         },1000);
 
