@@ -54,6 +54,15 @@ class MatchController extends Controller
             'court_id'  => $courtId
         ];
 
+        //检查是否有未结束的比赛
+        $oldMatch = DB::table('match')->where('user_id',$userId)
+            ->where('time_end')
+            ->orderBy('match_id','desc')
+            ->first();
+        if($oldMatch){
+            return apiData()->send(2004,"您还有未结束的比赛");
+        }
+
         $weather    = $this->get_weather();
         $matchInfo  = array_merge($matchInfo,$weather);
         $matchModel = new MatchModel();
