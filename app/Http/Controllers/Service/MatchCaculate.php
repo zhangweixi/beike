@@ -112,7 +112,7 @@ class MatchCaculate extends Controller
         $courtId    = $courtInfo->court_id;
 
         //检查球场是否合格，如果不合格则根据GPS来生成球场
-        if(false){
+        if(true){
 
             if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
             {
