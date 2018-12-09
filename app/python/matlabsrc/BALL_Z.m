@@ -9,32 +9,18 @@ end
 %% ÅÐ¶ÏÌßÇò½Å
 R_J = Touch(sensor_r,25,1000,100,26); % ÅÐ¶ÏÓÒ½Å´¥Çò
 L_J = Touch(sensor_l,25,1000,100,26); % ÅÐ¶ÏÓÒ½Å´¥Çò
-[R,~] = size(R_J); [L,~] = size(L_J);
+[R,~] = size(R_J); [L,~] = size(L_J); pass_r = []; pass_l = [];
 if R > L
     [output,n] = Touch(sensor_r,3,100,100,4); 
 else
-    [output,n] = Touch(sensor_r,35,2000,100,36); 
+    [output,n] = Touch(sensor_r,45,2000,100,46); 
 end
-% switch adept
-%     case 3
-%         [output,n] = Touch(sensor_r,3,100,100,4); 
-%     case 2
-%         [output,n] = Touch(sensor_r,10,300,100,11); 
-%     case 1
-%         [output,n] = Touch(sensor_r,15,500,100,16);
-%     case 0
-%         [output,n] = Touch(sensor_r,30,2000,100,36); 
-% end
 %% RIGHT
 % ÅÐ¶ÏÓÐÃ»ÓÐ´¥Çò
 if  ~isempty(output)
     [z,~] = size(output); pass_r_l = []; pass_r_s = []; pass_r_t = [];
     if  isempty(gps)
         gps = zeros(n,2);
-%     else
-%         p = length(lat); P = length(sensor_r);
-%         lat = RBF_resample(lat,10,ceil(10*P/p));
-%         lon = RBF_resample(lon,10,ceil(10*P/p));
     end
     longpass3 = Long_pass(output,0.25,10,6,100,n); % ÅÐ¶Ï³¤´«
     shortpass3 = Long_pass(output,0.01,5,3,100,n); % ÅÐ¶Ï¶Ì´«
@@ -96,27 +82,13 @@ end
 if L > R
     [output,n] = Touch(sensor_l,3,100,100,4);
 else
-    [output,n] = Touch(sensor_l,35,2000,100,36);
+    [output,n] = Touch(sensor_l,65,5000,100,66);
 end
-% switch adept
-%     case 0
-%         [output,n] = Touch(sensor_l,3,100,100,4);
-%     case 1
-%         [output,n] = Touch(sensor_l,15,300,100,16); 
-%     case 2
-%         [output,n] = Touch(sensor_l,25,1000,100,26); 
-%     case 3
-%         [output,n] = Touch(sensor_l,30,2000,100,36);
-% end
 % ÅÐ¶ÏÓÐÃ»ÓÐ´¥Çò
 if  ~isempty(output)
     [z,~] = size(output); pass_l_l = []; pass_l_s = []; pass_l_t = [];
     if  isempty(gps)
         gps = zeros(n,2);
-%     else
-%         p = length(lat); P = length(sensor_l);
-%         lat = RBF_resample(lat,10,ceil(10*P/p));
-%         lon = RBF_resample(lon,10,ceil(10*P/p));
     end
     longpass3 = Long_pass(output,0.25,10,6,100,n); % ÅÐ¶Ï³¤´«
     shortpass3 = Long_pass(output,0.01,5,3,100,n); % ÅÐ¶Ï¶Ì´«

@@ -17,7 +17,7 @@ Total = sortrows(pass,[3 4]); % PASS = Total ;
 for i = 2:m
     switch  PASS(j,2)
         case 3 % ¥•«Ú≈–∂œ
-            if Total(i,3) - PASS(j,3) < 1.4
+            if Total(i,3) - PASS(j,3) < 1400
                 [~,z] = max([Total(i,7),PASS(j,7)]);
                 if z == 1
                     PASS(j,:) = Total(i,:);
@@ -27,7 +27,7 @@ for i = 2:m
                 PASS(j,:) = Total(i,:);
             end
         case 2   % ∂Ã¥´≈–∂œ
-            if Total(i,3) - PASS(j,3) < 5
+            if Total(i,3) - PASS(j,3) < 5000
                 [~,z] = max([Total(i,7),PASS(j,7)]);
                 if z == 1
                     PASS(j,:) = Total(i,:);
@@ -37,7 +37,7 @@ for i = 2:m
                 PASS(j,:) = Total(i,:);
             end
         case 1    % ≥§¥´≈–∂œ
-            if Total(i,3) - PASS(j,3) < 10
+            if Total(i,3) - PASS(j,3) < 10000
                 [~,z] = max([Total(i,7),PASS(j,7)]);
                 if z == 1
                     PASS(j,:) = Total(i,:);

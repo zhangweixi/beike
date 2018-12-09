@@ -131,6 +131,12 @@ plot(Output(:,1),Output(:,2),'r.'); hold on
 % longpass3 = Long_pass(Output,0.003,4,3,100,n_r);
 
 % plot(longpass3(:,1),longpass3(:,6),'*'); 
+%%
+[OUT,n] = Touch(sensor_r,3,100,100,4); 
+longpass3 = Long_pass(OUT,0.25,10,6,100,n_r); % 判断长传
+shortpass3 = Long_pass(OUT,0.01,5,3,100,n_r); % 判断短传
+pass = BALL_Z(sensor_r,sensor_l,GPS);
+PASS = Total_ball(sensor_r,sensor_l,GPS);
 %% 判断长短传球
 % 按照幅值筛选第一次
 longpass1 = Output(Output(:,6) >= 0.25,:);
