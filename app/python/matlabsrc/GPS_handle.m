@@ -37,14 +37,14 @@ V = Output_Distance / time;  % 平均速度V
 %     end      
 % end
 % 瞬时速度第二种方案
-Output_V = diff(Distance,1) * fs; % 速度
+Output_V = Distance * fs; % 速度
 N = numel(Output_V);
 Output_A = diff(Output_V,1) * fs; % 加速度A
 A = mean(abs(Output_A)); % 平均加速度
 %% 结果文件
-Output_T = 3/fs:1/fs:time-1/fs;
+Output_T = 2/fs:1/fs:time-1/fs;
 result1 = [V,Output_T]'; result2 = [A,Output_V(2:end)]'; result3 = [Output_Distance,Output_A]';
-W = [0;filterlat(3:end-1)]; J = [0;filterlon(3:end-1)];
+W = [0;filterlat(2:end-1)]; J = [0;filterlon(2:end-1)];
 GPS_result = [result1,result2,result3,W,J];
 end
 

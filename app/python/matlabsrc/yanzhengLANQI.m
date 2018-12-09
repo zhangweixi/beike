@@ -188,29 +188,29 @@ shoot_result = Shoot_Z(pass,Compass_R,Compass_L,40,Court_config);
 % shortpass3 = Long_pass(Output,0.01,5,3,100,n_r); % 判断短传
 % plot(shortpass3(:,1),shortpass3(:,2),'r*'); 
 figure
-plot(Court_config(1:1000,1),Court_config(1:1000,2),'.'); hold on
+plot(Court_config(1:1000,1),Court_config(1:1000,2),'k.'); hold on
 for i = 1:1000 
     if Court_config(i,3) == 1
-        plot(Court_config(i,1),Court_config(i,2),'*'); hold on  % 射门区域
+        plot(Court_config(i,1),Court_config(i,2),'w.'); hold on  % 射门区域
     end
     if Court_config(i,4) == 1
-        plot(Court_config(i,1),Court_config(i,2),'y*'); hold on  % 禁区
+        plot(Court_config(i,1),Court_config(i,2),'r.'); hold on  % 禁区
     end
 end
 [m,~] = size(pass);
 for j = 1:m
     if pass(j,2) == 1
-        plot(pass(j,5),pass(j,6),'ro'); hold on % 长传
+        plot(pass(j,5),pass(j,6),'b*'); hold on % 长传
     end
     if pass(j,2) == 2
         plot(pass(j,5),pass(j,6),'ko'); hold on % 短传
     end
 end
-plot(shoot_result(:,1),shoot_result(:,2),'k*'); hold on % 射门
+plot(shoot_result(:,1),shoot_result(:,2),'rh'); hold on % 射门
 % 球门
-plot(Court_config(1001,1),Court_config(1001,2),'r*'); hold on 
-plot(Court_config(1001,3),Court_config(1001,4),'r*'); hold on 
-plot(Court_config(1002,1),Court_config(1002,2),'r*'); hold on 
-plot(Court_config(1002,3),Court_config(1002,4),'r*'); axis equal
+plot(Court_config(1001,1),Court_config(1001,2),'bs'); hold on 
+plot(Court_config(1001,3),Court_config(1001,4),'bs'); hold on 
+plot(Court_config(1002,1),Court_config(1002,2),'bs'); hold on 
+plot(Court_config(1002,3),Court_config(1002,4),'bs'); axis equal
 
 
