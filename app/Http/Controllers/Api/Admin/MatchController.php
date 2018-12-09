@@ -59,8 +59,6 @@ class MatchController extends Controller
      * */
     public function caculate_match(Request $request)
     {
-        $matchId    = $request->input('matchId');
-        $dir        = matchdir($matchId);deldir($dir);
 
         return (new MatchCaculate())->run_matlab($request);
     }
