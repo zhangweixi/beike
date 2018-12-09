@@ -41,7 +41,7 @@
     var map = new BMap.Map("allmap");    // 创建Map实例
     map.centerAndZoom("上海",16);  //初始化地图,设置城市和地图级别。
     map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
-
+    map.addControl(new BMap.MapTypeControl());
 
     function show_map_content()
     {
