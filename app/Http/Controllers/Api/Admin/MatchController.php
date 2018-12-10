@@ -284,28 +284,6 @@ class MatchController extends Controller
             }
             array_push($points,['lat'=>$lat,'lon'=>$lon,'x'=>$lon,'y'=>$lat]);
         }
-
-        //对GPS进行坐标转换
-        $str = "";
-        if(true){
-
-            $matchInfo  = MatchModel::find($matchId);
-            $courtInfo  = CourtModel::find($matchInfo->court_id);
-            $ps         = ['p_a','p_a1',"p_d","p_d1"];
-            foreach($ps as $key){
-                $p          = explode(",",$courtInfo->$key);
-                $ps[$key]   = ["x"=>$p[1],'y'=>$p[0]];
-            }
-
-            $points = Court::create_gps_map($ps['p_a'],$ps['p_a1'],$ps['p_d'],$ps["p_d1"],$points);
-
-            foreach($points as $key => $p)
-            {
-                $points[$key] = ['lat'=>$p['y'],'lon'=>$p['x']];
-                //$str .= ($p['y'] ." ".$p['x']."\n");
-            }
-        }
-        mylogger($str);
         return apiData()->set_data('points',$points)->send();
     }
 
