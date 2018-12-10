@@ -99,7 +99,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
     $scope.addBtnText = "若检查无误，点此提交题库";
     $scope.disableAddBtn = false;
     $scope.showAddDeviceQr = false;     //是否显示添加设备的表单
-    $scope.showAddDeviceCode = true;   //是否显示添加版本的表单
+    $scope.showAddDeviceCode = false;   //是否显示添加版本的表单
 
     $scope.newQrData = {
         prefix:"",
@@ -328,13 +328,32 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
             if(res.code == 200){
 
                 alert('添加成功');
+                $scope.triggle_show_code_from();
+                $scope.get_device_code_versions();
 
             }else{
+
                 alert('添加失败');
             }
         });
     }
 
+    //删除编码
+    $scope.delete_code = function(id){
+
+        var url = server + "device/delete_device_code";
+        if(!confirm('确定删除吗')){
+
+            return ;
+        }
+
+        var data = http_query({id:id});
+        $http.post(url,data).success(function(res)
+        {
+            alert('已删除');
+            $scope.get_device_code_versions();
+        })
+    }
     //解绑设备
     $scope.unbind_device = function(deviceId){
 

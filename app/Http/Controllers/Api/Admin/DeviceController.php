@@ -308,4 +308,21 @@ class DeviceController extends Controller
 
         return apiData()->send();
     }
+
+    /*
+     * 删除设备版本
+     * */
+    public function delete_device_code(Request $request){
+
+        $id             = $request->input('id',0);
+        $versionInfo    = BaseVersionModel::find($id);
+        $file           = public_path($versionInfo->file);
+        if(file_exists($file)){
+
+            unlink($file);
+        }
+
+        BaseVersionModel::where('id',$id)->delete();
+        return apiData()->send();
+    }
 }

@@ -60,7 +60,7 @@
                 <div class="form-group">
                     <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
                         <button class="btn btn-primary" type="button" ng-click="triggle_show_code_from()">Close</button>
-                        <button class="btn btn-primary" type="reset">Reset</button>
+                        <!-- <button class="btn btn-primary" type="reset">Reset</button> -->
                         <button class="btn btn-success" type="submit" >Add</button>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                         <td class=" ">{{d.created_at}}</td>
                         
                         <td class="last">
-                            <!-- <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_qr(d.id)">删除</button></a> -->
+                            <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_code(d.id)">删除</button></a>
                         </td>
                     </tr>
                     </tbody>
