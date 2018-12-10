@@ -187,7 +187,7 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script>
     var matchId     = GetQueryString('matchId');
-    var server      = location.origin + "/api/admin/";
+    var server      = location.origin + "/web/";
     var courtWidth  = 0;
     var courtHeight = 0;
     var isWhole     = GetQueryString('all');
@@ -223,7 +223,7 @@
 
     function map_init(){
 
-        var url         = server + "match/match_result?matchId=" + matchId;
+        var url         = server + "match/get_match_result?matchId=" + matchId;
         $.get(url).success(function(res)
         {
             matchResult = res.data.matchResult;

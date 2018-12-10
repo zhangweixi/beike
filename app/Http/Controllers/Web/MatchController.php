@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseShequMatchUserModel;
 use App\Models\Base\BaseUserAbilityModel;
 use App\Models\Base\BaseUserModel;
@@ -32,7 +33,9 @@ class MatchController extends Controller{
     }
 
 
-
+    /**
+     * 加入比赛
+     * */
     public function join_match(Request $request)
     {
         $wexinInfo  = Wechat::wechat_info();
@@ -95,4 +98,17 @@ class MatchController extends Controller{
     }
 
 
+    /**
+     * 获得比赛结果
+     * @param $request Request
+     * @return mixed
+     * */
+    public function get_match_result(Request $request){
+
+        $matchId    = $request->input('matchId');
+
+        $matchResult = BaseMatchResultModel::find($matchId);
+
+        return apiData()->add('matchResult',$matchResult)->send();
+    }
 }
