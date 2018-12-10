@@ -111,14 +111,19 @@ class MatchCaculate extends Controller
 
         $courtId    = $courtInfo->court_id;
 
-        //检查球场是否合格，如果不合格则根据GPS来生成球场
-        if(true){
-
-            if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
-            {
-                Court::create_visual_match_court($matchId,$courtId);
-            }
+        if(!self::check_has_gps($matchId))
+        {
+            jpush_content("比赛通知","GPS数据量不足,无法进行计算",4001,1,$courtInfo->user_id,['matchId'=>$matchId]);
+            return;
         }
+
+        //检查球场是否合格，如果不合格则根据GPS来生成球场
+
+        if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
+        {
+            Court::create_visual_match_court($matchId,$courtId);
+        }
+
 
 
         (new Court())->cut_court_to_box_and_create_config($courtId); //创建配置文件
@@ -130,7 +135,34 @@ class MatchCaculate extends Controller
         return apiData()->send();
     }
 
+    /**
+     * 检查是否有GPS
+     * @param $matchId
+     * @return boolean
+     * */
+    public static function check_has_gps($matchId){
 
+        //如果GPS全部为空，则不进行运算
+        $gpsFile    = matchdir($matchId)."gps-L.txt";
+
+        $gpsArr     = file_to_array($gpsFile);
+        $num        = 0;
+
+        foreach($gpsArr as $gps){
+
+            if($gps[0] > 0){
+
+                $num++;
+
+                if($num > 100){
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 
     /**
      * 创建罗盘和sensor的文件
