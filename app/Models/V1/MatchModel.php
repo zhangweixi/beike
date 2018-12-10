@@ -96,6 +96,7 @@ class MatchModel extends Model
     /**
      * 获得当前比赛
      * @param $userId integer 用户ID
+     * @return mixed
      * */
     public function get_current_match($userId)
     {
@@ -107,10 +108,10 @@ class MatchModel extends Model
             ->first();
 
 
-        if($matchInfo && empty($matchInfo->time_end) )
+        if($matchInfo && !$matchInfo->time_end)
         {
             $matchInfo->time_begin = strtotime($matchInfo->time_begin)*1000;
-            unset($matchInfo->time_end);
+
             return $matchInfo;
 
         } else{
