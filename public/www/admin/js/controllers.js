@@ -98,12 +98,23 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
     $scope.hasQuestion = false;
     $scope.addBtnText = "若检查无误，点此提交题库";
     $scope.disableAddBtn = false;
-    $scope.showAddDeviceQr = false;
+    $scope.showAddDeviceQr = false;     //是否显示添加设备的表单
+    $scope.showAddDeviceCode = true;   //是否显示添加版本的表单
+
     $scope.newQrData = {
         prefix:"",
         num:1,
         length:4,
         addnum:true
+    };
+
+
+    $scope.newDeviceCode = {
+        version:'',
+        must_upgrade:false,
+        publish:false,
+        codeContent:'',
+        codePath:'codeFile'
     };
 
     $scope.paginationConf = {
@@ -121,9 +132,14 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
         }
     };
 
-    $scope.deviceInfo   = {};
 
-    $scope.deviceQrs    = {};
+
+    $scope.deviceInfo       = {};
+
+    $scope.deviceQrs        = [];
+
+    $scope.deviceVersions   = [];
+
 
 
     /*获得题目列表*/
@@ -264,7 +280,62 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
         });
     }
 
-     //解绑设备
+    //显示上传按钮
+    $scope.triggle_show_code_from = function(){
+
+        $scope.showAddDeviceCode = !$scope.showAddDeviceCode;   
+    }
+
+    //获得设备驱动列表
+    $scope.get_device_code_versions = function(){
+
+
+        var url = server + "device/get_device_code_versions";
+
+        var data = {page:1};
+
+        $http.post(url,http_query(data)).success(function(res)
+        {
+
+            $scope.deviceVersions = res.data.deviceCodeVersions.data;
+
+        });
+    }
+
+
+    //增加设备的版本
+    $scope.add_device_code = function(){
+
+        var url     = server + "device/add_device_code";
+
+        var from    = new FormData();
+        var newCodeData = $scope.newDeviceCode;
+
+            from.append('file',document.getElementById(newCodeData.codePath).files[0]);
+            from.append('version',newCodeData.version);
+            from.append('publish',newCodeData.publish ? 1 : 0);
+            from.append('must_upgrade',newCodeData.must_upgrade ? 1: 0);
+        
+
+        $http({
+            url:url,
+            method:'post',
+            data:from,
+            headers: {'Content-Type': undefined},
+            transformRequest: angular.identity
+        }).success(function(res){
+
+            if(res.code == 200){
+
+                alert('添加成功');
+
+            }else{
+                alert('添加失败');
+            }
+        });
+    }
+
+    //解绑设备
     $scope.unbind_device = function(deviceId){
 
         if(!confirm("确定解除绑定吗")){
@@ -281,43 +352,6 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
                 $scope.get_device_list();
             }
         });
-    }
-
-    $scope.upload_excel = function () {
-
-        $scope.hasQuestion = false;
-
-        var form = new FormData();
-        var file = document.getElementById("excel").files[0];
-
-        //var user =JSON.stringify($scope.user);
-
-        form.append('file', file);
-
-        //传递参数
-        //form.append('user',user);
-        //var url = server + "upload_excel";
-        var url = "/service/upload";
-
-        $http({
-            method: 'POST',
-            url: url,
-            data: form,
-            headers: {'Content-Type': undefined},
-            transformRequest: angular.identity
-        }).success(function (res) {
-
-            if (res.code == 200) {
-                $scope.excel = res.data.filepath;
-
-                $scope.read_excel();
-            }
-
-
-        }).error(function (data) {
-
-
-        })
     }
 
 

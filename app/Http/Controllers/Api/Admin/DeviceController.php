@@ -10,10 +10,12 @@ namespace App\Http\Controllers\Api\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseVersionModel;
 use App\Models\V1\DeviceModel;
 use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use QrCode;
 
 
@@ -272,6 +274,37 @@ class DeviceController extends Controller
     {
         $prefix     = $request->input('id');
         DB::table('device_qr')->where('id',$prefix)->update(['deleted_at'=>date_time()]);
+
+        return apiData()->send();
+    }
+
+
+    /**
+     * 获得设备编码
+     * */
+    public function get_device_code_versions(Request $request){
+
+        $deviceVersion  = BaseVersionModel::where('type','device')->orderBy('id','desc')->paginate(50);
+
+        return apiData()->set_data('deviceCodeVersions',$deviceVersion)->send();
+
+    }
+
+    public function add_device_code(Request $request){
+
+        $file       = $request->file('file')->store('device-code','web');
+        $file       = "uploads/".$file;
+
+        $data       = [
+            'version'   => $request->input('version'),
+            'publish'   => $request->input('publish'),
+            'must_upgrade'=>$request->input('must_upgrade'),
+            'type'      => 'device',
+            'file'      => $file,
+            'created_at'=> date_time()
+        ];
+
+        BaseVersionModel::insert($data);
 
         return apiData()->send();
     }

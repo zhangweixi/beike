@@ -32,10 +32,10 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl:'device-qr.html?t=' + Math.random(),
             controller:'deviceController'
         })
-        .state('question-upload', {
-            url: '/question-upload',
-            templateUrl: 'question-upload.html?t=' + Math.random(),
-            controller: 'questionController'
+        .state('device/device-code/:page', {
+            url: '/device/device-code/:page',
+            templateUrl: 'device-code.html?t=' + Math.random(),
+            controller: 'deviceController'
         })
         //用户
         .state('user/list/:page', {
