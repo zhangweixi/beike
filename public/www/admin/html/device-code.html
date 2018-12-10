@@ -93,6 +93,8 @@
                         
                         <td class="last">
                             <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_code(d.id)">删除</button></a>
+                            <button class="btn btn-xs btn-info" ng-click="publish_code(d.id)">{{d.publish == 1?'下架':'发布'}}</button>
+
                         </td>
                     </tr>
                     </tbody>
