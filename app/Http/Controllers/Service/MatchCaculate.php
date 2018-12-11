@@ -150,7 +150,7 @@ class MatchCaculate extends Controller
 
         foreach($gpsArr as $gps){
 
-            if($gps[0] > 0){
+            if(floatval($gps[0]) > 0){
 
                 $num++;
 
