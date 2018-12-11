@@ -110,7 +110,6 @@ class CourtController extends Controller
 
                 return apiData()->send(2004,'GPS无效');
             }
-
         }
 
         //1手机PGS一直有效,即便设备无效也要存储
@@ -139,27 +138,10 @@ class CourtController extends Controller
 
         DB::table('football_court_point')->insert($gpsPoint);
 
-
         //3检查手机的GPS和设备的GPS的距离
-        $distance = gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
+        $msg    = $gpsInfo['lat'] ? "GPS无效":"偏差". gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
 
-        //如果是A点，检查数量是否达到20次检查
-
-        $gpsNum = 1000;
-
-        if($position == 'A' && $distance > 1) {
-
-            $gpsNum     = DB::table('football_court_point')->where(["gps_group_id"=>$gpsGroupId,"position"=>"A"])->count();
-        }
-
-        if($gpsNum < 20){
-
-            return apiData()->send(2004,"偏差" . $distance);
-
-        }else {
-
-            return apiData()->send(200, "偏差:" . $distance);
-        }
+        return apiData()->send(200, $msg);
     }
 
     /**
