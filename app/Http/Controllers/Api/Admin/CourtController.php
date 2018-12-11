@@ -31,7 +31,7 @@ class CourtController extends Controller
 
         $courtList  = DB::table('football_court as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
-            ->select('a.court_id','a.user_id','a.gps_group_id','a.address','a.width','a.length','a.created_at','b.nick_name')
+            ->select('a.court_id','a.user_id','a.gps_group_id','a.address','a.width','a.length','a.created_at','a.is_virtual','b.nick_name')
             ->orderBy('a.court_id','desc')
             ->paginate(20);
 
