@@ -38,6 +38,7 @@
                         <th class="column-title">地址</th>
                         <th class="column-title">时间</th>
                         <th class="column-title">地图</th>
+                        <th class="column-title">球场来源</th>
                         <th class="column-title">操作</th>
                     </tr>
                     </thead>
@@ -49,8 +50,10 @@
                         <td class="col-sm">{{court.address}}</td>
                         <td class="col-sm">{{court.created_at}}</td>
 
-                        <td class="col-sm"><a target="_blank" href="/www/html/courtmap.html?gpsGroupId={{court.gps_group_id}}&courtId={{court.court_id}}">查看</a></td>
-
+                        <td class="col-sm">
+                            <a target="_blank" href="/www/html/courtmap.html?gpsGroupId={{court.gps_group_id}}&courtId={{court.court_id}}">查看</a>
+                        </td>
+                        <td class="col-sm">{{court.is_virtual ? "真实":"虚拟"}}</td>
                         <td class="last"><a href="#"><button class="btn btn-danger">删除</button></a>
                         </td>
                     </tr>
