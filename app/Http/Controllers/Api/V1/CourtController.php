@@ -100,15 +100,15 @@ class CourtController extends Controller
         $gpsInfo    = $this->str_to_gps($gps);
 
         //仅仅检查GPS
-        if(!$gpsGroupId){
+        if($gpsGroupId == ""){
 
-            if($gpsInfo['lat'] == 0 || $gpsInfo['lon'] == 0){
+            if($gpsInfo['lat'] != 0 && $gpsInfo['lon'] != 0){
 
-                return apiData()->send(2004,'GPS无效');
+                return apiData()->send(200,'GPS有效');
 
             }else{
 
-                return apiData()->send(200,'GPS有效');
+                return apiData()->send(2004,'GPS无效');
             }
 
         }
