@@ -1,8 +1,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% LANQI
+% LANQI 主程序
 % 2018-09-05
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function LanQi(pathname,sensor_R,sensor_L,angle_R,angle_L,gps_L,court_config,gpsresult,turnresult,passresult,stepresult,shootresult,website)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 输入格式
+% LanQi('文件所在位置','sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt',
+% 'gps-L.txt','court-config.txt','gpsresult.txt','turnresult.txt','passresult.txt',
+% 'stepresult.txt','shootresult.txt','网址')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 添加路径
 addpath(genpath(pathname)); 
 % Sensor

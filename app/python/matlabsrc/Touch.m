@@ -28,6 +28,9 @@ while (i <= m)
         j = 0;
         while D(i)~= 1
             j = j+1; i = i+1;
+            if i >= m
+                break;
+            end
         end
         Z(l,1:j) = D(i-j:i-1);
         l = l+1;
@@ -41,6 +44,9 @@ while (i <= m)
         j = 0;
         while X_Y(i)~= 0
             j = j+1; i = i+1;
+            if i >= m
+                break;
+            end
         end
         F(l,1:j) = X_Y(i-j:i-1);
         l = l+1;

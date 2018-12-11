@@ -1,5 +1,5 @@
 clc; clear all;
-pathname = 'G:\1257';
+pathname = 'G:\1288';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % ÃÌº”¬∑æ∂
@@ -12,7 +12,7 @@ GPS = importdata(gps_L);
 Court_config = importdata(court_config);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % R_J = Touch(sensor_r,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
-% 
+
 % L_J = Touch(sensor_l,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
 
 
