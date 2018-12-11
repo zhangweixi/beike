@@ -637,7 +637,7 @@ class Court{
         $pb1    = ['lat'=>$b1lat,'lon'=>$b1lon];
         $pc1    = ['lat'=>$c1lat,'lon'=>$c1lon];
 
-        $courtTopPoints = [
+        $courtInfo = [
             'p_a'   => $pa,
             'p_b'   => $pb,
             'p_c'   => $pc,
@@ -648,18 +648,19 @@ class Court{
             'p_d1'  => $pd1
         ];
 
-        foreach ($courtTopPoints as &$point)
+        foreach ($courtInfo as &$point)
         {
             $point = $point['lat'].",".$point['lon'];
 
         }
 
         //计算高宽
-        $courtTopPoints['width']        = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
-        $courtTopPoints['length']       = gps_distance($pa['lon'],$pa['lat'],$pa1['lon'],$pa1['lat']);
+        $courtInfo['width']         = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
+        $courtInfo['length']        = gps_distance($pa['lon'],$pa['lat'],$pa1['lon'],$pa1['lat']);
+        $courtInfo['is_virtual']    = 1;
 
         //更新球场
-        DB::table("football_court")->where('court_id',$courtId)->update($courtTopPoints);
+        DB::table("football_court")->where('court_id',$courtId)->update($courtInfo);
     }
 
 
