@@ -113,6 +113,7 @@ class MatchCaculate extends Controller
 
         if(!self::check_has_gps($matchId))
         {
+            (new AnalysisMatchData(''))->caculate_angle($matchId);
             jpush_content("比赛通知","GPS数据量不足,无法进行计算",4001,1,$courtInfo->user_id,['matchId'=>$matchId]);
             return;
         }

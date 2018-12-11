@@ -897,8 +897,16 @@ class AnalysisMatchData implements ShouldQueue
         $configFile = "/".$courtInfo->config_file;
         copy(public_path($configFile),$dataDir."court-config.txt");
 
+        $this->caculate_angle($matchId);    //计算角度
 
+        //3.角度计算完毕，请求调用算法系统
+        $this->call_matlab($this->matchId);
 
+    }
+
+    public function caculate_angle($matchId){
+
+        $dataDir    = self::matchdir($matchId);
         //3.计算方向角
         foreach(["L","R"] as $foot)
         {
@@ -908,11 +916,8 @@ class AnalysisMatchData implements ShouldQueue
             //计算角度
             $this->compass_translate($compassSensorFile,$outFile);
         }
-
-        //3.角度计算完毕，请求调用算法系统
-        $this->call_matlab($this->matchId);
-
     }
+
 
     public static function sync_file_time_stage($matchId){
 
