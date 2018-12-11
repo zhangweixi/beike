@@ -1651,7 +1651,7 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
-
+        //需要计算在不同的时间点，不同类型的速度跑动的距离
         //创建高、中、低速跑动热点图
         foreach ($speedType as $key => $type)
         {
