@@ -88,9 +88,9 @@ class CourtController extends Controller
         $gps        = $request->input('gps');
         $lat        = $request->input('latitude',0);
         $lon        = $request->input('longitude',0);
-        $gpsGroupId = $request->input('gpsGroupId');
+        $gpsGroupId = $request->input('gpsGroupId',"");
         $userId     = $request->input('userId');
-        $position   = $request->input('position');
+        $position   = $request->input('position',null);
 
         if(empty($gps))
         {
@@ -98,6 +98,20 @@ class CourtController extends Controller
         }
 
         $gpsInfo    = $this->str_to_gps($gps);
+
+        //仅仅检查GPS
+        if(!$gpsGroupId){
+
+            if($gpsInfo['lat'] == 0 || $gpsInfo['lon'] == 0){
+
+                return apiData()->send(2004,'GPS无效');
+
+            }else{
+
+                return apiData()->send(200,'GPS有效');
+            }
+
+        }
 
         //1手机PGS一直有效,即便设备无效也要存储
         if($gpsInfo['lon'] != 0 && $gpsInfo['lat'] != 0) {
@@ -124,6 +138,7 @@ class CourtController extends Controller
         ];
 
         DB::table('football_court_point')->insert($gpsPoint);
+
 
         //3检查手机的GPS和设备的GPS的距离
         $distance = gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
