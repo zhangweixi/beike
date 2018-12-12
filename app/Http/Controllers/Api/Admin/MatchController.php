@@ -45,7 +45,7 @@ class MatchController extends Controller
         $matchId    = $request->input('matchId');
 
         //将之前的数据删除
-        $dir        = matchdir($matchId);deldir($dir);
+        $dir        = rtrim(matchdir($matchId),"/"); deldir($dir);
 
         $caculate   = new MatchCaculate();
         $caculate->jiexi_match($request);
