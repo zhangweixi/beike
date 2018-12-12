@@ -38,9 +38,7 @@ class LoginToken
 
     public function forget()
     {
-        Redis::select(1);
         Redis::del('u'.$this->_userId);
-        Redis::select(0);
 
         DB::table('users')->where('id',$this->_userId)->update(['token'=>'']);
         return $this;
@@ -49,10 +47,8 @@ class LoginToken
 
     public function cache()
     {
-        Redis::select(1);
         Redis::set('u'.$this->_userId,$this->_token);
         DB::table('users')->where('id',$this->_userId)->update(['token'=>$this->_token]);
-        Redis::select(0);
         return $this;
     }
 
@@ -61,9 +57,9 @@ class LoginToken
         $token  = base64_decode($this->_token);
         $userId = substr($token,0,8);
         $userId = $userId - 10000000;
-        Redis::select(1);
+
         $cacheToken = Redis::get("u".$userId);
-        Redis::select(0);
+
         if($cacheToken == $this->_token){
 
             return true;
