@@ -1163,7 +1163,7 @@ class AnalysisMatchData implements ShouldQueue
     {
         //sensor数据
         $dataDir    = self::matchdir($matchId);
-
+        mylogger("开始".$foot."内存".memory_get_usage());
         //将所有数据读取到数组中
         $sensorPath = $dataDir."sensor-{$foot}.txt";
         $sensor     = file_to_array($sensorPath);
@@ -1238,6 +1238,9 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         fclose($fresult);
+        unset($compassArr);
+        unset($sensors);
+        mylogger("结束".$foot."内存".memory_get_usage());
         return $resultPath;
     }
 
