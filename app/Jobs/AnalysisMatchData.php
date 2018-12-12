@@ -1290,6 +1290,7 @@ class AnalysisMatchData implements ShouldQueue
             mylogger('文件缺失');
         }
 
+        mylogger('已经请求开始计算');
     }
 
 
