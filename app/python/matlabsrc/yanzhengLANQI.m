@@ -1,11 +1,11 @@
-clc; clear all;
-pathname = 'G:\1288';
+clc; clear; close all;
+pathname = 'G:\1301';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % 添加路径
 addpath(genpath(pathname)); 
 % Sensor
-sensor_r = importdata(sensor_R)/1000; sensor_l = importdata(sensor_L)/1000; 
+sensor_r = importdata(sensor_L)/1000; sensor_l = importdata(sensor_L)/1000; 
 sensor_r(:,4:5) = sensor_r(:,4:5)*1000; sensor_l(:,4:5) = sensor_l(:,4:5)*1000;
 Compass_R = importdata(angle_R); Compass_L = importdata(angle_L); 
 GPS = importdata(gps_L);
@@ -35,7 +35,7 @@ singular(:,5) = A(singular(:,1));
 % figure; plot(A); hold on; plot(singular(:,1),singular(:,5),'*'); hold on
 
 % singular(:,4) = SMA_R(singular(:,1));
-% figure; plot(SMA_R); hold on; plot(singular(:,1),singular(:,4),'.r');
+figure; plot(SMA); 
 D = ones(n_r,1); X_Y = zeros(n_r,1);
 D(singular(:,1)) = A(singular(:,1)); X_Y(singular(:,1)) = SMA(singular(:,1));
 % 总幅值
@@ -45,6 +45,9 @@ while (i <= n_r)
         j = 0;
         while D(i)~= 1
             j = j+1; i = i+1;
+            if i > n_r
+                break;
+            end
         end
         Z(l,1:j) = D(i-j:i-1);
         l = l+1;
@@ -58,6 +61,9 @@ while (i <= n_r)
         j = 0;
         while X_Y(i)~= 0
             j = j+1; i = i+1;
+            if i > n_r
+                break;
+            end
         end
         F(l,1:j) = X_Y(i-j:i-1);
         l = l+1;
@@ -183,7 +189,9 @@ while i <= m
     end
     i = i+1;
 end
-plot(longpass3(:,1),longpass3(:,2),'r*'); hold on
+if ~isempty(longpass3)
+    plot(longpass3(:,1),longpass3(:,2),'r*'); hold on
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pass = Total_ball(sensor_r,sensor_l,GPS);
 shoot_result = Shoot_Z(pass,Compass_R,Compass_L,40,Court_config);
@@ -218,7 +226,9 @@ for j = 1:m
         chu = chu+1;
     end    
 end
-plot(shoot_result(:,1),shoot_result(:,2),'rh','markersize',15); hold on % 射门
+if ~isempty(shoot_result)
+    plot(shoot_result(:,1),shoot_result(:,2),'rh','markersize',15); hold on % 射门
+end
 % 球门
 plot(Court_config(1001,1),Court_config(1001,2),'b<','markersize',15); hold on 
 plot(Court_config(1001,3),Court_config(1001,4),'b<','markersize',15); hold on 

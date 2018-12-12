@@ -3,7 +3,7 @@
 % 判断震荡程度
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 function output = vibrate(data,lamda,sigma1,sigma2)
-n = length(data);
+n = length(data); output = [];
 if (nargin < 4)
     i = 1; % 判断动荡程度（第一种）
     while i <= n
@@ -41,7 +41,6 @@ end
 DATA(:,1) = find(data~=1); DATA(:,2) = data(data~=1);
 % 判断是否有数据
 if isempty(DATA)
-    output = [];
     return;
 end
 output = []; j = 1; output(j,:) = DATA(1,:); [l,~] = size(DATA);

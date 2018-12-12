@@ -1,5 +1,5 @@
-% clc; clear all;
-% pathname = 'G:\data';
+% clc; clear; close all;
+% pathname = 'G:\1297';
 % sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 % angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; 
 % % 添加路径
@@ -9,14 +9,17 @@
 % lamda = 3; sigma1 = 100; sigma2 = 100; sigma3 = 4;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Output,m] = Touch(sensor,lamda,sigma1,sigma2,sigma3)
-m = length(sensor);
+m = length(sensor); Output = [];
 for i = 1:m
     A(i) = sqrt(sensor(i,1)^2+sensor(i,2)^2+sensor(i,3)^2); % 加速度
     SMA(i) = sqrt(sensor(i,2)^2+sensor(i,3)^2); % X_Y加速度
 end
+% 首先判断有数据
+if isempty(SMA(SMA > 6)) 
+    return
+end    
 singular = error_ellipse3(sensor(:,1),sensor(:,2),sensor(:,3),0.999); % 第一次筛选
 if isempty(singular)
-    Output = [];
     return;
 end
 singular(:,5) = A(singular(:,1)); D = ones(m,1); X_Y = zeros(m,1);
@@ -28,7 +31,7 @@ while (i <= m)
         j = 0;
         while D(i)~= 1
             j = j+1; i = i+1;
-            if i >= m
+            if i > m
                 break;
             end
         end
@@ -44,7 +47,7 @@ while (i <= m)
         j = 0;
         while X_Y(i)~= 0
             j = j+1; i = i+1;
-            if i >= m
+            if i > m
                 break;
             end
         end
@@ -56,7 +59,6 @@ end
 output = vibrate(D,lamda,sigma1,sigma2);  % 第二次筛选
 % 判断有没有数据
 if isempty(output)
-    Output = [];
     return;
 end
 % 第三次选择
@@ -97,13 +99,17 @@ while i <= U
     end
     i = i+1;
 end
+% 判断有没有数据
+if isempty(Output)
+    return;
+end
 % 计算速度
 [E,~] = size(Output); V = []; V_xy = [];
 for i = 1:E
     [row,~] = find(Z == Output(i,2));
 %     V(i) = (sum(Z(row,1:column)) - column)/10; % 最高点数据
     row = max(row);
-    V(i) = (sum(Z(row,:))-length(find(Z(row,:) ~= 0)))/10; % 全部数据
+    V(i) = (sum(Z(row,:)) - length(find(Z(row,:) ~= 0)))/10; % 全部数据
     V_xy(i) = (sum(F(row,:)))/10; % 全部数据
 end
 Output(:,3) = V; Output(:,4) = SMA(Output(:,1)); Output(:,5) = V_xy; 
