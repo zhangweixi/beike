@@ -927,7 +927,6 @@ class AnalysisMatchData implements ShouldQueue
 
     public static function sync_file_time_stage($matchId){
 
-        ini_set('memory_limit', '512M');
         $dir = matchdir($matchId);
 
         $files = [
@@ -976,8 +975,11 @@ class AnalysisMatchData implements ShouldQueue
                 }
 
                 fclose($fd);
+                unset($data);
             }
         }
+
+
     }
     /**
      * 重置数据的时间
@@ -1041,6 +1043,8 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         fclose($fs);
+        unset($dataArr);
+        unset($stagesData);
     }
 
     /**
