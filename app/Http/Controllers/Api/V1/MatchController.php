@@ -47,6 +47,9 @@ class MatchController extends Controller
         $courtModel = new CourtModel();
         $courtId    = $request->input('courtId',0);
         $userId     = $request->input('userId',0);
+        $lat        = $request->input('latitude',0);
+        $lon        = $request->input('longitude',0);
+
         $courtId    = $courtId > 0 ? $courtId : $courtModel->add_empty_court($userId);
 
         $matchInfo  = [
@@ -63,7 +66,7 @@ class MatchController extends Controller
             return apiData()->send(2004,"您还有未结束的比赛");
         }
 
-        $weather    = $this->get_weather();
+        $weather    = $this->get_weather($lat,$lon);
         $matchInfo  = array_merge($matchInfo,$weather);
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
@@ -79,15 +82,23 @@ class MatchController extends Controller
 
     /**
      * 获取天气
+     * @param $lat float
+     * @param $lon float
+     * @return array
      * */
-    public function get_weather(){
+    public function get_weather($lat,$lon){
+
+        if($lat == 0 || $lon == 0){
+            return [];
+        }
+
         $host = "https://ali-weather.showapi.com";
         $path = "/gps-to-weather";
         $method = "GET";
         $appcode = config('aliyun.appCode');
         $headers = array();
         array_push($headers, "Authorization:APPCODE " . $appcode);
-        $querys = "from=5&lat=31.169959&lng=121.427668";
+        $querys = "from=5&lat=".$lat."&lng=".$lon;
 
         $bodys = "";
         $url = $host . $path . "?" . $querys;
