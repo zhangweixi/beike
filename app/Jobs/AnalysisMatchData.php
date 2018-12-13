@@ -52,7 +52,6 @@ class AnalysisMatchData implements ShouldQueue
 
     public function __construct($action,$param = [])
     {
-        ini_set("memory_limit",1024);
         $this->action   = $action;
 
         foreach($param as $key => $v)
