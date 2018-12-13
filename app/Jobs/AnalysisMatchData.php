@@ -1534,21 +1534,22 @@ class AnalysisMatchData implements ShouldQueue
     {
         if(self::$courtInfo == null){
 
-              $courtInfo    = CourtModel::find($courtId);
-              $points       = [
-                  'pa'  => $courtInfo->p_a,
-                  'pa1' => $courtInfo->p_a1,
-                  'pd'  => $courtInfo->p_d,
-                  'pd1' => $courtInfo->p_d1
-              ];
+            $courtInfo    = CourtModel::find($courtId);
+            $points       = [
+                'pa'  => $courtInfo->p_a,
+                'pa1' => $courtInfo->p_a1,
+                'pd'  => $courtInfo->p_d,
+                'pd1' => $courtInfo->p_d1
+            ];
 
-              foreach ($points as $key => $p)
-              {
-                    $p = explode(",",$p);
-                    $points[$key] = ['x'=>$p[1],'y'=>$p[0]];
-              }
-
-              self::$courtInfo = (object)$points;
+            foreach ($points as $key => $p)
+            {
+                $p = explode(",",$p);
+                $points[$key] = ['x'=>$p[1],'y'=>$p[0]];
+            }
+            $points['width']    = $courtInfo->width;
+            $points['length']   = $courtInfo->length;
+            self::$courtInfo = (object)$points;
         }
 
         return self::$courtInfo;
