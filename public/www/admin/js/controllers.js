@@ -1604,5 +1604,15 @@ myapp.controller('systemController',function($scope,$http,$location){
         })
     }
 
+    $scope.clear_log = function(logFile){
+
+        var url = server + "system/clear_log?logFile="+logFile;
+        $http.get(url).success(function(res){
+
+            alert('已清除');
+
+        })
+    }
+
 
 })

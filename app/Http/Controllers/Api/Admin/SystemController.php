@@ -22,4 +22,19 @@ class SystemController extends Controller{
         return apiData()->add('logs',$resultFiles)->send();
     }
 
+
+    /**
+     * 清除日志
+     * */
+    public function clear_log(Request $request){
+
+        $logFile    = $request->input('logFile');
+
+        $logFile    = storage_path("logs/".$logFile);
+
+        file_put_contents($logFile,"");
+
+        return apiData()->send();
+    }
+
 }
