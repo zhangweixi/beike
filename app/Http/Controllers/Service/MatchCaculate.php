@@ -16,6 +16,7 @@ class MatchCaculate extends Controller
 
     public function __construct()
     {
+        ini_set('memory_limit',"1024M");
 
     }
 
@@ -104,6 +105,7 @@ class MatchCaculate extends Controller
      * */
     public function finish_parse_data(Request $request)
     {
+
         $matchId    = $request->input('matchId');
 
         $courtInfo  = MatchModel::get_match_court($matchId);
@@ -113,7 +115,7 @@ class MatchCaculate extends Controller
         mylogger("所有".memory_get_usage(true));
         mylogger("当前".memory_get_usage());
         mylogger("峰值".memory_get_peak_usage());
-        
+
         if(!self::check_has_gps($matchId))
         {
             mylogger("所有".memory_get_usage(true));
