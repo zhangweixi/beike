@@ -23,7 +23,6 @@ class MatchController extends Controller
 {
     public function __construct()
     {
-        ini_set ('memory_limit', '500M');
         set_time_limit(300);
     }
 
