@@ -100,7 +100,7 @@ class CourtController extends Controller
         $gpsInfo    = $this->str_to_gps($gps);
 
         //仅仅检查GPS
-        if($gpsGroupId == ""){
+        if(strlen($gpsGroupId) == 0){
 
             if($gpsInfo['lat'] != 0 && $gpsInfo['lon'] != 0){
 
