@@ -110,6 +110,10 @@ class MatchCaculate extends Controller
 
         $courtId    = $courtInfo->court_id;
 
+        mylogger("所有".memory_get_usage(true));
+        mylogger("当前".memory_get_usage());
+        mylogger("峰值".memory_get_peak_usage());
+        
         if(!self::check_has_gps($matchId))
         {
             mylogger("所有".memory_get_usage(true));
