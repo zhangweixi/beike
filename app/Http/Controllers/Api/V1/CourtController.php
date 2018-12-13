@@ -105,11 +105,9 @@ class CourtController extends Controller
             if($gpsInfo['lat'] != 0 && $gpsInfo['lon'] != 0){
 
                 return apiData()->send(200,'GPS有效');
-
-            }else{
-
-                return apiData()->send(2004,'GPS无效');
             }
+
+            return apiData()->send(2004,'GPS无效');
         }
 
         //1手机PGS一直有效,即便设备无效也要存储
@@ -168,9 +166,17 @@ class CourtController extends Controller
         $str    = substr($arr[1],24);
         $gps    = strToAscll($str);
         $gps    = explode(",",$gps);
+        if(count($gps) > 4){
 
-        $lat    = $gps[2];
-        $lon    = $gps[4];
+            $lat    = $gps[2];
+            $lon    = $gps[4];
+
+        }else{
+
+            $lat    = "";
+            $lon    = "";
+        }
+
 
         return ['lat'=>$lat,'lon'=>$lon];
     }

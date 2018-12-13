@@ -36,7 +36,7 @@ use DB;
  * */
 class Court{
 
-    private $A,$B,$C,$D,$E,$F,$AF,$DE;
+    private $A,$B,$C,$D,$E,$F,$A1,$D1;
 
     //private $lonNum = 20;
     //private $latNum = 32;
@@ -57,9 +57,11 @@ class Court{
      * @param $D GPSPoint
      * @param $E GPSPoint
      * @param $F GPSPoint
+     * @param $A1 GPSPoint
+     * @param $D1 GPSPoint
      * @return Array
      * */
-    public function calculate_court($A,$B,$C,$D,$E,$F)
+    public function calculate_court($A,$B,$C,$D,$E,$F,$A1,$D1)
     {
         $this->A = $A;
         $this->B = $B;
@@ -67,21 +69,8 @@ class Court{
         $this->D = $D;
         $this->E = $E;
         $this->F = $F;
-
-        $AFlat = bcadd($F->lat,bcsub($F->lat,$A->lat));
-        $AFlon = bcadd($F->lon,bcsub($F->lon,$A->lon));
-
-        $DElat = bcadd($E->lat,bcsub($E->lat,$D->lat));
-        $DElon = bcadd($E->lon,bcsub($E->lon,$D->lon));
-
-
-        $this->AF = new GPSPoint();
-        $this->AF->lat = $AFlat;
-        $this->AF->lon = $AFlon;
-
-        $this->DE = new GPSPoint();
-        $this->DE->lat = $DElat;
-        $this->DE->lon = $DElon;
+        $this->A1= $A1;
+        $this->D1= $D1;
 
         return $this->cut_court();
 
@@ -104,8 +93,11 @@ class Court{
 
         //切割 AF-DE
         #$AF_DE_Points       = $this->cut_line($this->DE,$this->AF,$this->lonNum);
-        $AF_DE_Points       = $this->cut_line($this->AF,$this->DE,$this->lonNum);
+        $AF_DE_Points       = $this->cut_line($this->A1,$this->D1,$this->lonNum);
+
+
         $courtMap['AF_DE']  = $AF_DE_Points;
+
 
         $AF_DE_Points       = self::array_cycle($AF_DE_Points,2);
 
@@ -226,16 +218,22 @@ class Court{
         $courtInfo  = CourtModel::find($courtId);
 
         $pa         = explode(',',$courtInfo->p_a);
+        $pb         = explode(',',$courtInfo->p_b);
+        $pc         = explode(',',$courtInfo->p_c);
         $pd         = explode(',',$courtInfo->p_d);
         $pe         = explode(',',$courtInfo->p_e);
         $pf         = explode(',',$courtInfo->p_f);
+        $pa1        = explode(',',$courtInfo->p_a1);
+        $pd1        = explode(',',$courtInfo->p_d1);
 
         $A          = new GPSPoint($pa[0],$pa[1]);
-        $B          = new GPSPoint(0,0);
-        $C          = new GPSPoint(0,0);
+        $B          = new GPSPoint($pb[0],$pb[1]);
+        $C          = new GPSPoint($pc[0],$pc[1]);
         $D          = new GPSPoint($pd[0],$pd[1]);
         $E          = new GPSPoint($pe[0],$pe[1]);
         $F          = new GPSPoint($pf[0],$pf[1]);
+        $A1         = new GPSPoint($pa1[0],$pa1[1]);
+        $D1         = new GPSPoint($pd1[0],$pd1[1]);
 
         if($latNum > 0)
         {
@@ -247,7 +245,7 @@ class Court{
             $this->set_lon_num($lonNum);
         }
 
-        $boxPoints  = $this->calculate_court($A,$B,$C,$D,$E,$F);
+        $boxPoints  = $this->calculate_court($A,$B,$C,$D,$E,$F,$A1,$D1);
 
         if($courtInfo->is_clockwise == 1){
 
@@ -419,6 +417,7 @@ class Court{
         $centerLat      = array_sum($lats)/$num;
         $centerLon      = array_sum($lons)/$num;
         $courtCenter    = ['lon'=>$centerLon,'lat'=>$centerLat];
+
 
         //球场方向直线偏移量
         $courtB = $courtCenter['lat'] - $courtSlope * $courtCenter['lon'];  //y=k*x+b => b = y -k*x
