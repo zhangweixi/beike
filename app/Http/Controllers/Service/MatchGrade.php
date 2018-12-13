@@ -220,7 +220,7 @@ class MatchGrade extends Controller
         foreach($options as $option){
 
             $singleGrade    = $this->get_global_single_grade($userId,$option['type'],$option['percent'],$option['isAvg']);
-            mylogger($option['type'].'------'.$singleGrade);
+            //mylogger($option['type'].'------'.$singleGrade);
             $grade          = $grade + $singleGrade;
         }
 
