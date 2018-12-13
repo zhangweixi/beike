@@ -54,7 +54,9 @@
                             <a target="_blank" href="/www/html/courtmap.html?gpsGroupId={{court.gps_group_id}}&courtId={{court.court_id}}">查看</a>
                         </td>
                         <td class="col-sm">{{court.is_virtual == 0 ? "真实":"虚拟"}}</td>
-                        <td class="last"><a href="#"><button class="btn btn-danger">删除</button></a>
+                        <td class="last">
+                            <button class="btn btn-danger btn-xs">删除</button>
+                            <button class="btn btn-info btn-xs" ng-click="caculate_court(court.court_id)">计算</button>
                         </td>
                     </tr>
                     </tbody>

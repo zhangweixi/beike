@@ -1536,6 +1536,21 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
             $scope.courtListPaginationConf.itemsPerPage = courtData.per_page;
         })
     }
+
+
+    /*计算球场*/
+    $scope.caculate_court = function(courtId){
+
+        var url = server + "court/caculate_court?courtId="+courtId;
+
+        $http.get(url).success(function(res){
+
+            if(res.code == 200){
+
+                alert('已开始计算');
+            }
+        });
+    }
 })
 
 myapp.controller('sqmatchController',function($scope,$http,$location,$stateParams){

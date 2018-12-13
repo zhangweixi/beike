@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Service\MatchCaculate;
 use App\Models\V1\CourtModel;
 use Illuminate\Http\Request;
 use DB;
@@ -40,6 +41,18 @@ class CourtController extends Controller
 
     }
 
+    public function caculate_court(Request $request){
+
+        $courtId    = $request->input('courtId');
+
+        $courtInfo  = CourtModel::find($courtId);
+        if($courtInfo->gps_group_id != 0){
+
+            MatchCaculate::call_matlab_court_init($courtId);
+        }
+
+        return apiData()->send();
+    }
 
     /**
      * 读取配置文件
