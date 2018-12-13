@@ -872,25 +872,25 @@ class AnalysisMatchData implements ShouldQueue
             ['file'=>'compass-R.txt',   'typeKey'  => 4,'timeKey'  =>3,'hz'=>25],
         ];
 
-        mylogger('重置时间开始');
+
         foreach($files as $file)
         {
             self::reset_data_time($dataDir.$file['file'],$file['typeKey'],$file['timeKey'],$file['hz']);
         }
 
-        mylogger('重置时间完毕');
+
 
         //同步时间阶段
         self::sync_file_time_stage($matchId);
 
         //2.将国际GPS转换成百度GPS
-        mylogger('gps转换开始');
+
         $inputGps   = $dataDir."gps-L.txt";
         $outGps     = $dataDir."gps-L.txt";
         $cmd        = "node ". app_path('node/gps.js') . " --outtype=file --input={$inputGps} --output={$outGps} ";
         $cmd        = str_replace("\\","/",$cmd);
         $result     = shell_exec($cmd);
-        mylogger('gps转换结束');
+
 
         //3.0 生成热点图占用时间比较久，异步调用
         self::execute("create_gps_map",['matchId'=>$matchId,'foot'=>"L"]);
@@ -900,9 +900,8 @@ class AnalysisMatchData implements ShouldQueue
         $courtInfo  = CourtModel::find($matchInfo->court_id);
         $configFile = "/".$courtInfo->config_file;
         copy(public_path($configFile),$dataDir."court-config.txt");
-        mylogger('计算角度开始');
+
         $this->caculate_angle($matchId);    //计算角度
-        mylogger('计算角度结束');
 
         //3.角度计算完毕，请求调用算法系统
         $this->call_matlab($this->matchId);
