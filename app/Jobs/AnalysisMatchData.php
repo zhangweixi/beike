@@ -900,6 +900,7 @@ class AnalysisMatchData implements ShouldQueue
 
         if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
         {
+            mylogger("球场无效,width:{$courtInfo->width},height:{$courtInfo->length}，创建虚拟球场");
             Court::create_visual_match_court($matchId,$courtId);
         }
 
