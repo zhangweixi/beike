@@ -861,6 +861,9 @@ class AnalysisMatchData implements ShouldQueue
     {
         $matchInfo      = MatchModel::find($matchId);
         $dataDir        = self::matchdir($matchId);
+        $courtId        = $matchInfo->court_id;
+        $courtInfo      = self::get_court_info($courtId);
+
 
         //1.同步两台设备的数据一致性
         //$this->sync_file_num_same($matchId);
@@ -883,6 +886,7 @@ class AnalysisMatchData implements ShouldQueue
         //同步时间阶段
         self::sync_file_time_stage($matchId);
 
+
         //2.将国际GPS转换成百度GPS
 
         $inputGps   = $dataDir."gps-L.txt";
@@ -890,6 +894,19 @@ class AnalysisMatchData implements ShouldQueue
         $cmd        = "node ". app_path('node/gps.js') . " --outtype=file --input={$inputGps} --output={$outGps} ";
         $cmd        = str_replace("\\","/",$cmd);
         $result     = shell_exec($cmd);
+
+
+        //检查球场是否合格，如果不合格则根据GPS来生成球场
+
+        if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
+        {
+            Court::create_visual_match_court($matchId,$courtId);
+        }
+
+
+        (new Court())->cut_court_to_box_and_create_config($courtId); //创建配置文件
+
+
 
 
         //3.0 生成热点图占用时间比较久，异步调用
