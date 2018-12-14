@@ -379,9 +379,6 @@ class Court{
         $gpsArr     = file_to_array($file);
 
         $gpsNewArr  = [];
-        mylogger("比赛ID".$matchId);
-        mylogger("球场ID".$courtId);
-
         //转换成标准的GPS
         foreach($gpsArr as $key => $gps)
         {
@@ -401,7 +398,7 @@ class Court{
 
         $courtSlope = tan(angle_to_pi($courtAngle));
         /*====================求球场斜率 end =================*/
-        mylogger("球场斜率".$courtAngle);
+
 
         /*=======找到球场中的一个点来确定两条直线======*/
 
@@ -421,7 +418,7 @@ class Court{
         $centerLon      = array_sum($lons)/$num;
         $courtCenter    = ['lon'=>$centerLon,'lat'=>$centerLat];
 
-        mylogger('中心:'.$centerLat.','.$centerLon);
+
         //球场方向直线偏移量
         $courtB = $courtCenter['lat'] - $courtSlope * $courtCenter['lon'];  //y=k*x+b => b = y -k*x
 
@@ -684,7 +681,7 @@ class Court{
         $courtInfo['width']         = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
         $courtInfo['length']        = gps_distance($pa['lon'],$pa['lat'],$pa1['lon'],$pa1['lat']);
         $courtInfo['is_virtual']    = 1;
-        mylogger($courtInfo);
+
         //更新球场
         DB::table("football_court")->where('court_id',$courtId)->update($courtInfo);
     }
@@ -1034,7 +1031,7 @@ class Court{
         //检验球场是否合格
         $scale  = $length / $width;
 
-        if($width < 2 || $width > 100 || $length < 4  || $length > 200 || $scale < 1.1 || $scale > 2.5 ) {
+        if($width < 2 || $width > 100 || $length < 4  || $length > 200 || $scale < 1.1 || $scale > 2.2 ) {
 
             return false;
         }
