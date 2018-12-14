@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Service;
 use App\Common\Http;
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseMatchModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
 use Dingo\Api\Http\Request;
@@ -110,7 +111,6 @@ class MatchCaculate extends Controller
 
 
 
-
         if(!self::check_has_gps($matchId))
         {
             (new AnalysisMatchData(''))->caculate_angle($matchId);
@@ -121,7 +121,7 @@ class MatchCaculate extends Controller
         $delayTime  = now()->addSecond(1);
         $data       = ['matchId'=>$matchId];
         AnalysisMatchData::dispatch("finish_parse_data",$data)->delay($delayTime);
-
+        BaseMatchModel::match_process($matchId,"比赛队列设置成功");
         return apiData()->send();
     }
 

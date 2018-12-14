@@ -7,6 +7,7 @@ use App\Http\Controllers\Service\GPSPoint;
 use App\Http\Controllers\Service\MatchGrade;
 use App\Http\Controllers\Service\Wechat;
 use App\Models\Base\BaseMatchDataProcessModel;
+use App\Models\Base\BaseMatchModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\Base\BaseUserAbilityModel;
@@ -875,17 +876,18 @@ class AnalysisMatchData implements ShouldQueue
             ['file'=>'compass-R.txt',   'typeKey'  => 4,'timeKey'  =>3,'hz'=>25],
         ];
 
-
+        BaseMatchModel::match_process($matchId,"同步数据开始");
         foreach($files as $file)
         {
             self::reset_data_time($dataDir.$file['file'],$file['typeKey'],$file['timeKey'],$file['hz']);
         }
 
-
+        BaseMatchModel::match_process($matchId,"同步数据结束，同步时间开始");
 
         //同步时间阶段
         self::sync_file_time_stage($matchId);
 
+        BaseMatchModel::match_process($matchId,"同步时间开始");
 
         //2.将国际GPS转换成百度GPS
 
@@ -894,13 +896,14 @@ class AnalysisMatchData implements ShouldQueue
         $cmd        = "node ". app_path('node/gps.js') . " --outtype=file --input={$inputGps} --output={$outGps} ";
         $cmd        = str_replace("\\","/",$cmd);
         $result     = shell_exec($cmd);
-
+        BaseMatchModel::match_process($matchId,"GPS转换成功");
 
         //检查球场是否合格，如果不合格则根据GPS来生成球场
 
         if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
         {
-            mylogger("球场无效,width:{$courtInfo->width},height:{$courtInfo->length}，创建虚拟球场");
+
+            BaseMatchModel::match_process($matchId,"球场无效,width:{$courtInfo->width},height:{$courtInfo->length}，创建虚拟球场");
             Court::create_visual_match_court($matchId,$courtId);
         }
 
@@ -919,6 +922,8 @@ class AnalysisMatchData implements ShouldQueue
         $configFile = "/".$courtInfo->config_file;
         copy(public_path($configFile),$dataDir."court-config.txt");
 
+        BaseMatchModel::match_process($matchId,"拷贝球场配置成功");
+        
         $this->caculate_angle($matchId);    //计算角度
 
         //3.角度计算完毕，请求调用算法系统
