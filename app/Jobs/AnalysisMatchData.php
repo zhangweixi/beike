@@ -378,7 +378,7 @@ class AnalysisMatchData implements ShouldQueue
                 //数据解析结束，同意处理后续数据
                 //$this->finish_parse_data($matchId);
                 //$url = config('app.apihost')."/api/matchCaculate/finish_parse_data?matchId=".$matchId;
-
+                mylogger("解析结束");
                 self::execute("finish_parse_data",["matchId"=>$matchId]);
             }
         }
@@ -923,7 +923,7 @@ class AnalysisMatchData implements ShouldQueue
         copy(public_path($configFile),$dataDir."court-config.txt");
 
         BaseMatchModel::match_process($matchId,"拷贝球场配置成功");
-        
+
         $this->caculate_angle($matchId);    //计算角度
 
         //3.角度计算完毕，请求调用算法系统
