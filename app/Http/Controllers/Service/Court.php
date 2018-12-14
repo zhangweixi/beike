@@ -541,7 +541,7 @@ class Court{
 
         $pa  = $fourTopPoint[$direction[0]."_".$direction[1]];
 
-        //知道了pa,但是pb可能是旁边的两个点，究竟哪一个点才是，要根据他们的斜率
+        //知道了pa,但是pb可能是旁边的两个点，究竟哪一个点才是，要根据他们的斜率,pa与哪个点的斜率最接近于球场的垂直斜率，那个点就是D点
         $pdSameLeft     = $fourTopPoint[$direction[0]."_".$positionArr[$direction[1]]]; //同样的左右方 如：左上 左下
         $pdSameDown     = $fourTopPoint[$positionArr[$direction[0]]."_".$direction[1]]; //同样的上下方 如：左上 右下
 
@@ -569,9 +569,34 @@ class Court{
         $pd1  = $fourTopPoint[$pd1k];
 
 
+
+
         //获得球场比例
         $width  = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
         $length = gps_distance($pa['lon'],$pa['lat'],$pa1['lon'],$pa1['lat']);
+
+
+        //如果球场的宽度最小5米，达不到则自动扩宽
+        if($width < 5){
+
+            $xStep          = ($pd['lon'] - $pa['lon']) / abs($pd['lon'] - $pa['lon']) * 0.000001;
+            $borderSelfB    = $borderArr[$pak."_".$pdk];
+            $borderItB      = $borderArr[$pa1k."_".$pd1k];
+
+            do{
+
+                $pd['lon']  = $pd['lon'] + $xStep;
+                $pd['lat']  = $verticalSlope * $pd['lon'] + $borderSelfB;
+
+                $pd1['lon'] = $pd1['lon'] + $xStep;
+                $pd1['lat'] = $verticalSlope * $pd1['lon'] + $borderItB;
+
+                $width      = gps_distance($pa['lon'],$pa['lat'],$pd['lon'],$pd['lat']);
+
+            }while($width<5);
+        }
+
+
         $courtScale = $length / $width; //球场比例
 
         //判断球场的长宽比例是否达到一个足球场的比例
@@ -904,9 +929,6 @@ class Court{
         $centery    = $pa['y'] + ($pd1['y'] - $pa['y'])/2;
 
         //获得要转动的角度
-        mylogger('pa-x'.$pa['x']);
-        mylogger('pa1-x'.$pa1['x']);
-
         $slope      = ($pa['y'] - $pa1['y']) / ($pa['x'] - $pa1['x']);
         $angle      = pi_to_angle(atan($slope));
         $angle      = -$angle; //斜率大于0:减去角度  斜率小于0：加上角度
