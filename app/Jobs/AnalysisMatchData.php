@@ -826,7 +826,7 @@ class AnalysisMatchData implements ShouldQueue
         {
             return $matchInfo->match_id;
         }
-
+        BaseMatchModel::match_process(0,$this->sourceId."无法找到比赛ID，time:".$beginTime);
         dd('无法找到比赛ID,userId:'.$this->userId.",time:".$beginTime);
     }
 
@@ -2091,6 +2091,8 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         $courtInfo  = self::get_court_info($courtId);
+        mylogger("计算热点图");
+        mylogger(object_to_array($courtInfo));
 
         $gpsData    = Court::create_gps_map($courtInfo->pa,$courtInfo->pa1,$courtInfo->pd,$courtInfo->pd1,$gpsData);
 
