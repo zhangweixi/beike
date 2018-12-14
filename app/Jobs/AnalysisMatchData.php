@@ -372,7 +372,6 @@ class AnalysisMatchData implements ShouldQueue
 
             //mylogger("检查数据是否解析完毕");
             //mylogger($process->gps_L .'-' .$process->sensor_L .'-'. $process->sensor_R .'-'. $process->compass_L .'-'.$process->compass_R);
-            mylogger($matchId.":".$type."finish");
 
             if($process->gps_L == 1 && $process->sensor_L == 1 && $process->sensor_R == 1 && $process->compass_L == 1 && $process->compass_R == 1)
             {
@@ -1362,7 +1361,7 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         /***************/
-
+        self::get_court_info($matchInfo->court_id,true);
         $result = $this->gps_map($matchInfo->court_id,$gpsData);
 
         $data = ['map_gps_run'=>\GuzzleHttp\json_encode($result)];
@@ -1538,9 +1537,9 @@ class AnalysisMatchData implements ShouldQueue
     static $courtInfo       = null;
     public $tempCourtInfo   = null;
 
-    static function get_court_info($courtId)
+    static function get_court_info($courtId,$fresh=false)
     {
-        if(self::$courtInfo == null){
+        if(self::$courtInfo == null || $fresh){
 
             $courtInfo    = CourtModel::find($courtId);
             $points       = [
