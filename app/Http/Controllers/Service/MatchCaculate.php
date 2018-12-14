@@ -109,7 +109,7 @@ class MatchCaculate extends Controller
         $matchId    = $request->input('matchId');
         $matchInfo  = MatchModel::find($matchId);
 
-
+        BaseMatchModel::match_process($matchId,"数据解析完毕");
 
         if(!self::check_has_gps($matchId))
         {
