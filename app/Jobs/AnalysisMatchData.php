@@ -2122,7 +2122,7 @@ class AnalysisMatchData implements ShouldQueue
                 $result[$y][$x] ++ ;
             }
         }
-
+        mylogger(\GuzzleHttp\json_encode($result));
         return $result;
     }
 }
