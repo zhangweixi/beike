@@ -1803,7 +1803,7 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach($typeDataes as $type => &$typeData)
         {
-            $speeds = [0];
+            $speeds = [];
             $gps    = [];
 
 
@@ -1838,10 +1838,10 @@ class AnalysisMatchData implements ShouldQueue
                     $dribbleFlag['prevTime']  = $time;
                 }
             }
-
-            $typeData['num']        = count($typeData['data']);
-            $typeData['speedMax']   = round(max($speeds));
-            $typeData['speedAvg']   = round(array_sum($speeds)/count($speeds));
+            $dataNum                = count($speeds);
+            $typeData['num']        = $dataNum;
+            $typeData['speedMax']   = $dataNum > 0 ? round(max($speeds)) : 0;
+            $typeData['speedAvg']   = $dataNum > 0 ? round(array_sum($speeds)/count($speeds)) : 0;
 
             //$typeData['gps']        = $this->gps_map($matchInfo->court_id,$gps);
 
