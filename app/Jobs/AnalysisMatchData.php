@@ -372,6 +372,7 @@ class AnalysisMatchData implements ShouldQueue
 
             //mylogger("检查数据是否解析完毕");
             //mylogger($process->gps_L .'-' .$process->sensor_L .'-'. $process->sensor_R .'-'. $process->compass_L .'-'.$process->compass_R);
+            mylogger($type."finish");
 
             if($process->gps_L == 1 && $process->sensor_L == 1 && $process->sensor_R == 1 && $process->compass_L == 1 && $process->compass_R == 1)
             {
