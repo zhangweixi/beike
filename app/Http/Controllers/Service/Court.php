@@ -904,6 +904,9 @@ class Court{
         $centery    = $pa['y'] + ($pd1['y'] - $pa['y'])/2;
 
         //获得要转动的角度
+        mylogger('pa-x'.$pa['x']);
+        mylogger('pa1-x'.$pa1['x']);
+
         $slope      = ($pa['y'] - $pa1['y']) / ($pa['x'] - $pa1['x']);
         $angle      = pi_to_angle(atan($slope));
         $angle      = -$angle; //斜率大于0:减去角度  斜率小于0：加上角度
