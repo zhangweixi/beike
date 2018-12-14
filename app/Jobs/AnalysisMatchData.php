@@ -900,6 +900,7 @@ class AnalysisMatchData implements ShouldQueue
         BaseMatchModel::match_process($matchId,"GPS转换成功");
 
         //检查球场是否合格，如果不合格则根据GPS来生成球场
+        BaseMatchModel::match_process($matchId,"球场,width:{$courtInfo->width},height:{$courtInfo->length}");
 
         if(!Court::check_court_is_valid($courtInfo->width,$courtInfo->length))
         {
