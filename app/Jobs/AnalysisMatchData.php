@@ -2090,7 +2090,7 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         $courtInfo  = self::get_court_info($courtId);
-        mylogger("计算热点图");
+        mylogger("计算热点图".$courtId);
         mylogger(object_to_array($courtInfo));
 
         $gpsData    = Court::create_gps_map($courtInfo->pa,$courtInfo->pa1,$courtInfo->pd,$courtInfo->pd1,$gpsData);
