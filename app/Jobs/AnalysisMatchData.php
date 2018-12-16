@@ -1537,7 +1537,7 @@ class AnalysisMatchData implements ShouldQueue
     static $courtInfo       = null;
     public $tempCourtInfo   = null;
 
-    static function get_court_info($courtId,$fresh=false)
+    static function get_court_info($courtId,$fresh=true)
     {
         if(self::$courtInfo == null || $fresh){
 
