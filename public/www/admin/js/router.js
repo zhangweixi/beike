@@ -91,8 +91,8 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             controller:'courtController'
         })
 
-        .state('court/list', {
-            url: "/court/list",
+        .state('court/list/:page', {
+            url: "/court/list/:page",
             templateUrl: 'court-list.html?t=' + Math.random(),
             controller: 'courtController'
         })

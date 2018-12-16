@@ -843,6 +843,23 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             });
     }
 
+
+    $scope.delete_match =function(matchId){
+        
+        if(!confirm('确定删除吗')){
+
+            return ;
+        }
+
+        var url = server + "match/delete_match?matchId="+matchId;
+
+        $http.post(url).success(function(res){
+
+            $scope.get_match_list();
+
+        })
+    }
+
     //解析数据
     $scope.parse_data = function(matchId){
 
@@ -1406,7 +1423,10 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
         perPageOptions: [10, 20, 30, 40, 50],
         onChange: function ()
         {
-            $scope.get_court_list($scope.courtListPaginationConf.currentPage);
+            if(this.currentPage > 0){
+
+                $location.path("/court/list/"+this.currentPage);
+            }
         }
     };
 
@@ -1522,9 +1542,9 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
     /*
     *球场列表
     */
-    $scope.get_court_list = function(page){
+    $scope.get_court_list = function(){
 
-        var url = server + "court/court_list?page=" + page;
+        var url = server + "court/court_list?page=" + $stateParams.page;
 
         $http.post(url).success(function(res)
         {
@@ -1535,6 +1555,22 @@ myapp.controller('courtController', function($scope, $http, $location, $statePar
             $scope.courtListPaginationConf.totalItems = courtData.total;
             $scope.courtListPaginationConf.itemsPerPage = courtData.per_page;
         })
+    }
+
+
+    /*删除球场*/
+    $scope.delete_court = function(courtId){
+
+        if(!confirm('确定删除吗')){
+            return;
+        }
+
+        var url = server + "court/delete_court?courtId="+courtId;
+
+        $http.get(url).success(function(){
+
+            $scope.get_court_list();
+        });
     }
 
 

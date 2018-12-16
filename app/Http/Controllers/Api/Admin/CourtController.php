@@ -9,6 +9,7 @@
 namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Service\MatchCaculate;
+use App\Models\Base\BaseFootballCourtModel;
 use App\Models\V1\CourtModel;
 use Illuminate\Http\Request;
 use DB;
@@ -33,6 +34,7 @@ class CourtController extends Controller
         $courtList  = DB::table('football_court as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
             ->select('a.court_id','a.user_id','a.gps_group_id','a.address','a.width','a.length','a.created_at','a.is_virtual','b.nick_name')
+            ->whereNull('a.deleted_at')
             ->orderBy('a.court_id','desc')
             ->paginate(20);
 
@@ -225,5 +227,20 @@ class CourtController extends Controller
 
         return apiData()->add('d',$data)->send();
     }
+
+    /**
+     * 删除球场
+     *
+     * */
+    public function delete_court(Request $request){
+
+        $courtId    = $request->input('courtId');
+
+        BaseFootballCourtModel::delete_court($courtId);
+
+        return apiData()->send();
+    }
+
+
 
 }

@@ -19,8 +19,6 @@
                             <th class="column-title">开始时间</th>
                             <th class="column-title">结束时间</th>
                             <td class="column-title">时长</td>
-                            <th class="column-title">球场</th>
-                            <th class="column-title">热点图</th>
                             <th class="column-title">备注(双击编辑)</th>
                             <th class="column-title">操作</th>
                         </tr>
@@ -36,17 +34,23 @@
                             <td>{{match.time_end}}</td>
                             <td>{{match.time_length}}</td>
 
-                            <td><a href="#match/court/{{match.match_id}}">{{match.address}}({{match.court_id}})</a></td>
-                            <td><a href="#match/run/{{match.match_id}}">热点图</a></td>
+                            
+                            
                             <td ng-class="match.isEdit == 1? 'editing': 'unedit'" ng-dblclick="enable_remark(match.match_id)">
                                 <p>{{match.admin_remark}}</p>
                                 <textarea cols="30" rows="10" ng-model="match.admin_remark" ng-blur="sure_edit_remark()"></textarea>
                             </td>
                             <td>
+                                
+                                
                                 <a class="btn btn-info btn-xs" href="#match/result/{{match.match_id}}">结果</a>
-                                <a class="btn btn-info btn-xs" href="#match/files/{{match.match_id}}">文件</a>
-                                <button class="btn btn-danger btn-xs" ng-click="caculate_data(match.match_id)">计算</button>
+                                <a class="btn btn-primary btn-xs" href="#match/files/{{match.match_id}}">文件</a>
+                                <button class="btn btn-warning btn-xs" ng-click="caculate_data(match.match_id)">计算</button>
                                 <button class="btn btn-primary btn-xs" ng-click="parse_data(match.match_id)">解析</button>
+                                <!-- <a href="#match/run/{{match.match_id}}">热点图</a> -->
+                                <a href="#match/court/{{match.match_id}}" class="btn btn-xs btn-success">球场({{match.court_id}})</a>
+                                <button class="btn btn-danger btn-xs" ng-click="delete_match(match.match_id)">删除</button>
+
                             </td>
                         </tr>
                     </tbody>

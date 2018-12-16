@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Service\Court;
 use App\Http\Controllers\Service\MatchCaculate;
+use App\Models\Base\BaseMatchModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\V1\CourtModel;
@@ -33,12 +34,24 @@ class MatchController extends Controller
         $matches = DB::table('match as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
             ->select('a.*','b.nick_name')
+            ->whereNull('a.deleted_at')
             ->orderBy('a.match_id','desc')
             ->paginate(20);
         return apiData()->add('matches',$matches)->send();
     }
 
+    public function delete_match(Request $request){
 
+        $matchId    = $request->input('matchId',0);
+
+        //删除比赛
+        BaseMatchModel::delete_match($matchId);
+
+        //删除比赛结果
+        BaseMatchModel::delete_match_result($matchId);
+
+        return apiData()->send();
+    }
     //解析数据
     public function parse_data(Request $request){
 

@@ -254,90 +254,6 @@ class MatchController extends Controller
 
 
     /**
-     * 百度地图
-     * */
-    public function baidu_map(Request $request)
-    {
-        $matchId    = $request->input('matchId');
-        $baiduMap   = "match/".$matchId."-bd.json";
-        $hasFile    = Storage::disk('web')->has($baiduMap);
-        $fresh      = $request->input('fresh',0);
-
-        if(!$hasFile || $fresh == 1) //没有转换过的数据
-        {
-
-            $file       = "match/".$matchId."-gps-L.json";
-            $hasFile    = Storage::disk('web')->has($file);
-
-            if($hasFile == false)
-            {
-                exit('gps文件不存在');
-            }
-
-            $gpsList = Storage::disk('web')->get($file);
-            $gpsList = \GuzzleHttp\json_decode($gpsList);
-            $lats   = $gpsList->lat;
-            $lons   = $gpsList->lon;
-
-
-
-            $length = count($lats);
-            $points = [];
-
-            for($i=0;$i<$length;$i++)
-            {
-                if($lats[$i]== '' || $lats[$i] == 0) continue;
-                $p = [
-                    'lat'   => $lons[$i],
-                    'lon'   => $lats[$i]
-                ];
-                array_push($points,$p);
-            }
-
-            if(true)
-            {
-                $points = array_chunk($points,100);
-
-                $bdpoints= [];
-                foreach($points as $key => $pointArr)
-                {
-                    $tempArr = [];
-                    foreach($pointArr as $point)
-                    {
-                        array_push($tempArr,implode(',',$point));
-                    }
-
-                    $tempArr = implode(";",$tempArr);
-
-                    $url = "http://api.map.baidu.com/geoconv/v1/?coords={$tempArr}&from=1&to=5&ak=zZSGyxZgUytdiKG135BcnaP6";
-
-                    $tempArr = file_get_contents($url);
-                    $tempArr = \GuzzleHttp\json_decode($tempArr);
-                    $bdpoints= array_merge($bdpoints,$tempArr->result);
-                }
-            }else{
-
-                $bdpoints   = [];
-                foreach($points as $key => $point)
-                {
-                    array_push($bdpoints,['y'=>$point['lon'],'x'=>$point['lat']]);
-                }
-            }
-
-            Storage::disk('web')->put($baiduMap,\GuzzleHttp\json_encode($bdpoints));
-
-        }else{
-
-            $bdpoints   = $gpsList = Storage::disk('web')->get($baiduMap);
-            $bdpoints   = \GuzzleHttp\json_decode($bdpoints);
-        }
-
-        return apiData()->set_data('points',$bdpoints)->send();
-    }
-
-
-
-    /**
      * 添加心情
      * */
     public function add_mood(Request $request)
@@ -599,6 +515,7 @@ class MatchController extends Controller
                   FROM `match` as a 
                   LEFT JOIN match_result as b ON b.match_id = a.match_id 
                   WHERE a.user_id = $userId 
+                  AND   a.deleted_at IS NULL 
                   ORDER BY a.match_id DESC ";
 
 

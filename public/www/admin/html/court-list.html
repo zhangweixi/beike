@@ -1,4 +1,4 @@
-<div class="col-md-12 col-sm-12 col-xs-12">
+<div class="col-md-12 col-sm-12 col-xs-12" ng-init="get_court_list()">
     <div class="x_panel">
         <div class="x_title">
             <h2>设备列表</h2>
@@ -55,7 +55,7 @@
                         </td>
                         <td class="col-sm">{{court.is_virtual == 0 ? "真实":"虚拟"}}</td>
                         <td class="last">
-                            <button class="btn btn-danger btn-xs">删除</button>
+                            <button class="btn btn-danger btn-xs" ng-click="delete_court(court.court_id)">删除</button>
                             <button class="btn btn-info btn-xs" ng-click="caculate_court(court.court_id)">计算</button>
                         </td>
                     </tr>
