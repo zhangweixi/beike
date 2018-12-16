@@ -1534,12 +1534,12 @@ class AnalysisMatchData implements ShouldQueue
     /*
      * @var 足球场信息
      * */
-    static $courtInfo       = null;
-    public $tempCourtInfo   = null;
+    static $courtInfo       = [];
 
-    static function get_court_info($courtId,$fresh=true)
+    static function get_court_info($courtId,$fresh=false)
     {
-        if(self::$courtInfo == null || $fresh){
+
+        if(!isset(self::$courtInfo[$courtId]) || $fresh){
 
             $courtInfo    = CourtModel::find($courtId);
             $points       = [
@@ -1556,32 +1556,46 @@ class AnalysisMatchData implements ShouldQueue
             }
             $points['width']    = $courtInfo->width;
             $points['length']   = $courtInfo->length;
-            self::$courtInfo = (object)$points;
+            self::$courtInfo[$courtId] = (object)$points;
         }
 
-        return self::$courtInfo;
+        return self::$courtInfo[$courtId];
+    }
+
+    /**
+     * 清除球场的缓存信息
+     * */
+    static function clear_court_cache_info($courtId){
+
+        if(isset(self::$courtInfo[$courtId])){
+
+            unset(self::$courtInfo[$courtId]);
+        }
     }
 
 
     /*
      * var 比赛信息
      * */
-    private static $tempMatchInfo = null;
+    private static $tempMatchInfo = [];
 
     /**
      * 比赛信息
+     * @param $matchId integer
+     * @return object
      * */
     private static function get_temp_match_info($matchId)
     {
-        if(self::$tempMatchInfo == null){
+        $matchInfo  = self::$tempMatchInfo;
 
-            self::$tempMatchInfo  = MatchModel::find($matchId);
+        if(!isset($matchInfo[$matchId])){
+
+
+            self::$tempMatchInfo[$matchId]  = MatchModel::find($matchId);
         }
 
-        return self::$tempMatchInfo;
+        return self::$tempMatchInfo[$matchId];
     }
-
-
 
 
 
