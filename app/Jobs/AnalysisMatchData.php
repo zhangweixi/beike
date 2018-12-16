@@ -2077,7 +2077,7 @@ class AnalysisMatchData implements ShouldQueue
      * @param  $gpsData array GPS列表
      * @return string
      * */
-    public function gps_map($courtId,$gpsData)
+    public function gps_map($courtId,$gpsData,$note='')
     {
         if($courtId == 0)
         {
@@ -2090,8 +2090,10 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         $courtInfo  = self::get_court_info($courtId);
-        mylogger("计算热点图".$courtId);
-        mylogger(object_to_array($courtInfo));
+
+        BaseMatchModel::match_process($courtId,"计算".$note."热点图,球场信息:".\GuzzleHttp\json_encode($courtInfo));
+
+
 
         $gpsData    = Court::create_gps_map($courtInfo->pa,$courtInfo->pa1,$courtInfo->pd,$courtInfo->pd1,$gpsData);
 
@@ -2122,7 +2124,9 @@ class AnalysisMatchData implements ShouldQueue
                 $result[$y][$x] ++ ;
             }
         }
-        mylogger(\GuzzleHttp\json_encode($result));
+
+        BaseMatchModel::match_process($courtId,"热点图结果".\GuzzleHttp\json_encode($result));
+
         return $result;
     }
 }

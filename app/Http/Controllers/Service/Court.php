@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Service;
 
 use App\Common\GPS;
 use App\Http\Controllers\Service\GPSPoint;
+use App\Models\Base\BaseMatchModel;
 use App\Models\V1\CourtModel;
 use DB;
 
@@ -683,6 +684,7 @@ class Court{
         $courtInfo['is_virtual']    = 1;
 
         //更新球场
+        BaseMatchModel::match_process($matchId,"创建球场数据".\GuzzleHttp\json_encode($courtInfo));
         DB::table("football_court")->where('court_id',$courtId)->update($courtInfo);
     }
 
