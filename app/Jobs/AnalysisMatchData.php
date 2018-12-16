@@ -1479,7 +1479,7 @@ class AnalysisMatchData implements ShouldQueue
         $matchDir   = self::matchdir($matchId);
         $baseUrl    = config('app.matlabhost')."/uploads/match/{$matchId}/";
         $matchInfo  = self::get_temp_match_info($matchId);
-
+        BaseMatchModel::match_process($matchId,"同步结果文件");
         //比赛数据处理完毕，将比赛数量增加1 检查是否有了分数，有分数表示已经累积过
         $matchResult= BaseMatchResultModel::where('match_id',$matchId)->select("grade")->first();
         if($matchResult->grade == 0){
@@ -1592,7 +1592,7 @@ class AnalysisMatchData implements ShouldQueue
     public function save_run_result($matchId)
     {
         $matchInfo  = self::get_temp_match_info($matchId);
-
+        BaseMatchModel::match_process($matchId,"计算跑动结果:".\GuzzleHttp\json_encode($matchInfo));
         //1.速度信息
         $speedFile  = self::matchdir($matchId)."result-run.txt";
 
