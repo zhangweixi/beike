@@ -299,12 +299,13 @@ class UserController extends Controller
         $userId = $request->input('userId');
         $userModel      = new UserModel();
         $userAbility    = $userModel->user_global_ability($userId);
-        $userAbility->grade_shoot   = max(30,$userAbility->grade_shoot);
-        $userAbility->grade_run     = max(30,$userAbility->grade_run);
-        $userAbility->grade_pass    = max(30,$userAbility->grade_pass);
-        $userAbility->grade_strength= max(30,$userAbility->grade_strength);
-        $userAbility->grade_dribble = max(30,$userAbility->grade_dribble);
-        $userAbility->grade_defense = max(30,$userAbility->grade_defense);
+        $userAbility    = $userAbility ?? new \stdClass();
+        $userAbility->grade_shoot   = max(30,$userAbility->grade_shoot??0);
+        $userAbility->grade_run     = max(30,$userAbility->grade_run??0);
+        $userAbility->grade_pass    = max(30,$userAbility->grade_pass??0);
+        $userAbility->grade_strength= max(30,$userAbility->grade_strength??0);
+        $userAbility->grade_dribble = max(30,$userAbility->grade_dribble??0);
+        $userAbility->grade_defense = max(30,$userAbility->grade_defense??0);
 
         //雷达图的分数
         $baseAbility    = self::get_base_map($userAbility);
