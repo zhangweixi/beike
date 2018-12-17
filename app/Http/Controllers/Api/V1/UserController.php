@@ -299,13 +299,6 @@ class UserController extends Controller
         $userId = $request->input('userId');
         $userModel      = new UserModel();
         $userAbility    = $userModel->user_global_ability($userId);
-        $userAbility    = $userAbility ?? new \stdClass();
-        $userAbility->grade_shoot   = max(30,$userAbility->grade_shoot??0);
-        $userAbility->grade_run     = max(30,$userAbility->grade_run??0);
-        $userAbility->grade_pass    = max(30,$userAbility->grade_pass??0);
-        $userAbility->grade_strength= max(30,$userAbility->grade_strength??0);
-        $userAbility->grade_dribble = max(30,$userAbility->grade_dribble??0);
-        $userAbility->grade_defense = max(30,$userAbility->grade_defense??0);
 
         //雷达图的分数
         $baseAbility    = self::get_base_map($userAbility);
@@ -350,12 +343,12 @@ class UserController extends Controller
     private static function get_base_map($ability)
     {
         $baseMap = [
-            'shoot'     => self::def_grade($ability,"grade_shoot",0),
-            'pass'      => self::def_grade($ability,"grade_pass",0),
-            'strength'  => self::def_grade($ability,'grade_strength',0),
-            'dribble'   => self::def_grade($ability,'grade_dribble',0),
-            'defense'   => self::def_grade($ability,'grade_defense',0),
-            'run'       => self::def_grade($ability,'grade_run',0)
+            'shoot'     => self::def_grade($ability,"grade_shoot",30),
+            'pass'      => self::def_grade($ability,"grade_pass",30),
+            'strength'  => self::def_grade($ability,'grade_strength',30),
+            'dribble'   => self::def_grade($ability,'grade_dribble',30),
+            'defense'   => self::def_grade($ability,'grade_defense',30),
+            'run'       => self::def_grade($ability,'grade_run',30)
         ];
         return $baseMap;
     }
@@ -393,15 +386,15 @@ class UserController extends Controller
 
         //详细数据
         $detailAbility     = [
-            ["name"=>"射门欲望",    "self"=>self::def_grade($myAbility,"grade_shoot_desire",0),     "friend"=>self::def_grade($friendAbility,"grade_shoot_desire",0),   "max"=>100],
-            ["name"=>"射门力量",    "self"=>self::def_grade($myAbility,"grade_shoot_strength",0),   "friend"=>self::def_grade($friendAbility,"grade_shoot_strength",0), "max"=>100],
-            ["name"=>"射门时机",    "self"=>self::def_grade($myAbility,"grade_shoot_chance",0),     "friend"=>self::def_grade($friendAbility,"grade_shoot_chance",0),   "max"=>100],
-            ["name"=>"长传数量",    "self"=>self::def_grade($myAbility,"grade_pass_num_long",0),    "friend"=>self::def_grade($friendAbility,"grade_pass_num_long",0),  "max"=>100],
-            ["name"=>"短传数量",    "self"=>self::def_grade($myAbility,"grade_pass_num_short",0),   "friend"=>self::def_grade($friendAbility,"grade_pass_num_short",0), "max"=>100],
-            ["name"=>"耐力",       "self"=>self::def_grade($myAbility,"grade_endurance",0),         "friend"=>self::def_grade($friendAbility,"grade_endurance",0),      "max"=>100],
-            ["name"=>"冲刺能力",    "self"=>self::def_grade($myAbility,"grade_sprint",0),           "friend"=>self::def_grade($friendAbility,"grade_sprint",0),         "max"=>100],
-            ["name"=>"触球数量",    "self"=>self::def_grade($myAbility,"grade_touchball_num",0),    "friend"=>self::def_grade($friendAbility,"grade_touchball_num",0),  "max"=>100],
-            ["name"=>"灵活性",      "self"=>self::def_grade($myAbility,"grade_flexible",0),         "friend"=>self::def_grade($friendAbility,"grade_flexible",0),       "max"=>100],
+            ["name"=>"射门欲望",    "self"=>self::def_grade($myAbility,"grade_shoot_desire",30),     "friend"=>self::def_grade($friendAbility,"grade_shoot_desire",30),   "max"=>100],
+            ["name"=>"射门力量",    "self"=>self::def_grade($myAbility,"grade_shoot_strength",30),   "friend"=>self::def_grade($friendAbility,"grade_shoot_strength",30), "max"=>100],
+            ["name"=>"射门时机",    "self"=>self::def_grade($myAbility,"grade_shoot_chance",30),     "friend"=>self::def_grade($friendAbility,"grade_shoot_chance",30),   "max"=>100],
+            ["name"=>"长传数量",    "self"=>self::def_grade($myAbility,"grade_pass_num_long",30),    "friend"=>self::def_grade($friendAbility,"grade_pass_num_long",30),  "max"=>100],
+            ["name"=>"短传数量",    "self"=>self::def_grade($myAbility,"grade_pass_num_short",30),   "friend"=>self::def_grade($friendAbility,"grade_pass_num_short",30), "max"=>100],
+            ["name"=>"耐力",       "self"=>self::def_grade($myAbility,"grade_endurance",30),         "friend"=>self::def_grade($friendAbility,"grade_endurance",30),      "max"=>100],
+            ["name"=>"冲刺能力",    "self"=>self::def_grade($myAbility,"grade_sprint",30),           "friend"=>self::def_grade($friendAbility,"grade_sprint",30),         "max"=>100],
+            ["name"=>"触球数量",    "self"=>self::def_grade($myAbility,"grade_touchball_num",30),    "friend"=>self::def_grade($friendAbility,"grade_touchball_num",30),  "max"=>100],
+            ["name"=>"灵活性",      "self"=>self::def_grade($myAbility,"grade_flexible",30),         "friend"=>self::def_grade($friendAbility,"grade_flexible",30),       "max"=>100],
         ];
 
         return apiData()->add('friendInfo',$userInfo)
@@ -409,7 +402,6 @@ class UserController extends Controller
             ->add('detailAbility',$detailAbility)
             ->send();
     }
-
 
     /**
      * 用户单项数据图
