@@ -20,8 +20,30 @@
             if(r!=null)return  unescape(r[2]); return null;
         }
 
+        function IsPC()
+        {
+            var userAgentInfo = navigator.userAgent;
+            var Agents = new Array("Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod");
+            var flag = true;
+            for (var v = 0; v < Agents.length; v++) {
+                if (userAgentInfo.indexOf(Agents[v]) > 0) { flag = false; break; }
+            }
+            return flag;
+        }
 
-        var  app = angular.module('app',[]);
+        function isWeiXin(){
+            //window.navigator.userAgent属性包含了浏览器类型、版本、操作系统类型、浏览器引擎类型等信息，这个属性可以用来判断浏览器类型
+            var ua = window.navigator.userAgent.toLowerCase();
+            //通过正则表达式匹配ua中是否含有MicroMessenger字符串
+            if(ua.match(/MicroMessenger/i) == 'micromessenger'){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        var app     = angular.module('app',[]);
+        var appurl  = "http://a.app.qq.com/o/simple.jsp?pkgname=com.launchever.magicsoccer";
 
         app.controller('match',function($scope,$http){
 
@@ -41,6 +63,19 @@
 
             $scope.join_match = function()
             {
+                //判断是否是移动端
+                if(IsPC()){
+
+                    location.href = appurl;
+                    return;
+                }
+
+                if(isWeiXin() == false){
+
+                    window.location = appurl;
+                    return;
+                }
+
                 var url = "/web/match/join_match?matchId="+$scope.matchId;
                 $http.get(url).then(function(res){
 
@@ -54,7 +89,7 @@
                     }else if(res.code == 2001) {
 
                         //用户没有注册，需要下载APP
-                        alert(res.message);
+                        window.location = appurl;
 
                     }else if(res.code == 2002){ //微信授权
 
