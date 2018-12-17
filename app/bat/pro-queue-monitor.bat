@@ -6,7 +6,7 @@ rem 切换到脚本目录
 cd  %~dp0%
 
 rem 队列名称
-set queueType=local
+set queueType=matlab
 rem 日志名称
 set filename=queue-num.txt
 
