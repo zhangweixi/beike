@@ -34,7 +34,9 @@ class SaveApiData
                 'url'           =>$url,
                 'created_at'    =>date_time(),
             ];
-            DB::table('api_data')->insert($data);
+            $tables = ['dev'=>'dev_api_data','production'=>'pro_api_data'];
+            $env    = config('app.env');
+            DB::connection('DB_LOG')->table($tables[$env])->insert($data);
         }
         return $next($request);
     }
