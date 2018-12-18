@@ -65,8 +65,12 @@ class MatchController extends Controller
             return apiData()->send(2004,"您还有未结束的比赛");
         }
 
-        $weather    = $this->get_weather($lat,$lon);
-        $matchInfo  = array_merge($matchInfo,$weather);
+        if(config('app.env') == 'production'){
+
+            $weather    = $this->get_weather($lat,$lon);
+            $matchInfo  = array_merge($matchInfo,$weather);
+        }
+
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
         $timestamp  = getMillisecond();
