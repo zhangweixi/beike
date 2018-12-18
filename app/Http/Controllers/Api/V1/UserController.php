@@ -554,6 +554,14 @@ class UserController extends Controller
             ]
         ];
 
+        foreach($msgTypes as &$type){
+
+            if(strlen($type['newMsg']) > 10){
+
+                $type['newMsg'] = substr($type['newMsg'],0,10);
+            }
+        }
+
         return apiData()->add('msgType',$msgTypes)->send();
     }
 
