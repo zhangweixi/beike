@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Common\MobileMassege;
+use App\Models\Base\BaseUserModel;
+use App\Models\Base\LogsModel;
+use App\Models\V1\MessageModel;
+use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\V1\DeviceModel;
@@ -113,5 +118,39 @@ class DeviceController extends Controller
 
         return apiData()->send(4001,'权限不足,不能解绑');
 
+    }
+
+
+    public function send_device_sn(Request $request){
+
+        $userId     = $request->input('userId');
+
+        //获得设备信息
+        $userInfo   = UserModel::find($userId);
+        $deviceSn   = $userInfo->device_sn;
+
+        if($deviceSn == ''){
+
+            return apiData()->send(4001,'您没有绑定设备');
+        }
+
+        //存入消息中心
+        (new MessageModel())->add_message("系统通知","您的设备编号为：{$deviceSn}，可用此编号进行设备绑定",MessageModel::TYPE_SYSTEM,$userId,0);
+
+        //发送短信
+
+        //检查最近获取时间
+
+        $log    = LogsModel::where(['type'=>'send_device_sn','user_id'=>$userId])->orderBy('id','desc')->first();
+        if($log && (time() - strtotime($log->created_at)) < 7 * 24 * 60 *60){
+
+            return apiData()->send(4002,"请到消息中心查看");
+        }
+
+        (new MobileMassege())->send_device_sn_message($userInfo->mobile,$deviceSn);
+
+        LogsModel::insert(['user_id'=>$userId,'type'=>"send_device_sn",'created_at'=>date_time()]);
+
+        return apiData()->send(200,'已发送');
     }
 }

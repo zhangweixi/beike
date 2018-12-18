@@ -10,11 +10,12 @@ class MessageModel extends Model
     protected $table        = 'user_message';
     protected $primaryKey   = 'msg_id';
 
+    public const TYPE_SYSTEM = "system";
     /**
      * 添加通知信息
-     * @param $title string 标题
-     * @param $content string 内容
-     * @param $type     string 类型
+     * @param $title    string 标题
+     * @param $content  string 内容
+     * @param $type     string 类型 focus:关注 invite:邀请 system:系统
      * @param $contentId integer 对应的某个事件ID
      * @param $userId   integer 用户ID
      * @return integer

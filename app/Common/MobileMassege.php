@@ -238,7 +238,15 @@ class MobileMassege{
         return $this->send_msg($mobile,$templateCode,$data);
     }
 
-
+    /**
+     * 发送设备编号信息
+     * */
+    public function send_device_sn_message($mobile,$deviceSn)
+    {
+        $templateId = config('aliyun.deviceSnId');
+        $data       = ['deviceSn'=>$deviceSn];
+        return $this->send_msg($mobile,$templateId,$data);
+    }
 
     /**
      * 发送消息
