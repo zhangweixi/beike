@@ -27,7 +27,7 @@ class SaveApiData
         if(!in_array($surl,$excepUrl))
         {
             $data   = $request->all();
-            $data['token']  = $request->header('token') ? md5($request->header('token')): '';
+            $data['token']  = $request->header('token') ? $request->header('token'): '';
             $data   = json_encode($data);
             $data   = [
                 'data'          =>$data,
