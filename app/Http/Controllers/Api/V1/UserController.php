@@ -558,7 +558,7 @@ class UserController extends Controller
 
             if(strlen($type['newMsg']) > 10){
 
-                $type['newMsg'] = substr($type['newMsg'].'...',0,10);
+                $type['newMsg'] = substr($type['newMsg'],0,10).'...';
             }
         }
 
