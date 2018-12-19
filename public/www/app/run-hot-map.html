@@ -231,10 +231,12 @@
         {
             matchResult = res.data.matchResult;
 
+            //显示热点图
+            draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
+
             if(isWhole > 0){ //绘制雷达图
 
-                //显示热点图
-                draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
+
 
                 draw_leida_map(matchResult);
 
@@ -307,7 +309,7 @@
                         {text : '力量', max  : 100},
                         {text : '传球', max  : 100}
                     ],
-                    radius : 150,
+                    radius : 125 + 25/(375 - 320) * (window.innerWidth-320),
                     splitArea : {
                         show : true,
                         areaStyle : {
