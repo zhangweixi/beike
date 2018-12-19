@@ -241,10 +241,7 @@
                 return;
             }
 
-            //draw_hot_map("map-run-high",courtWidth,matchResult.map_speed_high);
-
             //将中低速度放在一个热点图
-
             var mapData = JSON.parse(matchResult.map_speed_low);
 
             var dataArr = [
@@ -263,20 +260,20 @@
                     }
                 }
             }
-            
-            /*draw_hot_map("map-run-low",courtWidth,mapData);*/
+
+            draw_hot_map("map-run-high",courtWidth,matchResult.map_speed_high);
+            draw_hot_map("map-run-low",courtWidth,mapData);
 
             //draw_hot_map("map-run-middle",courtWidth,matchResult.map_speed_middle);
             //draw_hot_map("map-run-low",courtWidth,matchResult.map_speed_low);
             //draw_hot_map("map-run-static",courtWidth,matchResult.map_speed_static);
 
-/*
 
             draw_point_map('pass-long',matchResult.map_pass_long);
             draw_point_map('pass-short',matchResult.map_pass_short);
             draw_point_map('touchball',matchResult.map_touchball);
             draw_point_map('shoot',matchResult.map_shoot);
-*/
+
 
             draw_line_map("time-speed",matchResult.run_time_speed,'km/h');
             draw_line_map("time-dis",matchResult.run_time_dis,'km');
