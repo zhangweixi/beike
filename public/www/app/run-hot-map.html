@@ -279,6 +279,7 @@
 */
 
             draw_line_map("time-speed",matchResult.run_time_speed);
+            draw_line_map("time-dis",matchResult.run_time_speed);
 
             //draw_hot_map("map-shoot",width,matchResult.map_shoot);
             //draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
@@ -491,10 +492,22 @@
 
         var option      =  {
             backgroundColor:"#43465E",
+            nameTextStyle:{
+                color:'#fff'
+            },
+            axisLine:{
+                lineStyle:{
+                    color:'rgba(255,255,255,0.1)'
+                }
+            },
+            axisLabel:{
+                color:"#fff"
+            },
+
             grid:{
                 show:true,
                 bottom:30,
-                right:30,
+                right:10,
                 left:30,
                 top:30,
                 containLabel:false,
@@ -503,35 +516,34 @@
             xAxis: {
                 type: 'value',
                 boundaryGap: false,
-                name:"分钟",
-                axisLine:{
+                name:"时间(s)",
+                nameLocation:'middle',
 
-                    lineStyle:{
-                        color:"#fff"
-                    }
-                },
                 splitLine:{
                     show:false
                 }
             },
+
             yAxis: {
                 type: 'value',
                 boundaryGap: false,
-                name:"KM/H",
-                axisLine:{
+                name:"km/h",
+                splitLine:{
+                    show:true,
                     lineStyle:{
-                        color:"#fff"
+                        color:'rgba(255,255,255,0.1)'
                     }
-                }
+                },
             },
             series: [{
                 data:[[0,0],[1,0.091600746],[2,0.150984016],[3,0.179607622],[4,0.222077196],[5,0.259265667],[6,0.29904296],[7,0.368815211],[8,0.431095308],[9,0.552991619],[10,0.581671562],[11,0.65068291],[12,0.696375145],[13,0.747874647],[14,0.802788202],[15,0.842653795],[16,0.925295845],[17,0.977681341],[18,1.023222017],[19,1.136079195],[20,1.285091301],[21,1.374721229],[22,1.456760459],[23,1.541480967],[24,1.652579156],[25,1.732932171],[26,1.834699708],[27,1.939715005],[28,2.027936665],[29,2.095794899],[30,2.207164549],[31,2.274963765],[32,2.343251773],[33,2.391282954],[34,2.462955729],[35,2.505605918],[36,2.560694737],[37,2.619770582],[38,2.688672728],[39,2.749013095],[40,2.778892807],[41,2.89157975],[42,3.007469963],[43,3.14032969],[44,3.229541891],[45,3.296938844],[46,3.375142042]],
                 type: 'line',
-                symbol:false,
+                symbol:"none",
                 smooth:true,
                 color:"#1AB5A5",
                 areaStyle: {
                     color:"#1AB5A5",
+                    type:"solid",
                 }
             }]
         };
