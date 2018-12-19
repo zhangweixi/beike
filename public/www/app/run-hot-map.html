@@ -122,16 +122,6 @@
         </div>
 
 
-     <!--    <div class="map">
-            <h2>中速</h2>
-            <div id="map-run-middle"  class="canvas"></div>
-            <div class="colors">
-                <span>低</span>
-                <p></p>
-                <span>高</span>
-            </div>
-        </div>
- -->
         <div class="map">
             <h2>中低速跑动区域</h2>
             <div id="map-run-low"  class="canvas"></div>
@@ -142,17 +132,19 @@
             </div>
         </div>
 
-<!-- 
         <div class="map">
-            <h2>走动</h2>
-            <div id="map-run-static"  class="canvas"></div>
-            <div class="colors">
-                <span>低</span>
-                <p></p>
-                <span>高</span>
-            </div>
+           <h2>实时速度</h2>
+           <div id="time-speed"  class="canvas"  style="background:#43465E;"></div>
+       </div>
+
+
+        <div class="map">
+            <h2>实时距离</h2>
+            <div id="time-dis"  class="canvas" style="background:#43465E;"></div>
         </div>
- -->
+
+
+
         <div class="map">
             <h2>射门</h2>
             <div  class="canvas" id="shoot"></div>
@@ -183,7 +175,19 @@
 
 <script src="../../vendors/jquery/dist/jquery.min.js"></script>
 <script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
-<script  src="../../vendors/echarts/dist/echarts.min.js"></script>
+<!--<script  src="../../vendors/echarts/dist/echarts.min.js"></script>-->
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+
+
+<script src="https://cdn.bootcss.com/echarts/3.8.5/echarts.min.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 <script>
     var matchId     = GetQueryString('matchId');
@@ -273,6 +277,7 @@
             draw_point_map('touchball',matchResult.map_touchball);
             draw_point_map('shoot',matchResult.map_shoot);
 
+            draw_line_map("time-speed",matchResult.run_time_speed);
 
             //draw_hot_map("map-shoot",width,matchResult.map_shoot);
             //draw_hot_map("map-pass-long",width,matchResult.map_pass_long);
@@ -473,6 +478,67 @@
 
 
         cxt.closePath();
+    }
+
+
+    //绘制折线图
+    function draw_line_map(eleId,data){
+
+        data            = JSON.parse(data);
+
+        //var option      = {container: document.querySelector('#'+eleId)};
+
+        var option      =  {
+            backgroundColor:"#43465E",
+            grid:{
+                show:true,
+                bottom:10,
+                right:10,
+                left:10,
+                top:10,
+                containLabel:false,
+                borderColor:"#50556E",
+
+            },
+            xAxis: {
+                type: 'value',
+                boundaryGap: false,
+                name:"分钟",
+                axisLine:{
+
+                    lineStyle:{
+                        color:"#fff"
+                    }
+                },
+                splitLine:{
+                    show:false
+                }
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: false,
+                name:"KM/H",
+                axisLine:{
+                    lineStyle:{
+                        color:"#fff"
+                    }
+                }
+            },
+            series: [{
+                data:[[0,0],[1,0.091600746],[2,0.150984016],[3,0.179607622],[4,0.222077196],[5,0.259265667],[6,0.29904296],[7,0.368815211],[8,0.431095308],[9,0.552991619],[10,0.581671562],[11,0.65068291],[12,0.696375145],[13,0.747874647],[14,0.802788202],[15,0.842653795],[16,0.925295845],[17,0.977681341],[18,1.023222017],[19,1.136079195],[20,1.285091301],[21,1.374721229],[22,1.456760459],[23,1.541480967],[24,1.652579156],[25,1.732932171],[26,1.834699708],[27,1.939715005],[28,2.027936665],[29,2.095794899],[30,2.207164549],[31,2.274963765],[32,2.343251773],[33,2.391282954],[34,2.462955729],[35,2.505605918],[36,2.560694737],[37,2.619770582],[38,2.688672728],[39,2.749013095],[40,2.778892807],[41,2.89157975],[42,3.007469963],[43,3.14032969],[44,3.229541891],[45,3.296938844],[46,3.375142042]],
+                type: 'line',
+                symbol:false,
+                smooth:true,
+                color:"#1AB5A5",
+                areaStyle: {
+                    color:"#1AB5A5",
+                }
+            }]
+        };
+
+        var myChart = echarts.init(document.getElementById(eleId));
+            myChart.setOption(option);
+
     }
 
 
