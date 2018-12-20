@@ -78,6 +78,7 @@
                         <th class="column-title">版本</th>
                         <th class="column-title">必须更新</th>
                         <th class="column-title">状态</th>
+                        <th class="column-title">类型</th>
                         <th class="column-title">创建日期</th>
                         <th class="column-title">操作</th>
                     </tr>
@@ -89,6 +90,7 @@
                         <td class=" ">{{d.version}}</td>
                         <td>{{d.must_upgrade == 1? "是":"否"}}</td>
                         <td class="col-sm">{{d.publish ==1 ?'已发布':'未发布'}}</td>
+                        <th class="column-title">{{d.type}}</th>
                         <td class=" ">{{d.created_at}}</td>
                         
                         <td class="last">

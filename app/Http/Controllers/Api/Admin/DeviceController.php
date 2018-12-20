@@ -284,7 +284,7 @@ class DeviceController extends Controller
      * */
     public function get_device_code_versions(Request $request){
 
-        $deviceVersion  = BaseVersionModel::where('type','device')->orderBy('id','desc')->paginate(50);
+        $deviceVersion  = BaseVersionModel::orderBy('id','desc')->paginate(50);
 
         return apiData()->set_data('deviceCodeVersions',$deviceVersion)->send();
 
