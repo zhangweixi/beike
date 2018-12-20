@@ -27,8 +27,9 @@ class App extends Controller{
         }
 
         $appVersion     = [
-            'version'   => $appVersion->version,
-            'file'      => url($appVersion->file)
+            'version'       => $appVersion->version,
+            'file'          => url($appVersion->file),
+            'mustUpgrade'   => $appVersion->must_upgrade
         ];
 
 

@@ -1529,8 +1529,31 @@ class AnalysisMatchData implements ShouldQueue
         //通知客户端
         jpush_content("比赛通知","亲，您的比赛已经出结果啦!",4001,1,$matchInfo->user_id,['matchId'=>$matchId]);
 
+        //销毁比赛的历史信息
+        self::destory_match_cache($matchId,$matchInfo->court_id);
+
         return "success";
     }
+
+    /**
+     * 销毁比赛数据
+     * */
+    static function destory_match_cache($matchId,$courtId){
+
+        //销毁球场
+        if(isset(self::$courtInfo[$courtId])){
+
+            unset(self::$courtInfo[$courtId]);
+        }
+
+
+        //销毁比赛
+        if(isset(self::$tempMatchInfo[$matchId])){
+
+            unset(self::$tempMatchInfo[$matchId]);
+        }
+    }
+
     /*
      * @var 足球场信息
      * */
@@ -1560,17 +1583,6 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         return self::$courtInfo[$courtId];
-    }
-
-    /**
-     * 清除球场的缓存信息
-     * */
-    static function clear_court_cache_info($courtId){
-
-        if(isset(self::$courtInfo[$courtId])){
-
-            unset(self::$courtInfo[$courtId]);
-        }
     }
 
 
@@ -1611,7 +1623,6 @@ class AnalysisMatchData implements ShouldQueue
         $speedFile  = self::matchdir($matchId)."result-run.txt";
 
         $speedsInfo = file_to_array($speedFile);
-
         $maxSpeed   = 0;    //比赛最高速度
 
         $speedType  = [
@@ -1645,17 +1656,23 @@ class AnalysisMatchData implements ShouldQueue
             "speedRang"     => 15
         ];//急停数据
 
+        $timeSpeeds = [];   //实时速度
+        $timeDis    = [0];  //实时距离
+
 
         //区别出低速，中速，高速
         foreach ($speedsInfo as $key => &$speedInfo)
         {
-
             if($key % $gpsHz != 0)
             {
                 continue;
             }
+
             $speed      = abs($speedInfo[1]);
+            array_push($timeSpeeds,$speed);
+
             $maxSpeed   = max($speed,$maxSpeed);
+            array_push($timeDis,end($timeDis)+$speed);
 
             //速度M/s
             if($speed > $speedHigh)
@@ -1704,6 +1721,45 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
+
+        //如果时间大于10分钟，那么以分钟为单位
+        $timeUnit = "s";
+
+        if($key > 6000){
+
+            $timeUnit = "m";
+
+            $timeSpeeds  = array_chunk($timeSpeeds,60);
+            foreach($timeSpeeds as $key1 => $stepSpeed){
+
+                $timeSpeeds[$key1] = max($stepSpeed);
+            }
+
+            //把第一个为0的删除
+            array_splice($timeDis,0,1);
+            $timeDis    = array_chunk($timeDis,60);
+            foreach ($timeDis as $key2 => $dis){
+
+                $timeDis[$key2] = end($dis);
+            }
+            array_unshift($timeDis,0);
+        }
+
+        foreach($timeSpeeds as $key1=> $speed){
+            $speed  = speed_second_to_hour($speed);
+            $timeSpeeds[$key1] = "[{$key1},{$speed}]";
+        }
+        $timeSpeeds     = implode(",",$timeSpeeds);
+        $timeSpeeds     = ['unit'=>$timeUnit,'data'=>"[{$timeSpeeds}]"];
+
+        foreach ($timeDis as $key2 => $dis){
+            $dis    = $dis / 1000;
+            $timeDis[$key2] = "[{$key2},{$dis}]";
+        }
+
+        $timeDis    = implode(",",$timeDis);
+        $timeDis    = ['unit'=>$timeUnit,'data'=>"[{$timeDis}]"];
+
         //需要计算在不同的时间点，不同类型的速度跑动的距离
         //创建高、中、低速跑动热点图
         foreach ($speedType as $key => $type)
@@ -1723,6 +1779,8 @@ class AnalysisMatchData implements ShouldQueue
             'run_high_time'     => $speedType['high']['time'],
             'run_static_time'   => $speedType['static']['time'],
             'run_speed_max'     => $maxSpeed,
+            'run_time_speed'    => \GuzzleHttp\json_encode($timeSpeeds),
+            'run_time_dis'      => \GuzzleHttp\json_encode($timeDis),
             "abrupt_stop_num"   => count($adruptStop['list']),
             'run_high_speed_avg'=> $speedType['high']['time'] > 0 ? $speedType['high']['dis']/$speedType['high']['time'] : 0,//高速平均跑动速度
             'map_speed_static'  => $speedType['static']['gps'],
