@@ -59,7 +59,7 @@ class BaseMatchUploadProcessModel extends Model
         foreach($users as $user){
 
             $userId     = $user->user_id;
-            self::where('user_id',$userId)->update(['noticed',1]);
+            self::where('user_id',$userId)->update(['noticed'=>1]);
 
             //极光推送
             jpush_content("异常提醒","您的比赛数据已中断了，请打开APP继续上传",4002,1,$userId);
