@@ -94,13 +94,13 @@
 
         <div class="map">
             <h2>实时速度</h2>
-            <div id="time-speed"  class="canvas"  style="background:#43465E;"></div>
+            <div id="time-speed"  class="canvas"  style="background:#43465E;margin-right:0;"></div>
         </div>
 
 
         <div class="map">
             <h2>实时距离</h2>
-            <div id="time-dis"  class="canvas" style="background:#43465E;"></div>
+            <div id="time-dis"  class="canvas" style="background:#43465E;margin-right:0;"></div>
         </div>
 
         <div class="map whole run">
@@ -178,18 +178,18 @@
 <script src="../../vendors/jquery/dist/jquery.min.js"></script>
 <script src="../../../self-vendors/heatmap/js/heatmap.min.js"></script>
 <!--<script  src="../../vendors/echarts/dist/echarts.min.js"></script>-->
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
-<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+<script type="text/javascript" src="js/run-hot/echarts.min.js"></script>
+<script type="text/javascript" src="js/run-hot/echarts-gl.min.js"></script>
+<script type="text/javascript" src="js/run-hot/ecStat.min.js"></script>
+<script type="text/javascript" src="js/run-hot/dataTool.min.js"></script>
+<script type="text/javascript" src="js/run-hot/china.js"></script>
+<script type="text/javascript" src="js/run-hot/world.js"></script>
+<!--<script type="text/javascript" src="js/run-hot/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>-->
+<script type="text/javascript" src="js/run-hot/bmap.min.js"></script>
+<script type="text/javascript" src="js/run-hot/simplex.js"></script>
 
 
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="js/run-hot/html2canvas.min.js"></script>
 <script>
     var matchId     = GetQueryString('matchId');
     var server      = location.origin + "/web/";
@@ -504,7 +504,8 @@
         var option      =  {
             backgroundColor:"#43465E",
             nameTextStyle:{
-                color:'#fff'
+                color:'#fff',
+                fontSize:10
             },
 
             axisLabel:{
@@ -514,7 +515,7 @@
             grid:{
                 show:true,
                 bottom:40,
-                right:10,
+                right:40,
                 left:30,
                 top:30,
                 containLabel:false,
@@ -523,8 +524,8 @@
             xAxis: {
                 type: 'value',
                 boundaryGap: false,
-                name:"比赛时间（"+unit+")",
-                nameLocation:'center',
+                name:unit,
+                nameLocation:'end',
 
                 splitLine:{
                     show:false
