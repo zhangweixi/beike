@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
+use App\Models\Base\BaseMatchUploadProcessModel;
 use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\UserModel;
@@ -251,6 +252,7 @@ class MatchController extends Controller
         $data           = ['sourceId'=>$sourceId,'jxNext'=>true];
         AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
 
+        BaseMatchUploadProcessModel::update_process($userId,!!$isFinish); //更新数据上传记录
 
         return apiData()->send(200,'ok');
     }
