@@ -301,11 +301,6 @@ class AnalysisMatchData implements ShouldQueue
 
                     $isSyncTime = 1;
 
-                    if($flagType == 'T')
-                    {
-
-                    }
-
                     if($flagType == "E")    //END 数据结束
                     {
                         $matchesData[$matchId]['isFinish']  = 1;    //比赛结束标记
@@ -360,7 +355,7 @@ class AnalysisMatchData implements ShouldQueue
         {
             $matchId = $matchData['matchId'];
 
-            if($matchData['isFinish'] == 0 || $matchId == 0)
+            if(($matchData['isFinish'] == 0 && $sourceData->is_finish == 0 ) || $matchId == 0) //比赛未结束并且也没有上传结束标记
             {
                 continue;
             }
@@ -526,7 +521,6 @@ class AnalysisMatchData implements ShouldQueue
         $perTime    = 1000/104;
         $syncTime   = $syncTime - $perTime;
         $dataLength = count($dataArr)-1;
-
         foreach($dataArr as $key => $d)
         {
 
