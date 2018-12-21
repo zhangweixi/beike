@@ -215,7 +215,7 @@
 
         //设定球形的尺寸
         //球场高宽比 957*543
-        courtWidth  = parseInt($('.canvas').css('width'));
+        courtWidth  = parseInt($('#map-run-all').css('width'));
         console.log(courtWidth);
         courtHeight = courtWidth / 1.8;
 
@@ -245,6 +245,7 @@
                 return;
             }
 
+            console.log('he');
             //将中低速度放在一个热点图
             var mapData = JSON.parse(matchResult.map_speed_low);
 
