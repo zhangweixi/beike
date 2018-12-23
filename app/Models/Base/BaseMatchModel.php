@@ -79,9 +79,9 @@ class BaseMatchModel extends Model
                 $template->warnTime= date_time();
                 $template->openId = config('app.adminOpenId');
                 $wechat = new Wechat();
-                mylogger(mylogger(\GuzzleHttp\json_encode($wechat)));
-
-                $wechat->template_message($template)->send();
+                $x = $wechat->template_message($template);
+                dd($x);
+                $x->send();
             }
         }
     }
