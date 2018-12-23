@@ -61,7 +61,7 @@ class BaseMatchModel extends Model
     {
         $matches = Redis::smembers('matches');
         $now     = time();
-        $maxTime = 5*60*60;
+        $maxTime = 5*60;
 
         foreach($matches as $matchstr){
 
