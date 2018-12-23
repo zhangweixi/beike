@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Models\Base\BaseMatchModel;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Models\Base\BaseMatchUploadProcessModel;
@@ -25,9 +26,19 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-
+        //1.监控比赛数据的上传状态
         $schedule->call(function(){
             BaseMatchUploadProcessModel::check_match_upload_status();
+        })->everyMinute();
+
+
+
+
+        //2.监控比赛数据的计算情况
+        $schedule->call(function(){
+
+            BaseMatchModel::minitor_match();
+
         })->everyMinute();
 
     }

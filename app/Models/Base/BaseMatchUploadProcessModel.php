@@ -33,17 +33,10 @@ class BaseMatchUploadProcessModel extends Model
 
         }else{
 
-            if($processInfo->finished_num == 4 && $isFinish){ //相当于5种类型数据全部上传完毕
-
-                $processInfo->delete();
-
-            }else{
-
-                $processInfo->updated_at   = $time;
-                $processInfo->finished_num = $processInfo->finished_num + $num;
-                $processInfo->noticed      = 0;
-                $processInfo->save();
-            }
+            $processInfo->updated_at   = $time;
+            $processInfo->finished_num = $processInfo->finished_num + $num;
+            $processInfo->noticed      = 0;
+            $processInfo->save();
         }
     }
 
@@ -64,5 +57,27 @@ class BaseMatchUploadProcessModel extends Model
             //极光推送
             jpush_content("异常提醒","您的比赛数据已中断了，请打开APP继续上传",4002,1,$userId);
         }
+    }
+
+    /**
+     * 检查是否上传完毕
+     * @param $userId integer 用户ID
+     * @param $delete boolean 是否删除数据
+     * @return boolean
+     * */
+    public static function check_upload_finish($userId,$delete=false){
+
+        $info = self::where('user_id',$userId)->first();
+
+        if($info->finished_num == 5){
+
+            if($delete){
+
+                $info->delete();
+            }
+            
+            return true;
+        }
+        return false;
     }
 }

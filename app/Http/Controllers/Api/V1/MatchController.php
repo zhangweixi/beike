@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Base\BaseMatchDataProcessModel;
+use App\Models\Base\BaseMatchModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\Base\BaseMatchUploadProcessModel;
@@ -252,8 +253,22 @@ class MatchController extends Controller
         $data           = ['sourceId'=>$sourceId,'jxNext'=>true];
         AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
 
-        BaseMatchUploadProcessModel::update_process($userId,!!$isFinish); //更新数据上传记录
+        $client     = $request->header('Client-Type');
+        $version    = $request->header("Client-Version");
 
+        //IOS版本1.2才支持
+        if($client != "IOS" || intval(str_replace(".","",$version)) >= 12){
+
+            BaseMatchUploadProcessModel::update_process($userId,!!$isFinish); //更新数据上传记录
+
+            $isFinish = BaseMatchUploadProcessModel::check_upload_finish($userId,true);
+
+            if($isFinish == true){ //传输已完成 , 加入到计算监控中
+
+                BaseMatchModel::join_minitor_match($userId);
+            }
+        }
+        
         return apiData()->send(200,'ok');
     }
 
