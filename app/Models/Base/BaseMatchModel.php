@@ -49,6 +49,7 @@ class BaseMatchModel extends Model
     public static function join_minitor_match($matchId)
     {
         $matchInfo  = ['id'=>$matchId,'time'=>time()];
+        $matchInfo  = ['id'=>$matchId,'time'=>time()-6*60];
         Redis::sadd("matches",\GuzzleHttp\json_encode($matchInfo));
 
 
@@ -79,6 +80,7 @@ class BaseMatchModel extends Model
                 $template->openId = config('app.adminOpenId');
                 $wechat = new Wechat();
                 mylogger($matchstr);
+                var_dump($wechat);
                 $wechat->template_message($template)->send();
             }
         }
