@@ -47,12 +47,12 @@ class Wechat extends Controller
      * 发送模板消息
      * */
     public function template_message(\App\Common\WechatTemplate $template)
-    {   echo config('app.wechatenv');
+    {
         if(config('app.wechatenv') == false)
         {
             return false;
         }
-        dd('xxx');
+
         $template->create();
         $data = [
             'touser'        => $template->openId,
