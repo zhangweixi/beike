@@ -28,6 +28,7 @@ class SaveApiData
         {
             $data   = $request->all();
             $data['token']  = $request->header('token') ? $request->header('token'): '';
+            $data['client'] = $request->header('Client-Type').":".$request->header("Client-Version");
             $data   = json_encode($data);
             $data   = [
                 'data'          =>$data,
