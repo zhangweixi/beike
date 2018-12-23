@@ -50,8 +50,7 @@ class BaseMatchModel extends Model
     {
         $matchInfo  = ['id'=>$matchId,'time'=>time()];
         Redis::sadd("matches",\GuzzleHttp\json_encode($matchInfo));
-
-
+        
     }
 
     /**
