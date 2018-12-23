@@ -52,6 +52,7 @@ class Wechat extends Controller
         {
             return false;
         }
+        dd('xxx');
         $template->create();
         $data = [
             'touser'        => $template->openId,
