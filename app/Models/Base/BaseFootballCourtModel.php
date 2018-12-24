@@ -31,11 +31,16 @@ class BaseFootballCourtModel extends Model
         $courts     = Redis::smembers("courts");
 
         if($courts){
+            foreach($courts as $key => $court){
 
-            return \GuzzleHttp\json_decode($courts);
+                $courts[$key]   = \GuzzleHttp\json_decode($court);
+            }
+        }else{
+
+            $courts = [];
         }
 
-        return [];
+        return $courts;
     }
 
     /**
