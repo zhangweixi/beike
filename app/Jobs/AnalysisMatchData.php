@@ -2089,7 +2089,7 @@ class AnalysisMatchData implements ShouldQueue
 
         $result     = shell_exec($command);
         //检查文件是否存在
-        if(!file_exists(public_path($dir.$outFile))){
+        if(!file_exists($dir.$outFile)){
 
             mylogger('球场计算失败:'.$result);
             die();
