@@ -6,6 +6,7 @@ use App\Common\WechatTemplate;
 use App\Http\Controllers\Service\GPSPoint;
 use App\Http\Controllers\Service\MatchGrade;
 use App\Http\Controllers\Service\Wechat;
+use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\Base\BaseMatchResultModel;
@@ -148,6 +149,8 @@ class AnalysisMatchData implements ShouldQueue
             case 'save_matlab_result':      $this->save_matlab_result($this->matchId);                  break;
 
             case 'finish_parse_data':       $this->finish_parse_data($this->matchId);                   break;
+
+            case 'call_matlab_court_action':$this->call_matlab_court_action($this->courtId);            break;
         }
     }
     /**
@@ -2058,6 +2061,91 @@ class AnalysisMatchData implements ShouldQueue
         BaseMatchModel::match_process($courtId,"热点图结果".\GuzzleHttp\json_encode($result));
 
         return $result;
+    }
+
+    public function call_matlab_court_action($courtId){
+
+        //调用matlab
+        $dir        = public_path("uploads/court-config/{$courtId}/");
+        deldir($dir);
+
+        //创建输入文件
+        $srcFile    = Court::create_court_model_input_file($courtId);
+
+        $inputFile  = "border-src.txt";         //边框数据
+        $outFile    = "border-dest.txt";        //顶点数据
+
+        $pythonFile = app_path("python/python_call_matlab.py");
+        $matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
+
+        $command = "python $pythonFile --command=$matlabCmd";
+        mylogger("分析球场数据:".$command);
+        if(!file_exists($dir.$inputFile))
+        {
+            mylogger($dir.$inputFile."不存在");
+            exit;
+        }
+
+        $result     = shell_exec($command);
+        //检查文件是否存在
+        if(!file_exists(public_path($dir.$outFile))){
+
+            mylogger('球场计算失败:'.$result);
+            die();
+        }
+
+        $colums = [
+            "A"     => 'p_a',
+            "B"     => 'p_b',
+            "C"     => 'p_c',
+            "D"     => 'p_d',
+            "E"     => 'p_e',
+            "F"     => 'p_f',
+            "Sym_A" => 'p_a1',
+            "Sym_B" => 'p_b1',
+            'Sym_C' => 'P_c1',
+            "Sym_D" => 'p_d1'
+        ];
+
+        //读取结果，存储到数据中
+        $courtResult    = file_to_array($dir.$outFile);
+        $courtInfo      = [];
+
+        $positions      = array_keys($colums);
+        foreach($courtResult as $point)
+        {
+            $position   = $point[0];
+
+            if(in_array($position,$positions))
+            {
+                $key                = $colums[$point[0]];
+                $courtInfo[$key]    = $point[1].",".$point[2];
+            }
+        }
+
+        //判断球场是否是顺时针
+        $pa     = explode(",",$courtInfo['p_a']);
+        $pd     = explode(",",$courtInfo['p_d']);
+        $pe     = explode(",",$courtInfo['p_e']);
+        $pa1    = explode(",",$courtInfo['p_a1']);
+
+        $PA     = new GPSPoint($pa[0],$pa[1]);
+        $PD     = new GPSPoint($pd[0],$pd[1]);
+        $PE     = new GPSPoint($pe[0],$pe[1]);
+        $PA1    = new GPSPoint($pa1[0],$pa1[1]);
+
+        $isClockWise                = Court::judge_court_is_clockwise($PA,$PD,$PE);;
+        $courtInfo['is_clockwise']  = $isClockWise ? 1 : 0;
+
+        $courtInfo['width']     = round(gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat),2);
+        $courtInfo['length']    = round(gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat),2);
+
+        CourtModel::where('court_id',$courtId)->update($courtInfo);
+
+        //球场解析结束
+        mylogger("球场解析成功,courtId:".$courtId);
+
+        BaseFootballCourtModel::remove_minitor_court($courtId);
     }
 }
 
