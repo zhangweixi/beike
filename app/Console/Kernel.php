@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchModel;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -38,6 +39,14 @@ class Kernel extends ConsoleKernel
         $schedule->call(function(){
 
             BaseMatchModel::minitor_match();
+
+        })->everyMinute();
+
+
+        //3.监控球场计算进度
+        $schedule->call(function(){
+
+            BaseFootballCourtModel::minitor_court();
 
         })->everyMinute();
 

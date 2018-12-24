@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Service;
 use App\Common\Http;
 use App\Http\Controllers\Controller;
+use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
@@ -373,6 +374,7 @@ class MatchCaculate extends Controller
         //球场解析结束
         mylogger("球场解析成功,courtId:".$courtId);
 
+        BaseFootballCourtModel::remove_minitor_court($courtId);
     }
 
 

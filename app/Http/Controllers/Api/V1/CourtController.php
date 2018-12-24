@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Common\Http;
 use App\Http\Controllers\Service\MatchCaculate;
 use App\Jobs\AnalysisMatchData;
+use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\V1\MatchModel;
 use Illuminate\Http\Request;
@@ -33,9 +34,8 @@ class CourtController extends Controller
         $courtModel     = new CourtModel();
         $courtId        = $courtModel->add_court($courtData);
 
-        //异步生成足球模型
-        MatchCaculate::call_matlab_court_init($courtId);
-
+        MatchCaculate::call_matlab_court_init($courtId);        //调用算法系统，异步生成足球场
+        BaseFootballCourtModel::join_minitor_court($courtId);   //加入监控队列
         return apiData()->set_data('courtId',$courtId)->send(200,'SUCCESS');
     }
 
