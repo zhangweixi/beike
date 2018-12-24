@@ -46,6 +46,7 @@ class AnalysisMatchData implements ShouldQueue
     private $infile     = "";   //转换角度的文件，转换角度的输入文件
     private $outfile    = "";   //转换角度的输出文件
     private $matchId    = 0;    //比赛ID
+    private $courtId    = 0;
     private $type       = "";   //数据类型
     private $foot       = "";   //哪只脚
     private $jxNext     = false;
