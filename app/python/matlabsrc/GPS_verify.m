@@ -2,13 +2,19 @@
 % 判断GPS数据
 % 2018-11-30
 %%%%%%%%%%%%%%%%%%%%%%
-clc; close all;
+clc; clear; close all;
 %% 读数据
-pathname = 'G:\1257';
+pathname = 'G:\131';
 gps_L = 'gps-L.txt'; court_config = 'court-config.txt';
 addpath(genpath(pathname)); 
-gps = importdata(gps_L); gps = GPS_pretreatment(gps);
+gps = importdata(gps_L); 
+% gps = GPS_pretreatment(gps);
 court = importdata(court_config);
+%% GPS 数据处理
+% figure;
+% plot(gps(:,1),gps(:,2));
+% GPS = GPS_pretreatment(gps);
+% [Re_sample_lat,Re_sample_lon,Time] = GPS_inter(gps(:,1),gps(:,2),fs,10);
 %% 画图
 figure
 plot(court(1:1000,1),court(1:1000,2),'g.'); hold on % 划分的球场

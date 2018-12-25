@@ -66,7 +66,6 @@ dlmwrite(B,real(shoot_result),'precision', '%.6f','delimiter',' ','newline','pc'
 % ÍøÖ·
 webread(website);
 
-fclose all 
 end 
 
 

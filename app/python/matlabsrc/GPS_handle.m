@@ -7,7 +7,7 @@ function [GPS_result,filterlat,filterlon] = GPS_handle(gps,fs)
 gps = GPS_pretreatment(gps);
 % ≈–∂œ”–√ª”–gps
 if isempty(gps)
-    GPS_result = null; filterlat = null; filterlon = null;
+    GPS_result = []; filterlat = []; filterlon = [];
     return;
 end
 filterlat = gps(:,1); filterlon = gps(:,2); 

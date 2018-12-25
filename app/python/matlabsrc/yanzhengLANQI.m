@@ -1,5 +1,5 @@
 clc; clear; close all;
-pathname = 'G:\1301';
+pathname = 'G:\131';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % 添加路径
@@ -23,8 +23,70 @@ for i = 1:n_r
     A(i) = sqrt(sensor_r(i,1)^2+sensor_r(i,2)^2+sensor_r(i,3)^2);
     SMA(i) = sqrt(sensor_r(i,2)^2+sensor_r(i,3)^2);
 end
-% [Psi,Output_Psi] = Teager(SMA_R,fs); % 能量算子
-% [DI,Output_DI] = Spectrum_Weigthing(SMA_R',fs); % 频谱权重
+time = 1/100:1/100:n_r/100;
+% figure
+% s1 = plot(time,A,'linewidth',1.5); hold on    
+% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
+% ylabel('A/g','FontName','Times New Roman','fontsize',20);
+% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+% l1 = legend('x-axis','y-axis','z-axis');
+% set(l1,'FontName','Times New Roman','Fontsize',20)
+% 
+% [Psi,Output_Psi] = Teager(SMA,fs); % 能量算子
+% Time = 2/100:1/100:(n_r-1)/100;
+% figure
+% s1 = plot(Time,Output_Psi,'linewidth',1.5);
+% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
+% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+% D = [Time',Output_Psi']; k = length(D);
+% step = []; j = 1; step(j,:) = D(1,:);
+% for i = 2:k-1
+%     if  D(i,1)-step(j,1) < 0.33
+%             [~,m] = max([D(i,2) step(j,2)]);
+%             if m == 1
+%                step(j,:) = D(i,:);
+%             end
+%         else
+%             j = j+1;
+%             step(j,:) = D(i,:);
+%         end
+% end
+% E = ones(k,1);
+% for i = 1:k
+%     E(i) = -0.758;
+% end
+% R = round(step(:,1)*100);
+% E(R) = step(:,2);         
+% figure
+% s2 = plot(Time,E,'linewidth',1.5);
+% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
+% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+% %%
+% [DI,Output_DI] = Spectrum_Weigthing(SMA',fs); % 频谱权重
+% figure
+% s1 = plot(time,Output_DI,'linewidth',1.5);
+% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
+% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+% D = [time',Output_DI']; k = length(D);
+% step = []; j = 1; step(j,:) = D(1,:);
+% for i = 2:k-1
+%     if  D(i,1)-step(j,1) < 0.33
+%             [~,m] = max([abs(D(i,2)) abs(step(j,2))]);
+%             if m == 1
+%                step(j,:) = D(i,:);
+%             end
+%         else
+%             j = j+1;
+%             step(j,:) = D(i,:);
+%         end
+% end
+% E = ones(k,1)/10;
+% R = round(step(:,1)*100);
+% E(R) = step(:,2);         
+% figure
+% s2 = plot(time,E,'linewidth',1.5);
+% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
+% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % singular = error_ellipse(sensor_r(:,2),sensor_r(:,3),0.95); % 第一次筛选
 % singular = error_ellipse(Output_Psi',Output_DI(2:n_r-1)',0.99); % 第一次筛选
@@ -54,7 +116,7 @@ while (i <= n_r)
     end
     i = i+1;
 end
-% X-Y的幅值
+% X-Y的幅值 
 i = 1; l = 1;
 while (i <= n_r)
     if X_Y(i)~= 0
@@ -70,7 +132,12 @@ while (i <= n_r)
     end
     i = i+1;
 end
-figure; plot(D); hold on
+% figure; 
+% s1 = plot(time,D,'linewidth',1.5);  
+% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
+% ylabel('A/g','FontName','Times New Roman','fontsize',20);
+% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+% hold on
 output = vibrate(D,3,100,100); % 第二次筛选
 
 % output = vibrate(D,20,500,100); % 第二次筛选
@@ -131,7 +198,8 @@ Mapped_V = mapminmax(Output(:,3)',0,1); % 速度归一化
 Index =  Mapped_A .* Mapped_V ; Output(:,6) = Index;
 Output = Output(Output(:,5) > 0.3,:);
 
-plot(Output(:,1),Output(:,2),'r.'); hold on
+% plot(Output(:,1)/100,Output(:,2),'r.','markersize',20); 
+% hold on
 % longpass3 = Long_pass(Output,0.25,10,6,100,n_r);
 
 % longpass3 = Long_pass(Output,0.003,4,3,100,n_r);
@@ -145,11 +213,11 @@ plot(Output(:,1),Output(:,2),'r.'); hold on
 % PASS = Total_ball(sensor_r,sensor_l,GPS);
 %% 判断长短传球
 % 按照幅值筛选第一次
-longpass1 = Output(Output(:,6) >= 0.25,:);
-plot(longpass1(:,1),longpass1(:,2),'ko'); hold on
+longpass1 = Output(Output(:,6) >= 0.01,:);
+% plot(longpass1(:,1),longpass1(:,2),'ko'); hold on
 % 按照时间间隔筛选第二次
 [m,~] = size(longpass1); 
-j = 1; interval = 10;
+j = 1; interval = 5;
 longpass2 = []; longpass2(j,:) = longpass1(1,:);
 for i = 2:m
     if  longpass1(i,1) - longpass2(j,1) < interval * fs
@@ -162,8 +230,8 @@ for i = 2:m
         longpass2(j,:) = longpass1(i,:);
     end
 end
-plot(longpass2(:,1),longpass2(:,2),'ro'); hold on
-xlabel('时间/s'); ylabel('速度/m/s');
+% plot(longpass2(:,1),longpass2(:,2),'ro'); hold on
+% xlabel('时间/s'); ylabel('速度/m/s');
 % 按照间隔触球次数筛选第三次
 [m,~] = size(longpass2); longpass3 = [];
 i = 1; k = 1; Inter = interval * fs;
@@ -184,13 +252,13 @@ while i <= m
             number = number+1;
         end
     end
-    if number < 6
+    if number < 3
         longpass3(k,:) = longpass2(i,:); k = k+1;
     end
     i = i+1;
 end
 if ~isempty(longpass3)
-    plot(longpass3(:,1),longpass3(:,2),'r*'); hold on
+    plot(longpass3(:,1)/100,longpass3(:,2),'rh','markersize',20); hold on
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pass = Total_ball(sensor_r,sensor_l,GPS);
@@ -201,28 +269,31 @@ shoot_result = Shoot_Z(pass,Compass_R,Compass_L,40,Court_config);
 
 % shortpass3 = Long_pass(Output,0.01,5,3,100,n_r); % 判断短传
 % plot(shortpass3(:,1),shortpass3(:,2),'r*'); 
-figure
-plot(Court_config(1:1000,1),Court_config(1:1000,2),'k.'); hold on
-for i = 1:1000 
-    if Court_config(i,3) == 1
-        plot(Court_config(i,1),Court_config(i,2),'w.'); hold on  % 射门区域
-    end
-    if Court_config(i,4) == 1
-        plot(Court_config(i,1),Court_config(i,2),'r.'); hold on  % 禁区
-    end
-end
+% figure
+% plot(Court_config(1:1000,1),Court_config(1:1000,2),'k.'); hold on
+% for i = 1:1000 
+%     if Court_config(i,3) == 1
+%         plot(Court_config(i,1),Court_config(i,2),'w.'); hold on  % 射门区域
+%     end
+%     if Court_config(i,4) == 1
+%         plot(Court_config(i,1),Court_config(i,2),'r.'); hold on  % 禁区
+%     end
+% end
 [m,~] = size(pass); chu = 0; chang = 0; duan = 0;
 for j = 1:m
     if pass(j,2) == 1
-        plot(pass(j,5),pass(j,6),'r*','markersize',12); hold on % 长传  
+%         plot(pass(j,5),pass(j,6),'rh','markersize',20); hold on % 长传  
+        plot(pass(j,3),pass(j,4),'rh','markersize',20); hold on % 长传  
         chang = chang+1;
     end
     if pass(j,2) == 2
-        plot(pass(j,5),pass(j,6),'kp','markersize',10); hold on % 短传
+%         plot(pass(j,5),pass(j,6),'kp','markersize',20); hold on % 短传
+        plot(pass(j,3),pass(j,4),'kp','markersize',20); hold on % 长传  
         duan = duan+1;
     end
     if pass(j,2) == 3
-        plot(pass(j,5),pass(j,6),'b*','markersize',5); hold on % 触球
+%         plot(pass(j,5),pass(j,6),'b.','markersize',20); hold on % 触球
+        plot(pass(j,3),pass(j,4),'b.','markersize',20); hold on % 长传  
         chu = chu+1;
     end    
 end
@@ -234,5 +305,8 @@ plot(Court_config(1001,1),Court_config(1001,2),'b<','markersize',15); hold on
 plot(Court_config(1001,3),Court_config(1001,4),'b<','markersize',15); hold on 
 plot(Court_config(1002,1),Court_config(1002,2),'b>','markersize',15); hold on 
 plot(Court_config(1002,3),Court_config(1002,4),'b>','markersize',15); axis equal
+
+
+
 
 
