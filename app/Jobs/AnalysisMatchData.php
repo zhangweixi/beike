@@ -1670,7 +1670,7 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
-        return;
+        
         //修改个人的整体数据 在此前一定会创建用户的个人数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
 
