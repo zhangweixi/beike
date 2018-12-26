@@ -1592,11 +1592,11 @@ class AnalysisMatchData implements ShouldQueue
             $timeUnit = "m";
 
             //$timeSpeeds  = array_chunk($timeSpeeds,60);
-            $timeSpeeds  = array_chunk($timeSpeeds,10);
+            $timeSpeeds  = array_chunk($timeSpeeds,20);
             foreach($timeSpeeds as $key1 => $stepSpeed){
 
                 //$timeSpeeds[$key1] = max($stepSpeed);
-                $timeSpeeds[$key1] = array_sum($stepSpeed)/10;
+                $timeSpeeds[$key1] = array_sum($stepSpeed)/20;
             }
 
             //把第一个为0的删除
