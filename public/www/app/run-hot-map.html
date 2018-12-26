@@ -488,17 +488,36 @@
     //绘制折线图
     function draw_line_map(eleId,data,Yname){
 
-        data            = JSON.parse(data);
-        var unit        = data.unit;
-        var rundata     = JSON.parse(data.data);
+        var rundata     = JSON.parse(data);
+ 
+        var category    = [];
 
-        if(unit == 'm'){
+        var minutes = parseInt(rundata.length / 6);
 
-            unit = "分钟";
+        for(var key in rundata){
+            
+            if(minutes > 15){
 
-        }else{
+                category.push(parseInt(key/6))    
 
-            unit = "秒";
+
+            }else if(minutes > 2){
+
+
+                if(key % 6 == 0)    { //显示整分钟
+
+                    category.push(parseInt(key/6))                    
+
+                }else{
+
+                    category.push("")                    
+                }
+
+
+            }else{
+
+                category.push((key/6).toFixed(1)); //小于2分钟，显示小数
+            }
         }
 
         var option      =  {
@@ -522,11 +541,12 @@
                 borderColor:"rgba(0,0,0,0)",
             },
             xAxis: {
-                type: 'value',
+                type: 'category',
                 boundaryGap: false,
-                name:unit,
+                name:"分钟",
                 nameLocation:'end',
-
+                data:category,
+                interval:10,
                 splitLine:{
                     show:false
                 },

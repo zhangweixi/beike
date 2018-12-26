@@ -1533,7 +1533,7 @@ class AnalysisMatchData implements ShouldQueue
 
             foreach($speedArr as $speed){
 
-                if($speed[3] == "0" || $speed[4] == "0"){
+                if(abs($speed[3]) == 0 || abs($speed[4]) == 0){
 
                     continue;
                 }
@@ -1548,9 +1548,10 @@ class AnalysisMatchData implements ShouldQueue
                 "lat"       => $tempCount == 0 ? 0 : array_sum($tempLat)/$tempCount,
                 'lon'       => $tempCount == 0 ? 0 : array_sum($tempLon)/$tempCount
             ];
+
         }
 
-        
+
         foreach ($speedsInfo as $key => &$speedInfo)
         {
             $speed      = $speedInfo['speed'];
@@ -1612,7 +1613,6 @@ class AnalysisMatchData implements ShouldQueue
             $timeSpeeds[$key1] = array_sum($stepSpeed)/10;
         }
 
-
         //把第一个为0的删除
         array_splice($timeDis,0,1);
         $timeDis    = array_chunk($timeDis,10);
@@ -1624,7 +1624,7 @@ class AnalysisMatchData implements ShouldQueue
         array_unshift($timeDis,0);
         
 
-        foreach($timeSpeeds as $speed)
+        foreach($timeSpeeds as $key1 => $speed)
         {
             $timeSpeeds[$key1] = speed_second_to_hour($speed);
         }
@@ -1634,7 +1634,7 @@ class AnalysisMatchData implements ShouldQueue
 
         foreach ($timeDis as $key2 => $dis)
         {
-            $timeDis[$key2] = $dis / 1000;
+            $timeDis[$key2] = round($dis / 1000,2);
         }
 
         $timeDis    = implode(",",$timeDis);
@@ -1658,8 +1658,8 @@ class AnalysisMatchData implements ShouldQueue
             'run_high_time'     => $speedType['high']['time'],
             'run_static_time'   => $speedType['static']['time'],
             'run_speed_max'     => $maxSpeed,
-            'run_time_speed'    => \GuzzleHttp\json_encode($timeSpeeds),
-            'run_time_dis'      => \GuzzleHttp\json_encode($timeDis),
+            'run_time_speed'    => $timeSpeeds,
+            'run_time_dis'      => $timeDis,
             "abrupt_stop_num"   => count($adruptStop['list']),
             'run_high_speed_avg'=> $speedType['high']['time'] > 0 ? $speedType['high']['dis']/$speedType['high']['time'] : 0,//高速平均跑动速度
             'map_speed_static'  => $speedType['static']['gps'],
@@ -1670,7 +1670,7 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
-
+        return;
         //修改个人的整体数据 在此前一定会创建用户的个人数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
 
