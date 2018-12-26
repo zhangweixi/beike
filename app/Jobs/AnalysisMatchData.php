@@ -1523,18 +1523,44 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //区别出低速，中速，高速
-        foreach ($speedsInfo as $key => &$speedInfo)
-        {
-            if($key % $gpsHz != 0)
-            {
-                continue;
+        $speedsInfo     = array_chunk($speedsInfo, $gpsHz);
+        foreach($speedsInfo as $key => $speedArr){
+
+            //求平均速度
+            $tempSpe    = [];
+            $tempLat    = [];
+            $tempLon    = [];
+
+            foreach($speedArr as $speed){
+
+                if($speed[3] == "0" || $speed[4] == "0"){
+
+                    continue;
+                }
+                array_push($tempSpe, abs($speed[1]));
+                array_push($tempLat, abs($speed[3]));
+                array_push($tempLon, abs($speed[4]));
             }
 
-            $speed      = abs($speedInfo[1]);
+            $tempCount  = count($tempSpe);
+            $speedsInfo[$key] = [
+                "speed"     => $tempCount == 0 ? 0 : array_sum($tempSpe)/$tempCount,
+                "lat"       => $tempCount == 0 ? 0 : array_sum($tempLat)/$tempCount,
+                'lon'       => $tempCount == 0 ? 0 : array_sum($tempLon)/$tempCount
+            ];
+        }
+
+        
+        foreach ($speedsInfo as $key => &$speedInfo)
+        {
+            $speed      = $speedInfo['speed'];
+            $lat        = $speedInfo["lat"];
+            $lon        = $speedInfo["lon"];
+
             array_push($timeSpeeds,$speed);
+            array_push($timeDis,end($timeDis)+$speed);
 
             $maxSpeed   = max($speed,$maxSpeed);
-            array_push($timeDis,end($timeDis)+$speed);
 
             //速度M/s
             if($speed > $speedHigh)
@@ -1553,9 +1579,6 @@ class AnalysisMatchData implements ShouldQueue
 
                 $type   = "static";
             }
-
-            $lat    = $speedInfo[3];
-            $lon    = $speedInfo[4];
 
             array_push($speedType[$type]['gps'],['lat'=>$lat,'lon'=>$lon]);
 
@@ -1583,53 +1606,45 @@ class AnalysisMatchData implements ShouldQueue
             }
         }
 
-
-        //如果时间大于10分钟，那么以分钟为单位
-        $timeUnit = "s";
-
-        if($key > 6000){
-
-            $timeUnit = "m";
-
-            //$timeSpeeds  = array_chunk($timeSpeeds,60);
-            $timeSpeeds  = array_chunk($timeSpeeds,10);
-            foreach($timeSpeeds as $key1 => $stepSpeed){
-
-                //$timeSpeeds[$key1] = max($stepSpeed);
-                $timeSpeeds[$key1] = array_sum($stepSpeed)/10;
-            }
-
-            //把第一个为0的删除
-            array_splice($timeDis,0,1);
-            $timeDis    = array_chunk($timeDis,60);
-            foreach ($timeDis as $key2 => $dis){
-
-                $timeDis[$key2] = end($dis);
-            }
-            array_unshift($timeDis,0);
+        $timeSpeeds  = array_chunk($timeSpeeds,10);
+        foreach($timeSpeeds as $key1 => $stepSpeed)
+        {
+            $timeSpeeds[$key1] = array_sum($stepSpeed)/10;
         }
 
-        foreach($timeSpeeds as $key1=> $speed){
-            $speed  = speed_second_to_hour($speed);
-            $timeSpeeds[$key1] = "[{$key1},{$speed}]";
+
+        //把第一个为0的删除
+        array_splice($timeDis,0,1);
+        $timeDis    = array_chunk($timeDis,10);
+        foreach ($timeDis as $key2 => $dis)
+        {
+            $timeDis[$key2] = end($dis);
         }
+
+        array_unshift($timeDis,0);
+        
+
+        foreach($timeSpeeds as $speed)
+        {
+            $timeSpeeds[$key1] = speed_second_to_hour($speed);
+        }
+
         $timeSpeeds     = implode(",",$timeSpeeds);
-        $timeSpeeds     = ['unit'=>$timeUnit,'data'=>"[{$timeSpeeds}]"];
+        $timeSpeeds     = "[".$timeSpeeds."]";
 
-        foreach ($timeDis as $key2 => $dis){
-            $dis    = $dis / 1000;
-            $timeDis[$key2] = "[{$key2},{$dis}]";
+        foreach ($timeDis as $key2 => $dis)
+        {
+            $timeDis[$key2] = $dis / 1000;
         }
 
         $timeDis    = implode(",",$timeDis);
-        $timeDis    = ['unit'=>$timeUnit,'data'=>"[{$timeDis}]"];
+        $timeDis    = "[".$timeDis."]";
 
         //需要计算在不同的时间点，不同类型的速度跑动的距离
         //创建高、中、低速跑动热点图
         foreach ($speedType as $key => $type)
         {
             $speedType[$key]['gps'] = \GuzzleHttp\json_encode($this->gps_map($matchInfo->court_id,$type['gps']));
-
         }
 
         //11.修改单场比赛的结果
@@ -1695,8 +1710,6 @@ class AnalysisMatchData implements ShouldQueue
         $userAbility->save();
 
     }
-
-
     /**
      * 传球和触球
      * */
@@ -2151,4 +2164,3 @@ class AnalysisMatchData implements ShouldQueue
         BaseFootballCourtModel::remove_minitor_court($courtId);
     }
 }
-
