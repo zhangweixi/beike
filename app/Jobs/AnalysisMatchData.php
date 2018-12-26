@@ -1620,7 +1620,6 @@ class AnalysisMatchData implements ShouldQueue
         {
             $timeDis[$key2] = end($dis);
         }
-
         array_unshift($timeDis,0);
         
 
@@ -1628,6 +1627,7 @@ class AnalysisMatchData implements ShouldQueue
         {
             $timeSpeeds[$key1] = speed_second_to_hour($speed);
         }
+        array_unshift($timeSpeeds,0);
 
         $timeSpeeds     = implode(",",$timeSpeeds);
         $timeSpeeds     = "[".$timeSpeeds."]";
@@ -1670,7 +1670,7 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
 
-        
+
         //修改个人的整体数据 在此前一定会创建用户的个人数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
 
