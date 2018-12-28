@@ -22,6 +22,17 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12">所属类型</label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <select required class="form-control col-md-7 col-xs-12" ng-model="newDeviceCode.type">
+                            <option value="device">硬件驱动</option>
+                            <option value="android">安卓安装包</option>
+                            <option value="IOS">IOS安装包</option>
+                        </select >
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label class="control-label col-md-3 col-sm-3 col-xs-12">代码文件</label>
                     <div class="col-md-6 col-sm-6 col-xs-12">
                         <input type="file" required class="form-control col-md-7 col-xs-12" id="{{newDeviceCode.codePath}}">

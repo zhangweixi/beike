@@ -111,6 +111,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 
     $scope.newDeviceCode = {
         version:'',
+        type:"device",
         must_upgrade:false,
         publish:false,
         codeContent:'',
@@ -315,6 +316,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
             from.append('version',newCodeData.version);
             from.append('publish',newCodeData.publish ? 1 : 0);
             from.append('must_upgrade',newCodeData.must_upgrade ? 1: 0);
+            from.append('type',newCodeData.type);
         
 
         $http({

@@ -292,16 +292,19 @@ class DeviceController extends Controller
 
     public function add_device_code(Request $request){
 
-        $file       = $request->file('file')->store('device-code','web');
-        $file       = "uploads/".$file;
+        $file       = $request->file('file');
+        $name       = $file->getClientOriginalName();
+        $extension  = explode(".",$name)[1];
+
+        $file       = $file->storeAs('device-code',create_member_number().".".$extension,'web');
 
         $data       = [
-            'version'   => $request->input('version'),
-            'publish'   => $request->input('publish'),
-            'must_upgrade'=>$request->input('must_upgrade'),
-            'type'      => 'device',
-            'file'      => $file,
-            'created_at'=> date_time()
+            'version'       => $request->input('version'),
+            'publish'       => $request->input('publish'),
+            'must_upgrade'  => $request->input('must_upgrade'),
+            'type'          => $request->input('type'),
+            'file'          => $file,
+            'created_at'    => date_time()
         ];
 
         BaseVersionModel::insert($data);
