@@ -44,6 +44,7 @@ class Court{
 
     private $lonNum = 10;
     private $latNum = 20;
+    public static $errorMsg = "";
 
     public function __construct()
     {
@@ -397,6 +398,13 @@ class Court{
         /*==============找出直线跑动的距离 begin=================*/
         $courtAngle = self::get_visual_court_angle($gpsArr);
 
+        if($courtAngle === false){
+
+            BaseMatchModel::match_process($matchId,"球场信息无法计算,id:".$courtId);
+            Wechat::warning_to_admin("球场信息无法计算,id:".$courtId);
+            die();
+        }
+
         $courtSlope = tan(angle_to_pi($courtAngle));
         /*====================求球场斜率 end =================*/
 
@@ -697,10 +705,13 @@ class Court{
     static function get_visual_court_angle($gpsArr)
     {
         $gpsNum     = count($gpsArr);
-        $points     = [];
         //每隔5S分段一次
         $timeLength = 30;
+        $mindis     = 0.5;
+        $maxdis     = 25;
 
+        BEGIN:
+        $points     = [];
         $lineAngles = [];
         $distances  = [];
 
@@ -714,7 +725,7 @@ class Court{
 
             $distance   = gps_distance($begin[1],$begin[0],$end[1],$end[0]);
             array_push($distances,$distance);
-            if($distance > 0.5 && $distance < 25)
+            if($distance > $mindis && $distance < $maxdis)
             {
                 array_push($points,['lat'=>$begin[0],'lon'=>$begin[1]],['lat'=>$end[0],'lon'=>$end[1]]);
 
@@ -731,6 +742,16 @@ class Court{
             }
         }
 
+        if(count($lineAngles) == 0 && $mindis > 0.1){ //减少距离继续尝试
+
+            $mindis = $mindis - 0.1;
+            goto BEGIN;
+
+        }elseif(count($lineAngles) == 0 && $mindis == 0.1){ //活动范围太小，无法计算
+
+            self::$errorMsg  = "活动范围太小，无法计算球场";
+            return false;
+        }
 
         /*==============寻找球场的方向 end =================*/
 
