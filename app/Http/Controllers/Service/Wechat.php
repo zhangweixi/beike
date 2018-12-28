@@ -182,4 +182,20 @@ class Wechat extends Controller
 
         $this->template_message($serviceTemplate)->send();
     }
+
+    /**
+     * 向管理员报警
+     * @param $msg string 提示信息
+     * */
+    public static function warning_to_admin($msg){
+
+        $template = (new WechatTemplate())->warningTemplate();
+
+        $template->first    = "系统警告";
+        $template->remark   =  $msg;
+        $template->warnType = "无";
+        $template->warnTime = date_time();
+        $template->openId   = config('app.adminOpenId');
+        self::template_message($template)->send();
+    }
 }
