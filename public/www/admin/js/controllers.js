@@ -31,7 +31,7 @@ mylogin.controller('loginController', function ($scope, $http) {
                     location.replace("./index.html");
                 } else {
 
-                    alert(res.msg);
+                    alert(res.message);
 
                 }
             });
