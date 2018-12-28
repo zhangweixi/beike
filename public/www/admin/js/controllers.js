@@ -910,17 +910,114 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
 
             console.log($scope.matchResult);
 
-            $scope.draw_hot_map("map-run-all",width,$scope.matchResult.map_gps_run);
-            $scope.draw_hot_map("map-run-high",width,$scope.matchResult.map_speed_high);
-            $scope.draw_hot_map("map-run-middle",width,$scope.matchResult.map_speed_middle);
-            $scope.draw_hot_map("map-run-low",width,$scope.matchResult.map_speed_low);
-            $scope.draw_hot_map("map-run-static",width,$scope.matchResult.map_speed_static);
-            //$scope.draw_hot_map("map-shoot",width,$scope.matchResult.map_shoot);
-            //$scope.draw_hot_map("map-pass-long",width,$scope.matchResult.map_pass_long);
-            //$scope.draw_hot_map("map-pass-short",width,$scope.matchResult.map_pass_short);
-            //$scope.draw_hot_map("map-touchball",width,$scope.matchResult.map_touchball);
-        
-        
+            //分数
+            var matchRes = $scope.matchResult;
+            var gradeData = {
+                category:["综合","跑动","传球","力量","防守","盘带","射门","射欲望","射力量","射时机","长传","短传","耐力","冲刺","触球","灵活"],
+                data:[
+                    matchRes.grade,
+                    matchRes.grade_run,
+                    matchRes.grade_pass,
+                    matchRes.grade_strength,
+                    matchRes.grade_defense,
+                    matchRes.grade_dribble,
+                    matchRes.grade_shoot,
+                    matchRes.grade_shoot_desire,
+                    matchRes.grade_shoot_strength,
+                    matchRes.grade_shoot_chance,
+                    matchRes.grade_pass_num_long,
+                    matchRes.grade_pass_num_short,
+                    matchRes.grade_endurance,
+                    matchRes.grade_sprint,
+                    matchRes.grade_touchball_num,
+                    matchRes.grade_flexible
+                ]
+            };
+            $scope.draw_bar_map("base-grade",gradeData,"#4CABCE");//具体数值
+
+            //次数
+            var timesData   = {
+                category:["长射","短射","长传","短传","触球"],
+                data:[
+                    matchRes.shoot_num_short,
+                    matchRes.shoot_num_far,
+                    matchRes.pass_s_num,
+                    matchRes.pass_l_num,
+                    matchRes.touchball_num
+                ]
+            };
+
+            $scope.draw_bar_map("base-times",timesData,"#9FDABF");//具体数值
+
+            //跑动距离
+            var disData = {
+
+                category:["总距离","高速","中速","低速","走动"],
+                data:[
+                    (matchRes.run_high_dis+matchRes.run_mid_dis+matchRes.run_low_dis+matchRes.run_static_dis).toFixed(2),
+                    matchRes.run_high_dis,
+                    matchRes.run_mid_dis,
+                    matchRes.run_low_dis,
+                    matchRes.run_static_dis
+                ]
+            };
+            $scope.draw_bar_map("run-dis",disData,"#E98F6F");//具体数值
+
+            //跑动时间
+            var timeData = {
+                category:["总时间","高速","中速","低速","走动"],
+                data:[
+                    ((matchRes.run_high_time+matchRes.run_mid_time+matchRes.run_low_time+matchRes.run_static_time)/60).toFixed(2),
+                    (matchRes.run_high_time/60).toFixed(2),
+                    (matchRes.run_mid_time/60).toFixed(2),
+                    (matchRes.run_low_time/60).toFixed(2),
+                    (matchRes.run_static_time/60).toFixed(2)
+                ]   
+            };
+            $scope.draw_bar_map("run-time",timeData,"#E98F6F");//具体数值
+
+
+            var otherData = {
+
+                category:["触球高速","触球均速","触球最大力","触球平均力","射门高速","射门均速","长传高速","长传均速","短传高速","短传均速",],
+                data:[
+                    matchRes.touchball_speed_max,
+                    matchRes.touchball_speed_avg,
+                    matchRes.touchball_strength_max,
+                    matchRes.touchball_strength_avg,
+                    matchRes.shoot_speed_max,
+                    matchRes.shoot_speed_avg,
+                    matchRes.pass_l_speed_max,
+                    matchRes.pass_l_speed_avg,
+                    matchRes.pass_s_speed_max,
+                    matchRes.pass_s_speed_avg
+                ]
+            };
+
+            $scope.draw_bar_map("speeds",otherData,"#B0C4DE");//具体数值
+
+            var disData    = {
+                category:["射远距","射均距","长传远距","长传均距","短传远距","短传均距"],
+                data:[
+                    matchRes.shoot_dis_max,
+                    matchRes.shoot_dis_avg,
+                    matchRes.pass_l_dis_max,
+                    matchRes.pass_l_dis_avg,
+                    matchRes.pass_s_dis_max,
+                    matchRes.pass_s_dis_avg
+                ]
+            };
+            $scope.draw_bar_map("dis",disData,"#B0C4DE");//具体数值            
+
+
+            $scope.draw_line_map("line-dis",JSON.parse(matchRes.run_time_dis),"#269490","实时距离");
+            $scope.draw_line_map("line-speed",JSON.parse(matchRes.run_time_speed),"#269490","实时速度");
+
+            $scope.draw_hot_map("map-run-all",width,matchRes.map_gps_run);
+            $scope.draw_hot_map("map-run-high",width,matchRes.map_speed_high);
+            $scope.draw_hot_map("map-run-middle",width,matchRes.map_speed_middle);
+            $scope.draw_hot_map("map-run-low",width,matchRes.map_speed_low);
+            $scope.draw_hot_map("map-run-static",width,matchRes.map_speed_static);
         })
     }
 
@@ -988,6 +1085,80 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
             }
             data3 = {"max":max,"data":data2};
             heatmap1.setData(data3);
+    }
+
+    $scope.draw_bar_map = function(eleId,data,color){
+
+        var option = {
+
+            tooltip: {
+                show: true
+            },
+            xAxis: {
+                type: 'category',
+                data: data.category
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series:[{
+                data: data.data,
+                type: 'bar',
+                color: color,
+                itemStyle: {
+                    normal: {
+                        label: {
+                            show:true, //开启显示
+                            position: 'top', //在上方显示
+                            textStyle: { //数值样式
+                                color: 'red',
+                                fontSize: 16
+                            }
+                        }
+                    }
+                }
+            }]
+        };
+        echarts.init(document.getElementById(eleId)).setOption(option);
+    }
+
+    $scope.draw_line_map = function(eleId,data,color,title){
+        
+        
+        var showData = [];
+
+        for(var k in data){
+
+            showData.push([k,data[k]]);
+        }
+
+        var option = {
+            title:{
+                show:true,
+                text:title
+            }, 
+            xAxis: {
+                type: 'value',
+                //boundaryGap: false
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [{
+                data: showData,
+                type: 'line',
+                showSymbol:false,
+                areaStyle: {
+                    color:"#269490"
+                },
+                lineStyle:{
+                    color:color
+                }
+            }]
+        };
+
+        echarts.init(document.getElementById(eleId)).setOption(option);
+
     }
 
     //比赛文件

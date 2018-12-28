@@ -306,7 +306,7 @@ class DeviceController extends Controller
             'file'          => "uploads/".$file,
             'created_at'    => date_time()
         ];
-
+        
         BaseVersionModel::insert($data);
 
         return apiData()->send();
