@@ -196,6 +196,7 @@ class Wechat extends Controller
         $template->warnType = "无";
         $template->warnTime = date_time();
         $template->openId   = config('app.adminOpenId');
-        self::template_message($template)->send();
+        $wechat             = new Wechat();
+        $wechat->template_message($template)->send();
     }
 }
