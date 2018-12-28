@@ -303,7 +303,7 @@ class DeviceController extends Controller
             'publish'       => $request->input('publish'),
             'must_upgrade'  => $request->input('must_upgrade'),
             'type'          => $request->input('type'),
-            'file'          => $file,
+            'file'          => "uploads/".$file,
             'created_at'    => date_time()
         ];
 
