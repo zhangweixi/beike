@@ -1016,6 +1016,7 @@ class AnalysisMatchData implements ShouldQueue
         //拆分成许多同步段
         $stagesData  = [];
 
+        //阶段序数，实际上就是时间(分钟)
         $synctimeNum = -1;
 
         foreach($dataArr as $data){
@@ -1393,6 +1394,8 @@ class AnalysisMatchData implements ShouldQueue
 
         //销毁比赛的历史信息
         self::destory_match_cache($matchId,$matchInfo->court_id);
+
+        BaseMatchModel::remove_minitor_match($matchId);
 
         return "success";
     }

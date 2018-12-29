@@ -265,7 +265,7 @@ class MatchController extends Controller
 
             if($isFinish == true){ //传输已完成 , 加入到计算监控中
 
-                BaseMatchModel::join_minitor_match($userId);
+                BaseMatchModel::join_minitor_match($request->input('matchId'));
             }
         }
         
