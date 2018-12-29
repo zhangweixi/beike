@@ -2,7 +2,14 @@
 % GPS 数据处理
 % 2018-09-04
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [GPS_result,filterlat,filterlon] = GPS_handle(gps,fs)
+clc; clear; close all;
+% 读数据
+pathname = 'G:\173';
+gps_L = 'gps-L.txt'; court_config = 'court-config.txt';
+addpath(genpath(pathname)); 
+gps = importdata(gps_L); fs = 10; 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function [GPS_result,filterlat,filterlon] = GPS_handle(gps,fs)
 %% 去除误差点转换GPS
 gps = GPS_pretreatment(gps);
 % 判断有没有gps
@@ -38,7 +45,25 @@ V = Output_Distance / time;  % 平均速度V
 % end
 % 瞬时速度第二种方案
 Output_V = Distance * fs; % 速度
-N = numel(Output_V);
+N = numel(Output_V); i = 1;
+% 速度修正
+while i <= N
+    if real(Output_V(i))*3.6 >= 35
+        if i-5 <= 0
+            n = 0;
+        else
+            n = i-5;
+        end
+        if i+5 >= N
+            m = N;
+        else
+            m = i+5;
+        end
+        Output_V(i) = 0;
+        Output_V(i) = mean(Output_V(n:m));
+    end
+    i = i+1;
+end
 Output_A = diff(Output_V,1) * fs; % 加速度A
 A = mean(abs(Output_A)); % 平均加速度
 %% 结果文件
@@ -46,5 +71,12 @@ Output_T = 2/fs:1/fs:time-1/fs;
 result1 = [V,Output_T]'; result2 = [A,Output_V(2:end)]'; result3 = [Output_Distance,Output_A]';
 W = [0;filterlat(2:end-1)]; J = [0;filterlon(2:end-1)];
 GPS_result = [result1,result2,result3,W,J];
-end
+% 速度图像
+Output_Time = 1/fs:1/fs:time-1/fs;
+figure 
+s1 = plot(Output_Time,real(Output_V)*3.6);
+xlabel('Time/s','FontName','Times New Roman','fontsize',20);
+ylabel('Km/h','FontName','Times New Roman','fontsize',20);
+set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+% end
 

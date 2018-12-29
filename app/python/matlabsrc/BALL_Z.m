@@ -11,7 +11,7 @@ R_J = Touch(sensor_r,25,1000,100,26); % ÅÐ¶ÏÓÒ½Å´¥Çò
 L_J = Touch(sensor_l,25,1000,100,26); % ÅÐ¶ÏÓÒ½Å´¥Çò
 [R,~] = size(R_J); [L,~] = size(L_J); pass_r = []; pass_l = [];
 if R > L
-    [output,n] = Touch(sensor_r,5,100,100,6); 
+    [output,n] = Touch(sensor_r,3,100,100,4); 
 else
     [output,n] = Touch(sensor_r,55,3000,100,56); 
 end
@@ -93,7 +93,7 @@ else
 end
 %% LEFT
 if L > R
-    [output,n] = Touch(sensor_l,5,100,100,6);
+    [output,n] = Touch(sensor_l,3,100,100,4);
 else
     [output,n] = Touch(sensor_l,55,3000,100,56);
 end
