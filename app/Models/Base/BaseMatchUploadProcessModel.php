@@ -22,7 +22,7 @@ class BaseMatchUploadProcessModel extends Model
         $num    = $isFinish ? 1 : 0;
         $time   = date_time();
 
-        if(is_null($processInfo)){
+        if(!$processInfo){
 
             self::insert([
                 "user_id"       => $userId,
