@@ -27,3 +27,5 @@ $api->version('v1',['prefix'=>"api/v1","middleware"=>$middleware,'namespace'=>"A
     $api->any('/test/{action}',         'TestController@action');
 
 });
+
+Route::any('/api/{v}/{controller}/{action}','Api\RootController@door')->middleware('saveApiData,checkToken');
