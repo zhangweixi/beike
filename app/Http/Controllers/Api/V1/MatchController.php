@@ -612,7 +612,7 @@ class MatchController extends Controller
             ->send();
     }
 
-    /*
+    /**
      * 是否有未完成的比赛
      *
      * */
@@ -649,6 +649,22 @@ class MatchController extends Controller
         return apiData()->set_data('matchInfo',$currentMatch)->send();
     }
 
+    /**
+     * 设置踢球位置
+     * */
+    public function set_position(Request $request){
+
+        $positions  = ['CF','LMF','LB','CF','SS','AMF','CMF','DMF','CB','GK','REF','RMF','RB'];
+        $position   = $request->input('position','');
+        $matchId    = $request->input('matchId');
+
+        if(!in_array($position,$positions)){
+
+            return apiData()->send(3001,"没有该位置");
+        }
+        MatchModel::where('match_id',$matchId)->update(['position'=>$position]);
+        return apiData()->send();
+    }
 
     /**
      * 记录比赛的状态
