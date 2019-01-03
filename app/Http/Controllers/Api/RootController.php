@@ -40,7 +40,7 @@ class RootController extends Controller
             }
 
 
-            if($vcode > 2){
+            if($vcode > 1){
 
                 $vcode--;
                 continue;

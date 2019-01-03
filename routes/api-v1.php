@@ -28,4 +28,10 @@ $api->version('v1',['prefix'=>"api/v1","middleware"=>$middleware,'namespace'=>"A
 
 });
 
-Route::any('/api/{v}/{controller}/{action}','Api\RootController@door')->middleware('saveApiData,checkToken');
+
+$api->version('v1',['prefix'=>"api","middleware"=>$middleware,'namespace'=>"App\Http\Controllers\Api"],function ($api)
+{
+    $api->any('{v}/{controller}/{action}','RootController@door');
+});
+
+//$api->any('api/{v}/{controller}/{action}','Api\RootController@door')->middleware('saveApiData,checkToken');
