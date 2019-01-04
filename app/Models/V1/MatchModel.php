@@ -112,6 +112,18 @@ class MatchModel extends Model
         {
             $matchInfo->time_begin = strtotime($matchInfo->time_begin)*1000;
 
+            //获取最近的一个状态
+            $status     = DB::table('match_status')->where('match_id',$matchInfo->match_id)->orderBy('status_id','desc')->first();
+
+            if($status->status == 'pause'){
+
+                $matchInfo->isPause = 1;
+
+            }else{
+
+                $matchInfo->isPause = 0;
+            }
+
             return $matchInfo;
 
         } else{
