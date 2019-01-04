@@ -45,11 +45,18 @@ class BaseMatchUploadProcessModel extends Model
      * */
     public static function check_match_upload_status()
     {
+        $now    = time();
+
         $users = self::where('noticed',0)
             ->whereRaw('now() - updated_at > 60')
             ->get();
 
         foreach($users as $user){
+
+            if($now - strtotime($user->updated_at) < 60){
+
+                continue;
+            }
 
             $userId     = $user->user_id;
             self::where('user_id',$userId)->update(['noticed'=>1]);
