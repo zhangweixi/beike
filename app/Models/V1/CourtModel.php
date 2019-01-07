@@ -35,4 +35,29 @@ class CourtModel extends Model
 
         return $this->add_court($courtData);
     }
+
+
+    /**
+     * 获得用户的球场
+     * @param $userId integer 用户ID
+     * @param $owner string 所属
+     * */
+    public static function get_courts($userId=0,$owner="self"){
+
+        $db = self::select("court_id","court_name")
+            ->where('court_name',"<>","");
+
+        if($owner == 'self'){
+
+            $db->where('user_id',$userId);
+
+        }elseif($owner == 'other'){
+
+            $db->where('user_id',"<>",$userId);
+        }
+
+        $courts = $db->paginate(10);
+
+        return $courts;
+    }
 }

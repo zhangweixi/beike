@@ -25,11 +25,15 @@ class CourtController extends Controller
     {
         $userId     = $request->input('userId',0);
         $gpsGroupId = $request->input('gpsGroupId');
+        $courtName  = $request->input('courtName',"");
+
+
 
         //2.添加新的球场
         $courtData  = [
             'user_id'       => $userId,
             'gps_group_id'  => $gpsGroupId,
+            'court_name'    => $courtName
         ];
         $courtModel     = new CourtModel();
         $courtId        = $courtModel->add_court($courtData);
@@ -224,70 +228,17 @@ class CourtController extends Controller
         return apiData()->add('points',$points)->send();
     }
 
+    /**
+    * 获得用户的球场
+    *
+    */
+    public function get_courts(Request $request){
 
-    /*
-     * 显示足球内部热点图
-     * */
-    public function court_content(Request $request)
-    {
-        $matchId    = $request->input('matchId');
+        $userId     = $request->input('userId');
+        $owner      = $request->input('owner');
 
-        $matchInfo  = MatchModel::find($matchId);
-        $gpsFile    = "match/".$matchId."-bd-gps.json";
+        $courts     = CourtModel::get_courts($userId,$owner);
 
-        $has        = Storage::disk('web')->has($gpsFile);
-        if(!$has) {
-
-            $allGps     = [];
-            $table      = "user_".$matchInfo->user_id."_gps";
-            DB::connection('matchdata')
-                ->table($table)
-                ->where('match_id',$matchId)
-                ->orderBy('id')
-                ->select('lat','lon')
-                ->chunk(1000,function($gpsList) use (&$allGps)
-                {
-                    foreach($gpsList as $gps)
-                    {
-                        if($gps->lat == 0) continue;
-                        array_push($allGps,$gps);
-                    }
-                });
-
-            $allGps = gps_to_bdgps($allGps);
-
-            Storage::disk('web')->put($gpsFile,\GuzzleHttp\json_encode($allGps));
-
-        }
-        $points = Storage::disk('web')->get($gpsFile);
-        $points = \GuzzleHttp\json_decode($points);
-
-        return apiData()->set_data('points',$points)->send();
+        return apiData()->add('courts',$courts)->send();
     }
-
-
-
-
-
-
-    /*
-     * 从文件中读取gps显示到地图上
-     * */
-    public function show_file_map(Request $request)
-    {
-        $filepath   = $request->input('filepath');
-
-        $gpsList        = file(public_path($filepath));
-
-        foreach($gpsList as $key => $gps){
-
-            $info = explode(" ",trim($gps,"\n"));
-            $gpsList[$key]  = ["lat"=>$info[0],'lon'=>$info[1]];
-        }
-
-        $gpsList    = gps_to_bdgps($gpsList);
-
-        return apiData()->add('points',$gpsList)->send();
-    }
-
 }
