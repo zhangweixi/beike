@@ -941,8 +941,8 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
                 data:[
                     matchRes.shoot_num_short,
                     matchRes.shoot_num_far,
-                    matchRes.pass_s_num,
                     matchRes.pass_l_num,
+                    matchRes.pass_s_num,
                     matchRes.touchball_num
                 ]
             };

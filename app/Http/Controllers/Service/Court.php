@@ -941,9 +941,10 @@ class Court{
      * @param $points array
      * @param $width int 球场宽度
      * @param $height int 球场高度
+     * @param $resetPosition boolean 是否需要重置位置(超出球场的拉入到球场中来）
      * @return array
      * */
-    static function create_gps_map($pa,$pa1,$pd,$pd1,$points,$width=1000,$height=557)
+    static function create_gps_map($pa,$pa1,$pd,$pd1,$points,$width=1000,$height=557,$resetPosition= false)
     {
         $centerx    = $pa['x'] + ($pd1['x'] - $pa['x'])/2;
         $centery    = $pa['y'] + ($pd1['y'] - $pa['y'])/2;
