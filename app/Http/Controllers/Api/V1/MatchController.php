@@ -402,8 +402,8 @@ class MatchController extends Controller
             'shoot'         => [
                 'speedMax'  => speed_second_to_hour($matchResult->shoot_speed_max),
                 'speedAvg'  => speed_second_to_hour($matchResult->shoot_speed_avg),
-                'disMax'    => $matchResult->shoot_dis_max/1000,
-                'disAvg'    => $matchResult->shoot_dis_avg/1000,
+                'disMax'    => $matchResult->shoot_dis_max,
+                'disAvg'    => $matchResult->shoot_dis_avg,
                 'number'    => $matchResult->shoot_num_total,
             ],
             'passShort'    => [
