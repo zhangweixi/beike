@@ -1,12 +1,12 @@
 % clc; clear; close all;
-% pathname = 'G:\1297';
+% pathname = 'G:\227';
 % sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 % angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; 
 % % 添加路径
 % addpath(genpath(pathname)); 
 % % Sensor
 % sensor = importdata(sensor_R)/1000;
-% lamda = 3; sigma1 = 100; sigma2 = 100; sigma3 = 4;
+% lamda = 4; sigma1 = 100; sigma2 = 100; sigma3 = 5;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Output,m] = Touch(sensor,lamda,sigma1,sigma2,sigma3)
 m = length(sensor); Output = [];
@@ -115,7 +115,12 @@ end
 Output(:,3) = V; Output(:,4) = SMA(Output(:,1)); Output(:,5) = V_xy; 
 % 归一化
 Mapped_A = mapminmax(Output(:,2)',0,1); % 加速度归一化
-Mapped_V = mapminmax(Output(:,3)',0,1); % 速度归一化
-Index =  Mapped_A .* Mapped_V ; Output(:,6) = Index;
-Output = Output(Output(:,5) > 0.3,:);
+Mapped_V = mapminmax(Output(:,3)',0,1); % V_xy速度归一化
+Index =  Mapped_A .* Mapped_V; Output(:,6) = Index;
+Output = Output(Output(:,6) > 0.01,:); % 速度指标
+% figure 
+% plot(Output(:,1),Output(:,6),'.-','markersize',10);
+% figure
+% plot(A,'b'); hold on
+% plot(Output(:,1),Output(:,2),'r.','markersize',10);
 end
