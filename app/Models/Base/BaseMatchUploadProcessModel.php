@@ -19,13 +19,13 @@ class BaseMatchUploadProcessModel extends Model
      * */
     public static function update_process($userId,$isFinish){
         $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
-        mylogger($userId);
+
         $num            = $isFinish ? 1 : 0;
         $time           = date_time();
 
         if(!$processInfo){
 
-            mylogger("no");
+
             DB::table('match_upload_process')->insert([
                 "user_id"       => $userId,
                 "finished_num"  => $num,
@@ -35,7 +35,6 @@ class BaseMatchUploadProcessModel extends Model
 
         }else{
 
-            mylogger("yes");
             DB::table('match_upload_process')
                 ->where('user_id',$userId)
                 ->update([
