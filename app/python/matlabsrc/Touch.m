@@ -117,7 +117,7 @@ Output(:,3) = V; Output(:,4) = SMA(Output(:,1)); Output(:,5) = V_xy;
 Mapped_A = mapminmax(Output(:,2)',0,1); % 加速度归一化
 Mapped_V = mapminmax(Output(:,3)',0,1); % V_xy速度归一化
 Index =  Mapped_A .* Mapped_V; Output(:,6) = Index;
-Output = Output(Output(:,6) > 0.01,:); % 速度指标
+Output = Output(Output(:,5) > 0.3,:); % 速度指标
 % figure 
 % plot(Output(:,1),Output(:,6),'.-','markersize',10);
 % figure

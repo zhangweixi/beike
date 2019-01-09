@@ -3,7 +3,7 @@
 % 2018-11-20
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % clc; clear; close all;
-% pathname = 'G:\227\';
+% pathname = 'G:\156\';
 % sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 % % 添加路径
 % addpath(genpath(pathname)); 
@@ -59,7 +59,7 @@ for i = 2:m
     end
 end
 % 纠正触球次数
-output = validation_touch(PASS,10);
+output = validation_touch(PASS,5);
 % 判断触球次数
 flag = zeros(1,3);
 for i = 1:length(output)

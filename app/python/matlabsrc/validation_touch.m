@@ -16,10 +16,12 @@ else
 end
 n = length(space);
 if space(n) ~= m
-    space(n+1) = m;
+    space(n+1) = m; L = n;
+else
+    L = n-1;
 end
 j = 1; k = 1;
-while j <= n
+while j <= L
     if sum(PASS(space(j):space(j+1)-1,2) == 3) < interval
         num = numel(PASS(space(j):space(j+1)-1,2));
         output(k:k+num-1,:) = PASS(space(j):space(j+1)-1,:);

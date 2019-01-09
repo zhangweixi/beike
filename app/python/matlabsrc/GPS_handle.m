@@ -50,7 +50,7 @@ N = numel(Output_V); i = 1;
 while i <= N
     if real(Output_V(i))*3.6 >= 35
         if i-5 <= 0
-            n = 0;
+            n = 1;
         else
             n = i-5;
         end
