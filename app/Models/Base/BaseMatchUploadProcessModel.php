@@ -17,14 +17,13 @@ class BaseMatchUploadProcessModel extends Model
      * @param $isFinish boolean 是否传输结束
      * */
     public static function update_process($userId,$isFinish){
-
-        $processInfo   = self::find($userId);
-        $num    = $isFinish ? 1 : 0;
-        $time   = date_time();
+        $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
+        $num            = $isFinish ? 1 : 0;
+        $time           = date_time();
 
         if(!$processInfo){
 
-            self::insert([
+            DB::table('match_upload_process')->insert([
                 "user_id"       => $userId,
                 "finished_num"  => $num,
                 "created_at"    => $time,
@@ -33,10 +32,13 @@ class BaseMatchUploadProcessModel extends Model
 
         }else{
 
-            $processInfo->updated_at   = $time;
-            $processInfo->finished_num = $processInfo->finished_num + $num;
-            $processInfo->noticed      = 0;
-            $processInfo->save();
+            DB::table('match_upload_process')
+                ->where('user_id',$userId)
+                ->update([
+                    'updated_at'    =>$time,
+                    "finished_num"  =>$processInfo->finished_num+$num,
+                    "noticed"       => 0
+                ]);
         }
     }
 
