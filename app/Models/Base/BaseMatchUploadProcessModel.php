@@ -3,6 +3,7 @@
 namespace App\Models\Base;
 
 use Illuminate\Database\Eloquent\Model;
+use DB;
 
 class BaseMatchUploadProcessModel extends Model
 {
