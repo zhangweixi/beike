@@ -491,22 +491,23 @@
         var rundata     = JSON.parse(data);
  
         var category    = [];
+        var timestage   = 12;
 
-        var minutes = parseInt(rundata.length / 6);
+        var minutes = parseInt(rundata.length / timestage);
 
         for(var key in rundata){
             
             if(minutes > 15){
 
-                category.push(parseInt(key/6))    
+                category.push(parseInt(key/timestage))
 
 
             }else if(minutes > 2){
 
 
-                if(key % 6 == 0)    { //显示整分钟
+                if(key % timestage == 0)    { //显示整分钟
 
-                    category.push(parseInt(key/6))                    
+                    category.push(parseInt(key/timestage))
 
                 }else{
 
@@ -516,7 +517,7 @@
 
             }else{
 
-                category.push((key/6).toFixed(1)); //小于2分钟，显示小数
+                category.push((key/timestage).toFixed(1)); //小于2分钟，显示小数
             }
         }
 

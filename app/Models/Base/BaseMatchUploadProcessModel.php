@@ -3,6 +3,7 @@
 namespace App\Models\Base;
 
 use Illuminate\Database\Eloquent\Model;
+use DB;
 
 class BaseMatchUploadProcessModel extends Model
 {
@@ -18,10 +19,12 @@ class BaseMatchUploadProcessModel extends Model
      * */
     public static function update_process($userId,$isFinish){
         $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
+
         $num            = $isFinish ? 1 : 0;
         $time           = date_time();
 
         if(!$processInfo){
+
 
             DB::table('match_upload_process')->insert([
                 "user_id"       => $userId,

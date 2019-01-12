@@ -1609,16 +1609,16 @@ class AnalysisMatchData implements ShouldQueue
                 $adruptStop['prev1Speed']   = $speed;
             }
         }
-
-        $timeSpeeds  = array_chunk($timeSpeeds,10);
+        $timeStage   = 5; //平均的最小时间 单位S
+        $timeSpeeds  = array_chunk($timeSpeeds,$timeStage);
         foreach($timeSpeeds as $key1 => $stepSpeed)
         {
-            $timeSpeeds[$key1] = array_sum($stepSpeed)/10;
+            $timeSpeeds[$key1] = array_sum($stepSpeed)/$timeStage;
         }
 
         //把第一个为0的删除
         array_splice($timeDis,0,1);
-        $timeDis    = array_chunk($timeDis,10);
+        $timeDis    = array_chunk($timeDis,$timeStage);
         foreach ($timeDis as $key2 => $dis)
         {
             $timeDis[$key2] = end($dis);
