@@ -13,12 +13,13 @@
 % gps = importdata(gps_L);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function output = Total_ball(Sensor_R,Sensor_L,gps)
+output = [];
 % 左右脚的触球数据
 % pass = BALL(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs); BALL_Z(sensor_r,sensor_l,gps)
-pass = BALL_Z(Sensor_R,Sensor_L,gps);
+pass = BALL_Z(Sensor_R,Sensor_L,gps); 
 % 判断有没有数据
 if isempty(pass) 
-    PASS = [];
+    output = [];
     return;
 end
 % 按照时间间隔排序
