@@ -175,7 +175,13 @@ class MatchModel extends Model
         return $matchDetail;
     }
 
+    public static function user_last_match($userId){
 
+        $lastMatch  = self::where('user_id',$userId)->orderBy('match_id','desc')->first();
+
+        return $lastMatch;
+
+    }
     /**
      * 获得比赛基础结果
      * @param $matchid integer 比赛ID

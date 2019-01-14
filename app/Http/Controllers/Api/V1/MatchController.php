@@ -214,7 +214,13 @@ class MatchController extends Controller
         $dataType   = $request->input('dataType');
         $foot       = $request->input('foot');
         $isFinish   = $request->input('isFinish',0);
+        $matchId    = $request->input('matchId',0);
 
+        if($matchId == 0){
+
+            $lastMatch  = MatchModel::user_last_match($userId);
+            $matchId    = $lastMatch->match_id;
+        }
 
         //数据校验  以防客户端网络异常导致数据上传重复
         $checkCode  = crc32($deviceData);
@@ -232,8 +238,10 @@ class MatchController extends Controller
 
         Storage::disk('local')->put($file,$deviceData);
 
+
+
         $matchData  = [
-            'match_id'  => $request->input('matchId',0),
+            'match_id'  => $matchId,
             'user_id'   => $userId,
             'device_sn' => $deviceSn??"",
             'type'      => $dataType,
