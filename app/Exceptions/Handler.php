@@ -36,6 +36,20 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
+
+
+        //给管理员报错
+        if(!isset($GLOBALS['SaveError']) && config('app.env') == 'production')
+        {
+            $message    = $exception->getMessage();
+            $code       = $exception->getCode();
+            $line       = $exception->getLine();
+            $file       = $exception->getFile();
+            $msg        = $message."\n【".$line."】".$file;
+            $GLOBALS['SaveError'] = true;
+            jpush_content("标题",$msg,9000,1,1,[]);
+        }
+
         parent::report($exception);
     }
 
@@ -48,6 +62,7 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+
         return parent::render($request, $exception);
     }
 }

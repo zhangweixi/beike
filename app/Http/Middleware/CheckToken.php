@@ -18,6 +18,8 @@ class CheckToken
     {
         //检查url是否需要检查token
         $url    = $_SERVER['REQUEST_URI'];
+        $url    = explode("?",$url);
+        $url    = $url[0];
         $url    = substr($url,8);
         $url    = explode("/",$url);
         $ctrl   = $url[0];
@@ -48,7 +50,8 @@ class CheckToken
             ""
         ],
         'test'=>[
-            "test"
+            "test",
+            "index"
         ]
     ];
 }
