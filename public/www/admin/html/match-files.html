@@ -31,6 +31,7 @@
                         <th class="column-title">编码</th>
                         <th class="column-title">ID</th>
                         <th class="column-title">结束</th>
+                        <th class="column-title">上传时间</th>
                         <th class="column-title">操作</th>
                     </tr>
                     </thead>
@@ -44,6 +45,7 @@
                         <td>{{file.check_code}}</td>
                         <td>{{file.match_source_id}}</td>
                         <td>{{file.is_finish == 1?"是":''}}</td>
+                        <td>{{file.created_at}}</td>
                         <td><a target="_blank" href="/storage/app/{{file.data}}" class="btn-info btn btn-xs">打开</a></td>
                     </tr>
                     </tbody>
