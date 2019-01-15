@@ -876,7 +876,7 @@ class AnalysisMatchData implements ShouldQueue
         BaseMatchModel::match_process($matchId,"同步数据开始");
         foreach($files as $file)
         {
-            copy($dataDir.$file,$dataDir.$file.".back");
+            copy($dataDir.$file['file'],$dataDir.$file['file'].".back");
             self::reset_data_time($dataDir.$file['file'],$file['typeKey'],$file['timeKey'],$file['hz']);
         }
 
