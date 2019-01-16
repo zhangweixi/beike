@@ -14,7 +14,7 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontReport = [
-        //
+
     ];
 
     /**
@@ -37,10 +37,6 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-
-        mylogger($_SERVER['REQUEST_URI']);
-
-
         //给管理员报错
         if(!isset($GLOBALS['SaveError']) && config('app.env') == 'production' )
         {
@@ -48,14 +44,10 @@ class Handler extends ExceptionHandler
             $code       = $exception->getCode();
             $line       = $exception->getLine();
             $file       = $exception->getFile();
-            $msg        = $message."\n【".$line."】".$file;
-            $traice     = $exception->getTraceAsString();
+            $url        = $_SERVER['REQUEST_URI'];
+            $msg        = $url."\n".$message."\n【".$line."】".$file;
             $GLOBALS['SaveError'] = true;
-
-            mylogger($message."\n".$file."\n".$line."\n".$traice);
-            //jpush_content("标题",$msg,9000,1,1,[]);
-
-
+            jpush_content("标题",$msg,9000,1,1,[]);
         }
 
         parent::report($exception);
