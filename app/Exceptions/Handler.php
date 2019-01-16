@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
+
 class Handler extends ExceptionHandler
 {
     /**
@@ -38,16 +39,20 @@ class Handler extends ExceptionHandler
     {
 
 
+
         //给管理员报错
-        if(!isset($GLOBALS['SaveError']) && config('app.env') == 'production')
+        if(!isset($GLOBALS['SaveError']) && config('app.env') == 'production' )
         {
             $message    = $exception->getMessage();
             $code       = $exception->getCode();
             $line       = $exception->getLine();
             $file       = $exception->getFile();
             $msg        = $message."\n【".$line."】".$file;
+            $traice     = $exception->getTraceAsString();
             $GLOBALS['SaveError'] = true;
-            jpush_content("标题",$msg,9000,1,1,[]);
+
+            mylogger($traice);
+            //jpush_content("标题",$msg,9000,1,1,[]);
         }
 
         parent::report($exception);
