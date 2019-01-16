@@ -17,8 +17,8 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
     //$urlRouterProvider.otherwise('/');
     $stateProvider
     //设备
-        .state('device/list/:page', {
-            url: '/device/list/:page',
+        .state('device/list/:page/:keywords', {
+            url: '/device/list/:page/:keywords',
             templateUrl: 'device-list.html?t=' + Math.random(),
             controller: 'deviceController'
         })

@@ -128,7 +128,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
         {
             if($scope.paginationConf.currentPage > 0)
             {
-                $location.path('/device/list/'+$scope.paginationConf.currentPage);
+                $location.path('/device/list/'+$scope.paginationConf.currentPage+"/"+$scope.getKeywords());
             }
         }
     };
@@ -146,15 +146,17 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
     /*获得题目列表*/
     $scope.get_device_list = function () {
 
-        var page = $stateParams.page;
+        var page    = $stateParams.page;
+        var keywords= $stateParams.keywords;
+        $scope.keywords = keywords == "*" ? "":keywords;
 
         if (page == 0) {
 
             return;
         }
 
-        var url = server + "device/devices?page=" + page;
-        console.log($location);
+        var url = server + "device/devices?page=" + page +"&keywords="+$scope.keywords;
+
         $http.get(url).success(function (res) {
 
             var devices = res.data.devices;
@@ -166,6 +168,17 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
 
         });
     }
+    $scope.getKeywords = function(){
+        var keywords    = $scope.keywords == "" ? "*" : $scope.keywords;
+        return keywords;
+    }
+
+    $scope.search_device = function(){
+
+        $location.path('/device/list/1/'+$scope.getKeywords());
+
+    }
+
 
 
 
