@@ -1039,6 +1039,13 @@ class AnalysisMatchData implements ShouldQueue
                     'num'       => 0
                 ];
             }
+
+            if($synctimeNum == -1){
+
+                $admin  = config("sys.ADMIN_USER_ID");
+                jpush_content("提示","文件{$file}无法在开头找到同步时间，请检查",0,1,$admin);
+                $synctimeNum++;
+            }
             $stagesData[$synctimeNum]['num']++;
             array_push($stagesData[$synctimeNum]['data'],$data);
         }

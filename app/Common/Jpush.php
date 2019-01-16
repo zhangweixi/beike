@@ -100,46 +100,40 @@ class Jpush{
             ->options(['apns_production' => false])
             ->iosNotification($msg, [
                 'title'  => $title,
-                //'badge'  => '+1',
                 'inbox'  => 2,
                 'extras' => $extras
             ])
             ->androidNotification($msg, [
                 'title'  => $title,
-                //'badge'  => '+1',
                 'inbox'  => 2,
                 'extras' => $extras
             ]);
 
         //$push->message($msg,[]); //自定义消息
+        switch ($type){
 
-        if($type == 0)
-        {
-            $push->addAllAudience();
+            case  0:
+                $push->addAllAudience();    break;
 
-        } elseif ($type == 1) {
+            case 1:
+                if(is_array($user))
+                {
+                    foreach($user as $u){
 
-            if(is_array($user))
-            {
-                foreach($user as $u){
+                        $push->addAlias((string)$u);
+                    }
 
-                    $push->addAlias((string)$u);
+                }else{
+
+                    $push->addAlias((string)$user);
                 }
+                break;
+            case 2:
 
-            }else{
-
-                $push->addAlias((string)$user);
-            }
-
-        } elseif($type == 2) {
-
-            if(!is_array())
-            {
-                $user = [$user];
-            }
-            $push->addTag($user);
+                $user   = is_array($user) ? $user : [$user];
+                $push->addTag($user);
+                break;
         }
-
         return $push->send();
     }
 }
