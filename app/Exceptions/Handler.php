@@ -51,7 +51,7 @@ class Handler extends ExceptionHandler
             $traice     = $exception->getTraceAsString();
             $GLOBALS['SaveError'] = true;
 
-            mylogger($traice);
+            mylogger($message."\n".$file."\n".$line."\n".$traice);
             //jpush_content("标题",$msg,9000,1,1,[]);
         }
 
