@@ -38,6 +38,7 @@ class Handler extends ExceptionHandler
     public function report(Exception $exception)
     {
 
+        mylogger($_SERVER['REQUEST_URI']);
 
 
         //给管理员报错
@@ -53,6 +54,8 @@ class Handler extends ExceptionHandler
 
             mylogger($message."\n".$file."\n".$line."\n".$traice);
             //jpush_content("标题",$msg,9000,1,1,[]);
+
+
         }
 
         parent::report($exception);
