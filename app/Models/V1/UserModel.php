@@ -42,13 +42,19 @@ class UserModel extends Model
      * */
     public function register($mobile,$nickName,$userInfo = [])
     {
+
+        $this->mobile       = $mobile;
+        $this->nick_name    = $nickName;
+        $this->created_at   = date_time();
+        $this->updated_at   = date_time();
+        $this->token        = "";
         $userInfo['mobile']     = $mobile;
         $userInfo['nick_name']  = $nickName;
         $userInfo['created_at'] = date_time();
         $userInfo['updated_at'] = date_time();
-        $userInfo['token']      = "";
-        $this->mobile   = $mobile;
+
         $this->save($userInfo);
+
         return $this;
     }
 
