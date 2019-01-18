@@ -36,6 +36,9 @@ Route::prefix("web")->namespace("Web")->group(function()
 
 
 
-//端链接
+//软链接
 Route::any('/s/{method}','Web\ShortLinkController@index');
+
+//工具
+Route::any('tools/system/{action}',"Tools\SystemController@action");
 
