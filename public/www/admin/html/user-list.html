@@ -8,9 +8,9 @@
             <div class="title_right">
                 <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search for...">
+                        <input type="text" class="form-control" ng-model="keywords" placeholder="Search for...">
                         <span class="input-group-btn">
-                            <button class="btn btn-default" type="button" ng-click="get_user_list()">Go!</button>
+                            <button class="btn btn-default" type="button" ng-click="search()">Go!</button>
                         </span>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
 
                     <tbody>
                     <tr class="even pointer" ng-repeat="user in users">
-                        <td>{{(paginationConf.currentPage-1) * paginationConf.itemsPerPage + $index +1}}</td>
+                        <td>{{user.id}}</td>
                         <td>{{user.nick_name}}</td>
                         <td>{{user.mobile}}</td>
                         <td>{{user.wx_name}}</td>

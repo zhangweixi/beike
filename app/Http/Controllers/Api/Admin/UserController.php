@@ -23,7 +23,7 @@ class UserController extends Controller
 
         $users = DB::table('users as a')
             ->leftJoin('user_global_ability as b','b.user_id','=','a.id')
-            ->orderBy('a.id');
+            ->orderBy('a.id','desc');
 
         if($keywords)
         {

@@ -25,14 +25,14 @@ class UserController extends Controller
      * */
     public function login(Request $request)
     {
-        $mobile     = $request->input('mobile');
-        $code       = $request->input('code');
+        $mobile     = delete_str($request->input('mobile',""));
+        $code       = delete_str($request->input('code',""));
 
         $type       = $request->input('type');
 
-        $nickName   = $request->input('nickName');
+        $nickName   = trim($request->input('nickName',''));
 
-        $name       = $request->input('name');
+        $name       = trim($request->input('name',''));
         $head       = $request->input('headImg');
         $openId     = $request->input('openId');
 

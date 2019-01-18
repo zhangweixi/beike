@@ -972,4 +972,37 @@ class MatchController extends Controller
 
         return ["x"=>$x,"y"=>$y];
     }
+
+
+    /**
+     * 下载比赛的文件
+     * @param $request Request
+     * @return object
+     * */
+    public function downloadfile(Request $request){
+
+        $matchId    = $request->input('matchId');
+        $dir        = matchdir($matchId);
+
+        if($matchId == 0 || !is_dir($dir)){
+
+            exit("<script>alert('文件不存在');</script>");
+        }
+
+        $zipFile    = $dir.$matchId."-files.zip";
+        if(!file_exists($zipFile)){
+
+            $files      = [
+                "angle-R.txt"   => $dir."angle-R.txt",
+                "angle-L.txt"   => $dir."angle-L.txt",
+                "compass-L.txt" => $dir."compass-L.txt",
+                "compass-R.txt" => $dir."compass-R.txt",
+                "gps-L.txt"     => $dir."gps-L.txt"
+            ];
+            zip_files($zipFile,$files);
+        }
+
+        response($zipFile)->header('Content-Type','application/zip');
+        return response()->download($zipFile);
+    }
 }

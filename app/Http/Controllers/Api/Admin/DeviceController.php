@@ -41,7 +41,9 @@ class DeviceController extends Controller
             {
                 $keywords   = "%{$keywords}%";
 
-                $db->where('b.nick_name',"like",$keywords)->orWhere('a.device_sn',"like",$keywords)->orWhere('b.mobile','like',$keywords);
+                $db->where('b.nick_name',"like",$keywords)
+                    ->orWhere('a.device_sn',"like",$keywords)
+                    ->orWhere('b.mobile','like',$keywords);
             });
         }
 
@@ -244,25 +246,14 @@ class DeviceController extends Controller
 
         if(!file_exists($zipFile)){
 
-            // 生成文件
-            $zip        = new \ZipArchive(); // 使用本类，linux需开启zlib，windows需取消php_zip.dll前的注释
-
-            if ($zip->open($zipFile,\ZipArchive::OVERWRITE) !== true) {  //OVERWRITE 参数会覆写压缩包的文件 文件必须已经存在
-
-
-                if($zip->open($zipFile,\ZipArchive::CREATE) !== true){ // 文件不存在则生成一个新的文件 用CREATE打开文件会追加内容至zip
-
-                    exit('无法打开文件，或者文件创建失败');
-                }
-            }
             $imgs = scandir($dir);
             $len  = count($imgs);
-
+            $files= [];
             for($i=2;$i<$len;$i++)
             {
-                $zip->addFile($dir."/".$imgs[$i],$imgs[$i]);//第二个参数是放在压缩包中的文件名称，如果文件可能会有重复，就需要注意一下 写上目录就会存放至目录
+                $files[$imgs[$i]] = $dir."/".$imgs[$i];
             }
-            $zip->close(); // 关闭
+            zip_files($zipFile,$files);
         }
 
         response($zipFile)->header('Content-Type','application/zip');

@@ -938,4 +938,36 @@ function tail($filename, $num)
     return $str;
 }
 
+function delete_str($str,$delStr=" "){
+
+    return preg_replace("#{$delStr}#",'',$str);
+}
+
+/**
+ * 压缩文件
+ * @param $zipFile string 压缩文件名称
+ * @param $files array 文件名称
+ *
+ *
+ * */
+function zip_files($zipFile,$files)
+{
+    // 生成文件
+    $zip        = new \ZipArchive(); // 使用本类，linux需开启zlib，windows需取消php_zip.dll前的注释
+
+    if ($zip->open($zipFile,\ZipArchive::OVERWRITE) !== true) {  //OVERWRITE 参数会覆写压缩包的文件 文件必须已经存在
+
+
+        if($zip->open($zipFile,\ZipArchive::CREATE) !== true){ // 文件不存在则生成一个新的文件 用CREATE打开文件会追加内容至zip
+
+            exit('无法打开文件，或者文件创建失败');
+        }
+    }
+
+    foreach($files as $key => $file)
+    {
+        $zip->addFile($file,$key);//第二个参数是放在压缩包中的文件名称，如果文件可能会有重复，就需要注意一下 写上目录就会存放至目录
+    }
+    $zip->close(); //关闭
+}
 ?>

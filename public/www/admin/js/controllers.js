@@ -1,5 +1,19 @@
 
 var server = location.origin + "/api/admin/";
+function emptykeywords(key){
+    if(key == "*"){
+        return "";
+    }
+    return key;
+}
+
+function unemptykeywords(key){
+
+    if(key == ""){
+        return "*";
+    }
+    return key;
+}
 
 /*登录控制器*/
 mylogin.controller('loginController', function ($scope, $http) {
@@ -477,7 +491,7 @@ myapp.controller('userController', function ($scope, $http, $location,$statePara
         onChange: function () {
             if($scope.paginationConf.currentPage > 0)
             {
-                $location.path('user/list/'+$scope.paginationConf.currentPage);
+                $location.path('user/list/'+$scope.paginationConf.currentPage+"/"+unemptykeywords($scope.keywords));
             }
         }
     };
@@ -501,12 +515,12 @@ myapp.controller('userController', function ($scope, $http, $location,$statePara
     /*获得用户列表*/
     $scope.get_user_list = function () {
         var page = $stateParams.page;
-
+        $scope.keywords     = emptykeywords($stateParams.keywords);
         if (page == 0) {
             return;
         }
 
-        var data = {page:page,keywords:$scope.userKeyWrods};
+        var data = {page:page,keywords:$scope.keywords};
             data = http_query(data);
 
         var url = server + 'user/users';
@@ -524,6 +538,10 @@ myapp.controller('userController', function ($scope, $http, $location,$statePara
         });
     }
 
+    $scope.search = function(){
+
+        $location.path('user/list/1/'+unemptykeywords($scope.keywords));
+    }
 
     $scope.get_suggestions = function () {
 
@@ -809,7 +827,7 @@ myapp.controller('matchController', function($scope, $http, $location,$statePara
     $scope.matchResult  = {};   //比赛结果
 
     $scope.matchFiles   = [];   //比赛文件
-
+    $scope.server       = server;
 
     $scope.paginationConf = {
         currentPage: $stateParams.page,

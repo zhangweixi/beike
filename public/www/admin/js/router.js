@@ -16,13 +16,12 @@ myapp = angular.module('myapp', ['ui.router', 'tm.pagination'])
 myapp.config(function ($stateProvider, $urlRouterProvider) {
     //$urlRouterProvider.otherwise('/');
     $stateProvider
-    //设备
-        .state('device/list/:page/:keywords', {
+        .state('device/list', { //设备
             url: '/device/list/:page/:keywords',
             templateUrl: 'device-list.html?t=' + Math.random(),
             controller: 'deviceController'
         })
-        .state('device/edit/:deviceId', {
+        .state('device/edit', {
             url: '/device/edit/:deviceId',
             templateUrl: 'device-add.html?t=' + Math.random(),
             controller: 'deviceController'
@@ -37,9 +36,8 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl: 'device-code.html?t=' + Math.random(),
             controller: 'deviceController'
         })
-        //用户
-        .state('user/list/:page', {
-            url: '/user/list/:page',
+        .state('user/list', { //用户
+            url: '/user/list/:page/:keywords',
             templateUrl: 'user-list.html?t=' + Math.random(),
             controller: 'userController'
         })
@@ -48,8 +46,7 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl:"user-suggestion.html?t=" + Math.random(),
             controller:"userController"
         })
-        //比赛
-        .state('match/list/:page', {
+        .state('match/list/:page', {//比赛
             url: "/match/list/:page",
             templateUrl: 'match-list.html?t=' + Math.random(),
             controller: 'matchController'
@@ -79,8 +76,7 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl:"match-run.html?t="+Math.random(),
             controller:'matchController'
         })
-        //球场
-        .state('court/angle-setting/:courtTypeId',{
+        .state('court/angle-setting/:courtTypeId',{//球场
             url:"/court/angle-setting/:courtTypeId",
             templateUrl:'court-angle-setting.html?t='+Math.random(),
             controller:'courtController'
@@ -90,7 +86,6 @@ myapp.config(function ($stateProvider, $urlRouterProvider) {
             templateUrl:'court-type.html?t='+Math.random(),
             controller:'courtController'
         })
-
         .state('court/list/:page', {
             url: "/court/list/:page",
             templateUrl: 'court-list.html?t=' + Math.random(),
