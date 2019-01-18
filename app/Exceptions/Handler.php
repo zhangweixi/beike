@@ -47,7 +47,7 @@ class Handler extends ExceptionHandler
             $url        = $_SERVER['REQUEST_URI'];
             $msg        = $url."\n".$message."\n【".$line."】".$file;
             $GLOBALS['SaveError'] = true;
-            jpush_content("标题",$msg,9000,1,1,[]);
+            //jpush_content("标题",$msg,9000,1,1,[]);
         }
 
         parent::report($exception);
