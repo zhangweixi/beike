@@ -6,13 +6,11 @@ use App\Common\Geohash;
 use App\Models\Base\BaseUserAbilityModel;
 use Illuminate\Database\Eloquent\Model;
 use DB;
-use PhpParser\Node\Expr\Cast\Object_;
-
 
 class UserModel extends Model
 {
     protected $table    = "users";
-
+    protected $guarded  = [];
     private $selectColum = [
         'id',
         'name',
@@ -43,17 +41,19 @@ class UserModel extends Model
     public function register($mobile,$nickName,$userInfo = [])
     {
 
-        $this->mobile       = $mobile;
-        $this->nick_name    = $nickName;
-        $this->created_at   = date_time();
-        $this->updated_at   = date_time();
-        $this->token        = "";
+        //$this->mobile       = $mobile;
+        //$this->nick_name    = $nickName;
+        //$this->created_at   = date_time();
+        //$this->updated_at   = date_time();
+        //$this->token        = "";
+
         $userInfo['mobile']     = $mobile;
         $userInfo['nick_name']  = $nickName;
         $userInfo['created_at'] = date_time();
         $userInfo['updated_at'] = date_time();
+        $userInfo['token']      = "";
 
-        $this->save($userInfo);
+        $this->create($userInfo);
 
         return $this;
     }
