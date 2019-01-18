@@ -23,6 +23,7 @@ class UserController extends Controller
 
         $users = DB::table('users as a')
             ->leftJoin('user_global_ability as b','b.user_id','=','a.id')
+            ->select('a.*','b.grade','b.grade_run','b.grade_pass','b.grade_strength','b.grade_shoot','b.grade_defense')
             ->orderBy('a.id','desc');
 
         if($keywords)
