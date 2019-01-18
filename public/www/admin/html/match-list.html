@@ -45,11 +45,12 @@
                                 
                                 <a class="btn btn-info btn-xs" href="#match/result/{{match.match_id}}">结果</a>
                                 <a class="btn btn-primary btn-xs" href="#match/files/{{match.match_id}}">文件</a>
+                                <a href="{{server}}match/downloadfile?matchId={{match.match_id}}" class="btn btn-xs btn-primary" target="downloadfile">下载</a>
                                 <button class="btn btn-warning btn-xs" ng-click="caculate_data(match.match_id)">计算</button>
                                 <button class="btn btn-primary btn-xs" ng-click="parse_data(match.match_id)">解析</button>
                                 <!-- <a href="#match/run/{{match.match_id}}">热点图</a> -->
                                 <a href="#match/court/{{match.match_id}}" class="btn btn-xs btn-success">球场({{match.court_id}})</a>
-                                <a href="{{server}}match/downloadfile?matchId={{match.match_id}}" class="btn btn-xs btn-primary" target="downloadfile">下载</a>
+
                                 <button class="btn btn-danger btn-xs" ng-click="delete_match(match.match_id)">删除</button>
                             </td>
                         </tr>
