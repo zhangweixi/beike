@@ -47,6 +47,7 @@ class UserModel extends Model
         $userInfo['created_at'] = date_time();
         $userInfo['updated_at'] = date_time();
         $userInfo['token']      = "";
+        $this->mobile   = $mobile;
         $this->save($userInfo);
         return $this;
     }
