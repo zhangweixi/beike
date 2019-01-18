@@ -3,7 +3,7 @@
 % 2018-11-20
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % clc; clear; close all;
-% pathname = 'G:\275\';
+% pathname = 'G:\134\';
 % sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 % % 添加路径
 % addpath(genpath(pathname)); 
@@ -15,10 +15,10 @@
 function output = Total_ball(Sensor_R,Sensor_L,gps)
 % 左右脚的触球数据
 % pass = BALL(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs); BALL_Z(sensor_r,sensor_l,gps)
-output = []; pass = BALL_Z(Sensor_R,Sensor_L,gps);
+pass = BALL_Z(Sensor_R,Sensor_L,gps);
 % 判断有没有数据
 if isempty(pass) 
-    output = [];
+    PASS = [];
     return;
 end
 % 按照时间间隔排序
@@ -59,30 +59,18 @@ for i = 2:m
     end
 end
 % 纠正触球次数
-% output = validation_touch(PASS,5); % 连续触球次数不得超过5次
-output = Verification_speed(PASS,5,11.4);
-% % 判断触球次数 
-% flag = zeros(1,3); speed3 = []; speed2 = []; speed1 = [];
+output = validation_touch(PASS,5);
+% 判断触球次数
+% flag = zeros(1,3);
 % for i = 1:length(output)
-%     if output(i,2) == 3 
+%     if output(i,2) == 3
 %         flag(1,1) = flag(1,1)+1;
-%         speed3(flag(1,1)) = output(i,7);
 %     end
 %     if output(i,2) == 2
 %         flag(1,2) = flag(1,2)+1;
-%         speed2(flag(1,2)) = output(i,7);
 %     end
 %     if output(i,2) == 1
 %         flag(1,3) = flag(1,3)+1;
-%         speed1(flag(1,3)) = output(i,7);
 %     end
-% end  
-% figure
-% title('触球速度柱状图');
-% subplot(3,1,1)
-% bar(speed1,'r'); xlabel('长传次数'); ylabel('m/s');
-% subplot(3,1,2)
-% bar(speed2,'k'); xlabel('短传次数'); ylabel('m/s');
-% subplot(3,1,3)
-% bar(speed3,'b'); xlabel('触球次数'); ylabel('m/s');
+% end   
 end
