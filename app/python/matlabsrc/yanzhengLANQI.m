@@ -1,5 +1,5 @@
 clc; clear; close all;
-pathname = 'G:\227\';
+pathname = 'G:\275\';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % 添加路径
@@ -24,13 +24,14 @@ for i = 1:n_r
     SMA(i) = sqrt(sensor_r(i,2)^2+sensor_r(i,3)^2);
 end
 time = 1/100:1/100:n_r/100;
-% figure
-% s1 = plot(time,A,'linewidth',1.5); hold on    
-% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
-% ylabel('A/g','FontName','Times New Roman','fontsize',20);
-% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
-% l1 = legend('x-axis','y-axis','z-axis');
-% set(l1,'FontName','Times New Roman','Fontsize',20)
+figure
+s1 = plot(time/60,A,'linewidth',1.5); hold on    
+xlabel('Time/minute','FontName','Times New Roman','fontsize',20);
+ylabel('A/g','FontName','Times New Roman','fontsize',20);
+set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+set(gca,'XTick',[0:15:120]);
+l1 = legend('x-axis','y-axis','z-axis');
+set(l1,'FontName','Times New Roman','Fontsize',20)
 % 
 % [Psi,Output_Psi] = Teager(SMA,fs); % 能量算子
 % Time = 2/100:1/100:(n_r-1)/100;
