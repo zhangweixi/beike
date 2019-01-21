@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Administrator
- * Date: 2019/1/18
- * Time: 16:56
- */
-
 namespace App\Http\Controllers\Tools;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
