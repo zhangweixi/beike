@@ -50,12 +50,14 @@ class MatchController extends Controller
         $userId     = $request->input('userId',0);
         $lat        = $request->input('latitude',0);
         $lon        = $request->input('longitude',0);
+        $deviceVer  = $request->input('deviceVer',"");
 
         $courtId    = $courtId > 0 ? $courtId : $courtModel->add_empty_court($userId);
 
         $matchInfo  = [
             'user_id'   => $userId,
-            'court_id'  => $courtId
+            'court_id'  => $courtId,
+            'device_ver'=> $deviceVer
         ];
 
         //检查是否有未结束的比赛
