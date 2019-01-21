@@ -19,7 +19,6 @@ class SystemController extends Controller
     {
         $msg    = base64_decode($request->input('msg'));
         jpush_content("提示",$msg,0,1,config('sys.ADMIN_USER_ID'));
-        
         return "ok";
     }
 }
