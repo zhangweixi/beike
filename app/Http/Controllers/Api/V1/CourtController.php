@@ -241,4 +241,18 @@ class CourtController extends Controller
 
         return apiData()->add('courts',$courts)->send();
     }
+
+    /**
+     * 获取GPS
+     * */
+    public function court_gps(Request $request)
+    {
+        $gpsGroupId = $request->input('gpsGroupId',0);
+        $points     = DB::table('football_court_point')
+            ->select('mobile_lat as lat','mobile_lon as lon')
+            ->where('gps_group_id',$gpsGroupId)
+            ->get();
+
+        return apiData()->add("gps",$points)->send();
+    }
 }
