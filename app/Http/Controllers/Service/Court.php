@@ -845,6 +845,12 @@ class Court{
             $numAngle   += $angle['num'];
         }
 
+        if($numAngle == 0){
+
+            self::$errorMsg  = "活动范围太小，无法计算球场";
+            return false;
+        }
+
         $courtAngle   = $sumAngle/$numAngle;
 
         return $courtAngle;
