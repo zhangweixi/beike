@@ -254,3 +254,56 @@ function deldir($dir) {
         return false;
     }
 }
+
+
+/**
+ * 获取天气
+ * @param $lat float
+ * @param $lon float
+ * @return array
+ * */
+function get_weather($lat,$lon){
+
+    if($lat == 0 || $lon == 0){
+        return [];
+    }
+
+    $host = "https://ali-weather.showapi.com";
+    $path = "/gps-to-weather";
+    $method = "GET";
+    $appcode = config('aliyun.appCode');
+    $headers = array();
+    array_push($headers, "Authorization:APPCODE " . $appcode);
+    $querys = "from=5&lat=".$lat."&lng=".$lon;
+
+    $bodys = "";
+    $url = $host . $path . "?" . $querys;
+
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($curl, CURLOPT_FAILONERROR, false);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_HEADER, false);
+    if (1 == strpos("$".$host, "https://"))
+    {
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    }
+
+    $result     = curl_exec($curl);
+    $result     = \GuzzleHttp\json_decode($result);
+
+    if($result->showapi_res_code != 0){
+
+        return [];
+    }
+
+    $weather    = $result->showapi_res_body->now;
+    $weather    = [
+        "temperature"   => $weather->temperature,
+        "weather"       => $weather->weather
+    ];
+    return $weather;
+}

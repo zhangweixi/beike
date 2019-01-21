@@ -25,13 +25,18 @@ class BaseMatchUploadProcessModel extends Model
 
         if(!$processInfo){
 
+            try{
+                DB::table('match_upload_process')->insert([
+                    "user_id"       => $userId,
+                    "finished_num"  => $num,
+                    "created_at"    => $time,
+                    "updated_at"    => $time
+                ]);
 
-            DB::table('match_upload_process')->insert([
-                "user_id"       => $userId,
-                "finished_num"  => $num,
-                "created_at"    => $time,
-                "updated_at"    => $time
-            ]);
+            }catch (\Throwable $e){
+
+                self::update_process($userId,$isFinish);
+            }
 
         }else{
 
