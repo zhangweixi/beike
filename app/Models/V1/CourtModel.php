@@ -44,7 +44,7 @@ class CourtModel extends Model
      * */
     public static function get_courts($userId=0,$owner="self"){
 
-        $db = self::select("court_id","court_name")
+        $db = self::select("court_id","court_name","gps_group_id")
             ->where('court_name',"<>","");
 
         if($owner == 'self'){
