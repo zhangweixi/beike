@@ -206,37 +206,6 @@ class UserController extends Controller
 
 
     /**
-     * 手机登录
-     * */
-    public function mobile_login1(Request $request)
-    {
-
-        $mobile = $request->input('mobile');
-        $code   = $request->input('code');
-
-        $mobileService  = new MobileMassege();
-        $result         = $mobileService->check_valid_code($mobile,$code);
-
-        if($result == false)
-        {
-            return apiData()->send(4001,$mobileService->error);
-        }
-
-
-        //执行登录操作
-        $userModel  = new UserModel();
-        $userInfo   = $userModel->get_user_info_by_mobile($mobile);
-
-        if(!$userInfo) //用户不存在
-        {
-            return $this->register($request);
-        }
-
-        return $this->login_action($userInfo);
-    }
-
-
-    /**
      * 登录的实体操作
      * */
     private function login_action($userInfo,$isNewUser=false)
@@ -509,6 +478,9 @@ class UserController extends Controller
         }
 
         DB::table('user_suggestion')->insert($data);
+
+        $msg    = "用户反馈:\n".$data['content'];
+        jpush_content("提示",$msg,0,1,config('sys.ADMIN_USER_ID'));
 
         return apiData()->send();
     }
