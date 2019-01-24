@@ -504,9 +504,9 @@ class MatchController extends Controller
         }
         $matches = DB::select($sql);
 
-        $speedDisLow   = 0;
-        $speedDisMid   = 0;
-        $speedDisHigh  = 0;
+        $speedLowDis   = 0;
+        $speedMidDis   = 0;
+        $speedHighDis  = 0;
         $staticDis     = 0;
         $totalNum       = count($matches);
         foreach ($matches as $key => $match)
@@ -515,9 +515,9 @@ class MatchController extends Controller
             $totalRun  += $match->run;
             $totalShoot+= $match->shoot;
 
-            $speedDisHigh  += $match->run_high_dis;
-            $speedDisMid   += $match->run_mid_dis;
-            $speedDisLow   += $match->run_low_dis;
+            $speedHighDis  += $match->run_high_dis;
+            $speedMidDis   += $match->run_mid_dis;
+            $speedLowDis   += $match->run_low_dis;
             $staticDis     += $match->run_static_dis;
 
             $match->shoot   = $match->shoot ?? 0;
@@ -532,15 +532,14 @@ class MatchController extends Controller
 
         }
 
-
         //计算百分比
 
-        $totalDis      = $speedDisLow + $speedDisMid + $speedDisHigh + $staticDis;
+        $totalDis      = $speedLowDis + $speedMidDis + $speedHighDis + $staticDis;
         $totalDis      = $totalDis > 1 ? $totalDis : 1;
 
-        $perSpeedLow    = ceil($speedDisLow / $totalDis);
-        $perSpeedMid    = ceil($speedDisMid / $totalDis);
-        $perSpeedHigh   = ceil($speedDisHigh / $totalDis);
+        $perSpeedLow    = ceil($speedLowDis / $totalDis*100);
+        $perSpeedMid    = ceil($speedMidDis / $totalDis*100);
+        $perSpeedHigh   = ceil($speedHighDis / $totalDis*100);
         $perStatic      = 100 - ($perSpeedHigh + $perSpeedMid + $perSpeedLow);
 
         $matches        = array_reverse($matches);
