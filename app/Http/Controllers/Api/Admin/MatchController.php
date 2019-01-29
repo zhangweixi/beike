@@ -93,6 +93,12 @@ class MatchController extends Controller
 
         $courtInfo  = CourtModel::find($matchInfo->court_id);
 
+        if(!$courtInfo->boxs){
+
+            return apiData()->send(2001,"缺少数据");
+        }
+
+
         $courtGps   = \GuzzleHttp\json_decode($courtInfo->boxs);
 
         //检查是否有百度地图
