@@ -281,7 +281,7 @@ class AnalysisMatchData implements ShouldQueue
             $hasFile    = file_exists($file);
             $fd         = fopen($file,'a');
             if(!$hasFile){
-                chmod($file,777);
+                chmod($file,0777);
             }
 
             $flags      = [];
