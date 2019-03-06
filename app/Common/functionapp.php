@@ -145,7 +145,8 @@ function logbug($content)
 
 function matchdir($matchId)
 {
-    return public_path("uploads/match/{$matchId}/");
+    //DIRECTORY_SEPARATOR 常量，系统路径分隔符
+    return public_path("uploads".DIRECTORY_SEPARATOR."match".DIRECTORY_SEPARATOR.$matchId.DIRECTORY_SEPARATOR);
 }
 
 /**

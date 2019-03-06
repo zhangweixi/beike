@@ -278,9 +278,13 @@ class AnalysisMatchData implements ShouldQueue
 
             $dir        = matchdir($matchId);mk_dir($dir);
             $file       = $dir.$type."-".$foot.".txt";
+            $hasFile    = file_exists($file);
             $fd         = fopen($file,'a');
-            $flags      = [];
+            if(!$hasFile){
+                chmod($file,777);
+            }
 
+            $flags      = [];
             $isSyncTime = "";
 
             foreach($matchData['data'] as $data){
@@ -727,7 +731,6 @@ class AnalysisMatchData implements ShouldQueue
         $syncTime   = $syncTime + 40;
         $leng       = 28;
         $dataArr    = str_split($dataSource,$leng);
-
         $insertData     = [];
         $invalidData    = [
             'x' => 0,
@@ -738,7 +741,6 @@ class AnalysisMatchData implements ShouldQueue
         ];
 
         $validDataNum       = 0;
-
         foreach($dataArr as $key => $data)
         {
             $singleData     = $invalidData;
@@ -747,7 +749,7 @@ class AnalysisMatchData implements ShouldQueue
 
             if(strlen($data) < $leng)
             {
-                dd("数据长度不够".$data);
+                BaseMatchModel::match_process($matchId,"数据".$this->sourceId.":数据长度不足,前一条:".$dataArr[$key-1].",本条:".$data);
                 continue;
             }
 
@@ -795,8 +797,6 @@ class AnalysisMatchData implements ShouldQueue
 
             array_push($insertData,$singleData);
         }
-
-
         return $insertData;
     }
 
