@@ -18,14 +18,14 @@ return [
         'excluded_dirs' => [],
         'log'           => true,
     ],
-    'event_handlers'           => [],
-    'websocket'                => [
-        'enable' => true,
-        //'handler' => XxxWebSocketHandler::class,
+    'event_handlers'            => [],
+    'websocket'                 => [
+        'enable'                => true,
+        'handler'               => \App\Services\WebSocketService::class,
     ],
-    'sockets'                  => [],
-    'processes'                => [],
-    'timer'                    => [
+    'sockets'                   => [],
+    'processes'                 => [],
+    'timer'                     => [
         'enable'        => false,
         'jobs'          => [
             // Enable LaravelScheduleJob to run `php artisan schedule:run` every 1 minute, replace Linux Crontab
