@@ -62,6 +62,7 @@
         .container{
             display: none;
         }
+
     </style>
 </head>
 <body>
@@ -85,6 +86,8 @@
 <script>
 
     var ws = new WebSocket("ws://47.100.192.196:5200/");
+    var name = "";
+
     ws.onopen = function(){
 
         $('.join').hide();
@@ -93,37 +96,42 @@
 
     ws.onmessage = function (evt)
     {
-        var received_msg = evt.data;
-        var name = "xxx";
-        var content = "dkkdkd ";
+        var msg = JSON.parse(evt.data);
+
+        var name = msg.name;
         var content = ""+
         '<div class="list">' +
             '<p>'+ name +'</p>'+
-            '<p>'+ content +'</p> '+
+            '<p>'+ msg.content +'</p> '+
             '</div>';
+
         $(".chats").append(content);
     };
 
 
-    ws.close = function(){
 
+    ws.close = function(){
+        console.log('closed');
     }
 
 
     function join(){
 
-        ws.onopen = function(){
+        $('.join').hide();
+        $('.container').show();
 
-            $('.join').hide();
-            $('.container').show();
-        }
     }
 
 
     function say(){
         var content = $('#content').val();
+        var data = {name:name,content:content};
+            data = JSON.stringify(data);
+
+        ws.send(data);
         $('#content').val('');
-        ws.send(content);
     }
+
+
 
 </script>

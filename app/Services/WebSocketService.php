@@ -23,8 +23,8 @@ class WebSocketService implements WebSocketHandlerInterface{
     {
         // 在触发onOpen事件之前Laravel的生命周期已经完结，所以Laravel的Request是可读的，Session是可读写的
         // \Log::info('New WebSocket connection', [$request->fd, request()->all(), session()->getId(), session('xxx'), session(['yyy' => time()])]);
-
-        $server->push($request->fd, '欢迎加入漕河泾足浴群');
+        $data = ['name'=>"足浴店老板",'content'=>'欢迎加入漕河泾足浴群'];
+        $server->push($request->fd, \GuzzleHttp\json_encode($data));
 
         // throw new \Exception('an exception');// 此时抛出的异常上层会忽略，并记录到Swoole日志，需要开发者try/catch捕获处理
     }
@@ -32,14 +32,13 @@ class WebSocketService implements WebSocketHandlerInterface{
     public function onMessage(Server $server, Frame $frame)
     {
         // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
-        echo "收到:".$frame->data."\n";
 
-        $server->push($frame->fd, date('Y-m-d H:i:s'));
+        echo $frame->data."\n";
+
         foreach($server->connections as $fd){
+
             $server->push($fd,$frame->data);
         }
-
-
     }
 
 
