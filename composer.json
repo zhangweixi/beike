@@ -9,6 +9,7 @@
         "dingo/api": "2.0.0-alpha1",
         "doctrine/dbal": "^2.7",
         "fideloper/proxy": "~4.0",
+        "hhxsv5/laravel-s": "~3.4.0",
         "jjonline/aliyun-dysms-php-sdk": "^2.0",
         "jpush/jpush": "^3.6",
         "laravel/framework": "5.6.*",
