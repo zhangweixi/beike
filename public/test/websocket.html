@@ -67,8 +67,11 @@
 </head>
 <body>
 
+<div class="join">
+    <input type="text" placeholder="英雄大名" id="name">
+    <button  onclick="join()">加入群聊</button>
+</div>
 
-<button class="join" onclick="join()">加入群聊</button>
 
 <div class="container">
     <div class="chats">
@@ -90,8 +93,7 @@
 
     ws.onopen = function(){
 
-        $('.join').hide();
-        $('.container').show();
+
     }
 
     ws.onmessage = function (evt)
@@ -116,7 +118,7 @@
 
 
     function join(){
-
+        name = $('#name').val();
         $('.join').hide();
         $('.container').show();
 
