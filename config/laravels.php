@@ -21,7 +21,7 @@ return [
     'event_handlers'            => [],
     'websocket'                 => [
         'enable'                => true,
-        'handler'               => \App\Services\WebSocketService::class,
+        'handler'               => App\Services\WebSocketService::class,
     ],
     'sockets'                   => [],
     'processes'                 => [],
