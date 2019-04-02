@@ -16,6 +16,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
     public function __construct()
     {
+    	file_put_contents('/data/www/dev.api.launchever.cn/public/logs/my.txt',time().':init socket\n');
     }
 
     public function onOpen(Server $server, Request $request)
@@ -25,7 +26,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
         //mylogger("新加入一个用户".$request->fd);
         echo " a new user";
-
+	mylogger("this is a test");
         $server->push($request->fd, 'Welcome to LaravelS');
 
         // throw new \Exception('an exception');// 此时抛出的异常上层会忽略，并记录到Swoole日志，需要开发者try/catch捕获处理
@@ -42,6 +43,6 @@ class WebSocketService implements WebSocketHandlerInterface{
 
     public function onClose(Server $server, $fd, $reactorId)
     {
-        // TODO: Implement onClose() method.
+    	echo "bye bye ,i'm closed ";    
     }
 }
