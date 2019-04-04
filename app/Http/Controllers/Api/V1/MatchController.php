@@ -231,6 +231,85 @@ class MatchController extends Controller
     }
 
 
+    /**
+     * 从设备直接上传数据
+     * */
+    public function upload(Request $request){
+        $data       = $request->input('data','');
+        $userId     = 0;
+        $matchId    = $request->input('matchId');
+        $foot       = $request->input('foot');
+        $dataType   = $request->input('type');
+        $number     = $request->input('number');
+        $file   = current_date()."/".$matchId."/".$dataType.'-'.$foot.'-'.$number.".txt";//文件格式
+        Storage::disk('local')->put($file,$data);
+        return apiData()->send();
+
+        $userId     = $request->input('userId',0);
+        $deviceSn   = $request->input('deviceSn','');
+        $deviceData = $request->input('deviceData','');
+        $dataType   = $request->input('dataType');
+        $foot       = $request->input('foot');
+        $isFinish   = $request->input('isFinish',0);
+        $matchId    = $request->input('matchId',0);
+
+        if($matchId == 0){
+
+            $lastMatch  = MatchModel::user_last_match($userId);
+            $matchId    = $lastMatch->match_id;
+        }
+
+        //数据校验  以防客户端网络异常导致数据上传重复
+        $checkCode  = crc32($deviceData);
+        $hasFile    = BaseMatchSourceDataModel::check_has_save_data($userId,$checkCode);
+
+        if($hasFile)
+        {
+            return apiData()->send(2001,'数据重复上传');
+        }
+
+        //数据文件存储在磁盘中
+        $date   = date('Y-m-d');
+        $time   = create_member_number();
+        $file   = $date."/".$userId."/".$dataType.'-'.$foot.'-'.$time.".txt";//文件格式
+
+        Storage::disk('local')->put($file,$deviceData);
+
+        $matchData  = [
+            'match_id'  => $matchId,
+            'user_id'   => $userId,
+            'device_sn' => $deviceSn??"",
+            'type'      => $dataType,
+            'data'      => $file,
+            'foot'      => $foot,
+            'is_finish' => $isFinish,
+            'status'    => 0,
+            'check_code'=> $checkCode
+        ];
+
+        //1.储存数据
+        $matchModel     = new MatchModel();
+        $sourceId       = $matchModel->add_match_source_data($matchData);
+
+        //设置队列，尽快解析本条数据
+        $delayTime      = now()->addSecond(1);
+        $data           = ['sourceId'=>$sourceId,'jxNext'=>true];
+        AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
+
+
+        BaseMatchUploadProcessModel::update_process($userId,!!$isFinish); //更新数据上传记录
+
+        $isFinish = BaseMatchUploadProcessModel::check_upload_finish($userId,true);
+
+        if($isFinish == true){ //传输已完成 , 加入到计算监控中
+
+            BaseMatchModel::join_minitor_match($request->input('matchId'));
+        }
+
+
+        return apiData()->send(200,'ok');
+
+    }
 
     /**
      * 添加心情

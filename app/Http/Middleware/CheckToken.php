@@ -47,7 +47,7 @@ class CheckToken
             "login",//登录
         ],
         "match"=>[
-            ""
+            "upload"
         ],
         'test'=>[
             "test",
