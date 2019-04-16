@@ -236,7 +236,9 @@ class MatchController extends Controller
      * */
     public function upload(Request $request){
 
-        mylogger($request->header());
+        $headers = $request->header();
+        mylogger(json_encode($headers));
+        
 
         $data       = $request->input('data','');
         $userId     = 0;
