@@ -239,6 +239,8 @@ class MatchController extends Controller
         $headers = $request->header();
         mylogger(json_encode($headers));
         
+        $str = file_get_contents("php://input");
+        mylogger($str);
 
         $data       = $request->input('data','');
         $userId     = 0;
