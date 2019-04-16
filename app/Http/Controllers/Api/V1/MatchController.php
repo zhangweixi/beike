@@ -235,6 +235,9 @@ class MatchController extends Controller
      * 从设备直接上传数据
      * */
     public function upload(Request $request){
+
+        mylogger($request->header());
+
         $data       = $request->input('data','');
         $userId     = 0;
         $matchId    = $request->input('matchId');
