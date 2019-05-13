@@ -47,7 +47,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
             $data   = ["code"=>5000,"数据不是json格式"];
             $server->push($frame->fd,\GuzzleHttp\json_encode($data));
-            exit;
+           return false;
         }
 
 
@@ -56,7 +56,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
             $data   = ["code"=>5000,"必须包含action字段"];
             $server->push($frame->fd,\GuzzleHttp\json_encode($data));
-            exit;
+            return false;
         }
 
         $action     = $data->action;
