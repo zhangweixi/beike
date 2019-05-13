@@ -68,11 +68,13 @@ class WebSocketService implements WebSocketHandlerInterface{
         switch ($action){
 
             case "test":
-                $this->test($server,$frame,$data);  break;
+                $this->test($server,$frame,$data);                      break;
 
             case "match/markUserId":
-                $this->online_inform();             break;
+                $this->online_inform($server,$frame,$data);             break;
         }
+
+        echo "结束\n";
     }
 
 
