@@ -46,11 +46,9 @@ class WebSocketService implements WebSocketHandlerInterface{
 
         echo $data."\n";
 
-
         if(!isJson($data)){
 
-            echo "不是json\n";
-            $data   = ["code"=>5000,"数据不是json格式"];
+            $data   = ["code"=>5000,"msg"=>"数据不是json格式"];
             $server->push($frame->fd,\GuzzleHttp\json_encode($data));
 
            return false;
@@ -58,18 +56,13 @@ class WebSocketService implements WebSocketHandlerInterface{
 
         $data   = \GuzzleHttp\json_decode($data);
 
-        echo "---1---\n";
-
         //数据中必须含有action字段
         if(!isset($data->action)){
 
-            echo "没有action字段\n";
-            $data   = ["code"=>5000,"必须包含action字段"];
+            $data   = ["code"=>5000,"msg"=>"必须包含action字段"];
             $server->push($frame->fd,\GuzzleHttp\json_encode($data));
             return false;
         }
-
-        echo "---3---\n";
 
         switch ($data->action){
 
@@ -79,8 +72,6 @@ class WebSocketService implements WebSocketHandlerInterface{
             case "match/markUserId":
                 $this->online_inform($server,$frame,$data);             break;
         }
-
-        echo "结束\n";
     }
 
 
