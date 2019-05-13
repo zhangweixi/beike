@@ -44,7 +44,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         echo $frame->data."\n";
 
         $data   = \GuzzleHttp\json_decode($frame->data);
-
+        echo '--0---\n';
         if(!isJson($data)){
 
             echo "不是json\n";
@@ -54,6 +54,7 @@ class WebSocketService implements WebSocketHandlerInterface{
            return false;
         }
 
+        echo '--1---\n';
 
         //数据中必须含有action字段
         if(!isset($data->action)){
@@ -64,8 +65,9 @@ class WebSocketService implements WebSocketHandlerInterface{
             return false;
         }
 
-        $action     = $data->action;
-        switch ($action){
+        echo '--2---\n';
+
+        switch ($data->action){
 
             case "test":
                 $this->test($server,$frame,$data);                      break;
