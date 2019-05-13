@@ -16,7 +16,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
     public function __construct()
     {
-    	file_put_contents('/data/www/dev.api.launchever.cn/public/logs/my.txt',time().':init socket\n');
+        
     }
 
     public function onOpen(Server $server, Request $request)
