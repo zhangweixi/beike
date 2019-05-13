@@ -47,8 +47,10 @@ class WebSocketService implements WebSocketHandlerInterface{
 
         if(!isJson($data)){
 
+            echo "不是json\n";
             $data   = ["code"=>5000,"数据不是json格式"];
             $server->push($frame->fd,\GuzzleHttp\json_encode($data));
+
            return false;
         }
 
@@ -56,6 +58,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         //数据中必须含有action字段
         if(!isset($data->action)){
 
+            echo "没有action字段\n";
             $data   = ["code"=>5000,"必须包含action字段"];
             $server->push($frame->fd,\GuzzleHttp\json_encode($data));
             return false;
