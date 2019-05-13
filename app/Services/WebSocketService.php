@@ -41,10 +41,12 @@ class WebSocketService implements WebSocketHandlerInterface{
     {
         // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
         //1.数据必须是JSON格式
+        echo gettype($frame->data);
         echo $frame->data."\n";
 
         $data   = \GuzzleHttp\json_decode($frame->data);
-        echo '--0---\n';
+        echo "--0---\n";
+
         if(!isJson($data)){
 
             echo "不是json\n";
@@ -54,7 +56,7 @@ class WebSocketService implements WebSocketHandlerInterface{
            return false;
         }
 
-        echo '--1---\n';
+        echo "---1---\n";
 
         //数据中必须含有action字段
         if(!isset($data->action)){
@@ -65,7 +67,7 @@ class WebSocketService implements WebSocketHandlerInterface{
             return false;
         }
 
-        echo '--2---\n';
+        echo "---3---\n";
 
         switch ($data->action){
 
