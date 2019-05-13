@@ -19,6 +19,11 @@ class WebSocketService implements WebSocketHandlerInterface{
 
     }
 
+    public function onClose(Server $server, $fd, $reactorId)
+    {
+        echo "\n ".$fd."bye bye ,i'm closed\n";
+    }
+
     public function onOpen(Server $server, Request $request)
     {
         // 在触发onOpen事件之前Laravel的生命周期已经完结，所以Laravel的Request是可读的，Session是可读写的
@@ -55,18 +60,33 @@ class WebSocketService implements WebSocketHandlerInterface{
         }
 
         $action     = $data->action;
+        switch ($action){
 
-        foreach($server->connections as $fd){
+            case "test":
+                $this->test($server,$frame,$data);  break;
 
-            $server->push($fd,$frame->data);
+            case "match/markUserId":
+                $this->online_inform();             break;
         }
     }
 
 
-    public function onClose(Server $server, $fd, $reactorId)
-    {
-    	echo "\n ".$fd."bye bye ,i'm closed\n";
+    /**
+     * 设备联网上线通知
+     * */
+    public function online_inform($server,$frame,$data){
+
+        mylogger($frame->data);
+
     }
+    /**
+     * socket测试
+     * */
+    public function test($server,$frame,$data){
 
+        foreach($server->connections as $fd){
 
+            $server->push($fd,\GuzzleHttp\json_encode($data));
+        }
+    }
 }
