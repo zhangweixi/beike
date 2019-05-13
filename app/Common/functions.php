@@ -970,4 +970,29 @@ function zip_files($zipFile,$files)
     }
     $zip->close(); //关闭
 }
+
+/**
+ * 异步执行，执行命令时不等待执行结果
+ * @param $cmd string
+ * */
+function asyn_shell($cmd)
+{
+    if (substr(php_uname(), 0, 7) == "Windows")
+    {
+        pclose(popen("start /B ". $cmd, "r"));
+
+    } else {
+        exec($cmd . " > /dev/null &");
+    }
+}
+
+
+function isJson($data = '', $assoc = false) {
+    $data = json_decode($data, $assoc);
+    if ($data && (is_object($data)) || (is_array($data) && !empty(current($data)))) {
+        return $data;
+    }
+    return false;
+}
+
 ?>
