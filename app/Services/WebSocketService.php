@@ -16,7 +16,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
     public function __construct()
     {
-        
+
     }
 
     public function onOpen(Server $server, Request $request)
@@ -35,8 +35,26 @@ class WebSocketService implements WebSocketHandlerInterface{
     public function onMessage(Server $server, Frame $frame)
     {
         // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
+        //1.数据必须是JSON格式
+        $data   = \GuzzleHttp\json_decode($frame->data);
 
-        echo $frame->data."\n";
+        if(!isJson($data)){
+
+            $data   = ["code"=>5000,"数据不是json格式"];
+            $server->push($frame->fd,\GuzzleHttp\json_encode($data));
+            exit;
+        }
+
+
+        //数据中必须含有action字段
+        if(!isset($data->action)){
+
+            $data   = ["code"=>5000,"必须包含action字段"];
+            $server->push($frame->fd,\GuzzleHttp\json_encode($data));
+            exit;
+        }
+
+        $action     = $data->action;
 
         foreach($server->connections as $fd){
 
@@ -49,4 +67,6 @@ class WebSocketService implements WebSocketHandlerInterface{
     {
     	echo "\n ".$fd."bye bye ,i'm closed\n";
     }
+
+
 }
