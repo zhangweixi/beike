@@ -41,7 +41,7 @@ class WebSocketService implements WebSocketHandlerInterface{
     {
         // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
         //1.数据必须是JSON格式
-        echo gettype($frame->data);
+        var_dump(gettype($frame->data));
         echo $frame->data."\n";
 
         $data   = \GuzzleHttp\json_decode($frame->data);
