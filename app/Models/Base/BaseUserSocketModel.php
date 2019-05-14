@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class BaseUserSocketModel extends Model
 {
     protected $table = "user_socket";
+    protected $timestamp = false;
 
     /**
      * 创建新连接
