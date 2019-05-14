@@ -187,7 +187,7 @@ class MatchController extends Controller
         //数据文件存储在磁盘中
         $date   = date('Y-m-d');
         $time   = create_member_number();
-        $file   = $date."/".$userId."/".$dataType.'-'.$foot.'-'.$time.".txt";//文件格式
+        $file   = $date."/".$userId."/".$dataType.'-'.$foot.'-'.$time."-".rand(10000,100000).".txt";//文件格式
 
         Storage::disk('local')->put($file,$deviceData);
 
