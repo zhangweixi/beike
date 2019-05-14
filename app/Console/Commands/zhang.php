@@ -19,7 +19,7 @@ use DB;
 
 
 
-class zhangweixi extends Command
+class zhang extends Command
 {
     protected $signature = 'zhang:test';
     protected $description = 'Command description';
@@ -29,6 +29,8 @@ class zhangweixi extends Command
     }
     public function handle()
     {
+        return (new ParseData(0))->handle();
+
         return (new CreateAngle(321))->handle();
 
         $a = ["compass-R",'compass-L','sensor-R','sensor-L','gps-L'];
