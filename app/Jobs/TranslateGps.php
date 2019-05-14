@@ -24,7 +24,7 @@ class TranslateGps implements ShouldQueue
 
     /**
      * Execute the job.
-     *
+     * 转换GPS坐标
      * @return void
      */
     public function handle()
