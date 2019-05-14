@@ -17,6 +17,7 @@ use App\Models\V1\MatchModel;
 use DB;
 use App\Jobs\AnalysisMatchData;
 use Illuminate\Support\Facades\Storage;
+use App\Jobs\ParseData;
 
 
 
@@ -236,60 +237,52 @@ class MatchController extends Controller
      * */
     public function upload(Request $request){
 
-        $headers = $request->header();
-        mylogger(json_encode($headers));
-        
-        $str = file_get_contents("php://input");
-        mylogger($str);
-
         $data       = $request->input('data','');
-        $userId     = 0;
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
         $dataType   = $request->input('type');
         $number     = $request->input('number');
-        $file   = current_date()."/".$matchId."/".$dataType.'-'.$foot.'-'.$number.".txt";//文件格式
-        Storage::disk('local')->put($file,$data);
-        return apiData()->send();
-
         $userId     = $request->input('userId',0);
-        $deviceSn   = $request->input('deviceSn','');
-        $deviceData = $request->input('deviceData','');
-        $dataType   = $request->input('dataType');
-        $foot       = $request->input('foot');
-        $isFinish   = $request->input('isFinish',0);
-        $matchId    = $request->input('matchId',0);
 
         if($matchId == 0){
 
-            $lastMatch  = MatchModel::user_last_match($userId);
-            $matchId    = $lastMatch->match_id;
+            return apiData()->send("2000","缺少或没有本场比赛");
         }
 
-        //数据校验  以防客户端网络异常导致数据上传重复
-        $checkCode  = crc32($deviceData);
+        //1.数据校验  以防客户端网络异常导致数据上传重复
+        $data       = bin2hex($data);
+        $checkCode  = crc32($data);
         $hasFile    = BaseMatchSourceDataModel::check_has_save_data($userId,$checkCode);
 
+        //当数据重复上传时，直接丢弃数据，返回正常
         if($hasFile)
         {
-            return apiData()->send(2001,'数据重复上传');
+            return apiData()->send();
         }
 
-        //数据文件存储在磁盘中
-        $date   = date('Y-m-d');
-        $time   = create_member_number();
-        $file   = $date."/".$userId."/".$dataType.'-'.$foot.'-'.$time.".txt";//文件格式
+        $year       = date('Y');
+        $month      = date('m');
+        $day        = date('d');
+        $second     = date('His');
+        $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
+        $fname      = "{$dataType}-{$foot}-{$second}.txt";
+        $fpath      = $fdir."/".$fname;//文件格式
 
-        Storage::disk('local')->put($file,$deviceData);
+        Storage::disk('local')->put($fpath,$data);
+
+
+        return apiData()->send(200,'ok');
+
+        //数据文件存储在磁盘中
 
         $matchData  = [
             'match_id'  => $matchId,
             'user_id'   => $userId,
             'device_sn' => $deviceSn??"",
             'type'      => $dataType,
-            'data'      => $file,
+            'data'      => $fname,
             'foot'      => $foot,
-            'is_finish' => $isFinish,
+            'is_finish' => $number,
             'status'    => 0,
             'check_code'=> $checkCode
         ];
@@ -300,22 +293,14 @@ class MatchController extends Controller
 
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
-        $data           = ['sourceId'=>$sourceId,'jxNext'=>true];
-        AnalysisMatchData::dispatch("parse_data",$data)->delay($delayTime);
+        ParseData::dispatch($sourceId)->delay($delayTime);
 
-
-        BaseMatchUploadProcessModel::update_process($userId,!!$isFinish); //更新数据上传记录
-
-        $isFinish = BaseMatchUploadProcessModel::check_upload_finish($userId,true);
-
-        if($isFinish == true){ //传输已完成 , 加入到计算监控中
+        if($number == 0){ //传输已完成 , 加入到计算监控中
 
             BaseMatchModel::join_minitor_match($request->input('matchId'));
         }
 
-
         return apiData()->send(200,'ok');
-
     }
 
     /**

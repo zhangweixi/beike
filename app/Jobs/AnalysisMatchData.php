@@ -492,7 +492,7 @@ class AnalysisMatchData implements ShouldQueue
      * */
     private function handle_sensor_data($dataSource,$matchId,$syncTime=0)
     {
-        //每一条数据的长度为20位 类型：2位 x:4,y:4,z:4, 预览:4,校验:2
+        //每一条数据的长度为20位 类型：2位 x:4,y:4,z:4,校验:2
 
         $leng       = 20;
         $dataArr    = str_split($dataSource,$leng);
