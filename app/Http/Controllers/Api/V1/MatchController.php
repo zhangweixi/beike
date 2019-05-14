@@ -290,7 +290,7 @@ class MatchController extends Controller
         //1.储存数据
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
-
+        return apiData()->send(200,'ok');
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
         ParseData::dispatch($sourceId)->delay($delayTime);
