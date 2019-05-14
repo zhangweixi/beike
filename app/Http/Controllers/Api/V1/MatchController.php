@@ -242,7 +242,7 @@ class MatchController extends Controller
         $foot       = $request->input('foot');
         $dataType   = $request->input('type');
         $number     = $request->input('number');
-        $userId     = $request->input('userId',0);
+        $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
 
         if($matchId == 0){
 
@@ -252,7 +252,7 @@ class MatchController extends Controller
         //1.数据校验  以防客户端网络异常导致数据上传重复
         $data       = bin2hex($data);
         $checkCode  = crc32($data);
-        $hasFile    = BaseMatchSourceDataModel::check_has_save_data($userId,$checkCode);
+        $hasFile    = BaseMatchSourceDataModel::has_same_match_same_data($matchId,$checkCode);
 
         //当数据重复上传时，直接丢弃数据，返回正常
         if($hasFile)
