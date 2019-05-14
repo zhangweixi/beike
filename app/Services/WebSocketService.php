@@ -27,7 +27,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         $socket     = new BaseUserSocketModel();
         $sockInfo   = $socket->detail($fd);
         $socket->unconnect($fd);
-        jpush_content("网络状态通知","用户".$sockInfo->user_id."网络已断开:",6002,1,"15000606942");
+        jpush_content("网络状态通知","用户".$sockInfo->user_id."网络已断开:",6002,1,1);
         echo "\n ".$fd."bye bye ,i'm closed\n";
     }
 
@@ -96,7 +96,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         $socket->bind($frame->fd,$data->userId,"device");
 
         //通知用户，联网成功
-        jpush_content("联网通知","用户".$data->userId."联网成功".$data->foot,6001,1,"15000606942");
+        jpush_content("联网通知","用户".$data->userId."联网成功".$data->foot,6001,1,1);
 
     }
     /**
