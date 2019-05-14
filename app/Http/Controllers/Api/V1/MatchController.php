@@ -240,7 +240,7 @@ class MatchController extends Controller
         $data       = $request->input('data','');
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
-        $dataType   = $request->input('type');
+        $dataType   = strtoupper(substr($request->input('type'),0,1));
         $number     = $request->input('number');
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
 
@@ -290,8 +290,6 @@ class MatchController extends Controller
         //1.储存数据
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
-        return apiData()->send(200,'ok');
-
 
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
@@ -299,7 +297,7 @@ class MatchController extends Controller
 
         if($number == 0){ //传输已完成 , 加入到计算监控中
 
-            BaseMatchModel::join_minitor_match($request->input('matchId'));
+            //BaseMatchModel::join_minitor_match($request->input('matchId'));
         }
 
         return apiData()->send(200,'ok');
