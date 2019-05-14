@@ -19,7 +19,7 @@ class BaseMatchSourceDataModel extends Model
 
     static function has_same_match_same_data($matchId,$checkCode){
 
-        return  self::where('match_id',$matchId)->where('check_code',$checkCode)->has();
+        return  self::where('match_id',$matchId)->where('check_code',$checkCode)->first();
     }
 
 }
