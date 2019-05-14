@@ -239,8 +239,8 @@ class MatchController extends Controller
 
         $data       = $request->input('data','');
         $matchId    = $request->input('matchId');
-        $foot       = $request->input('foot');
-        $dataType   = strtoupper(substr($request->input('type'),0,1));
+        $foot       = strtoupper(substr($request->input('foot'),0,1));
+        $dataType   = $request->input('type');
         $number     = $request->input('number');
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
 
