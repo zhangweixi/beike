@@ -20,9 +20,8 @@ class Jpush{
         $this->jpushSecret = config('jpush.secret');
         $this->jpushLogFile= config('jpush.logFile');
         $this->jpushEnv    = config('jpush.env',false);
-        $push              = new Client($this->jpushAppKey,$this->jpushSecret,$this->jpushLogFile);
-        $this->plushClient = $push->push();
-        $this->plushClient->options(['apns_production'=>$this->jpushEnv]);
+        $this->plushClient = new Client($this->jpushAppKey,$this->jpushSecret,$this->jpushLogFile);
+        $this->plushClient = $this->plushClient->push();
     }
 
 
@@ -70,6 +69,7 @@ class Jpush{
 
         $options  = ['badge'=>'+1','sound'=>'sound.caf','extras'=>$this->data];
         $res = $push->setNotificationAlert($this->message)
+            ->options(['apns_production'=>$this->jpushEnv])
             ->iosNotification($this->message,$options)
             ->send();
         return $res;
