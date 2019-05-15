@@ -9,19 +9,7 @@ class BaseUserSocketModel extends Model
 {
     protected $table = "user_socket";
     protected $timestamp = false;
-
-    /**
-     * 创建新连接
-     * @param $fd integer
-     * */
-    public function connect($fd){
-
-        $this->insert([
-            "ws_id"         => $fd,
-            "created_at"    => now()
-        ]);
-    }
-
+    protected $guarded = [];
 
     /**
      * @param $fd integer socket标记
@@ -30,7 +18,15 @@ class BaseUserSocketModel extends Model
      * */
     public function bind($fd,$userId,$type){
 
-        $this->where('ws_id',$fd)->update(['user_id'=>$userId,"type"=>$type]);
+        //检查这个用户当前有没有
+
+        $newInfo    = [
+            "fd"        => $fd,
+            "user_id"   => $userId,
+            "type"      => $type
+        ];
+
+        $this->create($newInfo);
     }
 
 
@@ -40,12 +36,13 @@ class BaseUserSocketModel extends Model
      * */
     public function unconnect($fd){
 
-        $this->where('ws_id',$fd)->delete();
+        //检查是不是所有连接都下线了
+        $this->where('fd',$fd)->delete();
     }
 
     public function detail($fd){
 
-        $socketInfo             = $this->where('ws_id',$fd)->first();
+        $socketInfo             = $this->where('fd',$fd)->first();
 
         if($socketInfo->user_id > 0){
 

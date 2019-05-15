@@ -36,18 +36,16 @@ class WebSocketService implements WebSocketHandlerInterface{
         // 在触发onOpen事件之前Laravel的生命周期已经完结，所以Laravel的Request是可读的，Session是可读写的
         // \Log::info('New WebSocket connection', [$request->fd, request()->all(), session()->getId(), session('xxx'), session(['yyy' => time()])]);
         echo "wellcome:".$request->fd;
-        $socket = new BaseUserSocketModel();
-        $socket->connect($request->fd);
     }
 
     public function onMessage(Server $server, Frame $frame)
     {
         // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
         //1.数据必须是JSON格式
-        $data   = $frame->data;
-        echo "\n".$data."\n";
 
-        $data   = $this->check($data);
+        echo "\n".$frame->data."\n";
+
+        $data   = $this->check($frame->data);
 
         if($data === false){
 
@@ -94,11 +92,19 @@ class WebSocketService implements WebSocketHandlerInterface{
     public function online_inform($server,$frame,$data){
 
         $socket     = new BaseUserSocketModel();
-        $socket->bind($frame->fd,$data->userId,"device");
+        if($data->client == "device"){
+
+            $type   = $data->foot;
+
+        }else{
+
+            $type   = "app";
+        }
+
+        $socket->bind($frame->fd,$data->userId,$type);
 
         //通知用户，联网成功
         jpush_content("联网通知","用户".$data->userId."联网成功".$data->foot,6001,1,1);
-
     }
     /**
      * socket测试
