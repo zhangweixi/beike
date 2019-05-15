@@ -45,7 +45,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         // \Log::info('Received message', [$frame->fd, $frame->data, $frame->opcode, $frame->finish]);
         //1.数据必须是JSON格式
         $data   = $frame->data;
-        echo $data."\n";
+        echo "\n".$data."\n";
 
         $data   = $this->check($data);
 
