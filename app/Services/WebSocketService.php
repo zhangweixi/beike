@@ -104,7 +104,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         $socket->bind($frame->fd,$data->userId,$type);
 
         //通知用户，联网成功
-        jpush_content("联网通知","用户".$data->userId."联网成功".$data->foot,6001,1,1);
+        jpush_content("联网通知","用户".$data->userId."联网成功".$type,6001,1,1);
     }
     /**
      * socket测试
