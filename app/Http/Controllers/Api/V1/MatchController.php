@@ -18,7 +18,7 @@ use DB;
 use App\Jobs\AnalysisMatchData;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\ParseData;
-
+use WebSocket\Client;
 
 
 
@@ -240,13 +240,11 @@ class MatchController extends Controller
         $data       = $request->input('data','');
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
-
+        $footLetter = strtoupper(substr($foot,0,1));
         $dataType   = $request->input('type');
         $number     = $request->input('number');
-        mylogger($matchId."-".$foot."-".$dataType."-".$number);
 
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
-        $foot       = strtoupper(substr($foot,0,1));
 
         if($matchId == 0){
 
@@ -254,7 +252,7 @@ class MatchController extends Controller
         }
 
         //1.数据校验  以防客户端网络异常导致数据上传重复
-        $data       = bin2hex($data);
+        //$data       = bin2hex($data);
         $checkCode  = crc32($data);
         $hasFile    = BaseMatchSourceDataModel::has_same_match_same_data($matchId,$checkCode);
 
@@ -269,7 +267,7 @@ class MatchController extends Controller
         $day        = date('d');
         $second     = date('His');
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
-        $fname      = "{$dataType}-{$foot}-{$second}-{$number}.txt";
+        $fname      = "{$dataType}-{$footLetter}-{$second}-{$number}.txt";
         $fpath      = $fdir."/".$fname;//文件格式
 
         Storage::disk('local')->put($fpath,$data);
@@ -285,7 +283,7 @@ class MatchController extends Controller
             'device_sn' => $deviceSn??"",
             'type'      => $dataType,
             'data'      => $fname,
-            'foot'      => $foot,
+            'foot'      => $footLetter,
             'is_finish' => $number,
             'status'    => 0,
             'check_code'=> $checkCode
@@ -294,6 +292,13 @@ class MatchController extends Controller
         //1.储存数据
         $matchModel     = new MatchModel();
         $sourceId       = $matchModel->add_match_source_data($matchData);
+
+        //2.修改进度
+        BaseMatchUploadProcessModel::update_process_v2($userId,$foot);
+
+        //3.通知APP上传进度
+        $this->inform_app($userId);
+
         return apiData()->send(200,'ok');
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
@@ -305,6 +310,15 @@ class MatchController extends Controller
         }
 
         return apiData()->send(200,'ok');
+    }
+
+    //通知APP
+    public function inform_app($userId){
+
+        $client = new Client("ws://".config('app.socketHost').":".config('app.socketPort'));
+        $data   = ["userId"=>$userId,"action"=>"match/upload_progress"];
+        $client->send(\GuzzleHttp\json_encode($data));
+        $client->close();
     }
 
     /**

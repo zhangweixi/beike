@@ -17,6 +17,8 @@ return [
     'aliyunApiHost'=> env('ALIYUN_API_HOST',''),
     'wechatenv'    => env('WECHAT_ENV',false),
     "adminOpenId"  => "o1zLM0daxBjdzyYwFxQ9YxPs7O6Q",
+    "socketHost"   => env('SOCKET_HOST',''),
+    "socketPort"   => env('SOCKET_PORT',''),
 
     /*
     |--------------------------------------------------------------------------

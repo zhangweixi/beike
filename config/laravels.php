@@ -5,7 +5,7 @@
  */
 return [
     'listen_ip'                => env('LARAVELS_LISTEN_IP', '0.0.0.0'),
-    'listen_port'              => env('LARAVELS_LISTEN_PORT', 5200),
+    'listen_port'              => env('LARAVELS_LISTEN_PORT', env('SOCKET_PORT',5200)),
     'socket_type'              => defined('SWOOLE_SOCK_TCP') ? SWOOLE_SOCK_TCP : 1,
     'enable_coroutine_runtime' => false,
     'server'                   => env('LARAVELS_SERVER', 'LaravelS'),

@@ -51,6 +51,22 @@ class BaseMatchUploadProcessModel extends Model
     }
 
     /**
+     * 更新上传进度V2
+     * @param $userId integer
+     * @param $foot string
+     * */
+    public static function update_process_v2($userId,$foot){
+
+        $info   = self::where('user_id',$userId)->first();
+        $colum  = $foot."_finished_num";
+        $data   = [];
+        $data["finished_num"]   = $info->finished_num + 1;
+        $data[$colum]           = $info->$colum;
+        self::where('user_id',$userId)->update($data);
+    }
+
+
+    /**
      * 检查传输中断的用户
      * */
     public static function check_match_upload_status()
@@ -96,5 +112,39 @@ class BaseMatchUploadProcessModel extends Model
             return true;
         }
         return false;
+    }
+
+    /**
+     * 保存数据总量
+     * @param $userId integer
+     * @param $foot string
+     * @param $num integer
+     * */
+    public static function save_total_num($userId,$foot,$num){
+
+        $info   = self::where('user_id',$userId)->first();
+        $newInfo= [];
+        $newInfo[$foot."_num"] = $num;
+
+        if($info){
+
+            DB::table('match_upload_process')
+                ->where('user_id',$userId)->update($newInfo);
+
+        }else{
+            $newInfo1 = [
+                "user_id"       => $userId,
+                "created_at"    => now(),
+                "updated_at"    => now()
+            ];
+
+            $newInfo    = array_merge($newInfo,$newInfo1);
+            DB::table('match_upload_process')->insert($newInfo);
+        }
+    }
+
+    public static function get_upload_state($userId){
+
+        return self::where('user_id',$userId)->first();
     }
 }

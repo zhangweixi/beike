@@ -43,7 +43,10 @@ class BaseUserSocketModel extends Model
     public function detail($fd){
 
         $socketInfo             = $this->where('fd',$fd)->first();
+        if(!$socketInfo){
 
+            return false;
+        }
         if($socketInfo->user_id > 0){
 
             $userInfo       = DB::table('users')
@@ -60,5 +63,15 @@ class BaseUserSocketModel extends Model
         }
 
         return $socketInfo;
+    }
+
+    /**
+     * 获得ws的连接句柄
+     * @param $userId integer
+     * @param $type string
+     * */
+    public static function get_user_fd($userId,$type='app'){
+
+        return self::where('user_id',$userId)->where('type',$type)->value('fd');
     }
 }
