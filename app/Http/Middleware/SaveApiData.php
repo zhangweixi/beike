@@ -21,7 +21,7 @@ class SaveApiData
         $excepUrl   = [
             'memberOnlineLog',
             'match/uploadMatchData',
-            'court/checkSingleGps'
+            //'court/checkSingleGps'
         ];
 
         if(!in_array($surl,$excepUrl))
