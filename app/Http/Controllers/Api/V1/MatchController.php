@@ -288,7 +288,7 @@ class MatchController extends Controller
             'user_id'   => $userId,
             'device_sn' => $deviceSn??"",
             'type'      => $dataType,
-            'data'      => $fname,
+            'data'      => $fdir."/".$fname,
             'foot'      => $footLetter,
             'is_finish' => $number,
             'status'    => 0,
