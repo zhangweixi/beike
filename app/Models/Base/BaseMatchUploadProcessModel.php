@@ -12,12 +12,13 @@ class BaseMatchUploadProcessModel extends Model
     protected $primaryKey = "user_id";
 
 
+
     /**
      * 更新进度
      * @param $userId integer 用户ID
      * @param $isFinish boolean 是否传输结束
      * */
-    public static function update_process($userId,$isFinish){
+    public static function update_process($userId,$isFinish=false){
         $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
 
         $num            = $isFinish ? 1 : 0;

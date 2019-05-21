@@ -82,6 +82,8 @@ class MatchController extends Controller
 
         $matchModel->log_match_status($matchId,'begin');
 
+        BaseMatchUploadProcessModel::update_process($userId);
+
         return apiData()
             ->set_data('matchId',$matchId)
             ->set_data('timestamp',$timestamp)
