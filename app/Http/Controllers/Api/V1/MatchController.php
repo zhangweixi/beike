@@ -254,7 +254,7 @@ class MatchController extends Controller
         }
 
         //1.数据校验  以防客户端网络异常导致数据上传重复
-        //$data       = bin2hex($data);
+        $data       = bin2hex($data);
         $checkCode  = crc32($data);
         $hasFile    = BaseMatchSourceDataModel::has_same_match_same_data($matchId,$checkCode);
 
