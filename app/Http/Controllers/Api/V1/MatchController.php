@@ -299,7 +299,7 @@ class MatchController extends Controller
         //3.通知APP上传进度
         $this->inform_app($userId);
 
-        return apiData()->send(200,'ok');
+        //return apiData()->send(200,'ok');
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
         ParseData::dispatch($sourceId)->delay($delayTime);
