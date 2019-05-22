@@ -995,4 +995,23 @@ function isJson($data = '', $assoc = false) {
     return false;
 }
 
+function isZero($num){
+
+    if($num > 0){
+
+        return false;
+    }
+
+    if(is_null($num)){
+
+        return false;
+    }
+
+    if($num == 0){
+
+        return true;
+    }
+
+    return false;
+}
 ?>

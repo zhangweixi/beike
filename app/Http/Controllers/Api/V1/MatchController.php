@@ -302,6 +302,9 @@ class MatchController extends Controller
         //2.修改进度
         BaseMatchUploadProcessModel::update_process_v2($userId,$foot);
 
+        //3.记录单场上传进度
+        BaseMatchUploadProcessModel::cache_single_match_progrsss($matchId,$dataType,$foot,$number);
+
         //3.通知APP上传进度
         $this->inform_app($userId);
 
@@ -309,6 +312,8 @@ class MatchController extends Controller
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
         ParseData::dispatch($sourceId)->delay($delayTime);
+
+        //将单场比赛的数据存放到Redis中，全部传输完毕后统一清除
 
         if($number == 0){ //传输已完成 , 加入到计算监控中
 
