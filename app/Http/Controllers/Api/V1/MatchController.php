@@ -245,7 +245,7 @@ class MatchController extends Controller
         $footLetter = strtoupper(substr($foot,0,1));
         $dataType   = $request->input('type');
         $number     = $request->input('number');
-        mylogger($data);
+
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
 
         if($matchId == 0){
@@ -265,7 +265,7 @@ class MatchController extends Controller
         //当数据重复上传时，直接丢弃数据，返回正常
         if($hasFile)
         {
-            return apiData()->send(200,"数据重复上传");
+            return apiData()->send();
         }
 
         $year       = date('Y');
