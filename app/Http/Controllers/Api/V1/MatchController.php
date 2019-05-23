@@ -265,7 +265,7 @@ class MatchController extends Controller
         //当数据重复上传时，直接丢弃数据，返回正常
         if($hasFile)
         {
-            return apiData()->send();
+            //return apiData()->send();
         }
 
         $year       = date('Y');
@@ -273,7 +273,7 @@ class MatchController extends Controller
         $day        = date('d');
         $second     = date('His');
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
-        $fname      = "{$dataType}-{$footLetter}-{$second}-{$number}.txt";
+        $fname      = "{$dataType}-{$footLetter}-{$number}-{$second}.txt";
         $fpath      = $fdir."/".$fname;//文件格式
 
         Storage::disk('local')->put($fpath,$data);
