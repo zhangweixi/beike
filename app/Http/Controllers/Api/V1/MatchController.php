@@ -273,7 +273,7 @@ class MatchController extends Controller
         $day        = date('d');
         $second     = date('His');
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
-        $fname      = "{$dataType}-{$footLetter}-{$number}-{$second}.txt";
+        $fname      = "{$dataType}-{$footLetter}.{$number}.txt.{$second}";
         $fpath      = $fdir."/".$fname;//文件格式
 
         Storage::disk('local')->put($fpath,$data);
