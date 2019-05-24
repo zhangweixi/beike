@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
 use DB;
 use App\Jobs\AnalysisMatchData;
+use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\ParseData;
 use WebSocket\Client;
@@ -239,7 +240,7 @@ class MatchController extends Controller
      * */
     public function upload(Request $request){
 
-        $data       = $request->input('data','');
+        $bindata    = $request->input('data','');
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
         $footLetter = strtoupper(substr($foot,0,1));
@@ -256,7 +257,10 @@ class MatchController extends Controller
         //1.数据校验  以防客户端网络异常导致数据上传重复
         if($request->input('test',0) == 0){
 
-            $data       = bin2hex($data);
+            $data       = bin2hex($bindata);
+        }else{
+
+            $data       = $bindata;
         }
 
         $checkCode  = crc32($data);
@@ -278,6 +282,7 @@ class MatchController extends Controller
         $fpath      = $fdir."/".$fname;//文件格式
 
         Storage::disk('local')->put($fpath,$data);
+        Storage::disk('local')->put($fpath.".bin",$bindata);
 
 
         //return apiData()->send(200,'ok');
