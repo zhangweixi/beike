@@ -248,6 +248,8 @@ class MatchController extends Controller
         $number     = $request->input('number');
         $length     = $request->headers->get("content-length");
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
+        parse_str(file_get_contents("php://input"),$params);
+        $bindata    = $params['data'];
 
         if($matchId == 0){
 
@@ -282,7 +284,7 @@ class MatchController extends Controller
         $fpath      = $fdir."/".$fname;//文件格式
 
         Storage::disk('local')->put($fpath,$data);
-        $bindata    = file_get_contents("php://input");
+        //$bindata    = file_get_contents("php://input");
         Storage::disk('local')->put($fpath.".bin",$bindata);
 
 
