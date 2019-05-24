@@ -245,7 +245,7 @@ class MatchController extends Controller
         $footLetter = strtoupper(substr($foot,0,1));
         $dataType   = $request->input('type');
         $number     = $request->input('number');
-
+        $length     = $request->headers->get("content-length");
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
 
         if($matchId == 0){
@@ -273,7 +273,8 @@ class MatchController extends Controller
         $day        = date('d');
         $second     = date('His');
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
-        $fname      = "{$dataType}-{$footLetter}.{$number}.{$second}.txt";
+        $num1       = str_pad($number,3,'0',STR_PAD_LEFT);
+        $fname      = "{$dataType}-{$footLetter}-{$num1}-{$second}-{$length}.txt";
         $fpath      = $fdir."/".$fname;//文件格式
 
         Storage::disk('local')->put($fpath,$data);
