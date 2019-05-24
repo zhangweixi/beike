@@ -282,6 +282,7 @@ class MatchController extends Controller
         $fpath      = $fdir."/".$fname;//文件格式
 
         Storage::disk('local')->put($fpath,$data);
+        $bindata    = file_get_contents("http://input");
         Storage::disk('local')->put($fpath.".bin",$bindata);
 
 
