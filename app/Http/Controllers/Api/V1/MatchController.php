@@ -72,7 +72,7 @@ class MatchController extends Controller
         if(config('app.env') == 'production'){
 
             $weather    = get_weather($lat,$lon);
-            $matchInfo  = array_merge($matchInfo,$weather);
+            //$matchInfo  = array_merge($matchInfo,$weather);
         }
 
         $matchModel = new MatchModel();
