@@ -44,8 +44,12 @@ class ParseData implements ShouldQueue
         $this->matchId= $fileInfo->match_id;
 
         //获取数据内容
-        $content    = Storage::disk('local')->get($fileInfo->data);
+        //$fileInfo->data = str_replace("/","\\",$fileInfo->data);
 
+        $content    = Storage::disk('local')->get($fileInfo->data);
+        $content    = bin2hex($content);
+        //$content    = file_get_contents(dirname(public_path(""))."\storage\app\\".$fileInfo->data);
+        //exit('');
         switch ($fileInfo->type){
             case 'sensor':  $this->parse_sensor($content);   break;
             case 'compass': $this->parse_compass($content);  break;
@@ -65,7 +69,7 @@ class ParseData implements ShouldQueue
         //每一条数据的长度为20位 类型：2 x:4,y:4,z:4,校验:2
 
         $leng       = 20;
-        $dataArr    = str_split($content,$leng);print_r($dataArr);
+        $dataArr    = str_split($content,$leng);
         unset($content);
         $insertData = [];
 

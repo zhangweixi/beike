@@ -240,16 +240,14 @@ class MatchController extends Controller
      * */
     public function upload(Request $request){
 
-        $bindata    = $request->input('data','');
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
         $footLetter = strtoupper(substr($foot,0,1));
         $dataType   = $request->input('type');
         $number     = $request->input('number');
-        $length     = $request->headers->get("content-length");
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
-        parse_str(file_get_contents("php://input"),$params);
-        $bindata    = $params['data'];
+        $bindata =  file_get_contents("php://input");
+
 
         if($matchId == 0){
 
@@ -280,15 +278,17 @@ class MatchController extends Controller
         $second     = date('His');
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
         $num1       = str_pad($number,3,'0',STR_PAD_LEFT);
-        $fname      = "{$dataType}-{$footLetter}-{$num1}-{$second}-{$length}.txt";
+        $fname      = "{$dataType}-{$footLetter}-{$num1}-{$second}.bin";
+
         $fpath      = $fdir."/".$fname;//文件格式
 
-        Storage::disk('local')->put($fpath,$data);
-        //$bindata    = file_get_contents("php://input");
-        Storage::disk('local')->put($fpath.".bin",$bindata);
+        Storage::disk('local')->append($fpath,$bindata);
+        //Storage::disk('local')->put($fpath,$data);
 
+        if($number > 0){
 
-        //return apiData()->send(200,'ok');
+            return apiData()->send();
+        }
 
         //数据文件存储在磁盘中
 
