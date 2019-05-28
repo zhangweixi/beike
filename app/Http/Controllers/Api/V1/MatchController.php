@@ -258,7 +258,8 @@ class MatchController extends Controller
         //1.数据校验  以防客户端网络异常导致数据上传重复
         if($request->input('test',0) == 0){
 
-            $data       = bin2hex($bindata);
+            //$data       = bin2hex($bindata);
+
         }else{
 
             $data       = $bindata;
