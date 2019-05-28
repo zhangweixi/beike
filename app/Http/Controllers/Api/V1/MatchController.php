@@ -280,13 +280,13 @@ class MatchController extends Controller
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
         $num1       = str_pad($number,3,'0',STR_PAD_LEFT);
         $fname      = "{$dataType}-{$footLetter}-{$num1}-{$second}.bin";
-        $fname      = "{$dataType}-{$footLetter}.bin";
+        //$fname      = "{$dataType}-{$footLetter}.bin";
         $fpath      = $fdir."/".$fname;//文件格式
 
-        Storage::disk('local')->append($fpath,$bindata);
-        //Storage::disk('local')->put($fpath,$data);
+        //Storage::disk('local')->append($fpath,$bindata);
+        Storage::disk('local')->put($fpath,$data);
 
-        if($number > 0){
+        if($number >= 0){
 
             return apiData()->send();
         }
