@@ -287,7 +287,7 @@ class MatchController extends Controller
         //Storage::disk('local')->append($fpath,$bindata);
         Storage::disk('local')->put($fpath,$data);
 
-        if($number >= 0){
+        if($number > 0){
 
             return apiData()->send();
         }
