@@ -38,18 +38,26 @@ class ParseData implements ShouldQueue
     public function handle()
     {
         //从数据库获取信息
+
         $fileInfo   = BaseMatchSourceDataModel::find($this->fileId);
+        /*
+        $fileInfo   = new \stdClass();
+        $fileInfo->foot = "L";
+        $fileInfo->type = "compass";
+        $fileInfo->match_id = 1313;
+        $fileInfo->data = "2019/05/28/1313/compass-L-170-152957.bin";
+        //*/
         $this->foot = $fileInfo->foot;
         $this->type = $fileInfo->type;
         $this->matchId= $fileInfo->match_id;
 
         //获取数据内容
-        //$fileInfo->data = str_replace("/","\\",$fileInfo->data);
 
         $content    = Storage::disk('local')->get($fileInfo->data);
         $content    = bin2hex($content);
-        //$content    = file_get_contents(dirname(public_path(""))."\storage\app\\".$fileInfo->data);
-        //exit('');
+
+        //$content    = $this->cut_head($content);
+
         switch ($fileInfo->type){
             case 'sensor':  $this->parse_sensor($content);   break;
             case 'compass': $this->parse_compass($content);  break;
@@ -59,6 +67,23 @@ class ParseData implements ShouldQueue
         //如果这条数据属于最后一条数据，启动其他工作的队列
     }
 
+    public function cut_head($content){
+
+        $datas    = explode(",",$content);
+        foreach($datas as $key => $data)
+        {
+            $p      = strpos($data,"2c");
+            $data   = substr($data,$p+2);   //删除2c及以前
+
+            $p      = strpos($data,'2c');
+            $data   = substr($data,$p+2);   //删除2c及以前
+
+            //$data   = substr($data,2);//删除两个0
+
+            $datas[$key] = $data;
+        }
+        return implode("",$datas);
+    }
 
     /**
      * 解析sensor文件
@@ -148,7 +173,7 @@ class ParseData implements ShouldQueue
                 'z'             => 0,
             ];
 
-            //$singleData['source_data']  = $data;
+            $singleData['source_data']  = $data;
 
             if(strlen($data) < $leng)
             {
