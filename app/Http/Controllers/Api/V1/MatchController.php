@@ -324,6 +324,8 @@ class MatchController extends Controller
 
             //BaseMatchModel::join_minitor_match($request->input('matchId'));
             artisan("match:run {$matchId} {$dataType} {$footLetter}"); //启动异步执行的解析脚本
+
+            artisan("match:run {$matchId}");
         }
 
         return apiData()->send(200,'ok');

@@ -63,6 +63,7 @@ class Match extends Command
         $angleApp   = new CreateAngle($matchId);
         $angleApp->handle();
 
+        exit();
         //3.转换GPS的坐标
         $gpsApp     = new TranslateGps($matchId);
         $gpsApp->handle();
