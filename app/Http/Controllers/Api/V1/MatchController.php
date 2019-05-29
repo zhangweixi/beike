@@ -281,7 +281,7 @@ class MatchController extends Controller
         $second     = date('His');
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
         $num1       = str_pad($number,3,'0',STR_PAD_LEFT);
-        $fname      = "{$dataType}-{$footLetter}-{$num1}.bin";
+        $fname      = "{$dataType}-{$footLetter}-{$num1}-{$second}.bin";
         //$fname      = "{$dataType}-{$footLetter}.bin";
         $fpath      = $fdir."/".$fname;//文件格式
 
