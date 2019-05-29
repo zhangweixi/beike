@@ -16,7 +16,7 @@ use App\Http\Controllers\Service\Court;
 
 class Match extends Command
 {
-    protected $signature    = 'match:run {matchId}';
+    protected $signature    = "match:run {matchId} {type='-'} {foot='-'} {fid=0}";
     protected $description  = 'parse match data , must input matchid:integer';
     protected $timeout      = 20;
 
@@ -33,6 +33,18 @@ class Match extends Command
     public function handle()
     {
         $matchId    = $this->argument("matchId");
+        $type       = $this->argument("type");
+        $foot       = $this->argument("foot");
+        $fid        = $this->argument("fid");
+
+        if($type != '-' && $foot != '-'){ //解析单条数据
+
+            return $this->parse_single_type_data($matchId,$type,$foot);
+
+        }elseif($fid > 0){
+
+            return $this->parse_single_data();
+        }
 
         // 0.检查数据是否解析完毕
         $this->waiting_parse_finish($matchId);
@@ -118,4 +130,26 @@ class Match extends Command
             exit;
         }
     }
+
+
+    /**
+     * 解析单类型的数据
+     * @param $matchId integer
+     * @param $type string
+     * @param $foot string
+     * */
+    public function parse_single_type_data($matchId,$type,$foot){
+
+        $parseEngine    = new ParseData();
+        $parseEngine->parse_single_type_data($matchId,$type,$foot);
+
+    }
+
+    /**
+     * 解析单条数据
+     * */
+    public function parse_single_data(){
+
+    }
+
 }

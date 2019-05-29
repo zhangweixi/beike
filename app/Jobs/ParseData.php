@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use App\Models\Base\BaseMatchSourceDataModel;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ParseData implements ShouldQueue
 {
@@ -25,7 +26,7 @@ class ParseData implements ShouldQueue
      * @param $fileId string
      *
      */
-    public function __construct($fileId)
+    public function __construct($fileId=0)
     {
         $this->fileId = $fileId;
     }
@@ -42,10 +43,10 @@ class ParseData implements ShouldQueue
         $fileInfo   = BaseMatchSourceDataModel::find($this->fileId);
         /*
         $fileInfo   = new \stdClass();
-        $fileInfo->foot = "L";
-        $fileInfo->type = "compass";
-        $fileInfo->match_id = 1313;
-        $fileInfo->data = "2019/05/28/1313/compass-L-170-152957.bin";
+        $fileInfo->foot = "R";
+        $fileInfo->type = "sensor";
+        $fileInfo->match_id = 1329;
+        $fileInfo->data = "2019/05/28/1313/compass-L-170-162347.bin";
         //*/
         $this->foot = $fileInfo->foot;
         $this->type = $fileInfo->type;
@@ -65,6 +66,35 @@ class ParseData implements ShouldQueue
         }
 
         //如果这条数据属于最后一条数据，启动其他工作的队列
+    }
+
+
+    public function parse_single_type_data($matchId,$type,$foot){
+
+        $this->foot = $foot;
+        $this->type = $type;
+        $this->matchId= $matchId;
+
+        $files = DB::table('match_source_data')
+            ->where('match_id',$matchId)
+            ->where('type',$type)
+            ->where('foot',$foot)
+            ->orderBy('match_source_id')
+            ->get();
+
+        $content = "";
+        foreach($files as $file){
+
+            $content    .= Storage::disk('local')->get($file->data);
+        }
+
+        $content    = bin2hex($content);
+
+        switch ($type){
+            case 'sensor':  $this->parse_sensor($content);   break;
+            case 'compass': $this->parse_compass($content);  break;
+            case 'gps':     $this->parse_gps($content);      break;
+        }
     }
 
     public function cut_head($content){
@@ -173,7 +203,7 @@ class ParseData implements ShouldQueue
                 'z'             => 0,
             ];
 
-            $singleData['source_data']  = $data;
+            //$singleData['source_data']  = $data;
 
             if(strlen($data) < $leng)
             {

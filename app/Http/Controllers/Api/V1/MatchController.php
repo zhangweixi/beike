@@ -238,6 +238,8 @@ class MatchController extends Controller
 
     /**
      * 从设备直接上传数据
+     * @param $request \Illuminate\Http\Request
+     * @return mixed
      * */
     public function upload(Request $request){
 
@@ -256,17 +258,8 @@ class MatchController extends Controller
         }
 
         //1.数据校验  以防客户端网络异常导致数据上传重复
-        if($request->input('test',0) == 0){
 
-            //$data       = bin2hex($bindata);
-            $data         = $bindata;
-
-        }else{
-
-            $data       = $bindata;
-        }
-
-        $checkCode  = crc32($data);
+        $checkCode  = crc32($bindata);
         $hasFile    = BaseMatchSourceDataModel::has_same_match_same_data($matchId,$checkCode);
 
         //当数据重复上传时，直接丢弃数据，返回正常
@@ -287,7 +280,7 @@ class MatchController extends Controller
         $fpath      = $fdir."/".$fname;//文件格式
 
         //Storage::disk('local')->append($fpath,$bindata);
-        Storage::disk('local')->put($fpath,$data);
+        Storage::disk('local')->put($fpath,$bindata);
 
         if($number < 0){
 
@@ -319,9 +312,8 @@ class MatchController extends Controller
         BaseMatchUploadProcessModel::cache_single_match_progrsss($matchId,$dataType,$foot,$number);
 
         //3.通知APP上传进度
-        $this->inform_app($userId);
+        //$this->inform_app($userId);
 
-        //return apiData()->send(200,'ok');
         //设置队列，尽快解析本条数据
         $delayTime      = now()->addSecond(1);
         //ParseData::dispatch($sourceId)->delay($delayTime);
@@ -331,6 +323,7 @@ class MatchController extends Controller
         if($number == 0){ //传输已完成 , 加入到计算监控中
 
             //BaseMatchModel::join_minitor_match($request->input('matchId'));
+            artisan("match:run {$matchId} {$dataType} {$footLetter}"); //启动异步执行的解析脚本
         }
 
         return apiData()->send(200,'ok');

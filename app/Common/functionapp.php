@@ -308,3 +308,25 @@ function get_weather($lat,$lon){
     ];
     return $weather;
 }
+
+/**
+ * 执行系统的artisan命令
+ * @param $command string 执行的命令
+ * @param $async boolean 是否异步执行
+ * @return boolean
+ * */
+function artisan($command,$async=false){
+
+    $basePath = base_path('');
+
+    $cmd = "php {$basePath}/artisan {$command}";
+
+    if($async){
+
+        return asyn_shell($cmd);
+
+    }else{
+
+        return shell_exec($cmd);
+    }
+}
