@@ -39,7 +39,9 @@ class Match extends Command
 
         if($type != '-' && $foot != '-'){ //解析单条数据
 
-            return $this->parse_single_type_data($matchId,$type,$foot);
+            $this->parse_single_type_data($matchId,$type,$foot);
+            $this->finish_parse_type_data($matchId,$type,$foot);
+            return ;
 
         }elseif($fid > 0){
 
@@ -47,7 +49,7 @@ class Match extends Command
         }
 
         // 0.检查数据是否解析完毕
-        //$this->waiting_parse_finish($matchId);
+        $this->waiting_parse_finish($matchId);
 
         $matchInfo  = BaseMatchModel::find($matchId);
         $courtId    = $matchInfo->court_id;
@@ -130,6 +132,17 @@ class Match extends Command
             BaseMatchModel::match_process($matchId,"解析数据时间过久");
             exit;
         }
+    }
+
+    /**
+     * 标记结束一条数据
+     * @param $matchId integer
+     * @param $type string
+     * @param $foot string
+     * */
+    public function finish_parse_type_data($matchId,$type,$foot){
+
+        BaseMatchDataProcessModel::where('match_id',$matchId)->update([$type."_".$foot=>1]);
     }
 
 
