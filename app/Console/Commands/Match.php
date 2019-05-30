@@ -16,7 +16,7 @@ use App\Http\Controllers\Service\Court;
 
 class Match extends Command
 {
-    protected $signature    = "match:run {matchId} {type='-'} {foot='-'} {fid=0}";
+    protected $signature    = "match:run {matchId} {type=-} {foot=-} {fid=0}";
     protected $description  = 'parse match data , must input matchid:integer';
     protected $timeout      = 20;
 
@@ -47,7 +47,7 @@ class Match extends Command
         }
 
         // 0.检查数据是否解析完毕
-        $this->waiting_parse_finish($matchId);
+        //$this->waiting_parse_finish($matchId);
 
         $matchInfo  = BaseMatchModel::find($matchId);
         $courtId    = $matchInfo->court_id;
