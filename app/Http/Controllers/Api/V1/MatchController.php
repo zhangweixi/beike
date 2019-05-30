@@ -87,8 +87,7 @@ class MatchController extends Controller
 
         return apiData()
             ->set_data('matchId',$matchId)
-            //->set_data('timestamp',$timestamp)
-            ->set_data('timestamp',0)
+            ->set_data('timestamp',$timestamp)
             ->send();
     }
 
