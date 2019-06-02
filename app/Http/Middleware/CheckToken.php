@@ -48,7 +48,7 @@ class CheckToken
         ],
         "match"=>[
             "upload",
-            "saveMatchDataNum"
+            "saveDataNum"
         ],
         'test'=>[
             "test",
