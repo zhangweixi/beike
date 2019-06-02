@@ -322,9 +322,9 @@ class MatchController extends Controller
         if($number == 0){ //传输已完成 , 加入到计算监控中
 
             //BaseMatchModel::join_minitor_match($request->input('matchId'));
-            artisan("match:run {$matchId} {$dataType} {$footLetter}"); //启动异步执行的解析脚本
+            artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
 
-            artisan("match:run {$matchId}");
+            artisan("match:run {$matchId}",true);
         }
 
         return apiData()->send(200,'ok');
