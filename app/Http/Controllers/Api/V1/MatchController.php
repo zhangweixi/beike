@@ -333,7 +333,7 @@ class MatchController extends Controller
     /**
      * 保存比赛的数据总量
      * */
-    public function save_match_data_num(Request $request){
+    public function save_data_num(Request $request){
 
         $userId     = $request->input('userId');
         $foot       = $request->input('foot');
