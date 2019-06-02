@@ -330,6 +330,19 @@ class MatchController extends Controller
         return apiData()->send(200,'ok');
     }
 
+    /**
+     * 保存比赛的数据总量
+     * */
+    public function save_match_data_num(Request $request){
+
+        $userId     = $request->input('userId');
+        $foot       = $request->input('foot');
+        $number     = $request->input('number');
+
+        BaseMatchUploadProcessModel::save_total_num($userId,$foot,$number);
+        return apiData()->send();
+    }
+
     //通知APP
     public function inform_app($userId){
 
