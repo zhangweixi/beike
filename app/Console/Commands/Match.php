@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\AnalysisMatchData;
 use App\Models\Base\BaseMatchDataProcessModel;
 use Illuminate\Console\Command;
 use App\Jobs\ParseData;
@@ -9,7 +10,6 @@ use App\Jobs\CreateAngle;
 use App\Jobs\SyncTime;
 use App\Jobs\TranslateGps;
 
-use App\Models\Base\BaseMatchSourceDataModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\Base\BaseFootballCourtModel;
 use App\Http\Controllers\Service\Court;
@@ -36,16 +36,15 @@ class Match extends Command
         $type       = $this->argument("type");
         $foot       = $this->argument("foot");
         $fid        = $this->argument("fid");
+        $parseEngine= new ParseData();  //解析引擎
 
-        if($type != '-' && $foot != '-'){ //解析单条数据
+        if($type != '-' && $foot != '-'){ //解析单类型数据
 
-            $this->parse_single_type_data($matchId,$type,$foot);
-            $this->finish_parse_type_data($matchId,$type,$foot);
-            return ;
+            return $parseEngine->parse_single_type_data($matchId,$type,$foot);
 
-        }elseif($fid > 0){
+        }elseif($fid > 0){  //解析单条数据
 
-            return $this->parse_single_data();
+            return $parseEngine->parse_single_data($fid);
         }
 
         // 0.检查数据是否解析完毕
@@ -55,8 +54,6 @@ class Match extends Command
         $courtId    = $matchInfo->court_id;
         $courtInfo  = BaseFootballCourtModel::find($courtId);
 
-        $begin      = time();
-
         //1.同步时间
         $syncApp    = new SyncTime($matchId);
         $syncApp->handle();
@@ -64,8 +61,7 @@ class Match extends Command
         //2.生成罗盘角度
         $angleApp   = new CreateAngle($matchId);
         $angleApp->handle();
-
-        exit();
+        return;
         //3.转换GPS的坐标
         $gpsApp     = new TranslateGps($matchId);
         $gpsApp->handle();
@@ -88,24 +84,20 @@ class Match extends Command
          * 这个工作原本是在球场测量结束就进行的，放在这里出现的原因是:
          * 有时候测量的球场不达标，需要使用GPS求出的虚拟球场
          * */
-        (new Court())->cut_court_to_box_and_create_config($courtId);
+        if(empty($courtInfo->boxs)){
 
+            (new Court())->cut_court_to_box_and_create_config($courtId);
+        }
 
-
-        // 6.拷贝一份球场配置文件到数据比赛中
-        $configFile = "/".$courtInfo->config_file;
-        $newFile    = matchdir($matchId)."court-config.txt";
-        copy(public_path($configFile),$newFile);
-
-
-        // 7.算法系统位于另外一台服务器上，需要通知算法服务器进行计算工作
+        // 6.算法系统位于另外一台服务器上，需要通知算法服务器进行计算工作
         $host   = config('app.matlabhost');
         $url    = $host."/api/matchCaculate/run_matlab?matchId=".$matchId;
         file_get_contents($url);
 
 
-        //3.0 生成热点图占用时间比较久，异步调用
-        //self::execute("create_gps_map",['matchId'=>$matchId,'foot'=>"L"]);
+        //7 生成全局跑动GPS热点图
+        (new AnalysisMatchData("create_gps_map",['matchId'=>$matchId,'foot'=>'L']))->handle();
+
     }
 
     /**
@@ -132,38 +124,6 @@ class Match extends Command
             BaseMatchModel::match_process($matchId,"解析数据时间过久");
             exit;
         }
-    }
-
-    /**
-     * 标记结束一条数据
-     * @param $matchId integer
-     * @param $type string
-     * @param $foot string
-     * */
-    public function finish_parse_type_data($matchId,$type,$foot){
-
-        BaseMatchDataProcessModel::where('match_id',$matchId)->update([$type."_".$foot=>1]);
-    }
-
-
-    /**
-     * 解析单类型的数据
-     * @param $matchId integer
-     * @param $type string
-     * @param $foot string
-     * */
-    public function parse_single_type_data($matchId,$type,$foot){
-
-        $parseEngine    = new ParseData();
-        $parseEngine->parse_single_type_data($matchId,$type,$foot);
-
-    }
-
-    /**
-     * 解析单条数据
-     * */
-    public function parse_single_data(){
-
     }
 
 }

@@ -53,7 +53,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
 
-    public function __construct($action,$param = [])
+    public function __construct($action='',$param = [])
     {
         $this->action   = $action;
 
@@ -1195,13 +1195,13 @@ class AnalysisMatchData implements ShouldQueue
 
 
     /**
-     * 生成GPS热点图
+     * 生成全场跑动GPS热点图
      * @param $matchId integer 比赛ID
      * @param $foot string 脚
      * @param $gpsData  array GPS数据
      * @return boolean
      * */
-    public function create_gps_map($matchId,$foot,array $gpsData = [])
+    public function create_gps_map($matchId,$foot="L",array $gpsData = [])
     {
         $matchInfo  = MatchModel::find($matchId);
 

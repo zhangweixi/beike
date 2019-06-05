@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Base\BaseMatchDataProcessModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -66,9 +67,15 @@ class ParseData implements ShouldQueue
         }
 
         //如果这条数据属于最后一条数据，启动其他工作的队列
+
     }
 
-
+    /**
+     * 解析单一类型的数据
+     * @param $matchId integer
+     * @param $type string
+     * @param $foot string
+     * */
     public function parse_single_type_data($matchId,$type,$foot){
 
         $this->foot = $foot;
@@ -83,19 +90,32 @@ class ParseData implements ShouldQueue
             ->get();
 
         $content = "";
-        foreach($files as $file){
-
-            $content    .= Storage::disk('local')->get($file->data);
+        foreach($files as $file)
+        {
+            $temp       = Storage::disk('local')->get($file->data);
+            $content   .= bin2hex($temp);
         }
-
-        $content    = bin2hex($content);
 
         switch ($type){
             case 'sensor':  $this->parse_sensor($content);   break;
             case 'compass': $this->parse_compass($content);  break;
             case 'gps':     $this->parse_gps($content);      break;
         }
+
+        //标记单类型解析完毕
+        BaseMatchDataProcessModel::where('match_id',$matchId)->update([$type."_".$foot=>1]);
     }
+
+
+    /**
+     * 解析单条数据
+     * @param $fid integer
+     * */
+    public function parse_single_data($fid){
+        $this->fileId = $fid;
+        $this->handle();
+    }
+
 
     public function cut_head($content){
 
@@ -336,7 +356,7 @@ class ParseData implements ShouldQueue
 
 
     /**
-     * 删除头部数据
+     * 删除头部数据,解析老数据时使用的
      * @param $file string 要处理的数据
      * @return array
      * */

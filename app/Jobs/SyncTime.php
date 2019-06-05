@@ -37,7 +37,15 @@ class SyncTime implements ShouldQueue
 
         foreach($files as $file){
 
-            $this->resetTime($dir.$file.".txt");
+            $resultFile = $dir.$file.".txt.temp";
+            $sourceFile = $dir.$file.".txt";
+            $backFile   = $dir."back.".$file.".txt";
+            $this->resetTime($sourceFile,$resultFile);
+
+            //将历史数据设置为备份
+            //copy($sourceFile,$backFile);
+            copy($resultFile,$sourceFile);
+            unlink($resultFile);
         }
     }
 
@@ -45,13 +53,13 @@ class SyncTime implements ShouldQueue
     /**
      * 根据同步时间给每条数据赋值时间
      * @param $file string
+     * @param $resultFile string
      * */
-    public function resetTime($file){
+    public function resetTime($file,$resultFile){
 
         //按行读取文件
-        $nfile      = $file.".temp.txt";
         $f          = fopen($file,'r');
-        $nf         = fopen($nfile,'w');
+        $nf         = fopen($resultFile,'w');
         $cache      = [];
         $timeEnd    = 0;
         $minuts     = 0;
