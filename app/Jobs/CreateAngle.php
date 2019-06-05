@@ -250,7 +250,7 @@ class CreateAngle implements ShouldQueue
 
             file_put_contents($outfile,"");     //清空历史数据
 
-            $command    = "/usr/bin/compass $infile $outfile > /dev/null && echo 'success' ";
+            $command    = "/usr/bin/compass1 $infile $outfile > /dev/null && echo 'success' ";
 
             $res        = shell_exec($command);
             $res        = trim($res);
