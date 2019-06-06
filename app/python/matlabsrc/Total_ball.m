@@ -3,7 +3,7 @@
 % 2018-11-20
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 % clc; clear; close all;
-% pathname = 'G:\134\';
+% pathname = 'G:\295\';
 % sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 % % 添加路径
 % addpath(genpath(pathname)); 
@@ -12,16 +12,18 @@
 % Sensor_R(:,4:5) = Sensor_R(:,4:5)*1000; Sensor_L(:,4:5) = Sensor_L(:,4:5)*1000;
 % gps = importdata(gps_L);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function output = Total_ball(Sensor_R,Sensor_L,gps)
+function OUTPUT = Total_ball(Sensor_R,Sensor_L,gps)
 % 左右脚的触球数据
 % pass = BALL(Sensor_R,Sensor_L,filterlat,filterlon,sensor_fs); BALL_Z(sensor_r,sensor_l,gps)
-pass = BALL_Z(Sensor_R,Sensor_L,gps);
+OUTPUT = []; PASS = []; pass = BALL_Z(Sensor_R,Sensor_L,gps);
 % 判断有没有数据
 if isempty(pass) 
-    PASS = [];
     return;
 end
-% 按照时间间隔排序
+%% 纠正触球次数
+% output = validation_touch(PASS,5); % 连续触球次数不得超过5次
+% pass = Verification_speed(pass,5,12);
+%% 按照时间间隔排序
 Total = sortrows(pass,[3 4]); % PASS = Total ;
 [m,~] = size(Total); j = 1; PASS = []; PASS(j,:) = Total(1,:);
 for i = 2:m
@@ -58,19 +60,13 @@ for i = 2:m
             end 
     end
 end
-% 纠正触球次数
-output = validation_touch(PASS,5);
-% 判断触球次数
-% flag = zeros(1,3);
-% for i = 1:length(output)
-%     if output(i,2) == 3
-%         flag(1,1) = flag(1,1)+1;
-%     end
-%     if output(i,2) == 2
-%         flag(1,2) = flag(1,2)+1;
-%     end
-%     if output(i,2) == 1
-%         flag(1,3) = flag(1,3)+1;
-%     end
-% end   
+% 判断有没有数据
+if isempty(PASS) 
+    return;
+end
+%% 纠正触球次数
+% OUTPUT = validation_touch(PASS,5); % 连续触球次数不得超过5次
+OUTPUT = Verification_speed(PASS,4,15);
+%%
+% flag = Contact_times(OUTPUT);
 end

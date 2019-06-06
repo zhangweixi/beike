@@ -1,19 +1,18 @@
 clc; clear; close all;
-pathname = 'G:\227\';
+pathname = 'G:\319\';
 sensor_R = 'sensor-R.txt'; sensor_L = 'sensor-L.txt'; gps_L = 'gps-L.txt';
 angle_R = 'angle-R.txt'; angle_L = 'angle-L.txt'; court_config = 'court-config.txt';
 % ÃÌº”¬∑æ∂
 addpath(genpath(pathname)); 
 % Sensor
-sensor_r = importdata(sensor_L)/1000; sensor_l = importdata(sensor_L)/1000; 
+sensor_r = importdata(sensor_R)/1000; sensor_l = importdata(sensor_L)/1000; 
 sensor_r(:,4:5) = sensor_r(:,4:5)*1000; sensor_l(:,4:5) = sensor_l(:,4:5)*1000;
 Compass_R = importdata(angle_R); Compass_L = importdata(angle_L); 
 GPS = importdata(gps_L);
 Court_config = importdata(court_config);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% R_J = Touch(sensor_r,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
-
-% L_J = Touch(sensor_l,25,1000,100,26); % ≈–∂œ”“Ω≈¥•«Ú
+R_J = Touch(sensor_r,3,100,100,4); % ≈–∂œ”“Ω≈¥•«Ú
+L_J = Touch(sensor_l,3,100,100,4); % ≈–∂œ”“Ω≈¥•«Ú
 
 
 % PASS = Total_ball(sensor_r,sensor_l,GPS(:,1),GPS(:,2),100);
@@ -24,11 +23,12 @@ for i = 1:n_r
     SMA(i) = sqrt(sensor_r(i,2)^2+sensor_r(i,3)^2);
 end
 time = 1/100:1/100:n_r/100;
-% figure
-% s1 = plot(time,A,'linewidth',1.5); hold on    
-% xlabel('Time/s','FontName','Times New Roman','fontsize',20);
-% ylabel('A/g','FontName','Times New Roman','fontsize',20);
-% set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+figure
+s1 = plot(time/60,A,'linewidth',1.5); hold on    
+xlabel('Time/minute','FontName','Times New Roman','fontsize',20);
+ylabel('A/g','FontName','Times New Roman','fontsize',20);
+set(gca,'FontSize',20,'Fontname', 'Times New Roman');
+% set(gca,'XTick',[0:15:120]);
 % l1 = legend('x-axis','y-axis','z-axis');
 % set(l1,'FontName','Times New Roman','Fontsize',20)
 % 
