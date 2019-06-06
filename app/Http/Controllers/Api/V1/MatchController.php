@@ -317,7 +317,7 @@ class MatchController extends Controller
 
             //BaseMatchModel::join_minitor_match($request->input('matchId'));
 
-            artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
+            //artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
             Redis::sadd($redisKey,$dataType."-".$footLetter);
             mylogger($dataType."-".$footLetter."-".Redis::scard($redisKey));
         }
@@ -325,9 +325,10 @@ class MatchController extends Controller
         //将整场比赛已上传的数量暂存到Redis中
         if(Redis::scard($redisKey) == 5)
         {
-            mylogger($dataType."-".$footLetter."-".Redis::scard($redisKey));
+            mylogger("开始解析-".Redis::scard($redisKey));
             Redis::del($redisKey);
-            artisan("match:run {$matchId}",true);   //执行处理整场比赛
+            artisan("match:parse {$matchId}",true);
+            //artisan("match:run {$matchId}",true);   //执行处理整场比赛
         }
 
         return apiData()->send(200,'ok');
