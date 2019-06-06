@@ -61,7 +61,7 @@ class Match extends Command
         //2.生成罗盘角度
         $angleApp   = new CreateAngle($matchId);
         $angleApp->handle();
-        return;
+
         //3.转换GPS的坐标
         $gpsApp     = new TranslateGps($matchId);
         $gpsApp->handle();
@@ -90,10 +90,8 @@ class Match extends Command
         }
 
         // 6.算法系统位于另外一台服务器上，需要通知算法服务器进行计算工作
-        $host   = config('app.matlabhost');
-        $url    = $host."/api/matchCaculate/run_matlab?matchId=".$matchId;
+        $url    = config('app.matlabhost')."/api/matchCaculate/run_matlab?matchId={$matchId}";
         file_get_contents($url);
-
 
         //7 生成全局跑动GPS热点图
         (new AnalysisMatchData("create_gps_map",['matchId'=>$matchId,'foot'=>'L']))->handle();

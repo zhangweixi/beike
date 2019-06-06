@@ -1259,8 +1259,8 @@ class AnalysisMatchData implements ShouldQueue
         $localDir       = self::matchdir($matchId);
         deldir($localDir);
         mk_dir($localDir);
-
-        $baseApiUrl     = config('app.aliyunApiHost')."/uploads/match/{$matchId}/";
+        $baseApi        = config('app.aliyunApiHost')."/uploads/";
+        $baseApiUrl     = $baseApi."match/{$matchId}/";
 
         //数据文件
         $baseSensorL    = "sensor-L.txt";
@@ -1288,14 +1288,15 @@ class AnalysisMatchData implements ShouldQueue
             "compass_l" =>  $baseCompassL,
             "compass_r" =>  $baseCompassR,
             "gps"       =>  $baseGps,
-            "config"    =>  $baseConfig
         ];
 
         //===========将远程的文件拉取到本地来 开始==============
         //球场配置文件
+        $content    = file_get_contents($baseApi."court-config/{$courtId}.txt");
+        file_put_contents($localDir."court-config.txt",$content);
 
-        //数据文件
 
+        //基础数据文件
         foreach($files as $key  => $file)
         {
             if ($file == "")
