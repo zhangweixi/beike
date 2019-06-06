@@ -37,7 +37,8 @@ class Match extends Command
         $foot       = $this->argument("foot");
         $fid        = $this->argument("fid");
         $parseEngine= new ParseData();  //解析引擎
-
+        mylogger("match:run ".$matchId." ".$type." ".$foot);
+        
         if($type != '-' && $foot != '-'){ //解析单类型数据
 
             return $parseEngine->parse_single_type_data($matchId,$type,$foot);
