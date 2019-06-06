@@ -17,6 +17,7 @@ use App\Models\V1\MatchModel;
 use DB;
 use App\Jobs\AnalysisMatchData;
 use Illuminate\Session\Store;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\ParseData;
 use WebSocket\Client;
@@ -271,14 +272,12 @@ class MatchController extends Controller
         $month      = date('m');
         $day        = date('d');
         $second     = date('His');
+
         $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
         $num1       = str_pad($number,3,'0',STR_PAD_LEFT);
-        $fname      = "{$dataType}-{$footLetter}-{$num1}-{$second}.bin";
         $fname      = "{$dataType}-{$footLetter}-{$num1}.bin";
-        //$fname      = "{$dataType}-{$footLetter}.bin";
-        $fpath      = $fdir."/".$fname;//文件格式
 
-        //Storage::disk('local')->append($fpath,$bindata);
+        $fpath      = $fdir."/".$fname;//文件格式
         Storage::disk('local')->put($fpath,$bindata);
 
         if($number < 0){
@@ -313,18 +312,20 @@ class MatchController extends Controller
         //3.通知APP上传进度
         //$this->inform_app($userId);
 
-        //设置队列，尽快解析本条数据
-        $delayTime      = now()->addSecond(1);
-        //ParseData::dispatch($sourceId)->delay($delayTime);
-
-        //将单场比赛的数据存放到Redis中，全部传输完毕后统一清除
-
+        $redisKey   = "matchupload:".$matchId;
         if($number == 0){ //传输已完成 , 加入到计算监控中
 
             //BaseMatchModel::join_minitor_match($request->input('matchId'));
-            artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
 
-            artisan("match:run {$matchId}",true);
+            Redis::sadd($redisKey,$dataType."-".$footLetter);
+            artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
+        }
+
+        //将整场比赛已上传的数量暂存到Redis中
+        if(Redis::scard($redisKey) == 5)
+        {
+            Redis::del($redisKey);
+            artisan("match:run {$matchId}",true);   //执行处理整场比赛
         }
 
         return apiData()->send(200,'ok');
