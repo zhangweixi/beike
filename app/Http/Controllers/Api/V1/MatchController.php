@@ -319,6 +319,7 @@ class MatchController extends Controller
 
             Redis::sadd($redisKey,$dataType."-".$footLetter);
             artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
+            mylogger($dataType."-".$footLetter."-".Redis::scard($redisKey));
         }
 
         //将整场比赛已上传的数量暂存到Redis中
