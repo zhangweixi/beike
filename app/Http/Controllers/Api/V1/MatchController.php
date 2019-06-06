@@ -325,6 +325,7 @@ class MatchController extends Controller
         //将整场比赛已上传的数量暂存到Redis中
         if(Redis::scard($redisKey) == 5)
         {
+            mylogger($dataType."-".$footLetter."-".Redis::scard($redisKey));
             Redis::del($redisKey);
             artisan("match:run {$matchId}",true);   //执行处理整场比赛
         }
