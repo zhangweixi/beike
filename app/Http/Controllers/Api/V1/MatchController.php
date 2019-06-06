@@ -317,8 +317,8 @@ class MatchController extends Controller
 
             //BaseMatchModel::join_minitor_match($request->input('matchId'));
 
-            Redis::sadd($redisKey,$dataType."-".$footLetter);
             artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
+            Redis::sadd($redisKey,$dataType."-".$footLetter);
             mylogger($dataType."-".$footLetter."-".Redis::scard($redisKey));
         }
 
