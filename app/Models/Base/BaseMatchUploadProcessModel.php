@@ -106,7 +106,7 @@ class BaseMatchUploadProcessModel extends Model
         $colum  = $foot."_finished_num";
         $data   = [];
         $data["finished_num"]   = $info->finished_num + $number;
-        $data[$colum]           = $info->$colum;
+        $data[$colum]           = $info->$colum + $number;
         self::where('user_id',$userId)->update($data);
     }
 
