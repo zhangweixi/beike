@@ -12,6 +12,49 @@ class BaseMatchUploadProcessModel extends Model
 
     protected $primaryKey = "user_id";
 
+    public static function init_upload_process($userId){
+
+        $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
+
+        $time           = date_time();
+
+        if($processInfo){
+
+
+            $finishedNum   = $processInfo->finished_num;
+
+            if($processInfo->left_num == $processInfo->left_finished_num){
+                $leftNum        = 0;
+                $totalLeftNum   = 0;
+                $finishedNum   -= $processInfo->left_num;
+            }
+
+            if($processInfo->right_num == $processInfo->right_finished_num){
+                $rightNum       = 0;
+                $totalRightNum  = 0;
+                $finishedNum   -= $processInfo->right_num;
+            }
+
+            DB::table('match_upload_process')
+                ->where('user_id',$userId)
+                ->update([
+                    'updated_at'        => $time,
+                    "finished_num"      => $finishedNum,
+                    "left_finished_num" => $leftNum,
+                    "right_finished_num"=> $rightNum,
+                    "left_num"          => $totalLeftNum,
+                    "right_num"         => $totalRightNum,
+                ]);
+        }else{
+
+            DB::table('match_upload_process')->insert([
+                "user_id"       => $userId,
+                "finished_num"  => 0,
+                "created_at"    => $time,
+                "updated_at"    => $time
+            ]);
+        }
+    }
     /**
      * 缓存单场比赛的数据上传进度
      * @param $matchId integer
