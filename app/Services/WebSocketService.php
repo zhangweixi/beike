@@ -160,7 +160,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
         $process = BaseMatchUploadProcessModel::get_upload_state($data->userId);
 
-        if($process){
+        if(!$process){
             return;
         }
 
