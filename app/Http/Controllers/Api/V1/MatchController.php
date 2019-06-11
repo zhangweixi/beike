@@ -312,7 +312,7 @@ class MatchController extends Controller
         BaseMatchUploadProcessModel::cache_single_match_progrsss($matchId,$dataType,$foot,$number);
 
         //3.通知APP上传进度
-        //$this->inform_app($userId);
+        $this->inform_app($userId);
 
         $redisKey   = "matchupload:".$matchId;
         if($number == 0){ //传输已完成 , 加入到计算监控中
