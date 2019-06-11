@@ -10,6 +10,7 @@ namespace App\Services;
 use App\Models\Base\BaseMatchUploadProcessModel;
 use App\Models\Base\BaseUserSocketModel;
 use Hhxsv5\LaravelS\Swoole\WebSocketHandlerInterface;
+use PhpParser\Node\Expr\Cast\Object_;
 use Swoole\Http\Request;
 use Swoole\WebSocket\Frame;
 use Swoole\WebSocket\Server;
@@ -155,6 +156,7 @@ class WebSocketService implements WebSocketHandlerInterface{
 
     /**
      * 通知APP上传数据的进度
+     * @param $data Object
      * */
     public function inform_upload_progress($data){
 
@@ -164,7 +166,7 @@ class WebSocketService implements WebSocketHandlerInterface{
             return;
         }
 
-        $data   = [
+        $uploadData   = [
             "action"    => "uploadProgress",
             "total"     => $process->left_num + $process->right_num,
             "finished"  => $process->finished_num,
@@ -174,7 +176,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         $fd     = BaseUserSocketModel::get_user_fd($data->userId,"app");
 
         if($fd){
-            $this->push($fd,$data);
+            $this->push($fd,$uploadData);
         }
     }
 
