@@ -12,6 +12,10 @@ class BaseMatchUploadProcessModel extends Model
 
     protected $primaryKey = "user_id";
 
+    /**
+     * 初始化上传进度
+     * @param $userId integer
+     * */
     public static function init_upload_process($userId){
 
         $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
@@ -55,49 +59,6 @@ class BaseMatchUploadProcessModel extends Model
             ]);
         }
     }
-    /**
-     * 缓存单场比赛的数据上传进度
-     * @param $matchId integer
-     * @param $type string
-     * @param $foot string
-     * @param $num integer
-     * */
-    public static function cache_single_match_progrsss($matchId,$type,$foot,$num){
-
-        Redis::set("upload:{$matchId}:{$type}:{$foot}",$num);
-    }
-
-    /**
-     * 检查单场比赛的数据是否上传完毕
-     * @param $matchId integer
-     * @return boolean
-     * */
-    public static function check_single_match_finish($matchId){
-
-        $gpsL   = Redis::get("upload:{$matchId}:gps:left");
-        $senL   = Redis::get("upload:{$matchId}:sensor:left");
-        $senR   = Redis::get("upload:{$matchId}:sensor:right");
-        $comL   = Redis::get("upload:{$matchId}:compass:left");
-        $comR   = Redis::get("upload:{$matchId}:compass:right");
-
-        if(isZero($gpsL) && isZero($senL) && isZero($senR) && isZero($comL)  && isZero($comR)){
-
-            Redis::del("upload:{$matchId}:gps:left");
-            Redis::del("upload:{$matchId}:sensor:left");
-            Redis::del("upload:{$matchId}:sensor:right");
-            Redis::del("upload:{$matchId}:compass:left");
-            Redis::del("upload:{$matchId}:compass:right");
-
-            return true;
-
-        }else{
-
-            return false;
-
-        }
-    }
-
-
 
     /**
      * 更新进度

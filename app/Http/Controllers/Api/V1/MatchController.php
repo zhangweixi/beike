@@ -308,8 +308,6 @@ class MatchController extends Controller
         mylogger($fname."\n".$dataSize);
         BaseMatchUploadProcessModel::update_process_v2($userId,$foot,$dataSize);
 
-        //3.记录单场上传进度
-        BaseMatchUploadProcessModel::cache_single_match_progrsss($matchId,$dataType,$foot,$number);
 
         //3.通知APP上传进度
         $this->inform_app($userId);
