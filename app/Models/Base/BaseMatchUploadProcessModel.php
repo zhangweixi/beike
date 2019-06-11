@@ -98,13 +98,14 @@ class BaseMatchUploadProcessModel extends Model
      * 更新上传进度V2
      * @param $userId integer
      * @param $foot string
+     * @param $number integer
      * */
-    public static function update_process_v2($userId,$foot){
+    public static function update_process_v2($userId,$foot,$number){
 
         $info   = self::where('user_id',$userId)->first();
         $colum  = $foot."_finished_num";
         $data   = [];
-        $data["finished_num"]   = $info->finished_num + 1;
+        $data["finished_num"]   = $info->finished_num + $number;
         $data[$colum]           = $info->$colum;
         self::where('user_id',$userId)->update($data);
     }
