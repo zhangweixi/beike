@@ -304,9 +304,7 @@ class MatchController extends Controller
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
         //2.修改进度
-        $dataSize       = strlen($bindata);
-        mylogger($fname."\n".$dataSize);
-        BaseMatchUploadProcessModel::update_process_v2($userId,$foot,$dataSize);
+        BaseMatchUploadProcessModel::update_process_v2($userId,$foot,strlen($bindata));
 
 
         //3.通知APP上传进度
@@ -319,7 +317,7 @@ class MatchController extends Controller
             Redis::sadd($redisKey,$dataType."-".$footLetter);
         }
 
-        //将整场比赛已上传的数量暂存到Redis中
+        //将整场比赛已上传的数量暂存到Redis中，每种数据一次上传，一次比赛总的5条数据
         if(Redis::scard($redisKey) == 5)
         {
             Redis::del($redisKey);
