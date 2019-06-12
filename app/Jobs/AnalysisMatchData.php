@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Common\Geohash;
 use App\Common\WechatTemplate;
 use App\Http\Controllers\Service\GPSPoint;
 use App\Http\Controllers\Service\MatchGrade;
@@ -2167,6 +2168,11 @@ class AnalysisMatchData implements ShouldQueue
 
         $courtInfo['width']     = round(gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat),2);
         $courtInfo['length']    = round(gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat),2);
+
+        //创建geohash值
+        $lat    = ($PD->lat + $PA1->lat) / 2;
+        $lon    = ($PD->lon + $PA1->lon) / 2;
+        $courtInfo['geohash']   = (new Geohash())->encode($lat,$lon);
 
         CourtModel::where('court_id',$courtId)->update($courtInfo);
 
