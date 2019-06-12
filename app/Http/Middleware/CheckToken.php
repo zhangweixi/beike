@@ -16,6 +16,11 @@ class CheckToken
      */
     public function handle($request, Closure $next)
     {
+        if(config('app.checkToken') == false){
+
+            return $next($request);
+        }
+
         //检查url是否需要检查token
         $url    = $_SERVER['REQUEST_URI'];
         $url    = explode("?",$url);
@@ -26,18 +31,21 @@ class CheckToken
         $action = $url[1];
 
         //没有这个控制器或没有这个方法
-        if(!isset(self::$except[$ctrl]) || !in_array($action,self::$except[$ctrl])){
+        if(isset(self::$except[$ctrl]) && in_array($action,self::$except[$ctrl])){
 
-            $token      = $request->header("token");
-            $loginToken = new LoginToken();
-
-            if(empty($token) || !$loginToken->token($token)->check()){
-
-                file_put_contents(public_path("logs/token.log"),$_SERVER['REQUEST_URI']."\n",FILE_APPEND);
-                return apiData()->send(9001,"token无效");
-            }
+            return $next($request);
         }
-        return $next($request);
+
+        $token      = $request->header("token");
+        $loginToken = new LoginToken();
+
+        if($token && $loginToken->token($token)->check()){
+
+            return $next($request);
+        }
+
+        file_put_contents(public_path("logs/token.log"),$_SERVER['REQUEST_URI']."\n",FILE_APPEND);
+        return apiData()->send(9001,"token无效");
     }
 
     //过滤的路由

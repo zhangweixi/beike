@@ -2,6 +2,7 @@
 
 namespace App\Models\V1;
 
+use App\Common\Geohash;
 use Illuminate\Database\Eloquent\Model;
 use DB;
 class CourtModel extends Model
@@ -40,23 +41,53 @@ class CourtModel extends Model
     /**
      * 获得用户的球场
      * @param $userId integer 用户ID
-     * @param $owner string 所属
      * */
-    public static function get_courts($userId=0,$owner="self"){
+    public static function get_courts($userId){
 
-        $db = self::select("court_id","court_name","gps_group_id")
-            ->where('court_name',"<>","");
+        $courts = self::select("court_id","court_name","gps_group_id")->where('user_id',$userId)->paginate(10);
 
-        if($owner == 'self'){
+        return $courts;
+    }
 
-            $db->where('user_id',$userId);
+    /**
+     * 获得附近的球场
+     * @param $userId integer 用户ID
+     * @param $type boolean 是否是公共球场 类型有三种，0：获取自己的，1：获取公共的，2：获取所有的
+     * @param $lat float 纬度
+     * @param $lon float 经度
+     * */
+    public static function get_nearby_court($userId,$type,$lat,$lon,$all=false){
 
-        }elseif($owner == 'other'){
+        $geohash    = new Geohash();
+        $hash       = $geohash->encode($lat,$lon);
+        $hash       = substr($hash,0,5);
+        $area       = $geohash->neighbors($hash);
+        if($type == 0){
 
-            $db->where('user_id',"<>",$userId);
+            $db     = self::where('user_id',$userId);
+
+        }elseif($type == 1){
+
+            $db     = self::where('user_id',"<>",$userId)->where('public',1);
+
+        }else{
+
+            $db     = self::where(function($db) use ($userId)
+            {
+                $db->where('user_id',$userId)->orWhere('public',1);
+            });
         }
 
-        $courts = $db->paginate(10);
+
+        $courts = $db->where('court_name',"<>",'')->where(function($db) use ($area)
+        {
+            foreach($area as $hash)
+            {
+                $db->orWhere('geohash','like',$hash."%");
+            }
+        })
+        ->select('court_id','court_name','public')
+        ->get();
 
         return $courts;
     }

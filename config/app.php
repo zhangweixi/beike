@@ -19,6 +19,7 @@ return [
     "adminOpenId"  => "o1zLM0daxBjdzyYwFxQ9YxPs7O6Q",
     "socketHost"   => env('SOCKET_HOST',''),
     "socketPort"   => env('SOCKET_PORT',''),
+    "checkToken"   => env('CHECK_TOKEN',true),
 
     /*
     |--------------------------------------------------------------------------

@@ -230,14 +230,15 @@ class CourtController extends Controller
 
     /**
     * 获得用户的球场
-    *
+    * 无论是用户的球场还是公共的球场，都根据GPS来获得最近的，而不是全部列出
     */
     public function get_courts(Request $request){
 
         $userId     = $request->input('userId');
-        $owner      = $request->input('owner');
+        $lat        = $request->input('latitude');
+        $lon        = $request->input('longitude');
 
-        $courts     = CourtModel::get_courts($userId,$owner);
+        $courts     = CourtModel::get_nearby_court($userId,2,$lat,$lon);
 
         return apiData()->add('courts',$courts)->send();
     }
