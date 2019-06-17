@@ -263,7 +263,7 @@ class CourtController extends Controller
     public function court_detail(Request $request)
     {
         $courtId    = $request->input('courtId');
-        $court      = CourtModel::select('court_id','court_name','p_a','p_b','p_c','p_d','p_e','p_f','p_a1','p_b1','p_c1','p_d1')->find($courtId)->toArray();
+        $court      = CourtModel::select('court_id','court_name','p_a','p_d','p_a1','p_d1')->find($courtId)->toArray();
 
 
         $info       = [];
