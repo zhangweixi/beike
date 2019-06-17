@@ -271,7 +271,9 @@ class CourtController extends Controller
 
         foreach($court as $key => $v){
             if(substr($key,0,1) == 'p'){
-                $gps[] = ['name'=>$key,'gps'=>$v];
+
+                //$gps[] = ['name'=>$key,'gps'=>$v];
+                $gps[] = $v;
             }else{
                 $info[$key] = $v;
             }
