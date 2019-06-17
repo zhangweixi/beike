@@ -186,7 +186,7 @@ class CourtController extends Controller
     }
 
 
-    /*
+    /**
      * 显示足球场地图
      * */
     public function court_border(Request $request)
@@ -256,4 +256,28 @@ class CourtController extends Controller
 
         return apiData()->add("gps",$points)->send();
     }
+
+    /**
+     * 获得足球场详情
+     * */
+    public function court_detail(Request $request)
+    {
+        $courtId    = $request->input('courtId');
+        $court      = CourtModel::select('court_id','court_name','p_a','p_b','p_c','p_d','p_e','p_f','p_a1','p_b1','p_c1','p_d1')->find($courtId)->toArray();
+
+
+        $info       = [];
+        $gps        = [];
+
+        foreach($court as $key => $v){
+            if(substr($key,0,1) == 'p'){
+                $gps[] = ['name'=>$key,'gps'=>$v];
+            }else{
+                $info[$key] = $v;
+            }
+        }
+        $info['gps']    = $gps;
+        return apiData()->add('court',$info)->send();
+    }
+
 }
