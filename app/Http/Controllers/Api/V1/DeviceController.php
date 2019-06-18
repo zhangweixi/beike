@@ -54,6 +54,29 @@ class DeviceController extends Controller
     }
 
     /**
+     * 解绑设备
+     * */
+    public function unbind_user(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $deviceSn   = $request->input('deviceSn');
+        $deviceModel= new DeviceModel();
+        $deviceInfo = $deviceModel->get_device_info_by_sn($deviceSn);
+
+        if($deviceInfo->owner == $userId)
+        {
+            $deviceModel->where('device_sn',$deviceSn)->update(['owner'=>0]);
+            DB::table('users')->where('id',$userId)->update(['device_sn'=>""]);
+
+            return apiData()->send(200,'解绑成功');
+        }
+
+
+        return apiData()->send(4001,'权限不足,不能解绑');
+
+    }
+
+    /**
      * 获得设备信息
      * */
     public function get_device_info(Request $request)
@@ -93,18 +116,26 @@ class DeviceController extends Controller
         $deviceModel    = new DeviceModel();
         $devices        = $deviceModel->get_user_devices($userId);
 
-        foreach($devices as $device)
-        {
-            $lastOta               = BaseVersionModel::last_ota($device->hard_version);
-            $device->OTAFile       = url($lastOta->file);
-            $device->oldSoftVersion= $device->soft_version;
-            $device->lastSoftVersion= $lastOta->id;
-            $device->firmwareType  = $lastOta->firmware_type;
-            unset($device->hard_version);
-            unset($device->soft_version);
-        }
-
         return apiData()->set_data('devices',$devices)->send(200,'SUCCESS');
+    }
+
+    /**
+     * 检查设备是否需要升级
+     * */
+    public function upgrade_info(Request $request)
+    {
+        $deviceId   = $request->input('deviceId');
+        $device     = DeviceModel::find($deviceId);
+        $lastOta    = BaseVersionModel::last_ota($device->hard_version);
+        $upgradeInfo= [
+            "OTAFile"           => url($lastOta->file),
+            "oldSoftVersion"    => $device->soft_version,
+            "lastSoftVersion"   => $lastOta->id,
+            "firmwareType"      => $lastOta->firmware_type,
+            "mustUpgrade"       => $lastOta->must_upgrade
+        ];
+
+        return apiData()->add('upgradeInfo',$upgradeInfo)->send();
     }
 
     /**
@@ -120,29 +151,8 @@ class DeviceController extends Controller
     }
 
     /**
-     * 解绑设备
+     * 用户解绑时发送设备编号，以免用户丢失说明书的情况下下次无法绑定
      * */
-    public function unbind_user(Request $request)
-    {
-        $userId     = $request->input('userId');
-        $deviceSn   = $request->input('deviceSn');
-        $deviceModel= new DeviceModel();
-        $deviceInfo = $deviceModel->get_device_info_by_sn($deviceSn);
-
-        if($deviceInfo->owner == $userId)
-        {
-            $deviceModel->where('device_sn',$deviceSn)->update(['owner'=>0]);
-            DB::table('users')->where('id',$userId)->update(['device_sn'=>""]);
-
-            return apiData()->send(200,'解绑成功');
-        }
-
-
-        return apiData()->send(4001,'权限不足,不能解绑');
-
-    }
-
-
     public function send_device_sn(Request $request){
 
         $userId     = $request->input('userId');
