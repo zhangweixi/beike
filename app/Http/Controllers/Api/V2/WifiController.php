@@ -17,14 +17,14 @@ class WifiController extends Controller{
     public function add_wifi(Request $request){
 
         (int) $userId =  $request->input('userId');
-        WifiModel::where('user_id',$userId)->update(['default'=>0]);
+        WifiModel::where('user_id',$userId)->update(['is_default'=>0]);
 
         $wifiInfo=WifiModel::create([
             "user_id"   => $userId,
             "name"      => $request->input('name'),
             "password"  => $request->input('password'),
             "tag"       => $request->input('tag'),
-            "default"   => 1
+            "is_default"=> 1
         ]);
 
         return apiData()->add("wifi",$wifiInfo)->send();
@@ -37,12 +37,12 @@ class WifiController extends Controller{
      * */
     public function edit_wifi(Request $request){
 
-        $data   = $request->only(["name","password","default","tag"]);
+        $data   = $request->only(["name","password","is_default","tag"]);
         $wifi   = WifiModel::find($request->input('wfId'));
 
-        if($data['default'] == 1){
+        if($data['is_default'] == 1){
 
-            WifiModel::where('user_id',$wifi->user_id)->update(['default'=>0]);
+            WifiModel::where('user_id',$wifi->user_id)->update(['is_default'=>0]);
         }
 
         $wifi->update($data);
@@ -71,8 +71,8 @@ class WifiController extends Controller{
         $userId     = $request->input('userId',0);
 
         $wifis      = WifiModel::where('user_id',$userId)
-            ->select('wf_id','name','password','tag','default')
-            ->orderBy('default','desc')
+            ->select('wf_id','name','password','tag','is_default')
+            ->orderBy('is_default','desc')
             ->orderBy('wf_id','asc')
             ->get();
 

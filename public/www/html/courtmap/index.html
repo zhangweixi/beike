@@ -5,34 +5,107 @@
     <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=zZSGyxZgUytdiKG135BcnaP6"></script>
     <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
     <style type="text/css">
-        body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+        body, html{width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+
+        .container{
+            display: flex;
+            height:100%;
+        }
 
         #allmap
         {
-            height:90vh;
+            flex:1;
+        }
+
+        .operation{
+            width:300px;
+        }
+
+        button,input{
+            display: block;
+            margin:auto;
+            margin-top:10px;
+            width:80%;
+            line-height:30px;
+            text-align: center;
+        }
+        button{
+            cursor: pointer;
+        }
+        .operation div{
+            background:#ddd;
+            padding:5px 0 10px;
+            margin-top:10px;
+        }
+        .flex{
+            display: flex;
+        }
+        .flex span{
+            flex:1;
+            text-align: center;
+            line-height:2;
+        }
+        .nav span{
+            background:#999;
+            color:#fff;
+            cursor: pointer;
+        }
+        .nav .selected{
+            background:#555;
+            color:#fff;
+        }
+        .colors{
+            padding:10px !important;
+
         }
 
     </style>
-    <title>Title</title>
+    <title>球场地图</title>
 </head>
 <body>
-    <div>
-        <button onclick="show_map_border();">显示球场边框</button>
-        <button onclick="show_map_content();">显示球场内部点</button>
-        <button onclick="clear_court();">清除足球场</button>
-        <input type="text" id="gpsGroupId" placeholder="gpsGroupId">
-        <button onclick="show_court_gps_group()">显示GPS群组</button>
-        <button onclick="show_court_gps_group_all()">显示GPS群组所有点</button>
-        <input type="text" placeholder="filepath" id="filepath">
-        <button onclick="show_file_map()">显示文件地图</button>
+<div class="container">
+    <div id="allmap"></div>
+    <div class="operation">
+        <div class="nav flex">
+            <span onclick="nav('base',this)" class="selected">基本操作</span>
+            <span onclick="nav('add',this)">新增球场</span>
+        </div>
 
-        <div style="float:right;"><button style="background:red;">手机</button><button style="background:green;">设备</button></div>
+        <!--操作-->
+        <section class="base">
+            <button onclick="clear_court();">清除地图</button>
+            <button onclick="show_map_border();">显示球场边框</button>
+
+            <button onclick="show_map_content();">显示球场内部分割点</button>
+
+            <div>
+                <input type="text" id="gpsGroupId" placeholder="gpsGroupId">
+                <button onclick="show_court_gps_group()">显示球场的几个核心点</button>
+                <button onclick="show_court_gps_group_all()">显示设备和手机原始数据</button>
+            </div>
+
+
+            <div>
+                <input type="text" placeholder="请输入文件路径" id="filepath">
+                <button onclick="show_file_map()">显示文件地图</button>
+            </div>
+
+
+            <div class="colors flex">
+                <span style="background:red;">手机</span>
+                <span style="background:green;">设备</span>
+            </div>
+        </section>
+
+        <!--新球场-->
+        <section class="add">
+
+            
+
+        </section>
 
     </div>
-    <div id="allmap"></div>
-
-
-
+</div>
 </body>
 </html>
 
@@ -42,6 +115,18 @@
     map.centerAndZoom("上海",16);  //初始化地图,设置城市和地图级别。
     map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
     map.addControl(new BMap.MapTypeControl());
+    function nav(obj,self){
+        console.log(self);
+
+        if($(self).hasClass('selected')){
+            return;
+        }
+        $('.nav span').removeClass("selected");
+        $(self).addClass('selected');
+        $('section').hide();
+        $('.'+obj).show();
+
+    }
 
     function show_map_content()
     {
