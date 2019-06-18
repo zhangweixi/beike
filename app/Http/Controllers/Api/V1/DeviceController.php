@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Common\MobileMassege;
 use App\Models\Base\BaseUserModel;
+use App\Models\Base\BaseVersionModel;
 use App\Models\Base\LogsModel;
 use App\Models\V1\MessageModel;
 use App\Models\V1\UserModel;
@@ -92,10 +93,31 @@ class DeviceController extends Controller
         $deviceModel    = new DeviceModel();
         $devices        = $deviceModel->get_user_devices($userId);
 
+        foreach($devices as $device)
+        {
+            $lastOta               = BaseVersionModel::last_ota($device->hard_version);
+            $device->OTAFile       = url($lastOta->file);
+            $device->oldSoftVersion= $device->soft_version;
+            $device->lastSoftVersion= $lastOta->id;
+            $device->firmwareType  = $lastOta->firmware_type;
+            unset($device->hard_version);
+            unset($device->soft_version);
+        }
 
         return apiData()->set_data('devices',$devices)->send(200,'SUCCESS');
     }
 
+    /**
+     * 升级设备
+     * */
+    public function upgrade_device(Request $request){
+
+        $deviceId   = $request->input('deviceId');
+        $softVersion= $request->input('softVersion');
+        DeviceModel::where('device_id',$deviceId)->update(['soft_version'=>$softVersion]);
+
+        return apiData()->send();
+    }
 
     /**
      * 解绑设备
