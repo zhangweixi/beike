@@ -1,0 +1,94 @@
+body, html{width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+
+.container{
+  display: flex;
+  height:100%;
+}
+
+#allmap
+{
+  flex:1;
+}
+
+.operation{
+  width:300px;
+}
+
+button,input{
+  display: block;
+  margin:auto;
+  margin-top:10px;
+  width:80%;
+  line-height:30px;
+  text-align: center;
+}
+button{
+  cursor: pointer;
+}
+
+.flex{
+  display: flex;
+}
+.flex span{
+  flex:1;
+  text-align: center;
+  line-height:2;
+}
+
+.operation{
+  .nav span{
+    background:#999;
+    color:#fff;
+    cursor: pointer;
+  }
+  .nav .selected{
+    background:#555;
+    color:#fff;
+  }
+
+  div{
+    background:#ddd;
+    padding:5px 0 10px;
+    margin-top:10px;
+  }
+
+  //球场背景
+  .court-bg{
+    background-image:url('../../../beike/images/default/court-bg.png');
+    background-position: center;
+    background-repeat:no-repeat;
+    background-size: 100% auto;
+    height:167px;
+    position: relative;
+    width:270px;
+    margin:auto;
+    p{
+      position: absolute;
+      width:20px;
+      height:20px;
+      line-height:20px;
+      font-size:13px;
+      background:#888;
+      color:#fff;
+      border-radius: 100%;
+      text-align: center;
+    }
+    .pa{ left:-10px;top:-5px; }
+    .pb{ left:-10px;top:45px; }
+    .pc{ left:-10px;bottom:45px; }
+    .pd{ left:-10px;bottom:-5px; }
+    .pe{ right:-10px;bottom:-5px; }
+    .pf{ right:-10px;top:-5px; }
+    .light{
+      background:red;
+    }
+  }
+
+  .colors{
+    padding:10px !important;
+  }
+}
+
+
+
+

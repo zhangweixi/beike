@@ -2,64 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=zZSGyxZgUytdiKG135BcnaP6"></script>
     <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
-    <style type="text/css">
-        body, html{width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
 
-        .container{
-            display: flex;
-            height:100%;
-        }
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=zZSGyxZgUytdiKG135BcnaP6"></script>
+    <!--加载鼠标绘制工具-->
+    <script type="text/javascript" src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.css" />
 
-        #allmap
-        {
-            flex:1;
-        }
+    <!--加载检索信息窗口-->
+    <script type="text/javascript" src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js"></script>
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.css" />
 
-        .operation{
-            width:300px;
-        }
-
-        button,input{
-            display: block;
-            margin:auto;
-            margin-top:10px;
-            width:80%;
-            line-height:30px;
-            text-align: center;
-        }
-        button{
-            cursor: pointer;
-        }
-        .operation div{
-            background:#ddd;
-            padding:5px 0 10px;
-            margin-top:10px;
-        }
-        .flex{
-            display: flex;
-        }
-        .flex span{
-            flex:1;
-            text-align: center;
-            line-height:2;
-        }
-        .nav span{
-            background:#999;
-            color:#fff;
-            cursor: pointer;
-        }
-        .nav .selected{
-            background:#555;
-            color:#fff;
-        }
-        .colors{
-            padding:10px !important;
-
-        }
-
-    </style>
+    <link rel="stylesheet" href="index.css" type="text/css">
     <title>球场地图</title>
 </head>
 <body>
@@ -74,13 +28,13 @@
         <!--操作-->
         <section class="base">
             <button onclick="clear_court();">清除地图</button>
-            <button onclick="show_map_border();">显示球场边框</button>
+            <!--<button onclick="show_map_border();">显示球场边框</button>-->
 
             <button onclick="show_map_content();">显示球场内部分割点</button>
 
             <div>
                 <input type="text" id="gpsGroupId" placeholder="gpsGroupId">
-                <button onclick="show_court_gps_group()">显示球场的几个核心点</button>
+                <button onclick="show_court_top_point()">显示球场的几个核心点</button>
                 <button onclick="show_court_gps_group_all()">显示设备和手机原始数据</button>
             </div>
 
@@ -98,284 +52,31 @@
         </section>
 
         <!--新球场-->
-        <section class="add">
+        <section class="add" style="display: none;">
 
-            
+            <div>
+                <input type="text" placeholder="地名" id="suggestId">
+                <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;"></div>
+                <!--<button>搜索</button>-->
+            </div>
 
+            <div>
+                <div class="court-bg">
+                    <p class="pa">A</p>
+                    <p class="pb">B</p>
+                    <p class="pc">C</p>
+                    <p class="pd">D</p>
+                    <p class="pe">E</p>
+                    <p class="pf">F</p>
+                </div>
+                <button onclick="drawingManager.beginDraw();">绘制球场</button>
+                <button onclick="drawingManager.cleanAllOverlay();">清除</button>
+                <input type="text" placeholder="请输入球场名称" id="courtName">
+                <button onclick="drawingManager.saveNewCourt()">保存球场</button>
+            </div>
         </section>
-
     </div>
 </div>
 </body>
 </html>
-
-<script>
-    // 百度地图API功能
-    var map = new BMap.Map("allmap");    // 创建Map实例
-    map.centerAndZoom("上海",16);  //初始化地图,设置城市和地图级别。
-    map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
-    map.addControl(new BMap.MapTypeControl());
-    function nav(obj,self){
-        console.log(self);
-
-        if($(self).hasClass('selected')){
-            return;
-        }
-        $('.nav span').removeClass("selected");
-        $(self).addClass('selected');
-        $('section').hide();
-        $('.'+obj).show();
-
-    }
-
-    function show_map_content()
-    {
-        var url = location.origin+"/api/v1/court/court_content?matchId="+getQueryVariable('matchId');
-        $.post(url).success(function(res){
-
-            var data	= res.data.points;
-
-            var points = [];
-
-            for(var p in data){
-
-                var newp = new BMap.Point(data[p].lon,data[p].lat);
-                points.push(newp);
-            }
-            show_big_data(points);
-        })
-    }
-
-
-    function show_map_border()
-    {
-        var url = location.origin+"/api/v1/court/court_border?matchId="+getQueryVariable('matchId');
-        $.post(url).success(function(res){
-
-            var AD  = [];
-            var points  = res.data.points;
-            for(var p of points.A_D)
-            {
-                AD.push(getpoint(p.lat,p.lon));
-            }
-            //map.setCenter();
-            map.centerAndZoom(AD[0],20);  //初始化地图,设置城市和地图级别。
-            drawline(AD);
-
-            var FE = [];
-            for(var p of points.F_E)
-            {
-                FE.push(getpoint(p.lat,p.lon));
-            }
-            drawline(FE);
-
-            var GH = [];
-            for(var p of points.AF_DE)
-            {
-                GH.push(getpoint(p.lat,p.lon));
-            }
-            drawline(GH);
-
-
-            var centers = [];
-            var i=0;
-            for(var p of points.center)
-            {
-                centers.push(getpoint(p.lat,p.lon));
-                if(i== 32) break;
-                i++;
-            }
-            show_big_data(centers);
-
-        })
-    }
-
-    function show_big_data(points,color="red")
-    {
-        var options = {
-            size: BMAP_POINT_SIZE_SMALL,
-            shape: BMAP_POINT_SHAPE_STAR,
-            color: color
-        }
-        var pointCollection = new BMap.PointCollection(points, options);  // 初始化PointCollection
-        map.addOverlay(pointCollection);  // 添加Overlay
-    }
-
-
-
-    function clear_court()
-    {
-        map.clearOverlays();
-    }
-
-    function drawline(points,color="green")
-    {
-        var polyline = new BMap.Polyline(points, {strokeColor:color, strokeWeight:2, strokeOpacity:0.5});  //定义折线
-        map.addOverlay(polyline);     //添加折线到地图上
-    }
-
-
-
-    function get_distance(pointA,pointB)
-    {
-
-        var dis = map.getDistance(pointA,pointB);
-        return dis;
-    }
-
-    function getpoint(lat,lon)
-    {
-        return new BMap.Point(lon,lat);
-    }
-
-    function show_court_gps_group()
-    {
-        var gpsGroupId = $('#gpsGroupId').val();
-        if(gpsGroupId == "")
-        {
-            gpsGroupId = getQueryVariable('gpsGroupId');
-        }
-        var url = "/api/admin/court/draw_court?gpsGroupId="+gpsGroupId;
-        $.post(url).success(function(res){
-
-
-            var mobilepoints  = [];
-            var devicepoints  = [];
-            var mi = 1;
-            var di = 6;
-            for(var gps of res)
-            {
-                //var mp = getpoint(gps.mobile_lat,gps.mobile_lon);
-                var dp = getpoint(gps.device_lat,gps.device_lon);
-
-                //mobilepoints.push(mp);
-                devicepoints.push(dp);
-
-                //addlabel(mp,gps.position,'red');
-                addlabel(dp,gps.position,'blue');
-
-                //map.addOverlay(new BMap.Marker(mp));
-                //map.addOverlay(new BMap.Marker(dp));
-
-                //setTimeout(function(){ map.addOverlay(new BMap.Marker(mobilepoints[mi-1])); },1000*mi);
-                //setTimeout(function(){ map.addOverlay(new BMap.Marker(devicepoints[di-1])); },1000*di);
-
-                mi++;
-                di++;
-            }
-            console.log(devicepoints);
-            drawline(devicepoints,'green');
-            map.setCenter(devicepoints[0]);
-        })
-    }
-
-
-    function show_court_gps_group_all()
-    {
-        var gpsGroupId = $('#gpsGroupId').val();
-        if(gpsGroupId == "")
-        {
-            gpsGroupId = getQueryVariable('gpsGroupId');
-        }
-
-        var url = "/api/admin/court/draw_court_all?gpsGroupId="+gpsGroupId;
-        $.post(url).success(function(res){
-
-
-            var mobilepoints  = [];
-            var devicepoints  = [];
-
-            for(var gps of res.device)
-            {
-                devicepoints.push(getpoint(gps.lat,gps.lon));
-            }
-
-            for(var gps of res.mobile)
-            {
-                mobilepoints.push(getpoint(gps.lat,gps.lon));
-            }
-
-            show_big_data(mobilepoints,'red');
-            show_big_data(devicepoints,'green');
-            map.setCenter(mobilepoints[0],20);
-
-            return ;
-
-            for(var gps of res)
-            {
-                var mp = getpoint(gps.mobile_lat,gps.mobile_lon);
-                var dp = getpoint(gps.device_lat,gps.device_lon);
-
-                mobilepoints.push(mp);
-                devicepoints.push(dp);
-
-                addlabel(mp,gps.position,'red');
-                addlabel(dp,gps.position,'blue');
-
-                //map.addOverlay(new BMap.Marker(mp));
-                //map.addOverlay(new BMap.Marker(dp));
-
-                //setTimeout(function(){ map.addOverlay(new BMap.Marker(mobilepoints[mi-1])); },1000*mi);
-                //setTimeout(function(){ map.addOverlay(new BMap.Marker(devicepoints[di-1])); },1000*di);
-
-                mi++;
-                di++;
-            }
-
-            drawline(mobilepoints,'red');
-            drawline(devicepoints,'green');
-            map.setCenter(mobilepoints[0]);
-        })
-    }
-
-
-    function show_file_map(){
-
-        var filepath = $('#filepath').val();
-        var url = "/api/v1/court/show_file_map?filepath="+filepath;
-        $.post(url).success(function(res){
-
-
-            var points  = res.data.points;
-            var gpsPonts= [];
-
-            for(var gps of points)
-            {
-                gpsPonts.push(getpoint(gps.lat,gps.lon));
-            }
-            console.log(gpsPonts);
-            show_big_data(gpsPonts,'black');
-
-        })
-
-    }
-
-    function addlabel(point,text,color)
-    {
-        var labelOpts = {
-            position : point,    // 指定文本标注所在的地理位置
-            offset   : new BMap.Size(0, 0)    //设置文本偏移量
-        }
-        var label=  new BMap.Label(text,labelOpts)
-        label.setStyle({
-            color : color,
-            //fontSize : "12px",
-            //height : "20px",
-            lineHeight : "10px",
-            fontFamily:"微软雅黑"
-        });
-        map.addOverlay(label);
-    }
-
-    function getQueryVariable(variable)
-    {
-        var query = window.location.search.substring(1);
-        var vars = query.split("&");
-        for (var i=0;i<vars.length;i++) {
-            var pair = vars[i].split("=");
-            if(pair[0] == variable){return pair[1];}
-        }
-        return(false);
-    }
-</script>
-
+<script src="index.js"></script>

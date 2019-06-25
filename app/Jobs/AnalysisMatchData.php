@@ -2092,6 +2092,11 @@ class AnalysisMatchData implements ShouldQueue
         return $result;
     }
 
+    /**
+     * 调用MATLAB解析球场数据
+     * @param $courtId integer
+     *
+     * */
     public function call_matlab_court_action($courtId){
 
         //调用matlab
@@ -2108,7 +2113,7 @@ class AnalysisMatchData implements ShouldQueue
         $matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
 
         $command = "python $pythonFile --command=$matlabCmd";
-        mylogger("分析球场数据:".$command);
+
         if(!file_exists($dir.$inputFile))
         {
             mylogger($dir.$inputFile."不存在");
@@ -2147,38 +2152,15 @@ class AnalysisMatchData implements ShouldQueue
 
             if(in_array($position,$positions))
             {
-                $key                = $colums[$point[0]];
+                $key                = $colums[$position];
                 $courtInfo[$key]    = $point[1].",".$point[2];
             }
         }
 
-        //判断球场是否是顺时针
-        $pa     = explode(",",$courtInfo['p_a']);
-        $pd     = explode(",",$courtInfo['p_d']);
-        $pe     = explode(",",$courtInfo['p_e']);
-        $pa1    = explode(",",$courtInfo['p_a1']);
-
-        $PA     = new GPSPoint($pa[0],$pa[1]);
-        $PD     = new GPSPoint($pd[0],$pd[1]);
-        $PE     = new GPSPoint($pe[0],$pe[1]);
-        $PA1    = new GPSPoint($pa1[0],$pa1[1]);
-
-        $isClockWise                = Court::judge_court_is_clockwise($PA,$PD,$PE);;
-        $courtInfo['is_clockwise']  = $isClockWise ? 1 : 0;
-
-        $courtInfo['width']     = round(gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat),2);
-        $courtInfo['length']    = round(gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat),2);
-
-        //创建geohash值
-        $lat    = ($PD->lat + $PA1->lat) / 2;
-        $lon    = ($PD->lon + $PA1->lon) / 2;
-        $courtInfo['geohash']   = (new Geohash())->encode($lat,$lon);
-
-        CourtModel::where('court_id',$courtId)->update($courtInfo);
+        CourtModel::init_new_court($courtId,$courtInfo);
+        BaseFootballCourtModel::remove_minitor_court($courtId);
 
         //球场解析结束
         mylogger("球场解析成功,courtId:".$courtId);
-
-        BaseFootballCourtModel::remove_minitor_court($courtId);
     }
 }

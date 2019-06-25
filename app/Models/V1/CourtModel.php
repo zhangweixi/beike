@@ -3,14 +3,19 @@
 namespace App\Models\V1;
 
 use App\Common\Geohash;
+use App\Http\Controllers\Service\GPSPoint;
 use Illuminate\Database\Eloquent\Model;
 use DB;
+use App\Http\Controllers\Service\Court;
+
+
 class CourtModel extends Model
 {
 
     protected $table        = "football_court";
     protected $primaryKey   = "court_id";
     public  $timestamps = false;//关闭自动维护
+    protected $guarded = [];
 
     /*
      * 添加足球场
@@ -90,5 +95,50 @@ class CourtModel extends Model
         ->get();
 
         return $courts;
+    }
+
+    /**
+     * 初始化一个新球场
+     * @param $courtId integer
+     * @param $points array 球场的几个点,必须要的点a,b,c,d,a1,d1
+     * a------------------f--------------------a1
+     * |                  |                    |
+     * |                  |                    |
+     * b                  |                    |
+     * |                  |                    |
+     * |                  |                    |
+     * c                  |                    |
+     * |                  |                    |
+     * |                  |                    |
+     * d------------------e-------------------d1
+     * */
+    public static function init_new_court($courtId,array $points){
+
+        //判断球场是否是顺时针
+        $courtInfo  = $points;
+
+        $pa     = explode(",",$points['p_a']);
+        $pd     = explode(",",$points['p_d']);
+        $pd1    = explode(",",$points['p_d1']);
+        $pa1    = explode(",",$points['p_a1']);
+
+        $PA     = new GPSPoint($pa[0],$pa[1]);
+        $PD     = new GPSPoint($pd[0],$pd[1]);
+        $PD1    = new GPSPoint($pd1[0],$pd1[1]);
+        $PA1    = new GPSPoint($pa1[0],$pa1[1]);
+
+        $isClockWise                = Court::judge_court_is_clockwise($PA,$PD,$PD1);;
+        $courtInfo['is_clockwise']  = $isClockWise ? 1 : 0;
+
+        $courtInfo['width']         = round(gps_distance($PA->lon,$PA->lat,$PD->lon,$PD->lat),2);
+        $courtInfo['length']        = round(gps_distance($PA->lon,$PA->lat,$PA1->lon,$PA1->lat),2);
+
+
+        //创建geohash值
+        $lat    = ($PD->lat + $PA1->lat) / 2;
+        $lon    = ($PD->lon + $PA1->lon) / 2;
+        $courtInfo['geohash']   = (new Geohash())->encode($lat,$lon);
+
+        self::where('court_id',$courtId)->update($courtInfo);
     }
 }
