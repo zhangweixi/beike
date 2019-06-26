@@ -124,6 +124,8 @@ class WebSocketService implements WebSocketHandlerInterface{
         }else{
 
             $type   = "app";
+
+            $this->push($this->frame->fd,["code"=>200,"msg"=>"AUTH SUCCESS"]);
         }
 
         $socket->bind($this->frame->fd,$data->userId,$type);
