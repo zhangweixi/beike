@@ -27,12 +27,12 @@ class BaseMatchUploadProcessModel extends Model
 
             $finishedNum   = $processInfo->finished_num;
 
+            //如果当前设备已完成数量和当前设备总量相等，则将已完成量和总量都重置为0
             if($processInfo->left_num == $processInfo->left_finished_num){
 
                 $finishedNum   -= $processInfo->left_num;
                 $processInfo->left_finished_num = 0;
                 $processInfo->left_num          = 0;
-
             }
 
             if($processInfo->right_num == $processInfo->right_finished_num){
