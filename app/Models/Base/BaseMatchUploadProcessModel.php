@@ -28,27 +28,31 @@ class BaseMatchUploadProcessModel extends Model
             $finishedNum   = $processInfo->finished_num;
 
             if($processInfo->left_num == $processInfo->left_finished_num){
-                $leftNum        = 0;
-                $totalLeftNum   = 0;
+
                 $finishedNum   -= $processInfo->left_num;
+                $processInfo->left_finished_num = 0;
+                $processInfo->left_num          = 0;
+
             }
 
             if($processInfo->right_num == $processInfo->right_finished_num){
-                $rightNum       = 0;
-                $totalRightNum  = 0;
+
                 $finishedNum   -= $processInfo->right_num;
+                $processInfo->right_num             = 0;
+                $processInfo->right_finished_num    = 0;
             }
 
+            $newProgress = [
+                'updated_at'        => $time,
+                "finished_num"      => $finishedNum,
+                "left_finished_num" => $processInfo->left_finished_num,
+                "right_finished_num"=> $processInfo->right_finished_num,
+                "left_num"          => $processInfo->left_num,
+                "right_num"         => $processInfo->right_num,
+            ];
             DB::table('match_upload_process')
                 ->where('user_id',$userId)
-                ->update([
-                    'updated_at'        => $time,
-                    "finished_num"      => $finishedNum,
-                    "left_finished_num" => $leftNum,
-                    "right_finished_num"=> $rightNum,
-                    "left_num"          => $totalLeftNum,
-                    "right_num"         => $totalRightNum,
-                ]);
+                ->update($newProgress);
         }else{
 
             DB::table('match_upload_process')->insert([
