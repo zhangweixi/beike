@@ -173,7 +173,7 @@ class WebSocketService implements WebSocketHandlerInterface{
             "total"     => $process->left_num + $process->right_num,
             "finished"  => $process->finished_num,
             "needTime"  => 0,
-            "percent"   => intval($process->finished_num / ($process->left_num + $process->right_num)),
+            "percent"   => intval($process->finished_num / ($process->left_num + $process->right_num) * 100),
         ];
 
         $fd     = BaseUserSocketModel::get_user_fd($data->userId,"app");
