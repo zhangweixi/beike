@@ -2,7 +2,7 @@
 % LANQI 主程序
 % 2018-09-05
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function LanQi(pathname,sensor_R,sensor_L,angle_R,angle_L,gps_L,court_config,gpsresult,turnresult,passresult,stepresult,shootresult,website)
+function LanQi(pathname,sensor_R,sensor_L,angle_R,angle_L,gps_L,court_config,gpsresult,turnresult,passresult,stepresult,shootresult)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 输入格式
 % LanQi('文件所在位置','sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt',
@@ -64,7 +64,7 @@ B = [pathname,real(shootresult)];
 dlmwrite(B,real(shoot_result),'precision', '%.6f','delimiter',' ','newline','pc');
 
 % 网址
-webread(website);
+% webread(website);
 
 end 
 

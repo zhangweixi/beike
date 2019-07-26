@@ -24,13 +24,11 @@ if len(params) != 2:
 	help()
 
 if params["env"] == "dev":
-	path = "/data/my"
+	path = "/data/www/dev.api.launchever.cn/public/uploads/match/"
 elif params["env"] == "pro":
-	path = ""
+	path = "/data/www/api.launchever.cn/public/uploads/match/"
 
-#path = path + "/" params["id"]
-path = path+"/"
-
+path = path + params['id'] + "/"
 eng = matlab.engine.start_matlab()
 res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt',nargout=0)
 #res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt')
