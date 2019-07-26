@@ -1,0 +1,38 @@
+#!/usr/bin/python
+import getopt
+import matlab.engine
+import sys
+
+def help():
+	print "[command]: run --env=xxx --id=xxx"
+ 	print "[env] \n   dev:development\n   pro:--->product"
+	print "[id]:the match id"
+	sys.exit()
+
+options,args = getopt.getopt(sys.argv[1:],"h",["env=","id="])
+
+params = {}
+for i in options:
+	argname = i[0].strip("-")
+
+	if argname == "h":
+		help()
+	else:
+		params[argname] = i[1]
+
+if len(params) != 2:
+	help()
+
+if params["env"] == "dev":
+	path = "/data/my"
+elif params["env"] == "pro":
+	path = ""
+
+#path = path + "/" params["id"]
+path = path+"/"
+
+eng = matlab.engine.start_matlab()
+res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt',nargout=0)
+#res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt')
+#print res
+
