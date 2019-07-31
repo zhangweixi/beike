@@ -914,7 +914,7 @@ class AnalysisMatchData implements ShouldQueue
 
 
         //3.0 生成热点图占用时间比较久，异步调用
-        self::execute("create_gps_map",['matchId'=>$matchId,'foot'=>"L"]);
+        //self::execute("create_gps_map",['matchId'=>$matchId,'foot'=>"L"]); 移到后面统一处理
 
 
         //3.1 拷贝一份球场配置文件到数据比赛中
@@ -928,9 +928,10 @@ class AnalysisMatchData implements ShouldQueue
         BaseMatchModel::match_process($matchId,"角度计算完毕");
 
         //3.角度计算完毕，请求调用算法系统
-        $params     = ['matchId'=>$matchId];
-        self::execute("run_matlab",$params,'matlab');
-        BaseMatchModel::match_process($matchId,'请求算法系统');
+        //$params     = ['matchId'=>$matchId];
+        //self::execute("run_matlab",$params,'matlab');
+        //BaseMatchModel::match_process($matchId,'请求算法系统');
+        $this->run_matlab($matchId);
     }
 
     public function caculate_angle($matchId){
@@ -1253,82 +1254,14 @@ class AnalysisMatchData implements ShouldQueue
      * @param $matchId
      * */
     public function run_matlab($matchId)
-    {   mylogger("准备计算工作:".$matchId);
-        set_time_limit(0);
-        $matchInfo      = MatchModel::find($matchId);
-        $courtId        = $matchInfo->court_id;
-        $localDir       = self::matchdir($matchId);
-        deldir($localDir);
-        mk_dir($localDir);
-        $baseApi        = config('app.aliyunApiHost')."/uploads/";
-        $baseApiUrl     = $baseApi."match/{$matchId}/";
-
-        //数据文件
-        $baseSensorL    = "sensor-L.txt";
-        $baseSensorR    = "sensor-R.txt";
-
-        $baseCompassL   = "angle-L.txt";
-        $baseCompassR   = "angle-R.txt";
-        $baseGps        = "gps-L.txt";
-        $baseConfig     = $courtId > 0 ? "court-config.txt" : '';
-
-
-        //结果文件
-        $resultRun      = "result-run.txt";     //跑动结果
-        $resultPass     = "result-pass.txt";    //传球结果
-        $resultStep     = "result-step.txt";    //步频
-        $resultShoot    = "result-shoot.txt";   //射门
-        $resultTurn     = "result-turn.txt";    //转向
-
-        //$callbackUrl    = urlencode(config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}");//回调URL
-        $callbackUrl    = config('app.apihost')."/api/matchCaculate/save_matlab_result?matchId={$matchId}";//回调URL
-
-        $files  = [
-            "sensor_l"  =>  $baseSensorL,
-            "sensor_r"  =>  $baseSensorR,
-            "compass_l" =>  $baseCompassL,
-            "compass_r" =>  $baseCompassR,
-            "gps"       =>  $baseGps,
-        ];
-
-        //===========将远程的文件拉取到本地来 开始==============
-        //球场配置文件
-        $content    = file_get_contents($baseApi."court-config/{$courtId}.txt");
-        file_put_contents($localDir."court-config.txt",$content);
-
-
-        //基础数据文件
-        foreach($files as $key  => $file)
-        {
-            if ($file == "")
-            {
-                continue;
-            }
-
-            $content    = file_get_contents($baseApiUrl.$file);
-
-            $file       = $localDir.$file;
-
-            file_put_contents($file,$content);
-        }
-
-
-        //===========将远程的文件拉取到本地来 结束==============
-
-        //LanQi('','sensor-R.txt', 'sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt','http://dev1.api.launchever.cn/api/admin/match/get_visual_match_court?matchId=123')
-
-        $pythonfile = app_path('python/python_call_matlab.py');
-        $matlabCmd  = "LanQi('{$localDir}','{$baseSensorR}','{$baseSensorL}','{$baseCompassR}','{$baseCompassL}','{$baseGps}','{$baseConfig}','{$resultRun}','{$resultTurn}','{$resultPass}','{$resultStep}','{$resultShoot}','{$callbackUrl}')";
-        $command    = "python {$pythonfile} --command={$matlabCmd}";
-
-        $result     = shell_exec($command."&& echo success");
-
-        mylogger("调用matlab成功：".$command);
+    {
+        $matchInfo  = MatchModel::select('court_id')->find($matchId);
+        self::sync_court_config($matchId,$matchInfo->court_id);     //同步球场配置文件
+        $result     = self::call_matlab_calculate($matchId);        //计算
 
         if(trim($result) == "success") {
 
-            //$params   = ['matchId'=>$matchId];
-            //self::execute("save_matlab_result",$params,'api');
+            $this->save_matlab_result($matchId);
 
         }else{
 
@@ -1338,7 +1271,31 @@ class AnalysisMatchData implements ShouldQueue
         }
     }
 
+    /**
+     * @param $act string   match:计算比赛 court:计算球场
+     * @param $id string    当act为match时，为比赛ID，当act为court时，为:courtId
+     * @return string
+     * */
+    static function call_matlab_calculate($act,$id)
+    {
+        if($act == "match"){
+            $fpath      = public_path("uploads/match/".$id."/");
+        }elseif($act == "court"){
+            $fpath      = public_path("uploads/court-config/".$id."/");
+        }
 
+        $python     = app_path("python/matlabsrc/run");
+        return shell_exec("$python --path={$fpath} --act=match");
+    }
+
+
+    static function sync_court_config($matchId,$courtId)
+    {
+        $courtInfo  = CourtModel::find($courtId);
+        $configFile = public_path($courtInfo->config_file);
+        $desConfig  = matchdir($matchId)."court-config.txt";
+        copy($configFile,$desConfig);
+    }
 
     /**
      * 保存matlab算法计算出来的结果
@@ -1347,24 +1304,23 @@ class AnalysisMatchData implements ShouldQueue
      * */
     public function save_matlab_result($matchId)
     {
-        //同步文件
-        $files      = ["result-run.txt","result-pass.txt","result-step.txt",'result-turn.txt','result-shoot.txt'];
-        $matchDir   = self::matchdir($matchId);
-        $baseUrl    = config('app.matlabhost')."/uploads/match/{$matchId}/";
+        /*
+         * result-run.txt   跑动结果
+         * result-pass.txt  传球结果
+         * result-step.txt  步数结果
+         * result-turn.txt  转身结果
+         * result-shoot.txt 射门结果
+         * */
+
         $matchInfo  = self::get_temp_match_info($matchId);
-        BaseMatchModel::match_process($matchId,"同步结果文件");
+
         //比赛数据处理完毕，将比赛数量增加1 检查是否有了分数，有分数表示已经累积过
         $matchResult= BaseMatchResultModel::where('match_id',$matchId)->select("grade")->first();
-        if($matchResult->grade == 0){
-
+        if($matchResult->grade == 0)
+        {
             BaseUserAbilityModel::where('user_id',$matchInfo->user_id)->increment("match_num");
         }
 
-
-        foreach($files as $file)
-        {
-            file_put_contents($matchDir.$file,file_get_contents($baseUrl.$file));
-        }
 
         //1.提取跑动结果
         $runResult      = $this->save_run_result($matchId);
@@ -1383,10 +1339,11 @@ class AnalysisMatchData implements ShouldQueue
         $changeDictResult = $this->save_direction_result($matchId);
 
 
-
         //5.带球与回追
         //$dribbleResult  = $this->save_backrun_result($matchId);
 
+        //6.生成跑动GPS热点图
+        $this->create_gps_map($matchId);
 
         //暂时将计算分值的放在这里，由于计算分值是一个耗时的工作，需要另外使用线程
         $gradeService   = new MatchGrade();
@@ -2109,18 +2066,18 @@ class AnalysisMatchData implements ShouldQueue
         $inputFile  = "border-src.txt";         //边框数据
         $outFile    = "border-dest.txt";        //顶点数据
 
-        $pythonFile = app_path("python/python_call_matlab.py");
-        $matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
+        //$pythonFile = app_path("python/python_call_matlab.py");
+        //$matlabCmd  = "Stadium('{$dir}','{$inputFile}','{$outFile}')";//matlab执行的命令
+        //$command = "python $pythonFile --command=$matlabCmd";
 
-        $command = "python $pythonFile --command=$matlabCmd";
 
         if(!file_exists($dir.$inputFile))
         {
             mylogger($dir.$inputFile."不存在");
             exit;
         }
-
-        $result     = shell_exec($command);
+        $result = self::call_matlab_calculate("court",$courtId);
+        //$result     = shell_exec($command);
         //检查文件是否存在
         if(!file_exists($dir.$outFile)){
 

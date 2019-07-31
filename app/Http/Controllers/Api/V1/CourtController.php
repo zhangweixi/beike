@@ -49,7 +49,9 @@ class CourtController extends Controller
             $courtModel     = new CourtModel();
             $courtId        = $courtModel->add_court($courtData);
 
-            MatchCaculate::call_matlab_court_init($courtId);        //调用算法系统，异步生成足球场
+            //MatchCaculate::call_matlab_court_init($courtId);
+            $delayTime  = now()->addSecond(1);
+            AnalysisMatchData::dispatch('call_matlab_court_action',['courtId'=>$courtId])->delay($delayTime); //调用算法系统，异步生成足球场
             BaseFootballCourtModel::join_minitor_court($courtId);   //加入监控队列
         }
 

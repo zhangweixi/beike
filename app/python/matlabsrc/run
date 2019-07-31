@@ -4,12 +4,13 @@ import matlab.engine
 import sys
 
 def help():
-	print "[command]: run --env=xxx --id=xxx"
- 	print "[env] \n   dev:development\n   pro:--->product"
-	print "[id]:the match id"
+	print "[command]: run --path=xxx --act=xxx"
+ 	print "[path] \n  "
+ 	print "[act]: court or match\n"
+
 	sys.exit()
 
-options,args = getopt.getopt(sys.argv[1:],"h",["env=","id="])
+options,args = getopt.getopt(sys.argv[1:],"h",["path=","act="])
 
 params = {}
 for i in options:
@@ -23,14 +24,15 @@ for i in options:
 if len(params) != 2:
 	help()
 
-if params["env"] == "dev":
-	path = "/data/www/dev.api.launchever.cn/public/uploads/match/"
-elif params["env"] == "pro":
-	path = "/data/www/api.launchever.cn/public/uploads/match/"
 
-path = path + params['id'] + "/"
 eng = matlab.engine.start_matlab()
-res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt',nargout=0)
+
+if params.act == "match":
+	res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt',nargout=0)
+else if params.act == "court":
+	res = eng.Stadium(path,"border-src.txt","border-dest.txt")
+
+print "success"
 #res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt')
 #print res
 

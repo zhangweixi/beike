@@ -277,31 +277,4 @@ class MatchCaculate extends Controller
 
         return apiData()->send();
     }
-
-
-    /**
-     * 调用处理球场
-     * @param $courtId integer 球场ID
-     * */
-    static function call_matlab_court_init($courtId)
-    {
-        $url   = config("app.matlabhost")."/api/matchCaculate/call_matlab_court_action?courtId=".$courtId;
-        file_get_contents($url);
-    }
-
-
-    /**
-     * MATLAB服务器执行,建立球场模型 在算法系统接收
-     * 调用matlab生成去球场的几个顶点坐标
-     * @param $request Request
-     * */
-    public function call_matlab_court_action(Request $request)
-    {
-        $courtId    = $request->input('courtId');
-        $delayTime      = now()->addSecond(1);
-        AnalysisMatchData::dispatch('call_matlab_court_action',['courtId'=>$courtId])->delay($delayTime);
-    }
-
-
-
 }

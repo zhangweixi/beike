@@ -277,9 +277,9 @@ class Court{
 
         $configBoxs     = DB::table('football_court_type')->where('people_num',11)->first();
         $configBoxs     = \GuzzleHttp\json_decode($configBoxs->angles);
-        $filepath       = "uploads/court-config/{$courtId}.txt";
+        $filepath       = "uploads/court-config/{$courtId}/config.txt";
         $courtAngleConfiFile = public_path($filepath);
-        mk_dir(public_path("uploads/court-config"));
+        mk_dir(public_path("uploads/court-config/{$courtId}"));
 
         $config = "";
 

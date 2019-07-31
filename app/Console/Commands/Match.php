@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\AnalysisMatchData;
 use App\Models\Base\BaseMatchDataProcessModel;
+use App\Models\V1\CourtModel;
 use Illuminate\Console\Command;
 use App\Jobs\ParseData;
 use App\Jobs\CreateAngle;
@@ -89,14 +90,23 @@ class Match extends Command
             (new Court())->cut_court_to_box_and_create_config($courtId);
         }
 
-        // 6.算法系统位于另外一台服务器上，需要通知算法服务器进行计算工作
-        $url    = config('app.matlabhost')."/api/matchCaculate/run_matlab?matchId={$matchId}";
-        file_get_contents($url);
+        /**6.准备球场配置文 **/
+        AnalysisMatchData::sync_court_config($matchId,$courtId);
 
-        //7 生成全局跑动GPS热点图
-        (new AnalysisMatchData("create_gps_map",['matchId'=>$matchId,'foot'=>'L']))->handle();
+        /**7.调用matlab **/
+        $res = AnalysisMatchData::call_matlab_calculate($matchId);
 
+        if($res != "success"){
+
+            BaseMatchModel::match_process($matchId,"角度计算完毕");
+            die("调用matlab计算比赛失败");
+        }
+
+        /**8.处理结果**/
+        (new AnalysisMatchData())->save_matlab_result($matchId);    //处理其他计算结果
     }
+
+
 
     /**
      * 等待数据解析完毕
