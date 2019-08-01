@@ -68,7 +68,7 @@ class Match extends Command
         $gpsApp->handle();
 
 
-        /* 4.调用matlab执行任务
+        /* 4.球场规则检查
          * 开始测量的球场由于信号原因可能无法得到一个正常大小的球场
          * 因而在此对球场的比例及大小进行检查
          * 如果球场不合格，使用GPS实际地图来模拟一个球场
@@ -91,8 +91,10 @@ class Match extends Command
         }
 
         /**6.准备球场配置文 **/
+        mylogger("同步球场配置文件开始");
         AnalysisMatchData::sync_court_config($matchId,$courtId);
-
+        mylogger("同步球场配置文件结束");
+        
         /**7.调用matlab **/
         $res = AnalysisMatchData::call_matlab_calculate($matchId);
 
