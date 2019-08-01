@@ -94,10 +94,10 @@ class Match extends Command
         mylogger("同步球场配置文件开始");
         AnalysisMatchData::sync_court_config($matchId,$courtId);
         mylogger("同步球场配置文件结束");
-        
-        /**7.调用matlab **/
-        $res = AnalysisMatchData::call_matlab_calculate($matchId);
 
+        /**7.调用matlab **/
+        $res = AnalysisMatchData::call_matlab_calculate("match",$matchId);
+        mylogger("计算运行结果".$res);
         if($res != "success"){
 
             BaseMatchModel::match_process($matchId,"角度计算完毕");
