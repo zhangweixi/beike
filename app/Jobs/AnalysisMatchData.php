@@ -1285,6 +1285,7 @@ class AnalysisMatchData implements ShouldQueue
         }
 
         $python     = app_path("python/matlabsrc/run");
+        mylogger("$python --path={$fpath} --act=match");
         return shell_exec("$python --path={$fpath} --act=match");
     }
 
