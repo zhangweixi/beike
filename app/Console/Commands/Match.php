@@ -97,11 +97,12 @@ class Match extends Command
 
         /**7.调用matlab **/
         $res = AnalysisMatchData::call_matlab_calculate("match",$matchId);
-        mylogger("计算运行结果".$res);
-        if($res != "success"){
 
-            BaseMatchModel::match_process($matchId,"角度计算完毕");
+        if($res != "success"){
+            mylogger("算法运行失败:".$matchId);
             die("调用matlab计算比赛失败");
+        }else{
+            mylogger("计算比赛".$matchId."成功,结果:".$res);
         }
 
         /**8.处理结果**/
