@@ -350,7 +350,7 @@ class ParseData implements ShouldQueue
 
         $content = $tempStr;
         if($this->matchId == 1413){
-            mylogger($file."\n".$content);
+            mylogger($file."\n".substr($content,0,100));
         }
         file_put_contents($file,$content,FILE_APPEND);
     }
