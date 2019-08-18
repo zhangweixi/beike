@@ -251,6 +251,10 @@ class MatchController extends Controller
         $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
         $bindata =  file_get_contents("php://input");
 
+        if((int) $matchId == 1415){
+            return apiData()->send(200,'ok');
+        }
+
 
         if($matchId == 0){
 
