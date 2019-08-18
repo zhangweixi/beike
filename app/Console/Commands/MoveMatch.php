@@ -39,45 +39,48 @@ class MoveMatch extends Command
      */
     public function handle()
     {
-        $matchId    = $this->argument("matchId");
-
-        //移除结果文件
-        $resDir    = public_path("uploads/match/".$matchId);
-        if(file_exists($resDir)){
-
-            $files      = scandir($resDir);
-            array_splice($files,0,2);
-
-            foreach($files as $key =>  $file){
-                unlink($resDir."/".$file);
-            }
-            rmdir($resDir);
-        }
-
-
-
-        //移除原始文件
-        $files      = DB::table('match_source_data')->where('match_id',$matchId)->get();
-        $dir        = "";
-        foreach($files as $file)
+        $matches    = $this->argument("matchId");
+        $matches    = explode(",",$matches);
+        foreach ($matches as $matchId)
         {
-            $file   = base_path("storage/app/".$file->data);
-            if(file_exists($file))
-            {
-                unlink($file);
-                $dir = dirname($file);
+            $matchId    = (int) $matchId;
+            //移除结果文件
+            $resDir    = public_path("uploads/match/".$matchId);
+            if(file_exists($resDir)){
+
+                $files      = scandir($resDir);
+                array_splice($files,0,2);
+
+                foreach($files as $key =>  $file){
+                    unlink($resDir."/".$file);
+                }
+                rmdir($resDir);
             }
+
+
+
+            //移除原始文件
+            $files      = DB::table('match_source_data')->where('match_id',$matchId)->get();
+            $dir        = "";
+            foreach($files as $file)
+            {
+                $file   = base_path("storage/app/".$file->data);
+                if(file_exists($file))
+                {
+                    unlink($file);
+                    $dir = dirname($file);
+                }
+            }
+
+            if($dir && file_exists($dir)){
+                rmdir($dir);
+            }
+            DB::table('match_source_data')->where('match_id',$matchId)->delete();
+
+            DB::table('match_data_process')
+                ->where('match_id',$matchId)
+                ->update(["gps_L"=>0,"sensor_L"=>0,"sensor_R"=>0,"compass_R"=>0,"compass_L"=>0]);
         }
-
-        if($dir && file_exists($dir)){
-            rmdir($dir);
-        }
-        DB::table('match_source_data')->where('match_id',$matchId)->delete();
-
-        DB::table('match_data_process')
-            ->where('match_id',$matchId)
-            ->update(["gps_L"=>0,"sensor_L"=>0,"sensor_R"=>0,"compass_R"=>0,"compass_L"=>0]);
-
         echo "success!!!\n";
     }
 }
