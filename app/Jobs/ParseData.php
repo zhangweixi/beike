@@ -96,8 +96,6 @@ class ParseData implements ShouldQueue
             $content   .= bin2hex($temp);
         }
 
-        mylogger($matchId.":".$type.":".$foot.":".strlen($content));
-
         switch ($type){
             case 'sensor':  $this->parse_sensor($content);   break;
             case 'compass': $this->parse_compass($content);  break;
@@ -345,14 +343,15 @@ class ParseData implements ShouldQueue
 
         $file = "{$dir}{$this->type}-{$this->foot}.txt";
         $tempStr = "";
-        mylogger($file.":".count($content));
         foreach($content as $con){
 
             $tempStr .= implode(" ",$con)."\n";
         }
 
         $content = $tempStr;
-
+        if($this->matchId == 1413){
+            mylogger($file."\n".$content);
+        }
         file_put_contents($file,$content,FILE_APPEND);
     }
 
