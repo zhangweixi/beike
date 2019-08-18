@@ -96,6 +96,8 @@ class ParseData implements ShouldQueue
             $content   .= bin2hex($temp);
         }
 
+        mylogger($matchId.":".$type.":".$foot.":".strlen($content));
+
         switch ($type){
             case 'sensor':  $this->parse_sensor($content);   break;
             case 'compass': $this->parse_compass($content);  break;
