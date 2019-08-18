@@ -350,13 +350,12 @@ class ParseData implements ShouldQueue
 
         $content = $tempStr;
 
-        mylogger($file."\n".substr($content,0,100));
-
-//        $f = fopen($file,"a");
-//        fwrite($f,$content);
-//        fclose($f);
-
-        file_put_contents($file,$content,FILE_APPEND);
+        $num = file_put_contents($file,$content,FILE_APPEND);
+        if($num){
+            mylogger($file.",写入:".$num);
+        }else{
+            mylogger($file."保存失败");
+        }
     }
 
 
