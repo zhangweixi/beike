@@ -51,20 +51,27 @@ class MoveMatch extends Command
             foreach($files as $key =>  $file){
                 unlink($resDir."/".$file);
             }
+            rmdir($resDir);
         }
+
 
 
         //移除原始文件
         $files      = DB::table('match_source_data')->where('match_id',$matchId)->get();
+        $dir        = "";
         foreach($files as $file)
         {
             $file   = base_path("storage/app/".$file->data);
             if(file_exists($file))
             {
                 unlink($file);
+                $dir = dirname($file);
             }
         }
 
+        if($dir && file_exists($dir)){
+            rmdir($dir);
+        }
         DB::table('match_source_data')->where('match_id',$matchId)->delete();
 
         DB::table('match_data_process')
