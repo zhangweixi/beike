@@ -352,7 +352,11 @@ class ParseData implements ShouldQueue
         if($this->matchId == 1413){
             mylogger($file."\n".substr($content,0,100));
         }
-        file_put_contents($file,$content,FILE_APPEND);
+        $f = fopen($file,"a");
+        fwrite($f,$content);
+        fclose($f);
+
+        //file_put_contents($file,$content,FILE_APPEND);
     }
 
 
