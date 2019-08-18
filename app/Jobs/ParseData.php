@@ -345,7 +345,7 @@ class ParseData implements ShouldQueue
 
         $file = "{$dir}{$this->type}-{$this->foot}.txt";
         $tempStr = "";
-
+        mylogger($file.":".count($content));
         foreach($content as $con){
 
             $tempStr .= implode(" ",$con)."\n";
