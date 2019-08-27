@@ -325,7 +325,7 @@ class MatchController extends Controller
         if(Redis::scard($redisKey) == 5)
         {
             Redis::del($redisKey);
-            //artisan("match:run {$matchId}",true);   //执行处理整场比赛
+            artisan("match:run {$matchId}",true);   //执行处理整场比赛
             BaseMatchModel::join_minitor_match($request->input('matchId'));
         }
 
