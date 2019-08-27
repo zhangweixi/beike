@@ -71,7 +71,8 @@ Artisan::command('match:parse {matchId}',function($matchId){
         ["type" => "compass","foot"=> 'L'],
         ["type" => "gps","foot"=> 'L'],
     ];
-
+    //移除所有的文件
+    shell_exec("rm -Rf ".matchdir($matchId));
     foreach($list as $type){
         //echo "match:run " . $matchId . " " . $type['type'] ." ".$type['foot']."\n";
         artisan("match:run " . $matchId . " " . $type['type'] ." ".$type['foot']);

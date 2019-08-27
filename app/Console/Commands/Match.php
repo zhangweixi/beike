@@ -94,15 +94,21 @@ class Match extends Command
         mylogger("同步球场配置文件开始");
         AnalysisMatchData::sync_court_config($matchId,$courtId);
         mylogger("同步球场配置文件结束");
-
+        $runRes     = matchdir($matchId)."result-run.txt";
+        if(file_exists($runRes)){
+            unlink($runRes);
+        }
         /**7.调用matlab **/
         $res = AnalysisMatchData::call_matlab_calculate("match",$matchId);
 
-        if($res != "success"){
+        if(file_exists($runRes)){
+
+            mylogger("计算比赛".$matchId."成功,结果:".$res);
+
+        }else{
+
             mylogger("算法运行失败:".$matchId);
             die("调用matlab计算比赛失败");
-        }else{
-            mylogger("计算比赛".$matchId."成功,结果:".$res);
         }
 
         /**8.处理结果**/
