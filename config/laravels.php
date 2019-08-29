@@ -70,7 +70,7 @@ return [
         'enable_coroutine'   => false,
         'http_compression'   => false,
 	'heartbeat_idle_time'=> 600,
-	'heartteat_check_interval'=>60
+	'heartteat_check_interval'=>3600
         /**
          * More settings of Swoole
          * @see https://wiki.swoole.com/wiki/page/274.html  Chinese
