@@ -35,7 +35,7 @@ return [
             // \App\Jobs\XxxCronJob::class, // Override the corresponding method to return the configuration
         ],
         'pid_file'      => storage_path('laravels-timer.pid'),
-        'max_wait_time' => 5,
+        'max_wait_time' => 3600,
     ],
     'events'                   => [],
     'swoole_tables'            => [],
