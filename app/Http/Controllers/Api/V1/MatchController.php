@@ -340,7 +340,9 @@ class MatchController extends Controller
         $userId     = $request->input('userId');
         $foot       = $request->input('foot');
         $number     = $request->input('number');
-
+        $headers    = $request->headers();
+        $headers    = \GuzzleHttp\json_encode($headers);
+        mylogger($headers);
         BaseMatchUploadProcessModel::save_total_num($userId,$foot,$number);
         return apiData()->send();
     }
