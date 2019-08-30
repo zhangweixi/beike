@@ -126,16 +126,32 @@ class DeviceController extends Controller
     {
         $deviceId   = $request->input('deviceId');
         $device     = DeviceModel::find($deviceId);
-        $lastOta    = BaseVersionModel::last_ota($device->hard_version);
-        $upgradeInfo= [
-            "OTAFile"           => url($lastOta->file),
-            "oldSoftVersion"    => $device->soft_version,
-            "lastSoftVersion"   => $lastOta->id,
-            "firmwareType"      => $lastOta->firmware_type,
-            "mustUpgrade"       => $lastOta->must_upgrade
+
+        $otaWifi= BaseVersionModel::last_ota($device->hard_version,'wifi');
+        if(!$otaWifi){
+            return apiData()->send(2001,"没有对应的Wifi OTA版本");
+        }
+        $wifiInfo= [
+            "OTAFile"           => url($otaWifi->file),
+            "oldVersion"        => $device->wifi_version,
+            "lastVersion"       => $otaWifi->version,
+            "firmwareType"      => $otaWifi->firmware_type,
+            "mustUpgrade"       => $otaWifi->must_upgrade
         ];
 
-        return apiData()->add('upgradeInfo',$upgradeInfo)->send();
+        $otaBluebooth   = BaseVersionModel::last_ota($device->hard_version,'bluebooth');
+        if(!$otaBluebooth){
+            return apiData()->send(2001,"没有对应的蓝牙 OTA版本");
+        }
+        $bluetoothInfo  = [
+            'OTAFile'           => url($otaBluebooth->file),
+            'oldVersion'        => $device->soft_version,
+            'lastVersion'       => $otaBluebooth->version,
+            'firmwareType'      => $otaBluebooth->firmware_type,
+            'mustUpgrade'       => $otaBluebooth->must_upgrade
+        ];
+
+        return apiData()->add('wifi',$wifiInfo)->add('bluebooth',$bluetoothInfo)->send();
     }
 
     /**
@@ -145,7 +161,17 @@ class DeviceController extends Controller
 
         $deviceId   = $request->input('deviceId');
         $softVersion= $request->input('softVersion');
-        DeviceModel::where('device_id',$deviceId)->update(['soft_version'=>$softVersion]);
+        $softType   = $request->input('softType');
+        if($softType == 'wifi'){
+
+            $versionInfo = ['wifi_version'=>$softVersion];
+
+        }elseif($softType == 'bluebooth'){
+
+            $versionInfo = ['soft_version'=>$softVersion];
+        }
+
+        DeviceModel::where('device_id',$deviceId)->update($versionInfo);
 
         return apiData()->send();
     }
