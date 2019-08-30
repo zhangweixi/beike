@@ -143,6 +143,7 @@ class DeviceController extends Controller
         if(!$otaBluebooth){
             return apiData()->send(2001,"没有对应的蓝牙 OTA版本");
         }
+
         $bluetoothInfo  = [
             'OTAFile'           => url($otaBluebooth->file),
             'oldVersion'        => $device->soft_version,
@@ -161,8 +162,8 @@ class DeviceController extends Controller
 
         $deviceId   = $request->input('deviceId');
         $softVersion= $request->input('softVersion');
-        $softType   = $request->input('softType');
-        if($softType == 'wifi'){
+        $softType   = $request->input('softType','');
+        if($softType == 'wifi' || $softType == ''){
 
             $versionInfo = ['wifi_version'=>$softVersion];
 
