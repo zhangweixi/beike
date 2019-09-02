@@ -242,7 +242,7 @@ class MatchController extends Controller
      * @return mixed
      * */
     public function upload(Request $request){
-        return apiData()->send(200,'ok');
+        //return apiData()->send(200,'ok');
         $matchId    = $request->input('matchId');
         $foot       = $request->input('foot');
         $footLetter = strtoupper(substr($foot,0,1));
