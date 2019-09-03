@@ -317,7 +317,7 @@ class MatchController extends Controller
         $redisKey   = "matchupload:".$matchId;
         if($number == 0){ //传输已完成 , 加入到计算监控中
 
-            artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
+            //artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
             Redis::sadd($redisKey,$dataType."-".$footLetter);
         }
 
