@@ -26,13 +26,21 @@ if len(params) != 2:
 
 path = params["path"]
 eng = matlab.engine.start_matlab()
+try:
+	if params["act"] == "match":
+		res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt',nargout=0)
+	elif params["act"] == "court":
+		res = eng.Stadium(path,"border-src.txt","border-dest.txt",nargout=0)
+	eng.quit()
+except:
+	print "fail"
+else:
+	print "success"	
 
-if params["act"] == "match":
-	res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt',nargout=0)
-elif params["act"] == "court":
-	res = eng.Stadium(path,"border-src.txt","border-dest.txt",nargout=0)
-eng.quit()
-print "success"
+
+
+
+
 #res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt')
 #print res
 
