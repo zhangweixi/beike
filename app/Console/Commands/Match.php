@@ -7,6 +7,7 @@ use App\Common\MQ;
 use App\Jobs\AnalysisMatchData;
 use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\V1\CourtModel;
+use App\Models\V1\MatchModel;
 use Illuminate\Console\Command;
 use App\Jobs\ParseData;
 use App\Jobs\CreateAngle;
@@ -60,15 +61,16 @@ class Match extends Command
         //1.同步时间
         $syncApp    = new SyncTime($matchId);
         $syncApp->handle();
-
+        BaseMatchModel::match_process($matchId,"同步时间成功");
         //2.生成罗盘角度
         $angleApp   = new CreateAngle($matchId);
         $angleApp->handle();
+        BaseMatchModel::match_process($matchId,"罗盘角度转换成功");
 
         //3.转换GPS的坐标
         $gpsApp     = new TranslateGps($matchId);
         $gpsApp->handle();
-
+        BaseMatchModel::match_process($matchId,"GPS转换成功");
 
         /* 4.球场规则检查
          * 开始测量的球场由于信号原因可能无法得到一个正常大小的球场
@@ -88,8 +90,9 @@ class Match extends Command
          * 有时候测量的球场不达标，需要使用GPS求出的虚拟球场
          * */
         if(empty($courtInfo->boxs)){
-
+            BaseMatchModel::match_process($matchId,"开始生成球场配置文件");
             (new Court())->cut_court_to_box_and_create_config($courtId);
+            BaseMatchModel::match_process($matchId,"生成球场配置文件成功");
         }
 
         /**6.准备球场配置文 **/
@@ -98,6 +101,7 @@ class Match extends Command
         mylogger("同步球场配置文件结束");
         /**7.调用matlab **/
         //$res = AnalysisMatchData::call_matlab_calculate("match",$matchId);
+        BaseMatchModel::match_process($matchId,"调用matlab");
         $this->call_matlab($matchId);
     }
 
