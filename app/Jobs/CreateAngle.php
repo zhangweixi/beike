@@ -255,7 +255,8 @@ class CreateAngle implements ShouldQueue
             if(!$res){
                 logbug(['msg'=>"比赛".$this->matchId."转换角度失败"]);
             }
-            return;
+
+            continue;
 
             $command    = "/usr/bin/compass1 $infile $outfile > /dev/null && echo 'success' ";
             $res        = shell_exec($command);
