@@ -86,7 +86,7 @@ class Jpush{
      * @return array
      * */
     public function pushContent($title,$msg,$code,$type,$user,$data = [])
-    {
+    {return true;
 //        $extras      = [
 //            'code'   => $code,
 //            'data'   => json_encode($data),
