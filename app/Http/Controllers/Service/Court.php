@@ -2,7 +2,9 @@
 namespace App\Http\Controllers\Service;
 
 use App\Common\GPS;
+use App\Common\MQ;
 use App\Http\Controllers\Service\GPSPoint;
+use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\V1\CourtModel;
 use DB;
@@ -1088,5 +1090,85 @@ class Court{
             return true;
         }
         return false;
+    }
+
+    /**
+     * 调用MATLAB解析球场数据
+     * @param $courtId integer
+     *
+     * */
+    public static function call_matlab_caculate_court($courtId){
+
+        //调用matlab
+        $dir        = public_path("uploads/court-config/{$courtId}/");
+        deldir($dir);
+
+        //创建输入文件
+        $srcFile    = self::create_court_model_input_file($courtId);
+
+        $inputFile  = "border-src.txt";         //边框数据
+        $outFile    = "border-dest.txt";        //顶点数据
+
+        if(!file_exists($dir.$inputFile))
+        {
+            mylogger($dir.$inputFile."不存在");
+            exit;
+        }
+
+        //加入队列
+        $data   = [
+            'id'        => $courtId,
+            "client"    => config('app.env'),
+            'datafile'  => config('app.apihost')."/uploads/court-config/".$courtId."/border-src.txt",
+            'callbackurl'=>config('app.apihost')."/api/matchCaculate/save_matlab_court_result",
+        ];
+
+        MQ::send('court',$data);
+    }
+
+
+    /**
+     * 存储经过matlab算过之后的球场结果
+     * @param $courtId integer
+     * */
+    public static function save_after_matlab_court_result($courtId,$resultFile){
+        //检查文件是否存在
+        $outFile    = "border-dest.txt";        //顶点数据
+        $dir        = public_path("uploads/court-config/{$courtId}/");
+        file_put_contents($dir.$outFile,file_get_contents($resultFile));
+        $colums = [
+            "A"     => 'p_a',
+            "B"     => 'p_b',
+            "C"     => 'p_c',
+            "D"     => 'p_d',
+            "E"     => 'p_e',
+            "F"     => 'p_f',
+            "Sym_A" => 'p_a1',
+            "Sym_B" => 'p_b1',
+            'Sym_C' => 'P_c1',
+            "Sym_D" => 'p_d1'
+        ];
+
+        //读取结果，存储到数据中
+        $courtResult    = file_to_array($dir.$outFile);
+        $courtInfo      = [];
+
+        $positions      = array_keys($colums);
+        foreach($courtResult as $point)
+        {
+            $position   = $point[0];
+
+            if(in_array($position,$positions))
+            {
+                $key                = $colums[$position];
+                $courtInfo[$key]    = $point[1].",".$point[2];
+            }
+        }
+
+        CourtModel::init_new_court($courtId,$courtInfo);
+        BaseFootballCourtModel::remove_minitor_court($courtId);
+
+        //球场解析结束
+        mylogger("球场解析成功,courtId:".$courtId);
     }
 }

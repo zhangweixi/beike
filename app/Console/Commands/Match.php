@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Common\Http;
+use App\Common\MQ;
 use App\Jobs\AnalysisMatchData;
 use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\V1\CourtModel;
@@ -94,28 +96,24 @@ class Match extends Command
         mylogger("同步球场配置文件开始");
         AnalysisMatchData::sync_court_config($matchId,$courtId);
         mylogger("同步球场配置文件结束");
-        $runRes     = matchdir($matchId)."result-run.txt";
-        if(file_exists($runRes)){
-            unlink($runRes);
-        }
         /**7.调用matlab **/
-        $res = AnalysisMatchData::call_matlab_calculate("match",$matchId);
-
-        if(file_exists($runRes)){
-
-            mylogger("计算比赛".$matchId."成功,结果:".$res);
-
-        }else{
-
-            mylogger("算法运行失败:".$matchId);
-            die("调用matlab计算比赛失败");
-        }
-
-        /**8.处理结果**/
-        (new AnalysisMatchData())->save_matlab_result($matchId);    //处理其他计算结果
+        //$res = AnalysisMatchData::call_matlab_calculate("match",$matchId);
+        $this->call_matlab($matchId);
     }
 
+    public function call_matlab($matchId){
 
+        $host = config("app.apihost")."/uploads/match/".$matchId."/";
+        $data = [
+            'fileRootUrl'=>$host,
+            'files'     => ["angle-L.txt","angle-R.txt","sensor-L.txt","sensor-R.txt","gps-L.txt","court-config.txt"],
+            "id"        => $matchId,
+            "client"    => config('app.env'),
+            "callbackurl"=>config('app.apihost')."/api/matchCaculate/save_matlab_match_result"
+        ];
+
+        MQ::send('match',$data);    //加入队列
+    }
 
     /**
      * 等待数据解析完毕

@@ -10,9 +10,7 @@ return [
      | matlabhost:算法系统的域名
      | apihost:API接口的域名
      */
-
-    'filehost'     => env('FILE_HOST',''),
-    'matlabhost'   => env('MATLAB_HOST',''),
+    "matlabhost"   => env('MATLAB_HOST',''),
     'apihost'      => env('API_HOST',''),
     'aliyunApiHost'=> env('ALIYUN_API_HOST',''),
     'wechatenv'    => env('WECHAT_ENV',false),

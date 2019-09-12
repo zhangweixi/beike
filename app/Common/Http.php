@@ -90,9 +90,10 @@ class Http{
 
         if($this->post){
             curl_setopt($this->ch,CURLOPT_POST,true);               //开启post
-            curl_setopt($this->ch,CURLOPT_POSTFIELDS,$this->data);  //设置参数
+            curl_setopt($this->ch,CURLOPT_POSTFIELDS,http_build_query($this->data));  //设置参数
             curl_setopt($this->ch,CURLOPT_HTTPHEADER,['Content-type:multipart/form-data']);     //设置头部
             curl_setopt($this->ch,CURLOPT_HTTPHEADER,['Accept:application/json']);              //设置头部
+            curl_setopt($this->ch,CURLOPT_HTTPHEADER, array('Expect:'));
         }
 
         $res = curl_exec($this->ch);

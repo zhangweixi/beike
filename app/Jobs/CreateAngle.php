@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\Service\Match;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -248,10 +249,15 @@ class CreateAngle implements ShouldQueue
             $infile     = $this->middlefile($foot);
             $outfile    = $this->outfile($foot);
 
-            file_put_contents($outfile,"");     //清空历史数据
+            //file_put_contents($outfile,"");     //清空历史数据
+            //注意这里的compass版本 compass:最老，compass1:第二版
+            $res = Match::create_compass_angle($infile,$outfile);
+            if(!$res){
+                logbug(['msg'=>"比赛".$this->matchId."转换角度失败"]);
+            }
+            return;
 
             $command    = "/usr/bin/compass1 $infile $outfile > /dev/null && echo 'success' ";
-
             $res        = shell_exec($command);
             $res        = trim($res);
             if($res != "success"){

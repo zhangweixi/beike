@@ -16,6 +16,7 @@
         "laravel/tinker": "~1.0",
         "maatwebsite/excel": "2.1.*",
         "overtrue/laravel-wechat": "~4.0",
+        "php-amqplib/php-amqplib": "^2.10",
         "predis/predis": "^1.1",
         "qiniu/php-sdk": "^7.2",
         "simplesoftwareio/simple-qrcode": "^2.0",

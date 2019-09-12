@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Service;
 use App\Common\Http;
 use App\Http\Controllers\Controller;
 use App\Models\Base\BaseFootballCourtModel;
+use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
@@ -257,22 +258,50 @@ class MatchCaculate extends Controller
     /**
      * 读取数据并保存到结果中
      * */
-    public function save_matlab_result(Request $request)
+    public function save_matlab_match_result(Request $request)
     {
-        $matchId        = $request->input('matchId');
-        $result         = $request->input('result');
+        $code   = $request->input('code');
+        $matchId= $request->input('id');
 
-        if($result == "FAIL")
+        if($code != 200)
         {
             //算法调用失败，使用微信通知我
-
+            BaseMatchModel::match_process($matchId,"获得通知，算法计算失败");
 
         }else{
 
-            //return (new AnalysisMatchData(''))->save_matlab_result($matchId);
+            //同步结果文件
+            $files  = explode(",",$request->input('files'));
+            $dir    = matchdir($matchId);
+            $fileRootUrl = $request->input('fileRootUrl');
+            foreach ($files as $fname)
+            {
+                file_put_contents($dir.$fname,file_get_contents($fileRootUrl."/".$fname));
+            }
 
-            $delayTime      = now()->addSecond(1);
-            AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
+            $job    = new AnalysisMatchData();
+            $job->save_matlab_result($matchId);
+            BaseMatchModel::match_process($matchId,"获得通知，算法计算成功");
+
+            //$delayTime      = now()->addSecond(1);
+            //AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
+        }
+        /**8.处理结果**/
+        return apiData()->send();
+    }
+
+    /**
+     * 存储球场结果
+     * */
+    public function save_matlab_court_result(Request $request){
+        $id     = $request->input('id');
+        $code   = $request->input('code');
+        $msg    = $request->input('msg');
+
+        if($code != 200){
+            BaseMatchModel::match_process($id,"获得通知，".$msg);
+        }else{
+            Court::save_after_matlab_court_result($id,$request->input('datafile'));
         }
 
         return apiData()->send();
