@@ -180,6 +180,10 @@ class BaseMatchUploadProcessModel extends Model
         $newInfo[$foot."_num"] = $num;
 
         if($info){
+            $key = $foot."_finished_num";
+            $info->$key     = 0;
+            $newInfo[$foot."_finished_num"]     = 0;
+            $newInfo['finished_num']            = $info->left_finished_num + $info->right_finished_num;
 
             DB::table('match_upload_process')
                 ->where('user_id',$userId)->update($newInfo);
