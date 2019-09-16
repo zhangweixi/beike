@@ -1,7 +1,8 @@
 <?php
 namespace App\Common;
 use JPush\Client;
-
+use JPush\Exceptions\APIRequestException;
+use Illuminate\Support\Facades\Log;
 class Jpush{
 
     private $message    = "";
@@ -19,7 +20,7 @@ class Jpush{
         $this->jpushAppKey = config('jpush.appKey');
         $this->jpushSecret = config('jpush.secret');
         $this->jpushLogFile= config('jpush.logFile');
-        $this->jpushEnv    = config('jpush.env',false);
+        $this->isProduction= config('jpush.isProduction');
         $this->plushClient = new Client($this->jpushAppKey,$this->jpushSecret,$this->jpushLogFile);
         $this->plushClient = $this->plushClient->push();
     }
@@ -71,7 +72,7 @@ class Jpush{
         $res = $push->setNotificationAlert($this->message)
             ->options(['apns_production'=>$this->jpushEnv])
             ->iosNotification($this->message,$options)
-            ->send();
+            ->send();var_dump($res);
         return $res;
     }
 
@@ -86,7 +87,7 @@ class Jpush{
      * @return array
      * */
     public function pushContent($title,$msg,$code,$type,$user,$data = [])
-    {return true;
+    {
 //        $extras      = [
 //            'code'   => $code,
 //            'data'   => json_encode($data),
@@ -116,16 +117,14 @@ class Jpush{
                 $push->addAllAudience();    break;
 
             case 1:
-                if(is_array($user))
+                if(!is_array($user))
                 {
-                    foreach($user as $u){
+                    $user   = [$user];
+                }
 
-                        $push->addAlias((string)$u);
-                    }
-
-                }else{
-
-                    $push->addAlias((string)$user);
+                foreach($user as $u){
+                    $u  = $this->isProduction ? (string)$u : "test".$u;
+                    $push->addAlias($u);
                 }
                 break;
             case 2:
@@ -134,6 +133,15 @@ class Jpush{
                 $push->addTag($user);
                 break;
         }
-        return $push->send();
+
+       try{
+           $push->send();
+           $res = true;
+       }catch (APIRequestException $e){
+
+            Log::error("极光发送失败,文件:".__FILE__."<".__LINE__.">,参数列表".json_encode(func_get_args()));
+            $res = false;
+       }
+        return $res;
     }
 }
