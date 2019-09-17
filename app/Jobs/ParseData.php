@@ -339,6 +339,8 @@ class ParseData implements ShouldQueue
         if(!is_dir($dir)){
 
             mkdir($dir);
+            chmod($dir,0777);
+
         }
 
         $file = "{$dir}{$this->type}-{$this->foot}.txt";
