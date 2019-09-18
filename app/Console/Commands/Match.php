@@ -110,6 +110,7 @@ class Match extends Command
         $host = config("app.apihost")."/uploads/match/".$matchId."/";
         $data = [
             'fileRootUrl'=>$host,
+            'localRootDir'=>matchdir($matchId),
             'files'     => ["angle-L.txt","angle-R.txt","sensor-L.txt","sensor-R.txt","gps-L.txt","court-config.txt"],
             "id"        => $matchId,
             "client"    => config('app.env'),
