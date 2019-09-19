@@ -292,6 +292,7 @@ class DeviceController extends Controller
         $data       = [
             'version'       => $request->input('version'),
             'publish'       => $request->input('publish'),
+            'hard_version'  => $request->input('type')== 'device'? $request->input('hard_version',2) : 0,
             'must_upgrade'  => $request->input('must_upgrade'),
             'type'          => $request->input('type'),
             'ota_type'      => $request->input('ota_type'),
