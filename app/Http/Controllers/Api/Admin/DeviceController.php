@@ -294,6 +294,7 @@ class DeviceController extends Controller
             'publish'       => $request->input('publish'),
             'must_upgrade'  => $request->input('must_upgrade'),
             'type'          => $request->input('type'),
+            'ota_type'      => $request->input('ota_type'),
             'file'          => "uploads/".$file,
             'created_at'    => date_time()
         ];
