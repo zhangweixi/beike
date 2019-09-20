@@ -230,7 +230,7 @@ class MatchController extends Controller
         $dirfile    = file_exists($dirfile) ? scandir($dirfile) : [];
 
         foreach ($matchFiles as $f){
-            $file = public_path('starage/app/'.$f->data);
+            $file = public_path('storage/app/'.$f->data);
             if(file_exists($file)){
                 $f->size = filesize($file);
             }else{
