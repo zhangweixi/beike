@@ -104,11 +104,11 @@ class MatchModel extends Model
         $matchInfo = DB::table('match')
             ->where('user_id',$userId)
             ->orderBy('match_id','desc')
-            ->select('match_id','user_id','court_id','time_begin','time_end')
+            ->select('match_id','user_id','court_id','time_begin','time_end','end_upload')
             ->first();
 
 
-        if($matchInfo && !$matchInfo->time_end)
+        if($matchInfo)
         {
             $matchInfo->time_begin = strtotime($matchInfo->time_begin)*1000;
 

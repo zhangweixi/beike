@@ -321,12 +321,15 @@ class MatchController extends Controller
             Redis::sadd($redisKey,$dataType."-".$footLetter);
         }
 
+        MatchModel::update(['match_id'=>$matchId,'end_upload'=>0]);
+
         //将整场比赛已上传的数量暂存到Redis中，每种数据一次上传，一次比赛总的5条数据
         if(Redis::scard($redisKey) == 5)
         {
             Redis::del($redisKey);
             artisan("match:run {$matchId}",true);   //执行处理整场比赛
             BaseMatchModel::join_minitor_match($request->input('matchId'));
+            MatchModel::update(['match_id'=>$matchId,'end_upload'=>1]);
         }
 
         return apiData()->send(200,'ok');
@@ -696,23 +699,7 @@ class MatchController extends Controller
      * */
     public function has_unfinished_match(Request $request)
     {
-        $userId = intval($request->input('userId',0));
-        if($userId<=0)
-        {
-            return apiData()->send(4001,'用户ID小于0');
-        }
-
-        $matchInfo = DB::table('match')->where('user_id',$userId)
-            ->where('time_end')
-            ->orderBy('match_id','desc')
-            ->first();
-
-        $matchId        = 0;
-        if($matchInfo)
-        {
-            $matchId    = $matchInfo->match_id;
-        }
-        return apiData()->set_data('matchId',$matchId)->send(200,'SUCCESS');
+        return $this->current_match($request);
     }
 
     /**
@@ -724,7 +711,17 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $currentMatch   = $matchModel->get_current_match($userId);
 
-        return apiData()->set_data('matchInfo',$currentMatch)->send();
+        if($currentMatch && $currentMatch->time_end){   //有结束时间
+            $currentMatch = null;   //当前的比赛要求结束时间为null
+            $matchId = 0;
+        }else{
+            $matchId = 0;
+        }
+
+        return apiData()
+            ->set_data('matchInfo',$currentMatch)
+            ->set_data('matchId',$matchId)
+            ->send();
     }
 
     /**
