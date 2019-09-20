@@ -132,6 +132,10 @@ class WebSocketService implements WebSocketHandlerInterface{
 
         //通知用户，联网成功
         //jpush_content("联网通知","用户".$data->userId."联网成功".$type,6001,1,1);
+
+        if($type == 'app'){
+            $this->inform_upload_progress($data);
+        }
     }
 
     /**
