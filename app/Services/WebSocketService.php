@@ -183,7 +183,12 @@ class WebSocketService implements WebSocketHandlerInterface{
         $fd     = BaseUserSocketModel::get_user_fd($data->userId,"app");
 
         if($fd){
-            $this->push($fd,$uploadData);
+            $res = $this->push($fd,$uploadData);
+            if(!$res){
+                mylogger("进度通知：用户".$data->userId."发送失败");
+            }
+        }else{
+            mylogger('进度通知，用户'.$data->userId."没有连接socket");
         }
     }
 
@@ -203,6 +208,6 @@ class WebSocketService implements WebSocketHandlerInterface{
 
     public function push($fd,array $data){
 
-        $this->serve->push($fd,\GuzzleHttp\json_encode($data));
+        return $this->serve->push($fd,\GuzzleHttp\json_encode($data));
     }
 }
