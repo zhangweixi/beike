@@ -87,6 +87,7 @@ class ParseData implements ShouldQueue
             ->where('type',$type)
             ->where('foot',$foot)
             ->orderBy('match_source_id')
+            ->limit(1)
             ->get();
 
         $content = "";
