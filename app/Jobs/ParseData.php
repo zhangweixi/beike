@@ -351,8 +351,7 @@ class ParseData implements ShouldQueue
         }
 
         $content = $tempStr;
-
-        file_put_contents($file,$content,FILE_APPEND);
+        file_put_contents($file,$content);
     }
 
 
