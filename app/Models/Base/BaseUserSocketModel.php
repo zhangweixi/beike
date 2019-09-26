@@ -25,7 +25,7 @@ class BaseUserSocketModel extends Model
             "user_id"   => $userId,
             "type"      => $type
         ];
-
+        $this->where('user_id',$userId)->where('type',$type)->delete();
         $this->create($newInfo);
     }
 
