@@ -107,7 +107,7 @@
             <div id="time-dis"  class="canvas" style="background:#43465E;margin:10px;"></div>
         </div>
 
-        <div class="map whole run hide">
+        <div class="map whole run">
             <h2 onclick="cut()">全局跑动热点图</h2>
             <div id="map-run-all" class="canvas"></div>
             <div class="colors">
@@ -206,9 +206,8 @@
         if(isWhole == 1){
 
             $('.whole').css('display',"block");
-
+            $('.whole.hide').removeClass('hide');
             $('.whole.run h2').text('热点图');
-
 
         }else{
 
@@ -219,12 +218,17 @@
 
         //设定球形的尺寸
         //球场高宽比 957*543
-        courtWidth  = parseInt($('#map-run-high').css('width'));
+        courtWidth  = parseInt($('#map-run-all').css('width'));
         console.log(courtWidth);
         courtHeight = courtWidth / 1.8;
 
         $('.canvas').css('height',courtHeight+"px");
         console.log(courtWidth);
+
+        if(isWhole == 0){
+            $('.whole.run').addClass('hide');
+        }
+
         map_init();
 
     }
@@ -237,13 +241,10 @@
         {
             matchResult = res.data.matchResult;
 
-            //显示热点图
-            //draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
+            if(isWhole > 0){
 
-            if(isWhole > 0){ //绘制雷达图
-
-                draw_leida_map(matchResult);
-
+                draw_leida_map(matchResult); //绘制雷达图
+                draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run); //显示热点图
                 return;
             }
 
