@@ -219,12 +219,12 @@
 
         //设定球形的尺寸
         //球场高宽比 957*543
-        courtWidth  = parseInt($('#map-run-all').css('width'));
+        courtWidth  = parseInt($('#map-run-high').css('width'));
         console.log(courtWidth);
         courtHeight = courtWidth / 1.8;
 
         $('.canvas').css('height',courtHeight+"px");
-
+        console.log(courtWidth);
         map_init();
 
     }
@@ -238,11 +238,9 @@
             matchResult = res.data.matchResult;
 
             //显示热点图
-            draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
+            //draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
 
             if(isWhole > 0){ //绘制雷达图
-
-
 
                 draw_leida_map(matchResult);
 
