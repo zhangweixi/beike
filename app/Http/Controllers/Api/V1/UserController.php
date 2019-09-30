@@ -386,7 +386,7 @@ class UserController extends Controller
             [
                 'name'      => "综合评分",
                 'key'       => 'grade',
-                'y_title'   => "分",
+                'y_title'   => "分数",
                 'x_title'   => '场次',
                 'data'      => [],
             ],
