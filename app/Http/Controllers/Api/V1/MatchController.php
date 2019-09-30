@@ -71,13 +71,12 @@ class MatchController extends Controller
         if($oldMatch){
             return apiData()->send(2004,"您还有未结束的比赛");
         }
-
-        if(config('app.env') == 'production'){
-
-            $weather    = get_weather($lat,$lon);
-            $matchInfo  = array_merge($matchInfo,$weather);
-        }
-
+        $defaultWeather    = [
+            "temperature"   => 20,
+            "weather"       => '晴'
+        ];
+        $weather    = config('app.env') == 'production' ? get_weather($lat,$lon) : $defaultWeather;
+        $matchInfo  = array_merge($matchInfo,$weather);
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
         $timestamp  = getMillisecond();
@@ -442,7 +441,16 @@ class MatchController extends Controller
             ->send(200,'success');
     }
 
+    /**
+     * 比赛基础信息
+     * */
+    public function match_base(Request $request){
 
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+        return apiData()->set_data('data',$matchInfo)->send_old();
+    }
 
     public function match_detail_mood(Request $request)
     {

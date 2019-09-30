@@ -156,6 +156,7 @@ class MatchModel extends Model
         $columns    = [
             "match_id",
             "user_id",
+            'court_id',
             "address",
             "weather",
             "temperature",
@@ -171,7 +172,8 @@ class MatchModel extends Model
             ->select($columns)
             ->where('match_id',$matchId)
             ->first();
-
+        $court = DB::table('football_court')->where('court_id',$matchDetail->court_id)->select('court_name')->first();
+        $matchDetail->address = $court->court_name;
         return $matchDetail;
     }
 
