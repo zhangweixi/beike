@@ -346,7 +346,7 @@ class Court{
       
         $file       = $dir."/border-src.txt";
         mk_dir($dir);
-        chmod($dir,777);
+        chmod($dir,0777);
         file_put_contents($file,$points);
         return $file;
     }
