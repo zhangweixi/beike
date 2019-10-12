@@ -278,11 +278,9 @@ class MatchCaculate extends Controller
             {
                 file_put_contents($dir.$fname,file_get_contents($fileRootUrl."/".$fname));
             }
-
+            BaseMatchModel::match_process($matchId,"获得通知，算法计算成功");
             $job    = new AnalysisMatchData();
             $job->save_matlab_result($matchId);
-            BaseMatchModel::match_process($matchId,"获得通知，算法计算成功");
-
             //$delayTime      = now()->addSecond(1);
             //AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
         }
