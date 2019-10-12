@@ -40,6 +40,10 @@ class CourtController extends Controller
 
         }else{
 
+            //对用户的球场采集点进行检查，如果数据量太少，将无法进行球场计算
+            if(!Court::check_court_border_point($gpsGroupId)){
+                return apiData()->send(2001,"您行走过快，数据采集不足，无法对球场建模,请重新测量");
+            }
             //2.添加新的球场
             $courtData  = [
                 'user_id'       => $userId,

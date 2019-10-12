@@ -54,6 +54,29 @@ class Court{
     }
 
     /**
+     * 检查球场的采集的GPS原点是否有效
+     * @param $gpsGroupId integer
+     * @return boolean
+     * */
+    public static function check_court_border_point($gpsGroupId){
+
+        $positions = DB::table('football_court_point')
+            ->where('gps_group_id',$gpsGroupId)
+            ->groupBy('position')
+            ->select(DB::raw('count(*) as total'),'position')
+            ->get();
+
+
+        foreach($positions as $p)
+        {
+            if($p->total < 3){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 计算球场
      * @param $A GPSPoint
      * @param $B GPSPoint
