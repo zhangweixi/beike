@@ -187,7 +187,7 @@ class WebSocketService implements WebSocketHandlerInterface{
             if(!$res){
                 mylogger("进度通知：用户".$data->userId."发送失败");
             }else{
-                mylogger("进度通知：用户".$data->userId."发送成功");
+                mylogger("进度通知：用户".$data->userId."发送成功，percent:".$uploadData['percent']);
             }
         }else{
             mylogger('进度通知，用户'.$data->userId."没有连接socket");
