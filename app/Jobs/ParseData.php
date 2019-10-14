@@ -86,7 +86,7 @@ class ParseData implements ShouldQueue
             ->where('match_id',$matchId)
             ->where('type',$type)
             ->where('foot',$foot)
-            ->orderBy('match_source_id')
+            ->orderBy('match_source_id','desc')
             ->limit(1)
             ->get();
 
@@ -326,13 +326,15 @@ class ParseData implements ShouldQueue
                 'lon'           => $lon,
             ];
         }
-        $this->save_result($content);
+        $file = $this->save_result($content);
+        gps_filter($file,2,3);
     }
 
 
     /**
      * 统一保存解析结果
      * @param $content string
+     * @return string
      * */
     public  function save_result($content){
 
@@ -353,6 +355,7 @@ class ParseData implements ShouldQueue
 
         $content = $tempStr;
         file_put_contents($file,$content);
+        return $file;
     }
 
 

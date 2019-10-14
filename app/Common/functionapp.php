@@ -330,3 +330,95 @@ function artisan($command,$async=false){
         return shell_exec($cmd);
     }
 }
+
+/**
+ * GPS无效点过滤
+ * @param $file string 文件
+ * @param $keyLat int
+ * @param $keyLon int
+ * @param $resFile string
+ * */
+function gps_filter($file,$keyLat,$keyLon,$resFile = ''){
+
+    $fd     = fopen($file,'a+');
+    $num    = 0;
+    $lats   = [];
+    $lons   = [];
+
+    while(!feof($fd)){
+
+        $data = trim(fgets($fd));
+        $data = explode(" ",$data);
+
+        if($data[$keyLat] == 0 || $data[$keyLon] == 0){
+            continue;
+        }
+
+        //取1000个点来计算平均数
+        $lats[] = $data[$keyLat];
+        $lons[] = $data[$keyLon];
+
+        $num++;
+        if($num == 1001){
+            break;
+        }
+    }
+
+    //计算平均数
+    $avgLat = array_sum($lats) / count($lats);
+    $avgLon = array_sum($lons) / count($lons);
+    foreach($lats as $key => $lat){
+        abs($lat - $avgLat) > 1 ? array_splice($lats,$key,1) : null;
+    }
+
+    foreach($lons as $key => $lon){
+        abs($lon - $avgLon) > 1 ? array_splice($lons,$key,1): null;
+    }
+
+    $avgLat = array_sum($lats) / count($lats);
+    $avgLon = array_sum($lons) / count($lons);
+    fseek($fd,0);
+
+
+    $temp   = $file.randStr(5);
+    $fdt    = fopen($temp,'w');
+    $num    = 0;
+    $gpsArr = [];
+
+    while(!feof($fd)){
+
+        $data       = trim(fgets($fd));
+
+        if($data != ''){
+
+            $data       = explode(" ",$data);
+            $lat        = $data[$keyLat];
+            $lon        = $data[$keyLon];
+
+            if(abs($lat - $avgLat) > 1 || abs($lon - $avgLon) > 1){
+                $data[$keyLon] = 0;
+                $data[$keyLat] = 0;
+            }
+
+            $gpsArr[]   = implode(" ",$data)."\n";
+        }
+
+
+        if($num == 1000 || feof($fd))
+        {
+            fwrite($fdt,implode('',$gpsArr));
+            $num = 0;
+            $gpsArr = [];
+        }
+        $num ++;
+    }
+
+    fclose($fd);
+    fclose($fdt);
+    if($resFile == ''){
+        $resFile = $file;
+    }
+
+    copy($temp,$resFile);
+    unlink($temp);
+}
