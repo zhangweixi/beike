@@ -312,7 +312,7 @@ class MatchController extends Controller
 
 
         //3.通知APP上传进度
-        mylogger('新上传:'.$dataLength);
+        mylogger($userId.'新上传:'.$dataLength);
         $this->inform_app($userId);
 
         $redisKey   = "matchupload:".$matchId;
