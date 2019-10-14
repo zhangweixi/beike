@@ -311,6 +311,7 @@ class MatchController extends Controller
 
 
         //3.通知APP上传进度
+        mylogger('通知进度');
         $this->inform_app($userId);
 
         $redisKey   = "matchupload:".$matchId;
