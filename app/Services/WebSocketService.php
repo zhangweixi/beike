@@ -186,6 +186,8 @@ class WebSocketService implements WebSocketHandlerInterface{
             $res = $this->push($fd,$uploadData);
             if(!$res){
                 mylogger("进度通知：用户".$data->userId."发送失败");
+            }else{
+                mylogger("进度通知：用户".$data->userId."发送成功");
             }
         }else{
             mylogger('进度通知，用户'.$data->userId."没有连接socket");
