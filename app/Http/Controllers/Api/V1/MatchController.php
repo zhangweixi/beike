@@ -307,11 +307,12 @@ class MatchController extends Controller
         $sourceId       = $matchModel->add_match_source_data($matchData);
 
         //2.修改进度
-        BaseMatchUploadProcessModel::update_process_v2($userId,$foot,strlen($bindata));
+        $dataLength     = strlen($bindata);
+        BaseMatchUploadProcessModel::update_process_v2($userId,$foot,$dataLength);
 
 
         //3.通知APP上传进度
-        mylogger('通知进度');
+        mylogger('新上传:'.$dataLength);
         $this->inform_app($userId);
 
         $redisKey   = "matchupload:".$matchId;
