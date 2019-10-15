@@ -98,11 +98,16 @@ class MatchController extends Controller
      * */
     public function finish_match(Request $request)
     {
-
         $matchId    = $request->input('matchId');
+        $valid      = $request->input('isValid',1);
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
         $userId     = $matchInfo->user_id;
+
+        if($valid == 0){
+            $matchModel->where('match_id')->delete();
+            return apiData()->send();
+        }
 
         $matchModel->finish_match($matchId);    //结束比赛
         $matchModel->log_match_status($matchId,'stop'); //操作标记
