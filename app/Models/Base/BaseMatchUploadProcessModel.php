@@ -15,8 +15,9 @@ class BaseMatchUploadProcessModel extends Model
     /**
      * 初始化上传进度
      * @param $userId integer
+     * @param $reset boolean
      * */
-    public static function init_upload_process($userId){
+    public static function init_upload_process($userId,$reset=false){
 
         $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
 
@@ -24,23 +25,31 @@ class BaseMatchUploadProcessModel extends Model
 
         if($processInfo){
 
-
-            $finishedNum   = $processInfo->finished_num;
-
-            //如果当前设备已完成数量和当前设备总量相等，则将已完成量和总量都重置为0
-            if($processInfo->left_num == $processInfo->left_finished_num){
-
-                $finishedNum   -= $processInfo->left_num;
+            if($reset){
+                $finishedNum    = 0;
                 $processInfo->left_finished_num = 0;
-                $processInfo->left_num          = 0;
+                $processInfo->left_num = 0;
+                $processInfo->right_finished_num = 0;
+                $processInfo->right_num = 0;
+            }else{
+                $finishedNum   = $processInfo->finished_num;
+
+                //如果当前设备已完成数量和当前设备总量相等，则将已完成量和总量都重置为0
+                if($processInfo->left_num == $processInfo->left_finished_num){
+
+                    $finishedNum   -= $processInfo->left_num;
+                    $processInfo->left_finished_num = 0;
+                    $processInfo->left_num          = 0;
+                }
+
+                if($processInfo->right_num == $processInfo->right_finished_num){
+
+                    $finishedNum   -= $processInfo->right_num;
+                    $processInfo->right_num             = 0;
+                    $processInfo->right_finished_num    = 0;
+                }
             }
 
-            if($processInfo->right_num == $processInfo->right_finished_num){
-
-                $finishedNum   -= $processInfo->right_num;
-                $processInfo->right_num             = 0;
-                $processInfo->right_finished_num    = 0;
-            }
 
             $newProgress = [
                 'updated_at'        => $time,

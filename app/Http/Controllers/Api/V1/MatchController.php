@@ -83,7 +83,7 @@ class MatchController extends Controller
 
         $matchModel->log_match_status($matchId,'begin');
 
-        BaseMatchUploadProcessModel::init_upload_process($userId);
+        BaseMatchUploadProcessModel::init_upload_process($userId,true);
 
         return apiData()
             ->set_data('matchId',$matchId)
