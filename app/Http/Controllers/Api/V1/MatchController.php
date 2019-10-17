@@ -494,6 +494,10 @@ class MatchController extends Controller
             return apiData()->send(2001,"系统正在对数据玩命分析，请稍等");
         }
 
+        $calorie = [];
+        for($i=0;$i<100;$i++){
+            $calorie[] = rand(0,100);
+        }
 
         $data   = [
             'shoot'         => [
@@ -532,6 +536,10 @@ class MatchController extends Controller
                 "speedAvg"  =>  speed_second_to_hour($matchResult->touchball_speed_avg),
                 "strengthMax"=> $matchResult->touchball_strength_max,
                 "strengthAvg"=> $matchResult->touchball_strength_avg
+            ],
+            'calorie'   => [
+                "total" => array_sum($calorie),
+                'data'  => $calorie
             ]
         ];
 
