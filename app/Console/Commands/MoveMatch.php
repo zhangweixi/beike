@@ -77,7 +77,7 @@ class MoveMatch extends Command
             }
             DB::table('match_source_data')->where('match_id',$matchId)->delete();
 
-            DB::table('match_data_process')
+            DB::table('match_data_parse_process')
                 ->where('match_id',$matchId)
                 ->update(["gps_L"=>0,"sensor_L"=>0,"sensor_R"=>0,"compass_R"=>0,"compass_L"=>0]);
         }

@@ -11,6 +11,10 @@ class BaseMatchUploadProcessModel extends Model
     protected $table = "match_upload_process";
 
     protected $primaryKey = "user_id";
+    public static function get_upload_process($userId){
+        $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
+        return $processInfo;
+    }
 
     /**
      * 初始化上传进度
@@ -19,7 +23,7 @@ class BaseMatchUploadProcessModel extends Model
      * */
     public static function init_upload_process($userId,$reset=false){
 
-        $processInfo    = DB::table('match_upload_process')->where('user_id',$userId)->first();
+        $processInfo    = self::get_upload_process($userId);
 
         $time           = date_time();
 
@@ -184,18 +188,18 @@ class BaseMatchUploadProcessModel extends Model
      * */
     public static function save_total_num($userId,$foot,$num){
 
-        $info   = self::where('user_id',$userId)->first();
+        self::reset_uploa_process($userId);
+        $info   = self::get_upload_process($userId);
         $newInfo= [];
         $newInfo[$foot."_num"] = $num;
 
         if($info){
+
             $key = $foot."_finished_num";
             $info->$key     = 0;
             $newInfo[$foot."_finished_num"]     = 0;
             $newInfo['finished_num']            = $info->left_finished_num + $info->right_finished_num;
-
-            DB::table('match_upload_process')
-                ->where('user_id',$userId)->update($newInfo);
+            self::where('user_id',$userId)->update($newInfo);
 
         }else{
             $newInfo1 = [
@@ -209,6 +213,25 @@ class BaseMatchUploadProcessModel extends Model
         }
     }
 
+    /**
+     * @param $userId int
+     * */
+    public static function reset_uploa_process($userId){
+
+        $process    = self::get_upload_process($userId);
+        $updateTime = strtotime($process->updated_at);
+
+        if(time() - $updateTime > 10){ //如果更新时间大于20S，说明是一次新的上传，将总的已上传归零
+
+            $upData['finished_num'] = 0;
+            $upData['left_num']     = 0;
+            $upData['right_num']    = 0;
+            $upData['left_finished_num']    = 0;
+            $upData['right_finished_num']   = 0;
+            self::where('user_id',$userId)->update($upData);
+        }
+
+    }
     public static function get_upload_state($userId){
 
         return self::where('user_id',$userId)->first();

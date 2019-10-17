@@ -37,7 +37,7 @@ class MatchCaculate extends Controller
 
         //2.将数据进度设置为未解完
         $data = ["gps_L"=>0,"gps_R"=>0,"sensor_L"=>0,"sensor_R"=>0,"compass_L"=>0,"compass_R"=>0];
-        DB::table('match_data_process')->where('match_id',$matchId)->update($data);
+        DB::table('match_data_parse_process')->where('match_id',$matchId)->update($data);
 
         foreach($types as $type)
         {
