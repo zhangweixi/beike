@@ -358,8 +358,10 @@ function gps_filter($file,$keyLat,$keyLon,$resFile = ''){
         }
 
         //取1000个点来计算平均数
-        $lats[] = $data[$keyLat];
-        $lons[] = $data[$keyLon];
+        $lat = (int) ($data[$keyLat]*100);
+        $lon = (int) ($data[$keyLon]*100);
+        isset($lats[$lat]) ? $lats[$lat] += 1 : $lats[$lat] = 1;
+        isset($lons[$lon]) ? $lons[$lon] += 1 : $lons[$lon] = 1;
 
         $num++;
         if($num == 1001){
@@ -368,20 +370,10 @@ function gps_filter($file,$keyLat,$keyLon,$resFile = ''){
     }
 
     //计算平均数
-    $avgLat = array_sum($lats) / count($lats);
-    $avgLon = array_sum($lons) / count($lons);
-    foreach($lats as $key => $lat){
-        abs($lat - $avgLat) > 1 ? array_splice($lats,$key,1) : null;
-    }
+    $avgLat = array_search(max($lats),$lats)/100;
+    $avgLon = array_search(max($lons),$lons)/100;
 
-    foreach($lons as $key => $lon){
-        abs($lon - $avgLon) > 1 ? array_splice($lons,$key,1): null;
-    }
-
-    $avgLat = array_sum($lats) / count($lats);
-    $avgLon = array_sum($lons) / count($lons);
     fseek($fd,0);
-
 
     $temp   = $file.randStr(5);
     $fdt    = fopen($temp,'w');
