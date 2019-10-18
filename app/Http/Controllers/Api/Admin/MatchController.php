@@ -60,9 +60,9 @@ class MatchController extends Controller
         //将之前的数据删除
         $dir        = rtrim(matchdir($matchId),"/"); deldir($dir);
 
-        $caculate   = new MatchCaculate();
-        $caculate->jiexi_match($request);
-
+        //$caculate   = new MatchCaculate();
+        //$caculate->jiexi_match($request);
+        artisan("match:parse ".$matchId);
         return apiData()->send();
     }
 
