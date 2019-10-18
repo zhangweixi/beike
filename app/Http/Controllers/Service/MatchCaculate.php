@@ -267,7 +267,8 @@ class MatchCaculate extends Controller
         {
             //算法调用失败，使用微信通知我
             BaseMatchModel::match_process($matchId,"获得通知，算法计算失败");
-
+            $matchInfo  = (new MatchModel())->get_match_detail($matchId);
+            jpush_content("比赛结果通知","哎呀！真遗憾，比赛{$matchId}计算失败了",1002,1,$matchInfo->user_id);
         }else{
 
             //同步结果文件
