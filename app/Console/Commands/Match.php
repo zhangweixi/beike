@@ -71,7 +71,7 @@ class Match extends Command
         $gpsApp     = new TranslateGps($matchId);
         $gpsApp->handle();
         BaseMatchModel::match_process($matchId,"GPS转换成功");
-        gps_filter(matchdir($matchId)."gps-L.txt",0,1);
+        //gps_filter(matchdir($matchId)."gps-L.txt",0,1);
 
         /* 4.球场规则检查
          * 开始测量的球场由于信号原因可能无法得到一个正常大小的球场
