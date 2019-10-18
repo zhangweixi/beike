@@ -41,8 +41,9 @@
                                 <textarea cols="30" rows="10" ng-model="match.admin_remark" ng-blur="sure_edit_remark()"></textarea>
                             </td>
                             <td>
-                                
-                                
+
+                                <a class="btn btn-info btn-xs" href="/www/app/run-hot-map.html?matchId={{match.match_id}}" target="_blank">分项图</a>
+
                                 <a class="btn btn-info btn-xs" href="#match/result/{{match.match_id}}">结果</a>
                                 <a class="btn btn-primary btn-xs" href="#match/files/{{match.match_id}}">文件</a>
                                 <a href="{{server}}match/downloadfile?matchId={{match.match_id}}" class="btn btn-xs btn-primary" target="downloadfile">下载</a>
