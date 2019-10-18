@@ -327,7 +327,6 @@ class ParseData implements ShouldQueue
             ];
         }
         $file = $this->save_result($content);
-        gps_filter($file,2,3);
     }
 
 

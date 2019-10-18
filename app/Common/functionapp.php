@@ -348,8 +348,11 @@ function gps_filter($file,$keyLat,$keyLon,$resFile = ''){
     while(!feof($fd)){
 
         $data = trim(fgets($fd));
-        $data = explode(" ",$data);
+        if(!$data){
+            continue;
+        }
 
+        $data = explode(" ",$data);
         if($data[$keyLat] == 0 || $data[$keyLon] == 0){
             continue;
         }
