@@ -165,7 +165,8 @@ class WebSocketService implements WebSocketHandlerInterface{
      * @param $data Object
      * */
     public function inform_upload_progress($data){
-        logbug($data->userId."socket服务器通知上传进度开始");
+        $rand = randStr(5);
+        logbug($data->userId."socket服务器通知上传进度开始".$rand);
         $process = BaseMatchUploadProcessModel::get_upload_state($data->userId);
 
         if(!$process){
@@ -193,7 +194,7 @@ class WebSocketService implements WebSocketHandlerInterface{
             mylogger('进度通知，用户'.$data->userId."没有连接socket");
         }
 
-        logbug($data->userId."socket服务器通知上传进度结束");
+        logbug($data->userId."socket服务器通知上传进度结束".$rand);
     }
 
 
