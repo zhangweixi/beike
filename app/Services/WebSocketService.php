@@ -134,7 +134,8 @@ class WebSocketService implements WebSocketHandlerInterface{
         //jpush_content("联网通知","用户".$data->userId."联网成功".$type,6001,1,1);
 
         if($type == 'app'){
-            $this->inform_upload_progress($data);
+            $data->online = true;
+            $this->inform_upload_progress($data);   //  获取初始状态
         }
     }
 
@@ -166,7 +167,10 @@ class WebSocketService implements WebSocketHandlerInterface{
      * */
     public function inform_upload_progress($data){
         $rand = randStr(5);
-        logbug($data->userId."socket服务器通知上传进度开始".$rand);
+        if(!isset($data->online)){
+            logbug($data->userId."socket服务器通知上传进度开始".$rand);
+        }
+
         $process = BaseMatchUploadProcessModel::get_upload_state($data->userId);
 
         if(!$process){
@@ -194,7 +198,9 @@ class WebSocketService implements WebSocketHandlerInterface{
             mylogger('进度通知，用户'.$data->userId."没有连接socket");
         }
 
-        logbug($data->userId."socket服务器通知上传进度结束".$rand);
+        if(!isset($data->online)){
+            logbug($data->userId."socket服务器通知上传进度结束".$rand);
+        }
     }
 
 
