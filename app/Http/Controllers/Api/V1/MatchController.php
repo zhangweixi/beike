@@ -314,10 +314,10 @@ class MatchController extends Controller
 
         //3.通知APP上传进度
         $rand = randStr(5);
-        mylogger($userId.'新上传:'.$dataLength);
-        logbug($userId."通知上传开始".$rand);
+        
+        logbug($rand.$userId."通知上传开始");
         $this->inform_app($userId);
-        logbug($userId."通知上传结束".$rand);
+        logbug($rand.$userId."通知上传结束");
 
         $redisKey   = "matchupload:".$matchId;
         if($number == 0){ //传输已完成 , 加入到计算监控中
