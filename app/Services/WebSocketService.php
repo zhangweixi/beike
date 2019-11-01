@@ -181,13 +181,19 @@ class WebSocketService implements WebSocketHandlerInterface{
 
             return;
         }
+        if($process->left_num + $process->right_num == 0){
+
+            $percent = 100;
+        }else{
+            $percent = intval(($process->right_finished_num + $process->left_finished_num) / ($process->left_num + $process->right_num) * 100);
+        }
 
         $uploadData   = [
             "action"    => "uploadProgress",
             "total"     => $process->left_num + $process->right_num,
             "finished"  => $process->finished_num,
             "needTime"  => 0,
-            "percent"   => intval(($process->right_finished_num + $process->left_finished_num) / ($process->left_num + $process->right_num) * 100),
+            "percent"   => $percent,
         ];
 
         $fd     = BaseUserSocketModel::get_user_fd($data->userId,"app");
