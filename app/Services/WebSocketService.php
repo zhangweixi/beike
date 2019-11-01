@@ -168,13 +168,17 @@ class WebSocketService implements WebSocketHandlerInterface{
     public function inform_upload_progress($data){
         $rand = randStr(5);
         if(!isset($data->online)){
-            logbug($rand.$data->userId."socket服务器通知上传进度开始");
+            $msg = $rand.$data->userId."socket服务器通知上传进度开始";
+            logbug($msg);
         }
 
         $process = BaseMatchUploadProcessModel::get_upload_state($data->userId);
 
         if(!$process){
-            logbug($rand."未找到该用户".$data->userId."的上传进度记录");
+            $msg = $rand."未找到该用户".$data->userId."的上传进度记录";
+            mylogger($msg);
+            logbug($msg);
+
             return;
         }
 
@@ -193,18 +197,26 @@ class WebSocketService implements WebSocketHandlerInterface{
 
             if(!isset($data->online)){
                 if(!$res){
-                
-                    logbug($rand."用户".$data->userId."发送失败");
+
+                    $msg = $rand."用户".$data->userId."发送失败";
+                    mylogger($msg);
+                    logbug($msg);
 
                 }else{
-
-                    logbug($rand."用户".$data->userId."发送成功，percent:".$uploadData['percent']);
+                    $msg = $rand."用户".$data->userId."发送成功，percent:".$uploadData['percent'];
+                    mylogger($msg);
+                    logbug($msg);
                 }    
             }
             
         }elseif(!isset($data->online)){
 
-            logbug($rand.'进度通知，用户'.$data->userId."没有连接socket");
+            $msg = $rand.'进度通知，用户'.$data->userId."没有连接socket";
+            mylogger($msg);
+            logbug($msg);
+
+        }else{
+            mylogger('hahahahhaha');
         }
 
         if(!isset($data->online)){
