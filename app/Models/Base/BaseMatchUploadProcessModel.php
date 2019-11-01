@@ -188,7 +188,7 @@ class BaseMatchUploadProcessModel extends Model
      * */
     public static function save_total_num($userId,$foot,$num){
 
-        self::reset_uploa_process($userId);
+        //self::reset_uploa_process($userId,$foot);
         $info   = self::get_upload_process($userId);
         $newInfo= [];
         $newInfo[$foot."_num"] = $num;
@@ -216,7 +216,7 @@ class BaseMatchUploadProcessModel extends Model
     /**
      * @param $userId int
      * */
-    public static function reset_uploa_process($userId){
+    public static function reset_uploa_process($userId,$foot){
 
         $process    = self::get_upload_process($userId);
         $updateTime = strtotime($process->updated_at);
