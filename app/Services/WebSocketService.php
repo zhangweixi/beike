@@ -174,7 +174,7 @@ class WebSocketService implements WebSocketHandlerInterface{
         $process = BaseMatchUploadProcessModel::get_upload_state($data->userId);
 
         if(!$process){
-            logbug($rand."未找到该用户".$data->userId."的上传进度记录")
+            logbug($rand."未找到该用户".$data->userId."的上传进度记录");
             return;
         }
 
