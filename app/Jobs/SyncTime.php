@@ -47,6 +47,9 @@ class SyncTime implements ShouldQueue
             copy($resultFile,$sourceFile);
             unlink($resultFile);
         }
+
+        //将一场数据的截取到同样长度的时间
+        $this->cut_to_same_time($files);
     }
 
 
@@ -115,5 +118,70 @@ class SyncTime implements ShouldQueue
         }
         fclose($f);
         fclose($nf);
+    }
+
+    /**
+     * 截取到同样长度的时间
+     * @param $files array
+     *
+     * */
+    public function cut_to_same_time(array $files){
+
+        $dir    = matchdir($this->matchId);
+        $minutes= [];
+        foreach($files as $file){
+            $str    = $this->get_last_line($dir.$file.".txt");
+            $arr    = explode(" ",$str);
+            $num    = $arr[count($arr)-1];
+            array_push($minutes,$num);
+        }
+
+        $minMinute    = min($minutes);
+        foreach($files as $file)
+        {
+            $this->cut_file($dir.$file.".txt",$minMinute);
+        }
+    }
+
+    public function cut_file($file,$toMinute){
+        $tempfile = $file.".txt";
+        copy($file,$tempfile);
+        unlink($file);
+        $fd     = fopen($file,'w');
+        $ft     = fopen($tempfile,'r');
+        $size   = 0;
+
+        while(!feof($ft)){
+
+            $str = trim(fgets($ft));
+            $arr = explode(" ",$str);
+            if($size == 0){
+                $size = count($arr)-1;
+            }else{
+                $str = "\n".$str; //非首行数据，最前面加换行
+            }
+
+            if($arr[$size] <= $toMinute){
+                fwrite($fd,$str);
+            }
+        }
+        fclose($fd);
+        fclose($ft);
+        unlink($tempfile);
+    }
+    public function get_last_line($file){
+
+        $fp = fopen($file, 'r');
+        fseek($fp,-1,SEEK_END);
+
+        $s = '';
+        while(($c = fgetc($fp)) !== false)
+        {
+            if($c == "\n" && $s) break;
+            $s = $c . $s;
+            fseek($fp, -2, SEEK_CUR);
+        }
+        fclose($fp);
+        return  $s;
     }
 }
