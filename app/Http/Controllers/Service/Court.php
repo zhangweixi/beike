@@ -1178,7 +1178,7 @@ class Court{
     {
         $key = "GPSGROUP:".$data['gps_group_id'];
         Redis::sadd($key,json_encode($data));
-        //Redis::expire($key,120);
+        Redis::expire($key,120);
     }
 
     //获取GPS缓存
@@ -1213,6 +1213,6 @@ class Court{
     //删除GPS缓存
     public static function remove_gps_group_cache($gpsGroupId)
     {
-        //Redis::del("GPSGROUP:".$gpsGroupId);
+        Redis::del("GPSGROUP:".$gpsGroupId);
     }
 }
