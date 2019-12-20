@@ -8,7 +8,7 @@ use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\V1\CourtModel;
 use DB;
-
+use Illuminate\Support\Facades\Redis;
 /*
   足球场结构点阵结构
 
@@ -51,29 +51,6 @@ class Court{
     public function __construct()
     {
         bcscale (10);
-    }
-
-    /**
-     * 检查球场的采集的GPS原点是否有效
-     * @param $gpsGroupId integer
-     * @return boolean
-     * */
-    public static function check_court_border_point($gpsGroupId){
-
-        $positions = DB::table('football_court_point')
-            ->where('gps_group_id',$gpsGroupId)
-            ->groupBy('position')
-            ->select(DB::raw('count(*) as total'),'position')
-            ->get();
-
-
-        foreach($positions as $p)
-        {
-            if($p->total < 3){
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -1194,5 +1171,47 @@ class Court{
 
         //球场解析结束
         mylogger("球场解析成功,courtId:".$courtId);
+    }
+
+    //缓存GPS
+    public static function set_gps_group_cache(array $data)
+    {
+
+        Redis::sadd("GPSGROUP:".$data['gps_group_id'],json_encode($data));
+    }
+
+    //获取GPS缓存
+    public static function get_gps_group_cache($groupGroupId)
+    {
+        $gps = Redis::smembers("GPSGROUP:".$groupGroupId);
+        foreach($gps as $key => $v){
+            $gps[$key] = \GuzzleHttp\json_decode($v,true);
+        }
+        return $gps;
+    }
+
+    //检查GPS点数是否足够
+    public static function check_gps_group_num($positon,$gpsGroupId)
+    {
+        $gps = self::get_gps_group_cache($gpsGroupId);
+        if(count($gps) == 0)
+        {
+            return false;
+        }
+
+        $count = 0;
+        foreach($gps as $v){
+            if($v['position'] == $positon){
+                $count += 1;
+            }
+        }
+        return $count >= 3 ? true : false;
+    }
+
+
+    //删除GPS缓存
+    public static function remove_gps_group_cache($gpsGroupId)
+    {
+        Redis::del("GPSGROUP:".$gpsGroupId);
     }
 }

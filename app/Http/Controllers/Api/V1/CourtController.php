@@ -40,10 +40,6 @@ class CourtController extends Controller
 
         }else{
 
-            //对用户的球场采集点进行检查，如果数据量太少，将无法进行球场计算
-            if(!Court::check_court_border_point($gpsGroupId)){
-                return apiData()->send(2001,"您行走过快，数据采集不足，无法对球场建模,请重新测量");
-            }
             //2.添加新的球场
             $courtData  = [
                 'user_id'       => $userId,
@@ -177,8 +173,25 @@ class CourtController extends Controller
             'created_at'    => date_time()
         ];
 
-        DB::table('football_court_point')->insert($gpsPoint);
+        //DB::table('football_court_point')->insert($gpsPoint);
 
+        $prePosition = ["B"=>"A","C"=>"B","D"=>"C","E"=>"D","F"=>"E","G"=>"F"];
+
+        if($position != "A" && Court::check_gps_group_num($prePosition[$position],$gpsGroupId) == false)
+        {
+            return apiData()->send(2004,"测得太快啦，返回上一点重测吧");
+        }
+
+        if($position == "G")//结束点
+        {
+            //将数据迁移到数据库
+            $gps = Court::get_gps_group_cache($gpsGroupId);
+            Court::remove_gps_group_cache($gpsGroupId);
+            DB::table('football_court_point')->insert($gps);
+            return apiData()->send();
+        }
+
+        Court::set_gps_group_cache($gpsPoint);
         //3检查手机的GPS和设备的GPS的距离
         $msg    = $gpsInfo['lat'] ? "GPS无效":"偏差". gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
 
