@@ -1176,8 +1176,9 @@ class Court{
     //缓存GPS
     public static function set_gps_group_cache(array $data)
     {
-
-        Redis::sadd("GPSGROUP:".$data['gps_group_id'],json_encode($data));
+        $key = "GPSGROUP:".$data['gps_group_id'];
+        Redis::sadd($key,json_encode($data));
+        Redis::expire($key,120);
     }
 
     //获取GPS缓存
