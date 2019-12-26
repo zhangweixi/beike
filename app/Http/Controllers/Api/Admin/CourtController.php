@@ -13,6 +13,7 @@ use App\Models\Base\BaseFootballCourtModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Service\Court;
 use DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -54,7 +55,8 @@ class CourtController extends Controller
         $courtInfo  = CourtModel::find($courtId);
         if($courtInfo->gps_group_id != 0){
 
-            MatchCaculate::call_matlab_court_init($courtId);
+
+            Court::call_matlab_caculate_court($courtId);
         }
 
         return apiData()->send();
