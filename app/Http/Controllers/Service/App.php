@@ -92,5 +92,9 @@ class App extends Controller{
         return $version;
     }
 
-
+    public function mgaonline(){
+        $content = file_get_contents(public_path("mgaonline.ubx"));
+        $content = bin2hex($content);
+        return apiData()->set_data("content",$content)->send();
+    }
 }
