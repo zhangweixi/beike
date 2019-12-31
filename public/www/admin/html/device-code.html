@@ -103,6 +103,7 @@
                         <th class="column-title">类型</th>
                         <th class="column-title">固件类型</th>
                         <th class="column-title">创建日期</th>
+                        <th class="column-title">打开文件</th>
                         <th class="column-title">操作</th>
                     </tr>
                     </thead>
@@ -115,7 +116,8 @@
                         <td class="col-sm">{{d.publish ==1 ?'已发布':'未发布'}}</td>
                         <th class="column-title">{{d.type}}</th>
                         <th class="column-title">{{d.ota_type}}</th>
-                        <td class=" ">{{d.created_at}}</td>
+                        <td class="column-title">{{d.created_at}}</td>
+                        <td class="column-title"><a href="/{{d.file}}">打开</a></td>
                         <td class="last">
                             <a href=""><button class="btn btn-xs btn-danger" ng-click="delete_code(d.id)">删除</button></a>
                         </td>
