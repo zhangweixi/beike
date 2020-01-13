@@ -308,3 +308,112 @@ function get_weather($lat,$lon){
     ];
     return $weather;
 }
+
+/**
+ * 执行系统的artisan命令
+ * @param $command string 执行的命令
+ * @param $async boolean 是否异步执行
+ * @return boolean
+ * */
+function artisan($command,$async=false){
+
+    $basePath = base_path('');
+
+    $cmd = "php {$basePath}/artisan {$command}";
+
+    if($async){
+
+        return asyn_shell($cmd);
+
+    }else{
+
+        return shell_exec($cmd);
+    }
+}
+
+/**
+ * GPS无效点过滤
+ * @param $file string 文件
+ * @param $keyLat int
+ * @param $keyLon int
+ * @param $resFile string
+ * */
+function gps_filter($file,$keyLat,$keyLon,$resFile = ''){
+
+    $fd     = fopen($file,'a+');
+    $num    = 0;
+    $lats   = [];
+    $lons   = [];
+
+    while(!feof($fd)){
+
+        $data = trim(fgets($fd));
+        if(!$data){
+            continue;
+        }
+
+        $data = explode(" ",$data);
+        if($data[$keyLat] == 0 || $data[$keyLon] == 0){
+            continue;
+        }
+
+        //取1000个点来计算平均数
+        $lat = (int) ($data[$keyLat]*100);
+        $lon = (int) ($data[$keyLon]*100);
+        isset($lats[$lat]) ? $lats[$lat] += 1 : $lats[$lat] = 1;
+        isset($lons[$lon]) ? $lons[$lon] += 1 : $lons[$lon] = 1;
+
+        $num++;
+        if($num == 1001){
+            break;
+        }
+    }
+
+    //计算平均数
+    $avgLat = array_search(max($lats),$lats)/100;
+    $avgLon = array_search(max($lons),$lons)/100;
+
+    fseek($fd,0);
+
+    $temp   = $file.randStr(5);
+    $fdt    = fopen($temp,'w');
+    $num    = 0;
+    $gpsArr = [];
+
+    while(!feof($fd)){
+
+        $data       = trim(fgets($fd));
+
+        if($data != ''){
+
+            $data       = explode(" ",$data);
+            $lat        = $data[$keyLat];
+            $lon        = $data[$keyLon];
+
+            if(abs($lat - $avgLat) > 1 || abs($lon - $avgLon) > 1){
+                $data[$keyLon] = 0;
+                $data[$keyLat] = 0;
+            }
+
+            $gpsArr[]   = implode(" ",$data)."\n";
+        }
+
+
+        if($num == 1000 || feof($fd))
+        {
+            fwrite($fdt,implode('',$gpsArr));
+            $num = 0;
+            $gpsArr = [];
+        }
+        $num ++;
+    }
+
+    fclose($fd);
+    fclose($fdt);
+    if($resFile == ''){
+        $resFile = $file;
+    }
+
+    copy($temp,$resFile);
+    unlink($temp);
+}

@@ -16,6 +16,7 @@ class BaseSuggestionModel extends Model
         return DB::table('user_suggestion as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
             ->select('a.*','b.mobile','b.nick_name')
+            ->orderBy('id','desc')
             ->paginate(20);
     }
 }

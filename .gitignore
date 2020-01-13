@@ -46,4 +46,6 @@ composer-setup.php
 app/Console/Commands/zhangweixi.php
 app/bat/queue-num.txt
 app/Console/Commands/zhang.php
+public/.zisync.meta
+app/.zisync.meta
 bash.exe.stackdump

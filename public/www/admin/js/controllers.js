@@ -344,7 +344,7 @@ myapp.controller('deviceController', function ($scope, $http, $location,$statePa
             from.append('publish',newCodeData.publish ? 1 : 0);
             from.append('must_upgrade',newCodeData.must_upgrade ? 1: 0);
             from.append('type',newCodeData.type);
-        
+            from.append('ota_type',newCodeData.ota_type)
 
         $http({
             url:url,

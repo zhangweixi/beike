@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=zZSGyxZgUytdiKG135BcnaP6"></script>
+    <!--加载鼠标绘制工具-->
+    <script type="text/javascript" src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js"></script>
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.css" />
+
+    <!--加载检索信息窗口-->
+    <script type="text/javascript" src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js"></script>
+    <link rel="stylesheet" href="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.css" />
+
+    <link rel="stylesheet" href="index.css" type="text/css">
+    <title>球场地图</title>
+</head>
+<body>
+<div class="container">
+    <div id="allmap"></div>
+    <div class="operation">
+        <div class="nav flex">
+            <span onclick="nav('base',this)" class="selected">基本操作</span>
+            <span onclick="nav('add',this)">新增球场</span>
+        </div>
+
+        <!--操作-->
+        <section class="base">
+            <button onclick="clear_court();">清除地图</button>
+            <!--<button onclick="show_map_border();">显示球场边框</button>-->
+
+            <button onclick="show_map_content();">显示球场内部分割点</button>
+
+            <div>
+                <input type="text" id="gpsGroupId" placeholder="gpsGroupId">
+                <button onclick="show_court_top_point()">显示球场的几个核心点</button>
+                <button onclick="show_court_gps_group_all()">显示设备和手机原始数据</button>
+            </div>
+
+
+            <div>
+                <input type="text" placeholder="请输入文件路径" id="filepath">
+                <button onclick="show_file_map()">显示文件地图</button>
+            </div>
+
+
+            <div class="colors flex">
+                <span style="background:red;">手机</span>
+                <span style="background:green;">设备</span>
+            </div>
+        </section>
+
+        <!--新球场-->
+        <section class="add" style="display: none;">
+
+            <div>
+                <input type="text" placeholder="地名" id="suggestId">
+                <div id="searchResultPanel" style="border:1px solid #C0C0C0;width:150px;height:auto; display:none;"></div>
+                <!--<button>搜索</button>-->
+            </div>
+
+            <div>
+                <div class="court-bg">
+                    <p class="pa">A</p>
+                    <p class="pb">B</p>
+                    <p class="pc">C</p>
+                    <p class="pd">D</p>
+                    <p class="pe">E</p>
+                    <p class="pf">F</p>
+                </div>
+                <button onclick="drawingManager.beginDraw();">绘制球场</button>
+                <button onclick="drawingManager.cleanAllOverlay();">清除</button>
+                <input type="text" placeholder="请输入球场名称" id="courtName">
+                <button onclick="drawingManager.saveNewCourt()">保存球场</button>
+            </div>
+        </section>
+    </div>
+</div>
+</body>
+</html>
+<script src="index.js"></script>

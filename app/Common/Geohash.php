@@ -209,7 +209,7 @@ class Geohash {
         $neighbors['topright'] = $this->calculateAdjacent($neighbors['right'], 'top');
         $neighbors['bottomright'] = $this->calculateAdjacent($neighbors['right'], 'bottom');
         $neighbors['bottomleft'] = $this->calculateAdjacent($neighbors['left'], 'bottom');
-
+        $neighbors['self']      = $srcHash;
         return $neighbors;
     }
 

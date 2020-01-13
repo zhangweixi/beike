@@ -83,6 +83,10 @@
             background: linear-gradient(to right, #57945C 0%,#FF0300 100%);
         }
 
+        .hide{
+            display: none !important;
+        }
+
     </style>
 
 
@@ -202,9 +206,8 @@
         if(isWhole == 1){
 
             $('.whole').css('display',"block");
-
+            $('.whole.hide').removeClass('hide');
             $('.whole.run h2').text('热点图');
-
 
         }else{
 
@@ -220,6 +223,11 @@
         courtHeight = courtWidth / 1.8;
 
         $('.canvas').css('height',courtHeight+"px");
+        console.log(courtWidth);
+
+        if(isWhole == 0 || isWhole == null || isWhole == ''){
+            $('.whole.run').addClass('hide');
+        }
 
         map_init();
 
@@ -233,15 +241,10 @@
         {
             matchResult = res.data.matchResult;
 
-            //显示热点图
-            draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run);
+            if(isWhole > 0){
 
-            if(isWhole > 0){ //绘制雷达图
-
-
-
-                draw_leida_map(matchResult);
-
+                draw_leida_map(matchResult); //绘制雷达图
+                draw_hot_map("map-run-all",courtWidth,matchResult.map_gps_run); //显示热点图
                 return;
             }
 

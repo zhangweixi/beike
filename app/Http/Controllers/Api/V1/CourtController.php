@@ -26,23 +26,58 @@ class CourtController extends Controller
         $userId     = $request->input('userId',0);
         $gpsGroupId = $request->input('gpsGroupId');
         $courtName  = $request->input('courtName',"");
+        $type       = $request->input('type','new');
+        $courtId    = $request->input('courtId');
+
+        if($type == 'copy')
+        {
+            $courtInfo                  = CourtModel::find($courtId)->toArray();
+            $courtInfo['user_id']       = $userId;
+            $courtInfo['court_name']    = $courtName ? $courtName : $courtInfo['court_name'];
+            unset($courtInfo['court_id']);
+            $courtInfo  = CourtModel::create($courtInfo);
+            $courtId    = $courtInfo->court_id;
+
+        }else{
+
+            //2.添加新的球场
+            $courtData  = [
+                'user_id'       => $userId,
+                'gps_group_id'  => $gpsGroupId,
+                'court_name'    => $courtName
+            ];
+            $courtModel     = new CourtModel();
+            $courtId        = $courtModel->add_court($courtData);
+
+            Court::call_matlab_caculate_court($courtId);
+            
+            //BaseFootballCourtModel::join_minitor_court($courtId);   //加入监控队列
+        }
 
 
-
-        //2.添加新的球场
-        $courtData  = [
-            'user_id'       => $userId,
-            'gps_group_id'  => $gpsGroupId,
-            'court_name'    => $courtName
-        ];
-        $courtModel     = new CourtModel();
-        $courtId        = $courtModel->add_court($courtData);
-
-        MatchCaculate::call_matlab_court_init($courtId);        //调用算法系统，异步生成足球场
-        BaseFootballCourtModel::join_minitor_court($courtId);   //加入监控队列
         return apiData()->set_data('courtId',$courtId)->send(200,'SUCCESS');
     }
 
+    /**
+     * 拷贝球场
+     * */
+    public function copy_court(Request $request)
+    {
+        $courtId    = $request->input('courtId');
+        $userId     = $request->input('userId');
+        $courtName  = $request->input('courtName','');
+
+
+        $courtInfo  = CourtModel::find($courtId)->toArray();
+
+        $courtInfo['user_id'] = $userId;
+        $courtInfo['court_name'] = $courtName ? $courtName : $courtInfo['court_name'];
+        unset($courtInfo['court_id']);
+
+        $courtInfo  = CourtModel::create($courtInfo);
+
+        return apiData()->add('courtId',$courtInfo->court_id)->send();
+    }
 
     /**
      * 获得中心点
@@ -138,8 +173,25 @@ class CourtController extends Controller
             'created_at'    => date_time()
         ];
 
-        DB::table('football_court_point')->insert($gpsPoint);
+        //DB::table('football_court_point')->insert($gpsPoint);
 
+        $prePosition = ["B"=>"A","C"=>"B","D"=>"C","E"=>"D","F"=>"E","G"=>"F"];
+
+        if($position != "A" && Court::check_gps_group_num($prePosition[$position],$gpsGroupId) == false)
+        {
+            return apiData()->send(2004,"测得太快啦，返回上一点重测吧");
+        }
+
+        if($position == "G")//结束点
+        {
+            //将数据迁移到数据库
+            $gps = Court::get_gps_group_cache($gpsGroupId);
+            Court::remove_gps_group_cache($gpsGroupId);
+            DB::table('football_court_point')->insert($gps);
+            return apiData()->send();
+        }
+
+        Court::set_gps_group_cache($gpsPoint);
         //3检查手机的GPS和设备的GPS的距离
         $msg    = $gpsInfo['lat'] ? "GPS无效":"偏差". gps_distance($lon,$lat,$gpsInfo['lon'],$gpsInfo['lat']);
 
@@ -186,58 +238,17 @@ class CourtController extends Controller
     }
 
 
-    /*
-     * 显示足球场地图
-     * */
-    public function court_border(Request $request)
-    {
-        $matchId        = $request->input('matchId');
-
-        $courtFile      = "match/court-".$matchId.".json";
-        $has            = Storage::disk('web')->has($courtFile);
-        if(!$has) {
-
-            $matchInfo      = MatchModel::find($matchId);
-            $info           = CourtModel::find($matchInfo->court_id);
-
-            $points         = \GuzzleHttp\json_decode($info->boxs);
-
-            $points->A_D    = gps_to_bdgps($points->A_D);
-            $points->AF_DE  = gps_to_bdgps($points->AF_DE);
-            $points->F_E    = gps_to_bdgps($points->F_E);
-
-
-            $arr            = [];
-            foreach($points->center as $center)
-            {
-                foreach($center as $p)
-                {
-                    array_push($arr,$p);
-                }
-            }
-            $points->center  = gps_to_bdgps($arr);
-
-            Storage::disk('web')->put($courtFile,\GuzzleHttp\json_encode($points));
-
-        }else{
-
-            $points         = Storage::disk('web')->get($courtFile);
-            $points         = \GuzzleHttp\json_decode($points);
-
-        }
-        return apiData()->add('points',$points)->send();
-    }
-
     /**
     * 获得用户的球场
-    *
+    * 无论是用户的球场还是公共的球场，都根据GPS来获得最近的，而不是全部列出
     */
     public function get_courts(Request $request){
 
         $userId     = $request->input('userId');
-        $owner      = $request->input('owner');
+        $lat        = $request->input('latitude');
+        $lon        = $request->input('longitude');
 
-        $courts     = CourtModel::get_courts($userId,$owner);
+        $courts     = CourtModel::get_nearby_court($userId,2,$lat,$lon);
 
         return apiData()->add('courts',$courts)->send();
     }
@@ -255,4 +266,30 @@ class CourtController extends Controller
 
         return apiData()->add("gps",$points)->send();
     }
+
+    /**
+     * 获得足球场详情
+     * */
+    public function court_detail(Request $request)
+    {
+        $courtId    = $request->input('courtId');
+        $court      = CourtModel::select('court_id','court_name','p_a','p_d','p_a1','p_d1')->find($courtId)->toArray();
+
+
+        $info       = [];
+        $gps        = [];
+
+        foreach($court as $key => $v){
+            if(substr($key,0,1) == 'p'){
+
+                //$gps[] = ['name'=>$key,'gps'=>$v];
+                $gps[] = $v;
+            }else{
+                $info[$key] = $v;
+            }
+        }
+        $info['gps']    = $gps;
+        return apiData()->add('court',$info)->send();
+    }
+
 }

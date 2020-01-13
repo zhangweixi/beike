@@ -60,9 +60,9 @@ class MatchController extends Controller
         //将之前的数据删除
         $dir        = rtrim(matchdir($matchId),"/"); deldir($dir);
 
-        $caculate   = new MatchCaculate();
-        $caculate->jiexi_match($request);
-
+        //$caculate   = new MatchCaculate();
+        //$caculate->jiexi_match($request);
+        artisan("match:parse ".$matchId);
         return apiData()->send();
     }
 
@@ -229,6 +229,14 @@ class MatchController extends Controller
 
         $dirfile    = file_exists($dirfile) ? scandir($dirfile) : [];
 
+        foreach ($matchFiles as $f){
+            $file = public_path('storage/app/'.$f->data);
+            if(file_exists($file)){
+                $f->size = filesize($file);
+            }else{
+                $f->size = -1;
+            }
+        }
 
         $resultFiles= [];
 

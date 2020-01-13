@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Service;
 use App\Common\Http;
 use App\Http\Controllers\Controller;
 use App\Models\Base\BaseFootballCourtModel;
+use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
@@ -36,7 +37,7 @@ class MatchCaculate extends Controller
 
         //2.将数据进度设置为未解完
         $data = ["gps_L"=>0,"gps_R"=>0,"sensor_L"=>0,"sensor_R"=>0,"compass_L"=>0,"compass_R"=>0];
-        DB::table('match_data_process')->where('match_id',$matchId)->update($data);
+        DB::table('match_data_parse_process')->where('match_id',$matchId)->update($data);
 
         foreach($types as $type)
         {
@@ -257,51 +258,51 @@ class MatchCaculate extends Controller
     /**
      * 读取数据并保存到结果中
      * */
-    public function save_matlab_result(Request $request)
+    public function save_matlab_match_result(Request $request)
     {
-        $matchId        = $request->input('matchId');
-        $result         = $request->input('result');
+        $code   = $request->input('code');
+        $matchId= $request->input('id');
 
-        if($result == "FAIL")
+        if($code != 200)
         {
             //算法调用失败，使用微信通知我
-
-
+            BaseMatchModel::match_process($matchId,"获得通知，算法计算失败");
+            $matchInfo  = (new MatchModel())->get_match_detail($matchId);
+            jpush_content("比赛结果通知","哎呀！真遗憾，比赛{$matchId}计算失败了",1002,1,$matchInfo->user_id);
         }else{
 
-            //return (new AnalysisMatchData(''))->save_matlab_result($matchId);
+            //同步结果文件
+            $files  = explode(",",$request->input('files'));
+            $dir    = matchdir($matchId);
+            $fileRootUrl = $request->input('fileRootUrl');
+            foreach ($files as $fname)
+            {
+                file_put_contents($dir.$fname,file_get_contents($fileRootUrl."/".$fname));
+            }
+            BaseMatchModel::match_process($matchId,"获得通知，算法计算成功");
+            $job    = new AnalysisMatchData();
+            $job->save_matlab_result($matchId);
+            //$delayTime      = now()->addSecond(1);
+            //AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
+        }
+        /**8.处理结果**/
+        return apiData()->send();
+    }
 
-            $delayTime      = now()->addSecond(1);
-            AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
+    /**
+     * 存储球场结果
+     * */
+    public function save_matlab_court_result(Request $request){
+        $id     = $request->input('id');
+        $code   = $request->input('code');
+        $msg    = $request->input('msg');
+
+        if($code != 200){
+            BaseMatchModel::match_process($id,"获得通知，".$msg);
+        }else{
+            Court::save_after_matlab_court_result($id,$request->input('datafile'));
         }
 
         return apiData()->send();
     }
-
-
-    /**
-     * 调用处理球场
-     * @param $courtId integer 球场ID
-     * */
-    static function call_matlab_court_init($courtId)
-    {
-        $url   = config("app.matlabhost")."/api/matchCaculate/call_matlab_court_action?courtId=".$courtId;
-        file_get_contents($url);
-    }
-
-
-    /**
-     * MATLAB服务器执行,建立球场模型 在算法系统接收
-     * 调用matlab生成去球场的几个顶点坐标
-     * @param $request Request
-     * */
-    public function call_matlab_court_action(Request $request)
-    {
-        $courtId    = $request->input('courtId');
-        $delayTime      = now()->addSecond(1);
-        AnalysisMatchData::dispatch('call_matlab_court_action',['courtId'=>$courtId])->delay($delayTime);
-    }
-
-
-
 }

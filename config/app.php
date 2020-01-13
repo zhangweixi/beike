@@ -10,13 +10,15 @@ return [
      | matlabhost:算法系统的域名
      | apihost:API接口的域名
      */
-
-    'filehost'     => env('FILE_HOST',''),
-    'matlabhost'   => env('MATLAB_HOST',''),
+    "filehost"     => env('FILE_HOST'),
+    "matlabhost"   => env('MATLAB_HOST',''),
     'apihost'      => env('API_HOST',''),
     'aliyunApiHost'=> env('ALIYUN_API_HOST',''),
     'wechatenv'    => env('WECHAT_ENV',false),
     "adminOpenId"  => "o1zLM0daxBjdzyYwFxQ9YxPs7O6Q",
+    "socketHost"   => env('SOCKET_HOST',''),
+    "socketPort"   => env('SOCKET_PORT',''),
+    "checkToken"   => env('CHECK_TOKEN',true),
 
     /*
     |--------------------------------------------------------------------------

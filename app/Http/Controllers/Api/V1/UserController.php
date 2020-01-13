@@ -386,22 +386,22 @@ class UserController extends Controller
             [
                 'name'      => "综合评分",
                 'key'       => 'grade',
-                'y_title'   => "分",
-                'x_title'   => '时间',
+                'y_title'   => "分数",
+                'x_title'   => '场次',
                 'data'      => [],
             ],
             [
                 'name'      => "射门",
                 'key'       => "shoot_num_total",
-                'y_title'   => "次",
-                'x_title'   => "时间",
+                'y_title'   => "次数",
+                'x_title'   => "场次",
                 'data'      => []
             ],
             [
                 'name'      => "跑动距离",
                 'key'       => 'runDis',
-                'y_title'   => "km",
-                'x_title'   => "时间",
+                'y_title'   => "KM",
+                'x_title'   => "场次",
                 'data'      => [],
             ],
             [
@@ -412,17 +412,17 @@ class UserController extends Controller
                 'data'      => [],
             ],
             [
-                'name'      => "触球",
+                'name'      => "触球次数",
                 'key'       => 'touchball_num',
-                'y_title'   => "次",
-                'x_title'   => "时间",
+                'y_title'   => "次数",
+                'x_title'   => "场次",
                 'data'      => [],
             ],
             [
                 'name'      => "传球次数",
                 'key'       => 'passNum',
-                'y_title'   => "次",
-                'x_title'   => "时间",
+                'y_title'   => "次数",
+                'x_title'   => "场次",
                 'data'      => [],
             ],
 

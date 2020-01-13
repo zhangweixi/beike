@@ -16,8 +16,11 @@ use App\Http\Controllers\Controller;
 use App\Models\V1\MatchModel;
 use DB;
 use App\Jobs\AnalysisMatchData;
+use Illuminate\Session\Store;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
-
+use App\Jobs\ParseData;
+use WebSocket\Client;
 
 
 
@@ -68,18 +71,19 @@ class MatchController extends Controller
         if($oldMatch){
             return apiData()->send(2004,"您还有未结束的比赛");
         }
-
-        if(config('app.env') == 'production'){
-
-            //$weather    = get_weather($lat,$lon);
-            //$matchInfo  = array_merge($matchInfo,$weather);
-        }
-
+        $defaultWeather    = [
+            "temperature"   => 20,
+            "weather"       => '晴'
+        ];
+        $weather    = config('app.env') == 'production' ? get_weather($lat,$lon) : $defaultWeather;
+        $matchInfo  = array_merge($matchInfo,$weather);
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
         $timestamp  = getMillisecond();
 
         $matchModel->log_match_status($matchId,'begin');
+
+        BaseMatchUploadProcessModel::init_upload_process($userId,true);
 
         return apiData()
             ->set_data('matchId',$matchId)
@@ -94,11 +98,16 @@ class MatchController extends Controller
      * */
     public function finish_match(Request $request)
     {
-
         $matchId    = $request->input('matchId');
+        $valid      = $request->input('isValid',1);
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
         $userId     = $matchInfo->user_id;
+
+        if($valid == 0){
+            $matchModel->where('match_id')->delete();
+            return apiData()->send();
+        }
 
         $matchModel->finish_match($matchId);    //结束比赛
         $matchModel->log_match_status($matchId,'stop'); //操作标记
@@ -231,6 +240,126 @@ class MatchController extends Controller
     }
 
 
+    /**
+     * 从设备直接上传数据
+     * @param $request \Illuminate\Http\Request
+     * @return mixed
+     * */
+    public function upload(Request $request){
+        //return apiData()->send(200,'ok');
+        $matchId    = $request->input('matchId');
+        $foot       = $request->input('foot');
+        $footLetter = strtoupper(substr($foot,0,1));
+        $dataType   = $request->input('type');
+        $number     = $request->input('number');
+        $userId     = BaseMatchModel::where('match_id',$matchId)->value('user_id');
+        $bindata =  file_get_contents("php://input");
+
+
+        if($matchId == 0){
+
+            return apiData()->send("2000","缺少或没有本场比赛");
+        }
+
+        //1.数据校验  以防客户端网络异常导致数据上传重复
+
+        $checkCode  = crc32($bindata);
+        $hasFile    = BaseMatchSourceDataModel::has_same_match_same_data($matchId,$checkCode);
+
+        //当数据重复上传时，直接丢弃数据，返回正常
+        if($hasFile)
+        {
+            //return apiData()->send();
+        }
+
+        $year       = date('Y');
+        $month      = date('m');
+        $day        = date('d');
+        $second     = date('His');
+
+        $fdir       = "{$year}/{$month}/{$day}/{$matchId}";
+        $num1       = str_pad($number,3,'0',STR_PAD_LEFT);
+        $fname      = "{$dataType}-{$footLetter}-{$num1}.bin";
+
+        $fpath      = $fdir."/".$fname;//文件格式
+        Storage::disk('local')->put($fpath,$bindata);
+
+        if($number < 0){
+
+            return apiData()->send();
+        }
+
+        //数据文件存储在磁盘中
+
+        $matchData  = [
+            'match_id'  => $matchId,
+            'user_id'   => $userId,
+            'device_sn' => $deviceSn??"",
+            'type'      => $dataType,
+            'data'      => $fdir."/".$fname,
+            'foot'      => $footLetter,
+            'is_finish' => $number,
+            'status'    => 0,
+            'check_code'=> $checkCode
+        ];
+
+        //1.储存数据
+        $matchModel     = new MatchModel();
+        $sourceId       = $matchModel->add_match_source_data($matchData);
+
+        //2.修改进度
+        $dataLength     = strlen($bindata);
+        BaseMatchUploadProcessModel::update_process_v2($userId,$foot,$dataLength);
+
+
+        //3.通知APP上传进度
+        $rand = randStr(5);
+        
+        logbug($rand.$userId."通知上传开始");
+        $this->inform_app($userId);
+        logbug($rand.$userId."通知上传结束");
+
+        $redisKey   = "matchupload:".$matchId;
+        if($number == 0){ //传输已完成 , 加入到计算监控中
+
+            artisan("match:run {$matchId} {$dataType} {$footLetter}",true); //启动异步执行的解析脚本
+            Redis::sadd($redisKey,$dataType."-".$footLetter);
+        }
+        $matchModel = new MatchModel();
+        $matchModel->update_match($matchId,['end_upload'=>0]);
+
+        //将整场比赛已上传的数量暂存到Redis中，每种数据一次上传，一次比赛总的5条数据
+        if(Redis::scard($redisKey) == 5)
+        {
+            Redis::del($redisKey);
+            artisan("match:run {$matchId}",true);   //执行处理整场比赛
+            BaseMatchModel::join_minitor_match($request->input('matchId'));
+            $matchModel->update_match($matchId,['end_upload'=>1]);
+        }
+
+        return apiData()->send(200,'ok');
+    }
+
+    /**
+     * 保存比赛的数据总量
+     * */
+    public function save_data_num(Request $request){
+
+        $userId     = $request->input('userId');
+        $foot       = $request->input('foot');
+        $number     = $request->input('number');
+        BaseMatchUploadProcessModel::save_total_num($userId,$foot,$number);
+        return apiData()->send();
+    }
+
+    //通知APP
+    public function inform_app($userId){
+
+        $client = new Client("ws://".config('app.socketHost').":".config('app.socketPort'));
+        $data   = ["userId"=>$userId,"action"=>"match/upload_progress"];
+        $client->send(\GuzzleHttp\json_encode($data));
+        $client->close();
+    }
 
     /**
      * 添加心情
@@ -318,7 +447,16 @@ class MatchController extends Controller
             ->send(200,'success');
     }
 
+    /**
+     * 比赛基础信息
+     * */
+    public function match_base(Request $request){
 
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+        return apiData()->set_data('data',$matchInfo)->send_old();
+    }
 
     public function match_detail_mood(Request $request)
     {
@@ -355,6 +493,10 @@ class MatchController extends Controller
             return apiData()->send(2001,"系统正在对数据玩命分析，请稍等");
         }
 
+        $calorie = [];
+        for($i=0;$i<100;$i++){
+            $calorie[] = rand(0,100);
+        }
 
         $data   = [
             'shoot'         => [
@@ -393,6 +535,10 @@ class MatchController extends Controller
                 "speedAvg"  =>  speed_second_to_hour($matchResult->touchball_speed_avg),
                 "strengthMax"=> $matchResult->touchball_strength_max,
                 "strengthAvg"=> $matchResult->touchball_strength_avg
+            ],
+            'calorie'   => [
+                "total" => array_sum($calorie),
+                'data'  => $calorie
             ]
         ];
 
@@ -575,23 +721,7 @@ class MatchController extends Controller
      * */
     public function has_unfinished_match(Request $request)
     {
-        $userId = intval($request->input('userId',0));
-        if($userId<=0)
-        {
-            return apiData()->send(4001,'用户ID小于0');
-        }
-
-        $matchInfo = DB::table('match')->where('user_id',$userId)
-            ->where('time_end')
-            ->orderBy('match_id','desc')
-            ->first();
-
-        $matchId        = 0;
-        if($matchInfo)
-        {
-            $matchId    = $matchInfo->match_id;
-        }
-        return apiData()->set_data('matchId',$matchId)->send(200,'SUCCESS');
+        return $this->current_match($request);
     }
 
     /**
@@ -603,7 +733,21 @@ class MatchController extends Controller
         $matchModel     = new MatchModel();
         $currentMatch   = $matchModel->get_current_match($userId);
 
-        return apiData()->set_data('matchInfo',$currentMatch)->send();
+        if($currentMatch){
+            $hasUnUpload = $currentMatch->end_upload == 1 ? 0 : 1;
+        }
+        if($currentMatch && $currentMatch->time_end){   //有结束时间
+            $currentMatch = null;   //当前的比赛要求结束时间为null
+            $matchId = 0;
+        }else{
+            $matchId = 0;
+        }
+
+        return apiData()
+            ->set_data('matchInfo',$currentMatch)
+            ->set_data('matchId',$matchId)
+            ->set_data('hasUnUpload',$hasUnUpload)
+            ->send();
     }
 
     /**

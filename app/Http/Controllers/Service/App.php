@@ -54,7 +54,7 @@ class App extends Controller{
                 'phone'     => $request->input('phone'),
                 'created_at'=> date_time()
             ];
-            DB::table('user_use_log')->insert($clientInfo);
+            //DB::table('user_use_log')->insert($clientInfo);
 
             //如果用户的地理位置为空，把本次置位置置入其中，如果不是空，则要判断是否是常用地
             if($lat != 0)
@@ -92,5 +92,9 @@ class App extends Controller{
         return $version;
     }
 
-
+    public function mgaonline(){
+        $content = file_get_contents(public_path("mgaonline.ubx"));
+        $content = bin2hex($content);
+        return apiData()->set_data("content",$content)->send();
+    }
 }

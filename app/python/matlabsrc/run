@@ -1,0 +1,46 @@
+#!/usr/bin/python
+import getopt
+import matlab.engine
+import sys
+
+def help():
+	print "[command]: run --path=xxx --act=xxx"
+ 	print "[path] \n  "
+ 	print "[act]: court or match\n"
+
+	sys.exit()
+
+options,args = getopt.getopt(sys.argv[1:],"h",["path=","act="])
+
+params = {}
+for i in options:
+	argname = i[0].strip("-")
+
+	if argname == "h":
+		help()
+	else:
+		params[argname] = i[1]
+
+if len(params) != 2:
+	help()
+
+path = params["path"]
+eng = matlab.engine.start_matlab()
+try:
+	if params["act"] == "match":
+		res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt',nargout=0)
+	elif params["act"] == "court":
+		res = eng.Stadium(path,"border-src.txt","border-dest.txt",nargout=0)
+	eng.quit()
+except:
+	print "fail"
+else:
+	print "success"	
+
+
+
+
+
+#res = eng.LanQi(path,'sensor-R.txt','sensor-L.txt','angle-R.txt','angle-L.txt','gps-L.txt','court-config.txt','result-run.txt','result-turn.txt','result-pass.txt','result-step.txt','result-shoot.txt')
+#print res
+

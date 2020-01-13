@@ -12,5 +12,6 @@ $api->version('v1',['prefix'=>"api",'middleware'=>['saveApiData'],'namespace'=>"
     $api->any('matchCaculate/{action}',"MatchCaculate@action");		//算法系统
     $api->any('wechat/{action}',	"Wechat@action");				//微信
     $api->any('matchGrade/{action}',"MatchGrade@action");			//比赛分数计算方法
+    $api->any('mgaonline',          "App@mgaonline");               //AGPS
 
 });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Common\MobileMassege;
 use App\Models\Base\BaseUserModel;
+use App\Models\Base\BaseVersionModel;
 use App\Models\Base\LogsModel;
 use App\Models\V1\MessageModel;
 use App\Models\V1\UserModel;
@@ -53,6 +54,29 @@ class DeviceController extends Controller
     }
 
     /**
+     * 解绑设备
+     * */
+    public function unbind_user(Request $request)
+    {
+        $userId     = $request->input('userId');
+        $deviceSn   = $request->input('deviceSn');
+        $deviceModel= new DeviceModel();
+        $deviceInfo = $deviceModel->get_device_info_by_sn($deviceSn);
+
+        if($deviceInfo->owner == $userId)
+        {
+            $deviceModel->where('device_sn',$deviceSn)->update(['owner'=>0]);
+            DB::table('users')->where('id',$userId)->update(['device_sn'=>""]);
+
+            return apiData()->send(200,'解绑成功');
+        }
+
+
+        return apiData()->send(4001,'权限不足,不能解绑');
+
+    }
+
+    /**
      * 获得设备信息
      * */
     public function get_device_info(Request $request)
@@ -92,35 +116,70 @@ class DeviceController extends Controller
         $deviceModel    = new DeviceModel();
         $devices        = $deviceModel->get_user_devices($userId);
 
-
         return apiData()->set_data('devices',$devices)->send(200,'SUCCESS');
     }
 
-
     /**
-     * 解绑设备
+     * 检查设备是否需要升级
      * */
-    public function unbind_user(Request $request)
+    public function upgrade_info(Request $request)
     {
-        $userId     = $request->input('userId');
-        $deviceSn   = $request->input('deviceSn');
-        $deviceModel= new DeviceModel();
-        $deviceInfo = $deviceModel->get_device_info_by_sn($deviceSn);
+        $deviceId   = $request->input('deviceId');
+        $device     = DeviceModel::find($deviceId);
 
-        if($deviceInfo->owner == $userId)
-        {
-            $deviceModel->where('device_sn',$deviceSn)->update(['owner'=>0]);
-            DB::table('users')->where('id',$userId)->update(['device_sn'=>""]);
+        $otaWifi= BaseVersionModel::last_ota($device->hard_version,'wifi');
+        if(!$otaWifi){
+            return apiData()->send(2001,"没有对应的Wifi OTA版本");
+        }
+        $wifiInfo= [
+            "OTAFile"           => url($otaWifi->file),
+            "oldVersion"        => $device->wifi_version,
+            "lastVersion"       => $otaWifi->version,
+            "firmwareType"      => $otaWifi->firmware_type,
+            "mustUpgrade"       => $otaWifi->must_upgrade
+        ];
 
-            return apiData()->send(200,'解绑成功');
+        $otaBluebooth   = BaseVersionModel::last_ota($device->hard_version,'bluebooth');
+        if(!$otaBluebooth){
+            return apiData()->send(2001,"没有对应的蓝牙 OTA版本");
         }
 
+        $bluetoothInfo  = [
+            'OTAFile'           => url($otaBluebooth->file),
+            'oldVersion'        => $device->soft_version,
+            'lastVersion'       => $otaBluebooth->version,
+            'firmwareType'      => $otaBluebooth->firmware_type,
+            'mustUpgrade'       => $otaBluebooth->must_upgrade
+        ];
 
-        return apiData()->send(4001,'权限不足,不能解绑');
-
+        return apiData()->add('wifi',$wifiInfo)->add('bluebooth',$bluetoothInfo)->send();
     }
 
+    /**
+     * 升级设备
+     * */
+    public function upgrade_device(Request $request){
 
+        $deviceId   = $request->input('deviceId');
+        $softVersion= $request->input('softVersion');
+        $softType   = $request->input('softType','');
+        if($softType == 'wifi' || $softType == ''){
+
+            $versionInfo = ['wifi_version'=>$softVersion];
+
+        }elseif($softType == 'bluebooth'){
+
+            $versionInfo = ['soft_version'=>$softVersion];
+        }
+
+        DeviceModel::where('device_id',$deviceId)->update($versionInfo);
+
+        return apiData()->send();
+    }
+
+    /**
+     * 用户解绑时发送设备编号，以免用户丢失说明书的情况下下次无法绑定
+     * */
     public function send_device_sn(Request $request){
 
         $userId     = $request->input('userId');

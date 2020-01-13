@@ -85,7 +85,7 @@ class DeviceController extends Controller
         }else{
 
 
-            $deviceinfo = DeviceModel::where('device_sn',$deviceInfo['device_sn'])->first();
+            $deviceinfo = DeviceModel::where('device_sn',$deviceInfo['device_sn'])->whereNull("deleted_at")->first();
 
             if($deviceinfo){
 
@@ -292,8 +292,10 @@ class DeviceController extends Controller
         $data       = [
             'version'       => $request->input('version'),
             'publish'       => $request->input('publish'),
+            'hard_version'  => $request->input('type')== 'device'? $request->input('hard_version',2) : 0,
             'must_upgrade'  => $request->input('must_upgrade'),
             'type'          => $request->input('type'),
+            'ota_type'      => $request->input('ota_type'),
             'file'          => "uploads/".$file,
             'created_at'    => date_time()
         ];

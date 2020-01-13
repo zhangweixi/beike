@@ -11,7 +11,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Service\MatchCaculate;
 use App\Models\Base\BaseFootballCourtModel;
 use App\Models\V1\CourtModel;
+use App\Models\V1\MatchModel;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Service\Court;
 use DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -33,10 +35,13 @@ class CourtController extends Controller
 
         $courtList  = DB::table('football_court as a')
             ->leftJoin('users as b','b.id','=','a.user_id')
-            ->select('a.court_id','a.user_id','a.gps_group_id','a.address','a.width','a.length','a.created_at','a.is_virtual','b.nick_name')
+            ->select('a.court_id','a.user_id','a.gps_group_id','a.address','a.width','a.length','a.created_at','a.is_virtual','a.court_name','b.nick_name')
             ->whereNull('a.deleted_at')
             ->orderBy('a.court_id','desc')
             ->paginate(20);
+        foreach($courtList as $court){
+            $court->nick_name = $court->user_id == 0 ? "管理员":$court->nick_name;
+        }
 
         return apiData()->add('courtList',$courtList)->send();
 
@@ -50,7 +55,8 @@ class CourtController extends Controller
         $courtInfo  = CourtModel::find($courtId);
         if($courtInfo->gps_group_id != 0){
 
-            MatchCaculate::call_matlab_court_init($courtId);
+
+            Court::call_matlab_caculate_court($courtId);
         }
 
         return apiData()->send();
@@ -131,15 +137,14 @@ class CourtController extends Controller
     }
 
 
-    /*
-    * 绘制球场
-    * */
-    public function draw_court(Request $request)
+    /**
+     * 绘制球场
+     * */
+    public function draw_court_top_point(Request $request)
     {
-        $gpsGroupId = $request->input('gpsGroupId');
+        $courtId = $request->input('courtId');
 
-        $gpsInfo    = DB::table('football_court')->where('gps_group_id',$gpsGroupId)->first();
-
+        $gpsInfo    = DB::table('football_court')->where('court_id',$courtId)->first();
 
         $gpsInfo    = [
             ["position"=>"A","gps"=>$gpsInfo->p_a],
@@ -241,6 +246,104 @@ class CourtController extends Controller
         return apiData()->send();
     }
 
+    /**
+     * 显示足球场地图
+     * */
+    public function court_border(Request $request)
+    {
+        $matchId        = $request->input('matchId');
+        $courtFile      = "match/court-".$matchId.".json";
+        $has            = Storage::disk('web')->has($courtFile);
 
+        if(!$has)
+        {
+            $matchInfo      = MatchModel::find($matchId);
+            $info           = CourtModel::find($matchInfo->court_id);
+            $points         = \GuzzleHttp\json_decode($info->boxs);
+
+            $points->A_D    = gps_to_bdgps($points->A_D);
+            $points->AF_DE  = gps_to_bdgps($points->AF_DE);
+            $points->F_E    = gps_to_bdgps($points->F_E);
+
+            $arr            = [];
+            foreach($points->center as $center)
+            {
+                foreach($center as $p)
+                {
+                    array_push($arr,$p);
+                }
+            }
+            $points->center  = gps_to_bdgps($arr);
+
+            Storage::disk('web')->put($courtFile,\GuzzleHttp\json_encode($points));
+
+        }else{
+
+            $points         = Storage::disk('web')->get($courtFile);
+            $points         = \GuzzleHttp\json_decode($points);
+
+        }
+        return apiData()->add('points',$points)->send();
+    }
+
+    /**
+     * 创建新球场
+     * */
+    public function add_new_court(Request $request){
+
+        $name   = $request->input('name');
+        $gps    = $request->input('gps');
+        $gps    = explode(";",$gps);
+        $gpsArr = array_splice($gps,0,6);
+
+        $pos    = ["p_a","p_b","p_c","p_d","p_d1","p_a1"];
+
+        $points = array_combine($pos,$gpsArr);
+
+        //计算b,c的对立点b1,c1
+        foreach($points as $key => $v)
+        {
+            $points[$key]   = explode(",",$v);
+        }
+        $points['p_b1'] = $points['p_c1'] = [];
+
+        $k1         = self::p2k($points['p_a'],$points['p_b'],$points['p_d'],0);
+        $k2         = self::p2k($points['p_a'],$points['p_b'],$points['p_d'],1);
+        $lat        = self::k2p($points['p_a1'],$points['p_d1'],$k1,0);
+        $lon        = self::k2p($points['p_a1'],$points['p_d1'],$k2,1);
+        $points['p_b1'] = [$lat,$lon];
+        
+        $k1         = self::p2k($points['p_a'],$points['p_c'],$points['p_d'],0);
+        $k2         = self::p2k($points['p_a'],$points['p_c'],$points['p_d'],1);
+        $lat        = self::k2p($points['p_a1'],$points['p_d1'],$k1,0);
+        $lon        = self::k2p($points['p_a1'],$points['p_d1'],$k2,1);
+        $points['p_c1'] = [$lat,$lon];
+
+        foreach($points as $key => $v){
+            $points[$key] = implode(",",$v);
+        }
+        //2.添加新的球场
+        $courtData  = [
+            'user_id'       => 0,
+            'court_name'    => $name
+        ];
+        $courtId        = (new CourtModel())->add_court($courtData);
+        
+        CourtModel::init_new_court($courtId,$points);
+
+        return apiData()->send();
+    }
+
+
+    public static function p2k($p1,$p2,$p3,$key){
+
+        return  ($p2[$key] - $p1[$key]) / ($p3[$key] - $p1[$key]);
+    }
+
+
+    public static function k2p($p1,$p2,$k,$key){
+
+        return $p1[$key] + ($p2[$key] - $p1[$key]) * $k; 
+    }
 
 }

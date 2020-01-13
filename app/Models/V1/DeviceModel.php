@@ -29,6 +29,7 @@ class DeviceModel extends Model
     public function get_device_info_by_sn($deviceSn)
     {
         return $this->where('device_sn',$deviceSn)
+            ->whereNull('deleted_at')
             ->select('device_id','device_sn',DB::raw("IFNULL(produced_at,'') produced_at"),'mac_r','mac_l','bluetooth_r',"bluetooth_l",'pin','owner')
             ->first();
     }

@@ -34,7 +34,8 @@
                     <tr class="headings">
                         <!--<th><input type="checkbox" id="check-all" class="flat"></th>-->
                         <th class="column-title">ID</th>
-                        <th class="column-title">姓名</th>
+                        <th class="column-title">创建者</th>
+                        <th class="column-title">球场名称</th>
                         <th class="column-title">地址</th>
                         <th class="column-title">时间</th>
                         <th class="column-title">地图</th>
@@ -47,11 +48,12 @@
                     <tr class="even pointer" ng-repeat="court in courtList">
                         <td class="col-sm">{{court.court_id}}</td>
                         <td class="col-sm">{{court.nick_name}}</td>
+                        <td class="col-sm">{{court.court_name}}</td>
                         <td class="col-sm">{{court.address}}</td>
                         <td class="col-sm">{{court.created_at}}</td>
 
                         <td class="col-sm">
-                            <a target="_blank" href="/www/html/courtmap.html?gpsGroupId={{court.gps_group_id}}&courtId={{court.court_id}}">查看</a>
+                            <a target="_blank" href="/www/html/courtmap?gpsGroupId={{court.gps_group_id}}&courtId={{court.court_id}}">查看</a>
                         </td>
                         <td class="col-sm">{{court.is_virtual == 0 ? "真实":"虚拟"}}</td>
                         <td class="last">

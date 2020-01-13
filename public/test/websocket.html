@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no,width=device-width" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="app-mobile-web-app-capable" content="yes" />
+    <meta name="app-mobile-web-app-status-bar-style" content="black-translucent" />
+    <script src="../vendors/jquery/dist/jquery.min.js"></script>
+    <title>漕河泾足浴群</title>
+    <style>
+
+        body{
+            background:#000;
+        }
+
+        .join{
+            background:red;
+            color:#fff;
+            text-align: center;
+            display: block;
+            margin:auto;
+            margin-top:45vh;
+            width:100%;
+            line-height:3;
+        }
+
+        .send-btn{
+            position: fixed;
+            width:100%;
+            bottom:0;
+            left:0;
+            display: flex;
+            line-height: 2;
+            padding:10px 0;
+            overflow: hidden;
+            background: #eee;
+
+        }
+        .send-btn input{
+            flex:1;
+            margin-left:10px;
+            margin-right:10px;
+            border:none;
+        }
+
+        .list{
+            background:#ccc;
+            display: flex;
+            margin-bottom:5px;
+        }
+
+        .list p:first-child{
+            padding:0 20px;
+            margin-right:20px;
+        }
+
+        .list p:nth-child(2){
+            flex:1;
+        }
+
+        .container{
+            display: none;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="join">
+    <input type="text" placeholder="英雄大名" id="name">
+    <button  onclick="join()">加入群聊</button>
+</div>
+
+
+<div class="container">
+    <div class="chats">
+
+    </div>
+    <div class="send-btn">
+        <input type="text" id="content">
+        <button onclick="say()">发送</button>
+    </div>
+</div>
+
+</body>
+</html>
+
+<script>
+
+	//var url = "ws://47.100.192.196:5200/";
+	var url = "ws://dev.api.launchever.cn/ws";
+    var ws = new WebSocket(url);
+
+    var name = "";
+
+    ws.onopen = function(){
+
+
+    }
+
+    ws.onmessage = function (evt)
+    {
+        var msg = JSON.parse(evt.data);
+
+        var name = msg.name;
+        var content = ""+
+        '<div class="list">' +
+            '<p>'+ name +'</p>'+
+            '<p>'+ msg.content +'</p> '+
+            '</div>';
+
+        $(".chats").append(content);
+    };
+
+
+
+    ws.close = function(){
+        console.log('closed');
+    }
+
+
+    function join(){
+        name = $('#name').val();
+        $('.join').hide();
+        $('.container').show();
+
+    }
+
+
+    function say(){
+        var content = $('#content').val();
+        var data = {name:name,content:content};
+            data = JSON.stringify(data);
+
+        ws.send(data);
+        $('#content').val('');
+    }
+
+
+
+</script>
