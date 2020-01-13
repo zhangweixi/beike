@@ -85,7 +85,7 @@ class DeviceController extends Controller
         }else{
 
 
-            $deviceinfo = DeviceModel::where('device_sn',$deviceInfo['device_sn'])->first();
+            $deviceinfo = DeviceModel::where('device_sn',$deviceInfo['device_sn'])->whereNull("deleted_at")->first();
 
             if($deviceinfo){
 
