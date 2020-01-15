@@ -53,6 +53,7 @@ class CheckToken
 
         'user'=>[
             "login",//登录
+            "wx_qq_login",
         ],
         "match"=>[
             "upload",
