@@ -75,7 +75,8 @@ class MatchController extends Controller
             "temperature"   => 20,
             "weather"       => '晴'
         ];
-        $weather    = config('app.env') == 'production' ? get_weather($lat,$lon) : $defaultWeather;
+        //$weather    = config('app.env') == 'production' ? get_weather($lat,$lon) : $defaultWeather;
+        $weather = $defaultWeather;
         $matchInfo  = array_merge($matchInfo,$weather);
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
