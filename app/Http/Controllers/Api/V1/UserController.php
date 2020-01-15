@@ -480,7 +480,7 @@ class UserController extends Controller
         DB::table('user_suggestion')->insert($data);
 
         $msg    = "用户反馈:\n".$data['content'];
-        jpush_content("提示",$msg,0,1,config('sys.ADMIN_USER_ID'));
+        //jpush_content("提示",$msg,0,1,config('sys.ADMIN_USER_ID'));
 
         return apiData()->send();
     }
