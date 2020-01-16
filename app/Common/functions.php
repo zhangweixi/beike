@@ -1014,4 +1014,25 @@ function isZero($num){
 
     return false;
 }
+
+
+function request_uri()
+{
+    if (isset($_SERVER['REQUEST_URI']))
+    {
+        $uri = $_SERVER['REQUEST_URI'];
+    }
+    else
+    {
+        if (isset($_SERVER['argv']))
+        {
+            $uri = $_SERVER['PHP_SELF'] .'?'. $_SERVER['argv'][0];
+        }
+        else
+        {
+            $uri = $_SERVER['PHP_SELF'] .'?'. $_SERVER['QUERY_STRING'];
+        }
+    }
+    return $uri;
+}
 ?>

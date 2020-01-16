@@ -22,7 +22,7 @@ class CheckToken
         }
 
         //检查url是否需要检查token
-        $url    = $this->request_uri();//$_SERVER['REQUEST_URI'];
+        $url    = request_uri();//$_SERVER['REQUEST_URI'];
         $url    = explode("?",$url);
         $url    = $url[0];
         $url    = substr($url,8);
@@ -64,25 +64,4 @@ class CheckToken
             "index"
         ]
     ];
-
-
-    function request_uri()
-    {
-        if (isset($_SERVER['REQUEST_URI']))
-        {
-            $uri = $_SERVER['REQUEST_URI'];
-        }
-        else
-        {
-            if (isset($_SERVER['argv']))
-            {
-                $uri = $_SERVER['PHP_SELF'] .'?'. $_SERVER['argv'][0];
-            }
-            else
-            {
-                $uri = $_SERVER['PHP_SELF'] .'?'. $_SERVER['QUERY_STRING'];
-            }
-        }
-        return $uri;
-    }
 }
