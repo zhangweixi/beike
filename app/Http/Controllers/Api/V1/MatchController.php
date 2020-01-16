@@ -733,10 +733,11 @@ class MatchController extends Controller
         $userId         = $request->input('userId');
         $matchModel     = new MatchModel();
         $currentMatch   = $matchModel->get_current_match($userId);
-
+        $hasUnUpload    = 0;
         if($currentMatch){
             $hasUnUpload = $currentMatch->end_upload == 1 ? 0 : 1;
         }
+
         if($currentMatch && $currentMatch->time_end){   //有结束时间
             $currentMatch = null;   //当前的比赛要求结束时间为null
             $matchId = 0;
