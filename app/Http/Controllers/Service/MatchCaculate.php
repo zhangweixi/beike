@@ -262,13 +262,14 @@ class MatchCaculate extends Controller
     {
         $code   = $request->input('code');
         $matchId= $request->input('id');
+        $matchInfo  = (new MatchModel())->get_match_detail($matchId);
 
         if($code != 200)
         {
             //算法调用失败，使用微信通知我
             BaseMatchModel::match_process($matchId,"获得通知，算法计算失败");
-            $matchInfo  = (new MatchModel())->get_match_detail($matchId);
             jpush_content("比赛结果通知","哎呀！真遗憾，比赛{$matchId}计算失败了",1002,1,$matchInfo->user_id);
+
         }else{
 
             //同步结果文件
@@ -284,6 +285,9 @@ class MatchCaculate extends Controller
             $job->save_matlab_result($matchId);
             //$delayTime      = now()->addSecond(1);
             //AnalysisMatchData::dispatch('save_matlab_result',['matchId'=>$matchId])->delay($delayTime);
+            //通知客户端
+            jpush_content("比赛通知","亲，您的比赛已经出结果啦!",4001,1,$matchInfo->user_id,['matchId'=>$matchId]);
+            BaseMatchModel::match_process($matchId,"结果处理完成");
         }
         /**8.处理结果**/
         return apiData()->send();

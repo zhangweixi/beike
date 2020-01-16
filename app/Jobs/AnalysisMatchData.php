@@ -1357,9 +1357,6 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseUserAbilityModel::where('user_id',$matchInfo->user_id)->update($globalGrade);
 
-        //通知客户端
-        jpush_content("比赛通知","亲，您的比赛已经出结果啦!",4001,1,$matchInfo->user_id,['matchId'=>$matchId]);
-
         //销毁比赛的历史信息
         self::destory_match_cache($matchId,$matchInfo->court_id);
 
