@@ -19,6 +19,7 @@ class BaseVersionModel extends Model
         return self::where('type','device')
             ->where('hard_version',$hardVersion)
             ->where('ota_type',$otaType)
+            ->where('publish', 1)
             ->orderBy('id','desc')
             ->first();
 
