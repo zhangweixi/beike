@@ -72,7 +72,8 @@ class DeviceController extends Controller
         $deviceId   = $request->input('device_id',0);
 
         $deviceInfo = $request->all();
-
+        $deviceInfo['bluetooth_r'] = $deviceInfo['device_sn'].'_R';
+        $deviceInfo['bluetooth_l'] = $deviceInfo['device_sn'].'_L';
         if($deviceId > 0) {
             foreach ($deviceInfo as $key =>$v){
                 if($v == null || $v == "null")
@@ -299,7 +300,7 @@ class DeviceController extends Controller
             'file'          => "uploads/".$file,
             'created_at'    => date_time()
         ];
-        
+
         BaseVersionModel::insert($data);
 
         return apiData()->send();
