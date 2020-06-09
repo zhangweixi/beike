@@ -75,7 +75,7 @@ class DeviceController extends Controller
         $deviceInfo['bluetooth_r'] = $deviceInfo['device_sn'].'_R';
         $deviceInfo['bluetooth_l'] = $deviceInfo['device_sn'].'_L';
         $deviceInfo['pin']         = $deviceInfo['device_sn'];
-        $deviceInfo['hard_version']= $deviceInfo['hard_version'] === '' ? 2 : $deviceInfo['hard_version'];
+        $deviceInfo['hard_version']= $deviceInfo['hard_version']  ?: 2 ;
         if($deviceId > 0) {
             foreach ($deviceInfo as $key =>$v){
                 if($v == null || $v == "null")
