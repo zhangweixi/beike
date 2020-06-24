@@ -272,11 +272,14 @@ class UserController extends Controller
 
         //雷达图的分数
         $baseAbility    = self::get_base_map($userAbility);
-        if($userAbility) {
-            $baseAbility['matchTimes'] = $userId > 0 ? MatchModel::where('user_id',$userId)->count() : 0;
-        } else {
-            $baseAbility['matchTimes'] = 0;
-        }
+        $timesData = [
+            'shoot' => $userAbility->shoot_num_total,
+            'pass'  => $userAbility->pass_num_total,
+            'touch' => $userAbility->touchball_num_total,
+            'speed' => $userAbility->run_speed_max,
+            'distance'=>$userAbility->run_distance_total,
+            'total' => MatchModel::where('user_id',$userId)->count()
+        ];
 
         $grades = [
             ["name"=>"射门欲望","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_desire",30)],
@@ -291,8 +294,9 @@ class UserController extends Controller
         ];
 
         return apiData()
-            ->set_data('userAbility',$baseAbility)
-            ->set_data('grades',$grades)
+            ->set_data('userAbility', $baseAbility)
+            ->set_data('grades', $grades)
+            ->set_data('timesCount', $timesData)
             ->send();
     }
 
