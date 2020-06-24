@@ -97,4 +97,21 @@ class App extends Controller{
         $content = bin2hex($content);
         return apiData()->set_data("content",$content)->send();
     }
+
+
+    public function ads() {
+        $data = [
+            [
+                'type'  => '',
+                'img'   => url('uploads/images/AD_1.jpg'),
+                'target'=> ''
+            ],
+            [
+                'type'  => '',
+                'img'   => url('uploads/images/AD_2.jpg'),
+                'target'=> ''
+            ]
+        ];
+        return apiData()->set_data('ads',$data)->send();
+    }
 }
