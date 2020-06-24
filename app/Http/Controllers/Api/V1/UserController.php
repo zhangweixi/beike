@@ -6,6 +6,7 @@ use App\Common\LoginToken;
 use App\Models\Base\BaseFootballCourtTypeModel;
 use App\Models\V1\DeviceModel;
 use App\Models\V1\FriendModel;
+use App\Models\V1\MatchModel;
 use App\Models\V1\MessageModel;
 use App\Models\V1\ShequMatchModel;
 use Illuminate\Http\Request;
@@ -265,12 +266,17 @@ class UserController extends Controller
      * */
     public function user_global_ability(Request $request)
     {
-        $userId = $request->input('userId');
+        $userId = $request->input('userId', 0);
         $userModel      = new UserModel();
         $userAbility    = $userModel->user_global_ability($userId);
 
         //雷达图的分数
         $baseAbility    = self::get_base_map($userAbility);
+        if($userAbility) {
+            $baseAbility['matchTimes'] = $userId > 0 ? MatchModel::where('user_id',$userId)->count() : 0;
+        } else {
+            $baseAbility['matchTimes'] = 0;
+        }
 
         $grades = [
             ["name"=>"射门欲望","max"=>100,"self"=>self::def_grade($userAbility,"grade_shoot_desire",30)],
