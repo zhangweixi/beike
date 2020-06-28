@@ -138,7 +138,7 @@ class MatchModel extends Model
      * */
     public function get_match_list($userId)
     {
-        $colums = ["a.match_id",'a.time_begin','a.weather','a.temperature','a.mood','a.time_length','b.grade'];
+        $colums = ["a.match_id",'a.time_begin','a.weather','a.temperature','a.mood','a.time_length','b.grade','position','court_id'];
         $matchs = DB::table('match as a')
             ->leftJoin('match_result as b','b.match_id','=','a.match_id')
             ->select($colums)
