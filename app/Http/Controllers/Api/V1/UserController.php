@@ -168,7 +168,12 @@ class UserController extends Controller
             $userStar->name = '';
             $userStar->img = '';
             $userStar->grade = 0;
+        } else {
+            $userStar->img = url($userStar->img);
         }
+
+        $userStar->getDate = date('Y-m-d');
+
         $userInfo['starGrade'] = $userStar;
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
     }
