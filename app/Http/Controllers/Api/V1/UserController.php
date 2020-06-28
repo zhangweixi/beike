@@ -169,7 +169,7 @@ class UserController extends Controller
             $userStar->img = '';
             $userStar->grade = 0;
         }
-        $userInfo->starGrade = $userStar;
+        $userInfo['starGrade'] = $userStar;
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
     }
 
