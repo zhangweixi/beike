@@ -165,7 +165,8 @@ class MatchModel extends Model
             "time_length",
             "time_begin",
             "time_end",
-            "created_mood_at"
+            "created_mood_at",
+            'position',
         ];
 
         $matchDetail = DB::table('match')
