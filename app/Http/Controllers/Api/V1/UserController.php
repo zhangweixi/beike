@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Common\LoginToken;
 use App\Models\Base\BaseFootballCourtTypeModel;
+use App\Models\Base\BaseStarTypeModel;
+use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\DeviceModel;
 use App\Models\V1\FriendModel;
 use App\Models\V1\MatchModel;
@@ -150,10 +152,26 @@ class UserController extends Controller
             $userInfo['footballTeamName']   = $teamInfo->team_name;
         }
 
+        //获取球星等级
+        $userGrade = BaseUserAbilityModel::where('user_id', $userId)->value('grade');
+        $userStar  = null;
+        if ($userGrade) {
+            $userStar = BaseStarTypeModel::where('grade','<=',$userGrade)
+                ->select('id','name','img','grade')
+                ->orderBy('grade','desc')
+                ->first();
+        }
+
+        if (!$userStar) {
+            $userStar = new \stdClass();
+            $userStar->id = 0;
+            $userStar->name = '';
+            $userStar->img = '';
+            $userStar->grade = 0;
+        }
+        $userInfo->starGrade = $userStar;
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
-
     }
-
 
     private function get_user_current_device_info($deviceSn)
     {
