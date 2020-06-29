@@ -236,7 +236,7 @@ class MatchController extends Controller
                 BaseMatchModel::join_minitor_match($request->input('matchId'));
             }
         }
-        
+
         return apiData()->send(200,'ok');
     }
 
@@ -315,7 +315,7 @@ class MatchController extends Controller
 
         //3.通知APP上传进度
         $rand = randStr(5);
-        
+
         logbug($rand.$userId."通知上传开始");
         $this->inform_app($userId);
         logbug($rand.$userId."通知上传结束");
@@ -407,10 +407,8 @@ class MatchController extends Controller
         $matchId    = $request->input('matchId');
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
+        $matchResult= BaseMatchResultModel::find($matchId);
 
-
-        $matchResult     = BaseMatchResultModel::find($matchId);
-        
         if($matchResult) {
 
             if($matchResult->map_gps_run)

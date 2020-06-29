@@ -45,7 +45,6 @@ class MatchController extends V1MatchController{
         $matchId    = $request->input('matchId');
         $matchModel = new MatchModel();
         $matchInfo  = $matchModel->get_match_detail($matchId);
-
         $matchResult     = BaseMatchResultModel::find($matchId);
 
         /*全局跑动热点图*/
@@ -80,8 +79,9 @@ class MatchController extends V1MatchController{
         }
 
         /*基本信息*/
-        $matchInfo->foot = BaseUserModel::where('id', $matchInfo->user_id)->value('foot');
-        $matchInfo->advice = '';
+        $matchInfo->foot    = BaseUserModel::where('id', $matchInfo->user_id)->value('foot');
+        $matchInfo->advice  = '';
+        $matchInfo->grade   = BaseMatchResultModel::where('match_id', $matchId)->value('grade');
         return apiData()
             ->set_data('matchInfo',$matchInfo)
             ->set_data('map',$map)
