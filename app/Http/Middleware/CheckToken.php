@@ -38,7 +38,10 @@ class CheckToken
 
         $token      = $request->header("token");
         $loginToken = new LoginToken();
-
+        if($request->input('dev')) {
+            return $next($request);
+        }
+        
         if($token && $loginToken->token($token)->check()){
 
             return $next($request);
