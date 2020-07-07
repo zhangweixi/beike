@@ -593,8 +593,8 @@ class MatchController extends Controller
 
 
         $maps       = [
-            ['name'=>'实时速度','data'=>$matchResult->run_time_speed,'type'=>'line'],
-            ['name'=>'实时距离','data'=>$matchResult->run_time_dis,'type'=>'line'],
+            ['name'=>'实时速度','data'=>json_decode($matchResult->run_time_speed),'type'=>'line'],
+            ['name'=>'实时距离','data'=>json_decode($matchResult->run_time_dis),'type'=>'line'],
             ['name'=>"高速跑动",'data'=>$highSpeed,'type'=>'hot'],
             ['name'=>"中速跑动",'data'=>$midSpeed,'type'=>'hot'],
             ['name'=>"低速跑动",'data'=>$lowSpeed,'type'=>'hot'],
