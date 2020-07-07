@@ -593,16 +593,17 @@ class MatchController extends Controller
 
 
         $maps       = [
-            ['name'=>"射门",'data'=>$shoot,'type'=>'point'],
+            ['name'=>'实时速度','data'=>$matchResult->run_time_speed,'type'=>'line'],
+            ['name'=>'实时距离','data'=>$matchResult->run_time_dis,'type'=>'line'],
             ['name'=>"高速跑动",'data'=>$highSpeed,'type'=>'hot'],
             ['name'=>"中速跑动",'data'=>$midSpeed,'type'=>'hot'],
             ['name'=>"低速跑动",'data'=>$lowSpeed,'type'=>'hot'],
-
+            ['name'=>"射门",'data'=>$shoot,'type'=>'point'],
             ['name'=>'短传','data'=>$shortPass,'type'=>'point'],
             ['name'=>'长传','data'=>$longPass,'type'=>'point'],
             ['name'=>'触球','data'=>$touchball,'type'=>'point'],
-            ['name'=>'实时速度','data'=>$matchResult->run_time_speed,'type'=>'line'],
-            ['name'=>'实时距离','data'=>$matchResult->run_time_dis,'type'=>'line'],
+
+
             //['name'=>'冲刺','data'=>$sprint,'type'=>'hot'],
             //['name'=>'抢断','data'=>$rob,'type'=>'hot'],
             //['name'=>'带球','data'=>$dribble,'type'=>'hot']
