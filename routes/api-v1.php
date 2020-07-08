@@ -26,6 +26,7 @@ $api->version('v1',['prefix'=>"api/v1","middleware"=>$middleware,'namespace'=>"A
 
     $api->any('/test/{action}',         'TestController@action');
 
+    $api->post('/star/{action}',        'StarController@action');
 });
 
 
