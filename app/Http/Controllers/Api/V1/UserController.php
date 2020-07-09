@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Common\LoginToken;
 use App\Models\Base\BaseFootballCourtTypeModel;
+use App\Models\Base\BaseStarModel;
 use App\Models\Base\BaseStarTypeModel;
 use App\Models\Base\BaseUserAbilityModel;
 use App\Models\V1\DeviceModel;
@@ -143,7 +144,6 @@ class UserController extends Controller
         $userInfo['isNewUser']  = 0;
         $userInfo['birthday']   = $userInfo['birthday'] == "0000-00-00" ? "" : $userInfo['birthday'];
         $deviceInfo             = $this->get_user_current_device_info($userInfo['deviceSn']);
-
         //球队信息
         $userInfo['footballTeamName']   = "";
         if($userInfo['footballTeam'] > 0)
@@ -152,7 +152,7 @@ class UserController extends Controller
             $userInfo['footballTeamName']   = $teamInfo->team_name;
         }
 
-        //获取球星等级
+        /*=========获取球星等级========== 开始 */
         $userGrade = BaseUserAbilityModel::where('user_id', $userId)->value('grade');
         $userStar  = null;
         if ($userGrade) {
@@ -161,7 +161,6 @@ class UserController extends Controller
                 ->orderBy('grade','desc')
                 ->first();
         }
-
         if (!$userStar) {
             $userStar = new \stdClass();
             $userStar->id = 0;
@@ -171,10 +170,17 @@ class UserController extends Controller
         } else {
             $userStar->img = url($userStar->img);
         }
-
         $userStar->getDate = date('Y-m-d');
-
         $userInfo['starGrade'] = $userStar;
+
+        /*=========获取球星等级========== 结束 */
+        if($userInfo['starId'] > 0) {
+            $star = BaseStarModel::find($userInfo['starId']);
+        } else {
+
+            $star = BaseStarModel::find(rand(1,209));
+        }
+        $userInfo['sameStar'] = $star;
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
     }
 

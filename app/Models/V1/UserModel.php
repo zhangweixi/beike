@@ -33,6 +33,7 @@ class UserModel extends Model
         'token',
         'football_team',
         'credit',
+        'star_id'
     ];
 
     /**
