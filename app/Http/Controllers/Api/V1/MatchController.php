@@ -427,6 +427,7 @@ class MatchController extends Controller
             $matchInfo->dribble = $matchResult->grade_dribble ?? 0;
             $matchInfo->defense = $matchResult->grade_defense ?? 0;
             $matchInfo->run     = $matchResult->grade_run ?? 0;
+            $matchInfo->grade   = $matchResult->grade;
 
         }else{//默认值
 
@@ -437,6 +438,7 @@ class MatchController extends Controller
             $matchInfo->dribble = 0;
             $matchInfo->defense = 0;
             $matchInfo->run     = 0;
+            $matchInfo->grade   = 0;
         }
 
 
