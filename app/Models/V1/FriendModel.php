@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class FriendModel extends Model
 {
-
+    protected $table = 'friend';
     /* *
      * 检查是否是朋友
      * */

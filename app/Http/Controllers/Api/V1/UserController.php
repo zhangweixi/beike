@@ -181,6 +181,7 @@ class UserController extends Controller
             $star = BaseStarModel::find(rand(1,209));
         }
         $userInfo['sameStar'] = $star;
+        $userInfo['friendNum'] = FriendModel::where('user_id', $userId)->count();
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
     }
 
