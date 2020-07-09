@@ -15,7 +15,7 @@ class StarController extends Controller
      *
      */
     public function index() {
-        $stars =  BaseStarModel::select('name','age','team','grade','img')->get();
+        $stars =  BaseStarModel::select('name','age','team','grade','img','position')->get();
         return apiData()->set_data('data',$stars)->send_old();
     }
 
@@ -28,5 +28,10 @@ class StarController extends Controller
             $type->img = url($type->img);
         }
         return apiData()->set_data('starTypes',$starTypes)->send();
+    }
+
+    public function detail(Request $i) {
+        $starInfo = BaseStarModel::find($i->input('id'));
+        return apiData()->set_data('data',$starInfo)->send();
     }
 }

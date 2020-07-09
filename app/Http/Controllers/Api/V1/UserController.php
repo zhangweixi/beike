@@ -7,6 +7,7 @@ use App\Models\Base\BaseFootballCourtTypeModel;
 use App\Models\Base\BaseStarModel;
 use App\Models\Base\BaseStarTypeModel;
 use App\Models\Base\BaseUserAbilityModel;
+use App\Models\Base\BaseUserModel;
 use App\Models\V1\DeviceModel;
 use App\Models\V1\FriendModel;
 use App\Models\V1\MatchModel;
@@ -174,13 +175,6 @@ class UserController extends Controller
         $userInfo['starGrade'] = $userStar;
 
         /*=========获取球星等级========== 结束 */
-        if($userInfo['starId'] > 0) {
-            $star = BaseStarModel::find($userInfo['starId']);
-        } else {
-
-            $star = BaseStarModel::find(rand(1,209));
-        }
-        $userInfo['sameStar'] = $star;
         $userInfo['friendNum'] = FriendModel::where('user_id', $userId)->count();
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
     }
@@ -322,11 +316,38 @@ class UserController extends Controller
             ["name"=>"触球数量","max"=>100,"self"=>self::def_grade($userAbility,"grade_touchball_num",30)],
             ["name"=>"灵活性",  "max"=>100,"self"=>self::def_grade($userAbility,"grade_flexible",30)],
         ];
+        $starId = BaseUserModel::where('id', $userId)->value('star_id');
+        $starList = [];
+        for($i=0;$i<7;$i++) {
+            $starList[] = rand(1,209);
+        }
+        if($starId === 0) {
+            $starId = $userId%209;
+        }
+        $starList[] = $starId;
+        $starList = array_unique($starList);
+        $sameStar = BaseStarModel::find($starId)->name;
+        $stars = BaseStarModel::whereIn('id',$starList)->pluck('name');
+        $myStyle = [];
+        $ub = $userAbility;
+        $balance = ($ub->grade_shoot + $ub->grade_defense+$ub->grade_pass+$ub->grade_run+$ub->grade_sprint+$ub->grade_flexible+$ub->grade_sprint+$ub->grade_touchball_num)/8;
+        $gradeList = [[$ub->grade_shoot,'进攻型'],[$ub->grade_defense,'防守型'],[$ub->grade_pass,'组织型'],[$balance,'全能型']];
+        $maxGrade = max([$ub->grade_shoot,$ub->grade_defense,$ub->grade_pass,$balance]);
+        foreach($gradeList as $v) {
+            if($maxGrade == $v[0]) {
+                $myStyle[] = $v[1];
+            }
+        }
+        $comments = [
+            'styles'     => ['all'=>['进攻型','防守型','组织型','全能型'],'my'=>$myStyle],
+            'stars'  => ['all'=>$stars,'my'=>[$sameStar]]
+        ];
 
         return apiData()
             ->set_data('userAbility', $baseAbility)
             ->set_data('grades', $grades)
             ->set_data('timesCount', $timesData)
+            ->set_data('evaluate',$comments)
             ->send();
     }
 
@@ -465,7 +486,6 @@ class UserController extends Controller
                 'x_title'   => "场次",
                 'data'      => [],
             ],
-
         ];
 
         $matches = DB::table('match as a')
@@ -494,7 +514,8 @@ class UserController extends Controller
             unset($map['key']);
         }
 
-        return apiData()->set_data('abilityMaps',$maps)->send(200,'success');
+        return apiData()->set_data('abilityMaps',$maps)
+            ->send(200,'success');
     }
 
 
