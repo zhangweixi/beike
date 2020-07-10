@@ -15,7 +15,7 @@ class StarController extends Controller
      *
      */
     public function index() {
-        $stars =  BaseStarModel::select('name','age','team','grade','img','position')->get();
+        $stars =  BaseStarModel::select('id','name','age','team','grade','img','position')->get();
         return apiData()->set_data('data',$stars)->send_old();
     }
 
