@@ -5,7 +5,7 @@ namespace App\Models\V1;
 use App\Common\Geohash;
 use App\Models\Base\BaseUserAbilityModel;
 use Illuminate\Database\Eloquent\Model;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class UserModel extends Model
 {
@@ -185,6 +185,38 @@ class UserModel extends Model
         return $users;
     }
 
+    /**
+     * @param $rankColumn string 排序的字段
+     * @param $userId int 用户,如果有这个字段，将只获取好友，否则获取系统所有成员
+     * @return array
+     */
+    static function rank($rankColumn,$userId=0) {
+        $db = DB::table('user_global_ability as a')
+            ->leftJoin('users as b','b.id','=','a.user_id');
+        if($userId) {
+            $db->leftJoin('friend as d','d.friend_user_id','=','a.user_id')->where('d.user_id', $userId)->orWhere('a.user_id', $userId);
+        }
 
+        $friends = $db->select('b.nick_name','b.id','b.head_img','b.mobile','b.country','b.province','b.city','a.'.$rankColumn.' as grade')
+            ->orderBy("a.".$rankColumn,'desc')
+            ->paginate(20);
+        foreach($friends as $friend) {
+            $friend->head_img = get_default_head($friend->head_img);
+            $friend->sn = substr($friend->mobile,2,8)*2;
+            $friend->country = $friend->country ?: '';
+            $friend->province = $friend->province ?: '';
+            $friend->city = $friend->city ?: '';
+        }
+        return $friends;
+    }
+
+    static function userRank($userId, $rankColumn,$onlyFriend=0) {
+        $grade = BaseUserAbilityModel::where('user_id', $userId)->value($rankColumn);
+        $db = DB::table('user_global_ability as a');
+        if($onlyFriend) {
+            $db->leftJoin('friend as d','d.friend_user_id','=','a.user_id')->where('d.user_id', $userId)->orWhere('a.user_id', $userId);
+        }
+        return $db->where('a.'.$rankColumn,'<',$grade)->count();
+    }
 
 }

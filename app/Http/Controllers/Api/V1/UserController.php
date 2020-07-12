@@ -358,7 +358,7 @@ class UserController extends Controller
      * @param $value mixed 默认值
      * @return mixed
      * */
-    private static function def_grade($ojb,$key,$value=0)
+    protected static function def_grade($ojb,$key,$value=0)
     {
         if($ojb && isset($ojb->$key))
         {
@@ -370,9 +370,10 @@ class UserController extends Controller
     /**
      * 获得基本雷达图
      * */
-    private static function get_base_map($ability)
+    protected static function get_base_map($ability)
     {
         $baseMap = [
+            'grade'     => self::def_grade($ability,'grade',30),
             'shoot'     => self::def_grade($ability,"grade_shoot",30),
             'pass'      => self::def_grade($ability,"grade_pass",30),
             'strength'  => self::def_grade($ability,'grade_strength',30),

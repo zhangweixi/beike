@@ -367,10 +367,27 @@ class ShequMatchController extends Controller
         $userId     = $request->input('userId');
         $lon        = $request->input('longitude',0);
         $lat        = $request->input('latitude',0);
-
-
+        $date       = $request->input('date','');
+        $onlyMy     = $request->input('onlyMy',0);
         $shequModel = new ShequMatchModel();
-        $matches    = $shequModel->get_match_list(true);
+        // 仅限自己的比赛
+        if($onlyMy) {
+
+            if($date) {
+                $beginTime      = $date . " 00:00:01";
+                $endTime        = $date . " 23:59:59";
+            } else {
+                $beginTime      = '';
+                $endTime        = '';
+            }
+            $matches    = $shequModel->user_match_list($userId,$beginTime, $endTime);
+            foreach($matches as $match) {
+                $match->members = $shequModel->get_match_user($match->sq_match_id, $userId);
+            }
+        } else { // 所有的比赛
+            $matches    = $shequModel->get_match_list(true);
+        }
+
 
         $allFriend  = DB::table('friend')->where('user_id',$userId)->pluck('friend_user_id')->toArray();
 
@@ -454,13 +471,17 @@ class ShequMatchController extends Controller
     public function user_day_match(Request $request)
     {
 
-        $date   = $request->input('date');
+        $date   = $request->input('date','');
         $userId = $request->input('userId');
 
         //当日的比赛数据
-
-        $beginTime      = $date . " 00:00:01";
-        $endtime        = $date . " 23:59:59";
+        if($date) {
+            $beginTime      = $date . " 00:00:01";
+            $endtime        = $date . " 23:59:59";
+        } else {
+            $beginTime      = '';
+            $endtime        = '';
+        }
 
         $sqMatchModel   = new ShequMatchModel();
         $dayMatch       = $sqMatchModel->user_match_list($userId,$beginTime,$endtime);

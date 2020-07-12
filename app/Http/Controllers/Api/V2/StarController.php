@@ -14,8 +14,12 @@ class StarController extends Controller
      * @return \Illuminate\Http\JsonResponse
      *
      */
-    public function index() {
-        $stars =  BaseStarModel::select('id','name','age','team','grade','img','position')->get();
+    public function index(Request $i) {
+        $option = $i->input('option','grade');
+        $option = $option ?: 'grade';
+        $stars =  BaseStarModel::orderBy($option,'desc')
+            ->select('id','name','age','team',$option.' as grade','img','position')
+            ->get();
         return apiData()->set_data('data',$stars)->send_old();
     }
 

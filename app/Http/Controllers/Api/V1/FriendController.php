@@ -399,4 +399,21 @@ class FriendController extends Controller
         return apiData()->add('friends',$nearbyFriends)->send();
     }
 
+    public function rank(Request $i) {
+        $userId     = $i->input('userId');
+        $rankType   = $i->input('rankType','grade');
+        $rankType   = $rankType ?: 'grade';
+        $page       = (int)$i->input('page',1);
+        $onlyFriend = $i->input('onlyFriend',0);
+        $friends    = UserModel::rank($rankType, $onlyFriend ? $userId : 0);
+
+        if($page === 1) { //获取自己的排名
+            $myRank = UserModel::userRank($userId,$rankType,$onlyFriend);
+            $myRank = $myRank ?: 1;
+        } else {
+            $myRank = 0;
+        }
+
+        return apiData()->add('myRank', $myRank)->add('users', $friends)->send();
+    }
 }
