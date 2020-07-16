@@ -523,11 +523,13 @@ class MatchController extends Controller
             ],
 
             'run'        => [
-                'lowDis'       => ($matchResult->run_low_dis+$matchResult->run_static_dis)/1000,
-                'lowTime'      => $matchResult->run_low_time+$matchResult->run_static_time,
+                'walkDis'      => $matchResult->run_static_dis/1000,
+                'lowDis'       => $matchResult->run_low_dis/1000,
                 'midDis'       => $matchResult->run_mid_dis/1000,
-                'midTime'      => $matchResult->run_mid_time,
                 'highDis'      => $matchResult->run_high_dis/1000,
+                'walkTime'     => $matchResult->run_static_time,
+                'lowTime'      => $matchResult->run_low_time,
+                'midTime'      => $matchResult->run_mid_time,
                 'highTime'     => $matchResult->run_high_time
             ],
             'touchball' => [
@@ -537,6 +539,7 @@ class MatchController extends Controller
                 "strengthMax"=> $matchResult->touchball_strength_max,
                 "strengthAvg"=> $matchResult->touchball_strength_avg
             ],
+            'energy' => [rand(10,20),rand(10,20),rand(10,20),rand(10,20)],  //能力消耗
             'calorie'   => [
                 "total" => array_sum($calorie),
                 'data'  => $calorie
