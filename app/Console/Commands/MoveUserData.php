@@ -44,17 +44,24 @@ class MoveUserData extends Command
             exit;
         }
         //查找用户的所有比赛
-        $matches = DB::table('match')->select('match_id')->where('user_id', $uid)->get();
-        foreach($matches as $match) {
+        $matches = DB::table('match')->where('user_id', $uid)->pluck('match_id');
+        DB::table('match')->where('user_id', $uid)->delete();
+
+        foreach($matches as $matchId) {
+
             //将结果数据移除
-            $matchDir = public_path('uploads/match/'.$match->match_id);
+            $matchDir = public_path('uploads/match/'.$matchId);
 
             if(is_dir($matchDir)) {
                 system('rm -Rf '. $matchDir);
+                echo 'delete dir '. $matchDir . "\n";
             }
-            echo 'delete dir '. $matchDir . "\n";
+
+            DB::table('match_result')->where('match_id', $matchId)->delete();
+
             //将原始数据移除
-            $files = DB::table('match_source_data')->where('match_id', $match->match_id)->pluck('data');
+            $files = DB::table('match_source_data')->where('match_id', $matchId)->pluck('data');
+            DB::table('match_source_data')->where('match_id', $matchId)->delete();
             foreach($files as $file) {
                 $file = storage_path('app/'.$file);
                 if(file_exists($file)) {
