@@ -50,7 +50,7 @@ class LinuxMinitor extends Command
                 $diskInfo = explode(" ",$desk);
                 $size = substr($diskInfo[16],0,strlen($diskInfo[16])-1);
                 $size = (int)$size;
-                if($size > 90) {
+                if($size > 94) {
                     $mobileMsg = new MobileMassege('15000606942');
                     $mobileMsg->send_msg('15000606942', config('aliyun.deskWarningId'),['code'=>$diskInfo[14]]);
                 }
