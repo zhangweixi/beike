@@ -8,5 +8,6 @@ return [
     "loginTempId"   => "SMS_148594054",
     "matchInviteId" => "SMS_143716614",
     "deviceSnId"    => "SMS_152800113",
+    "deskWarningId" => "SMS_196617843",
     "regTempId"     => "",
 ];

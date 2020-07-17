@@ -251,7 +251,7 @@ class MobileMassege{
     /**
      * 发送消息
      * */
-    private function send_msg($mobile,$templateCode,array $data = [])
+    public function send_msg($mobile,$templateCode,array $data = [])
     {
 
         $appKey         = config('aliyun.appKey');
