@@ -12,7 +12,9 @@ use App\Models\Base\BaseMatchDataProcessModel;
 use App\Models\Base\BaseMatchModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseMatchSourceDataModel;
+use App\Models\Base\BaseStarModel;
 use App\Models\Base\BaseUserAbilityModel;
+use App\Models\Base\BaseUserModel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -1448,6 +1450,7 @@ class AnalysisMatchData implements ShouldQueue
     public function save_run_result($matchId)
     {
         $matchInfo  = self::get_temp_match_info($matchId);
+        $userInfo   = BaseUserModel::find($matchInfo->user_id);
         BaseMatchModel::match_process($matchId,"计算跑动结果:".\GuzzleHttp\json_encode($matchInfo));
         //1.速度信息
         $speedFile  = self::matchdir($matchId)."result-run.txt";
@@ -1467,26 +1470,21 @@ class AnalysisMatchData implements ShouldQueue
         $speedLow   = $speedType['low']['limit'];
 
 
-        $avgSpeed   = $speedsInfo[0][0];    //整场比赛的平均速度
-        $svgSpeed2  = $speedsInfo[0][1];    //整场比赛的平均加速度
-        $distance   = $speedsInfo[0][2];    //整场比赛的跑动距离
-
         $gpsHz     = 10;   //频率 赫兹
 
         array_splice($speedsInfo,0,1);  //去掉首行
 
-
+        //急停数据
         $adruptStop    = [
-
             "prev1Speed"    => 0,
             "prev2Speed"    => 0,
             "prev1Point"    => null,
             "prev2Point"    => null,
             "list"          => [],
             "speedRang"     => 15
-        ];//急停数据
+        ];
 
-        $timeSpeeds = [];   //实时速度
+        $timeSpeeds = [0];   //实时速度
         $timeDis    = [0];  //实时距离
 
 
@@ -1588,17 +1586,16 @@ class AnalysisMatchData implements ShouldQueue
         {
             $timeDis[$key2] = end($dis);
         }
-        array_unshift($timeDis,0);
+        //array_unshift($timeDis,0);
         
 
         foreach($timeSpeeds as $key1 => $speed)
         {
             $timeSpeeds[$key1] = speed_second_to_hour($speed);
         }
-        array_unshift($timeSpeeds,0);
+        //array_unshift($timeSpeeds,0);
 
-        $timeSpeeds     = implode(",",$timeSpeeds);
-        $timeSpeeds     = "[".$timeSpeeds."]";
+        $energy = $this->energy($timeSpeeds,$userInfo->weight?:60);
 
         foreach ($timeDis as $key2 => $dis)
         {
@@ -1626,7 +1623,7 @@ class AnalysisMatchData implements ShouldQueue
             'run_high_time'     => $speedType['high']['time'],
             'run_static_time'   => $speedType['static']['time'],
             'run_speed_max'     => $maxSpeed,
-            'run_time_speed'    => $timeSpeeds,
+            'run_time_speed'    => json_encode($timeSpeeds),
             'run_time_dis'      => $timeDis,
             "abrupt_stop_num"   => count($adruptStop['list']),
             'run_high_speed_avg'=> $speedType['high']['time'] > 0 ? $speedType['high']['dis']/$speedType['high']['time'] : 0,//高速平均跑动速度
@@ -1634,14 +1631,12 @@ class AnalysisMatchData implements ShouldQueue
             'map_speed_low'     => $speedType['low']['gps'],
             'map_speed_middle'  => $speedType['middle']['gps'],
             'map_speed_high'    => $speedType['high']['gps'],
+            'energy'            => json_encode($energy)
         ];
-
         BaseMatchResultModel::where('match_id',$matchId)->update($matchResult);
-
 
         //修改个人的整体数据 在此前一定会创建用户的个人数据
         $userAbility    = BaseUserAbilityModel::find($matchInfo->user_id);
-
 
         //1.跑动距离
         $disHigh    = $speedType['high']['dis'];
@@ -1676,7 +1671,43 @@ class AnalysisMatchData implements ShouldQueue
         $userAbility->user_id               =  $matchInfo->user_id;
 
         $userAbility->save();
+    }
 
+    /**
+     * 计算能量
+     * 卡路里计算公式：耗费能量=体重（kg）*运动时长（小时）*1.25*时速（KM/H）
+     * 时速计算：将1分钟内获得的所有记录并求得平均速度
+     * 能量其实就是卡路里消耗
+     * @param $speeds array 速度数组 每一项代表5s
+     * @param int $weight 用户体重
+     * @return array
+     */
+    public function energy($speeds, $weight = 60) {
+        $perStage       = round(count($speeds) / 4);
+        $fourStage      = [];
+        foreach($speeds as $key => $speed) {
+
+            $fourStage[($key+1)/$perStage][] = $speed;
+        }
+        if(isset($fourStage[4])) {
+            array_splice($fourStage,4,1);
+        }
+        foreach($fourStage as $stageKey => $stage) {
+            $minuteSpeeds   = array_chunk($stage,12);
+            $minuteHour     = 1/60;
+            $energy         = 0;
+            foreach($minuteSpeeds as $key => $speeds) {
+                $speedHour = array_sum($speeds)/count($speeds);
+                $energy    += $weight * $minuteHour * 1.25 * $speedHour;
+            }
+            $fourStage[$stageKey]  = round($energy,2);
+        }
+        for($i=0;$i<4;$i++) {
+            if(!isset($fourStage[$i])) {
+                $fourStage[$i] = 0;
+            }
+        }
+        return $fourStage;
     }
     /**
      * 传球和触球
@@ -2047,5 +2078,38 @@ class AnalysisMatchData implements ShouldQueue
         return $result;
     }
 
+    /**
+     * @description 设置类似的球星
+     * @param $userId
+     */
+    public function set_user_same_star($userId) {
 
+        $userInfo = BaseUserModel::find($userId);
+        $position = $userInfo->role1 ?: $userInfo->role2;
+        $userGrades = BaseUserAbilityModel::where('user_id',$userId)
+            ->select('grade_pass','grade_shoot','grade_strength','grade_dribble','grade_defense','grade_speed','grade')
+            ->first()->toArray();
+
+        $max = 0;
+        $type = '';
+        foreach($userGrades as $key => $v) {
+            if($v > $max && $key != 'grade') {
+                $max = $v;
+                $type = $key;
+            }
+        }
+
+        $type = str_replace("grade_","",$type);
+        if(empty($position) || empty($type)) {    //如果没有位置，那就比较总分
+            $type = "grade";
+            $max = $userGrades['grade'];
+            $star = BaseStarModel::where('id','>',0);
+        } else {
+            $star = BaseStarModel::where('position', $position);
+        }
+
+        $star = $star->select(DB::raw("ABS($type - $max) as dis"),'id',$type)->orderBy('dis')->first();
+        $userInfo->star_id = $star->id;
+        $userInfo->save();
+    }
 }

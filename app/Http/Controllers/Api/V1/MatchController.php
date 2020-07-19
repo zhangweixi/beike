@@ -73,10 +73,10 @@ class MatchController extends Controller
         }
         $defaultWeather    = [
             "temperature"   => 20,
-            "weather"       => '晴'
+            "weather"       => '晴',
+            "wind"          => 2
         ];
-        //$weather    = config('app.env') == 'production' ? get_weather($lat,$lon) : $defaultWeather;
-        $weather = $defaultWeather;
+        $weather    = config('app.env') == 'production' ? get_weather($lat,$lon) : $defaultWeather;
         $matchInfo  = array_merge($matchInfo,$weather);
         $matchModel = new MatchModel();
         $matchId    = $matchModel->add_match($matchInfo);
@@ -493,8 +493,13 @@ class MatchController extends Controller
         {
             return apiData()->send(2001,"系统正在对数据玩命分析，请稍等");
         }
+        if($matchResult->energy) {
+            $matchResult->energy = json_decode($matchResult->energy);
+        } else {
+            $matchResult->energy = [1,1,1,1];
+        }
 
-        $calorie = [];
+        $calorie    = [];
         for($i=0;$i<100;$i++){
             $calorie[] = rand(0,100);
         }
@@ -539,7 +544,7 @@ class MatchController extends Controller
                 "strengthMax"=> $matchResult->touchball_strength_max,
                 "strengthAvg"=> $matchResult->touchball_strength_avg
             ],
-            'energy' => [rand(10,20),rand(10,20),rand(10,20),rand(10,20)],  //能力消耗
+            'energy' => $matchResult->energy,  //能力消耗
             'calorie'   => [
                 "total" => array_sum($calorie),
                 'data'  => $calorie

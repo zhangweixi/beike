@@ -276,7 +276,6 @@ function get_weather($lat,$lon){
     $headers = array();
     array_push($headers, "Authorization:APPCODE " . $appcode);
     $querys = "from=5&lat=".$lat."&lng=".$lon;
-
     $bodys = "";
     $url = $host . $path . "?" . $querys;
 
@@ -294,19 +293,21 @@ function get_weather($lat,$lon){
     }
 
     $result     = curl_exec($curl);
-    $result     = \GuzzleHttp\json_decode($result);
-
-    if($result->showapi_res_code != 0){
-
+    if($result) {
+        $result     = \GuzzleHttp\json_decode($result);
+        if($result->showapi_res_code != 0){
+            return [];
+        }
+        $weather    = $result->showapi_res_body->now;
+        $weather    = [
+            "temperature"   => $weather->temperature,
+            "weather"       => $weather->weather,
+            "wind"          => $weather->wind_direction. $weather->wind_power
+        ];
+        return $weather;
+    } else {
         return [];
     }
-
-    $weather    = $result->showapi_res_body->now;
-    $weather    = [
-        "temperature"   => $weather->temperature,
-        "weather"       => $weather->weather
-    ];
-    return $weather;
 }
 
 /**
