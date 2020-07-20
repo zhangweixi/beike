@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Service;
 
+use App\Models\Base\BaseCountryModel;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Common\MobileMassege;
@@ -24,7 +25,7 @@ class Mobile extends Controller{
             return apiData()->send(3001,$checkRes->message);
         }
 
-        $mobileMessage  = new MobileMassege($mobile);
+        $mobileMessage  = new MobileMassege($country.$mobile);
         $result         = $mobileMessage->send_valid_code();
         if($result == false)
         {
@@ -82,5 +83,8 @@ class Mobile extends Controller{
         return response()->json(['code'=>0,'msg'=>"成功"]);
     }
 
-
+    public function get_countries(Request $request) {
+        $countries = BaseCountryModel::select('country_china_name','country_num_code')->where('is_show',1)->orderBy('sort')->get();
+        return apiData()->add('data', $countries)->send_old();
+    }
 }
