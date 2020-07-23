@@ -67,15 +67,15 @@ class CourtModel extends Model
         $hash       = $geohash->encode($lat,$lon);
         $hash       = substr($hash,0,5);
         $area       = $geohash->neighbors($hash);
-        if($type == 0){
+        if($type == 0){ //自己的
 
             $db     = self::where('user_id',$userId);
 
-        }elseif($type == 1){
+        }elseif($type == 1){ //他人的
 
             $db     = self::where('user_id',"<>",$userId)->where('public',1);
 
-        }else{
+        }else{ //所有的
 
             $db     = self::where(function($db) use ($userId)
             {
@@ -84,17 +84,20 @@ class CourtModel extends Model
         }
 
 
-        $courts = $db->where('court_name',"<>",'')->where(function($db) use ($area)
-        {
-            foreach($area as $hash)
-            {
-                $db->orWhere('geohash','like',$hash."%");
-            }
-        })
-        ->select('court_id','court_name','public')
-        ->get();
 
-        return $courts;
+        if(strlen($lat) > 1 && strlen($lon) > 1) {
+            $db->where(function($db) use ($area)
+            {
+                foreach($area as $hash)
+                {
+                    $db->orWhere('geohash','like',$hash."%");
+                }
+            });
+        }
+
+        return $db->where('court_name',"<>",'')
+        ->select('court_id','court_name','public','user_id')
+        ->get();
     }
 
     /**

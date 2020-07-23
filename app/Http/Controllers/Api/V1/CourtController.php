@@ -247,8 +247,9 @@ class CourtController extends Controller
         $userId     = $request->input('userId');
         $lat        = $request->input('latitude');
         $lon        = $request->input('longitude');
+        $type       = $request->input('type',2);
 
-        $courts     = CourtModel::get_nearby_court($userId,2,$lat,$lon);
+        $courts     = CourtModel::get_nearby_court($userId,$type,$lat,$lon);
 
         return apiData()->add('courts',$courts)->send();
     }
@@ -292,4 +293,23 @@ class CourtController extends Controller
         return apiData()->add('court',$info)->send();
     }
 
+    /**
+     * @description 删除球场
+     * @param Request $i
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function delete_court(Request $i) {
+        $courtId = $i->input('courtId',0);
+        $userId = $i->input('userId',0);
+        $court = BaseFootballCourtModel::find($courtId);
+        if(!$court) {
+            return apiData()->send(203,'球场不存在');
+        }
+        if($court->user_id != $userId) {
+            return apiData()->send(204,'权限不足');
+        }
+
+        BaseFootballCourtModel::delete_court($courtId);
+        return apiData()->send(200,'删除成功');
+    }
 }
