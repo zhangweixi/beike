@@ -288,11 +288,11 @@ class UserController extends Controller
 
             $userInfo = $userModel->get_user_info_by_mobile($mobile);
             if(!$userInfo) {
-                return apiData()->send(200,'请选注册');
+                return apiData()->send(201,'请选注册');
             }
 
             if($userInfo['password'] != self::password($password)) {
-                return apiData()->send(200,'账号或密码错误');
+                return apiData()->send(202,'账号或密码错误');
             }
         } else {
             $userInfo = false;
