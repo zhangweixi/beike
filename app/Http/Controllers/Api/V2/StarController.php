@@ -20,6 +20,9 @@ class StarController extends Controller
         $stars =  BaseStarModel::orderBy($option,'desc')
             ->select('id','name','age','team',$option.' as grade','img','position')
             ->get();
+        foreach($stars as $star) {
+            $star->img = url($star->img);
+        }
         return apiData()->set_data('data',$stars)->send_old();
     }
 
@@ -36,6 +39,7 @@ class StarController extends Controller
 
     public function detail(Request $i) {
         $starInfo = BaseStarModel::find($i->input('id'));
+        $starInfo->img = url($starInfo->img);
         return apiData()->set_data('data',$starInfo)->send();
     }
 }
