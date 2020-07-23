@@ -24,10 +24,11 @@ class UserController extends V1Controller
      * */
     public function login(Request $request)
     {
+        $country    = $request->input('country','');
         $mobile     = delete_str($request->input('mobile',""));
         $code       = delete_str($request->input('code',""));
         $password   = delete_str($request->input('password',''));
-        $type       = $request->input("type");  //password mobile wx apple
+        $type       = $request->input("type",self::LOGIN_TYPE_MOBILE);  //password mobile wx apple
         $nickName   = trim($request->input("nickName",''));
         $name       = trim($request->input('name',''));
         $head       = $request->input('headImg');
@@ -47,7 +48,7 @@ class UserController extends V1Controller
 
         //2.检查验证妈
         $mobileMessage  = new MobileMassege();
-        $result         = $mobileMessage->check_valid_code($mobile,$code);
+        $result         = $mobileMessage->check_valid_code($country.$mobile,$code);
         if($result == false)
         {
             return apiData()->send(4005,$mobileMessage->error);

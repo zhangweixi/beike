@@ -277,6 +277,12 @@ class UserController extends Controller
         } elseif ($type == 'ios') {
 
             $userInfo   = $userModel->get_user_info_by_openid($appleId, 'ios');
+            if(!$userInfo && $type === "ios") {
+                $name = '';
+                $otherInfo = ['apple_id' => $appleId];
+                $userModel->register('', $name, $otherInfo);
+                $userInfo = $userModel->get_user_info_by_openid($appleId,'ios');
+            }
 
         } elseif ($type == 'password') {
 
@@ -288,14 +294,18 @@ class UserController extends Controller
             if($userInfo['password'] != self::password($password)) {
                 return apiData()->send(200,'账号或密码错误');
             }
+        } else {
+            $userInfo = false;
         }
 
-        if($userInfo == false) //用户第一次登陆
-        {
-            return apiData()->send(200,'请绑定手机号');
-        }
+        if($userInfo) {
 
-        return $this->login_action($userInfo);
+            return $this->login_action($userInfo);
+
+        } else {
+
+            return apiData()->send(200,'请绑定手机号');   //用户第一次登陆
+        }
     }
 
     protected static function password($str) {
