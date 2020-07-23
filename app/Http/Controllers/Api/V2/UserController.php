@@ -67,7 +67,7 @@ class UserController extends V1Controller
 
         if($type == self::LOGIN_TYPE_IOS)    $userNewInfo['apple_id']   = $openId;
         if($type == self::LOGIN_TYPE_WX)     $userNewInfo['wx_union_id'] = $openId;
-        if($type == self::LOGIN_TYPE_PASSWORD) $userNewInfo['password'] = self::password($password);
+        if($password) $userNewInfo['password'] = self::password($password); //如果携带了密码，那么就是修改密码
         $userNewInfo = array_filter($userNewInfo);
 
         /*

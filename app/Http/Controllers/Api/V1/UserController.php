@@ -275,7 +275,7 @@ class UserController extends Controller
             $userInfo   = $userModel->get_user_info_by_openid($qqopenid,'qq');
 
         } elseif ($type == 'ios') {
-
+            $version = $request->input('version',0);
             $userInfo   = $userModel->get_user_info_by_openid($appleId, 'ios');
             if(!$userInfo && $type === "ios") {
                 $name = $request->input('name','');
