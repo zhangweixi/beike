@@ -278,7 +278,7 @@ class UserController extends Controller
 
             $userInfo   = $userModel->get_user_info_by_openid($appleId, 'ios');
             if(!$userInfo && $type === "ios") {
-                $name = '';
+                $name = $request->input('name','');
                 $otherInfo = ['apple_id' => $appleId];
                 $userModel->register('', $name, $otherInfo);
                 $userInfo = $userModel->get_user_info_by_openid($appleId,'ios');
