@@ -32,11 +32,8 @@ class UserController extends Controller
     {
         $mobile     = delete_str($request->input('mobile',""));
         $code       = delete_str($request->input('code',""));
-
         $type       = $request->input('type');
-
         $nickName   = trim($request->input('nickName',''));
-
         $name       = trim($request->input('name',''));
         $head       = $request->input('headImg');
         $openId     = $request->input('openId');
@@ -233,7 +230,7 @@ class UserController extends Controller
     /**
      * 登录的实体操作
      * */
-    private function login_action($userInfo,$isNewUser=false)
+    protected function login_action($userInfo,$isNewUser=false)
     {
         $loginToken             = new LoginToken();
         $token                  = $loginToken->user($userInfo['id'])->create_token()->cache()->get_token();
@@ -263,6 +260,10 @@ class UserController extends Controller
         $type       = $request->input('type');
         $wxunionid  = $request->input('wxUnionid');
         $qqopenid   = $request->input('qqOpenid');
+        $appleId    = $request->input('appleId');
+        $mobile     = $request->input('mobile','');
+        $password   = $request->input('password','');
+
         $userModel  = new UserModel();
 
         if($type == 'wx')
@@ -273,6 +274,20 @@ class UserController extends Controller
 
             $userInfo   = $userModel->get_user_info_by_openid($qqopenid,'qq');
 
+        } elseif ($type == 'ios') {
+
+            $userInfo   = $userModel->get_user_info_by_openid($appleId, 'ios');
+
+        } elseif ($type == 'password') {
+
+            $userInfo = $userModel->get_user_info_by_mobile($mobile);
+            if(!$userInfo) {
+                return apiData()->send(200,'请选注册');
+            }
+
+            if($userInfo['password'] != self::password($password)) {
+                return apiData()->send(200,'账号或密码错误');
+            }
         }
 
         if($userInfo == false) //用户第一次登陆
@@ -280,10 +295,12 @@ class UserController extends Controller
             return apiData()->send(200,'请绑定手机号');
         }
 
-        return $this->login_action($userInfo['id']);
+        return $this->login_action($userInfo);
     }
 
-
+    protected static function password($str) {
+        return md5(sha1($str));
+    }
 
     /**
      * 用户整体能力

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V2;
 
+use App\Common\MobileMassege;
 use App\Models\Base\BaseStarModel;
 use App\Models\Base\BaseStarTypeModel;
 use App\Models\V1\UserModel;
@@ -10,6 +11,85 @@ use App\Http\Controllers\Api\V1\UserController as V1Controller;
 
 class UserController extends V1Controller
 {
+
+
+    const LOGIN_TYPE_MOBILE = "mobile";
+    const LOGIN_TYPE_PASSWORD ="password";
+    const LOGIN_TYPE_WX = 'wx';
+    const LOGIN_TYPE_IOS = 'ios';
+
+    /**
+     * 用户注册
+     * 绑定QQ和绑定微信
+     * */
+    public function login(Request $request)
+    {
+        $mobile     = delete_str($request->input('mobile',""));
+        $code       = delete_str($request->input('code',""));
+        $password   = delete_str($request->input('password',''));
+        $type       = $request->input("type");  //password mobile wx apple
+        $nickName   = trim($request->input("nickName",''));
+        $name       = trim($request->input('name',''));
+        $head       = $request->input('headImg');
+        $openId     = $request->input('openId');
+
+        //1.检查参数
+        $params     = [
+            'mobile'    => [$mobile,"缺少手机号",4001],
+            'code'      => [$code,'缺少验证码',4003]
+        ];
+
+        $checkRes   = $this->check_params($params);
+        if($checkRes->status == false)
+        {
+            return apiData()->send($checkRes->code,$checkRes->message);
+        }
+
+        //2.检查验证妈
+        $mobileMessage  = new MobileMassege();
+        $result         = $mobileMessage->check_valid_code($mobile,$code);
+        if($result == false)
+        {
+            return apiData()->send(4005,$mobileMessage->error);
+        }
+
+
+        //3.根据注册类型进行注册
+        $userModel  = new UserModel();
+        $userInfo = $userModel->get_user_info_by_mobile($mobile);
+        $nickname   = $nickName ?: $mobile;
+        $userNewInfo   = [
+            'head_img'      => $head,
+            'name'          => $name,
+            'nickname'      => $nickName,
+        ];
+
+        if($type == self::LOGIN_TYPE_IOS)    $userNewInfo['apple_id']   = $openId;
+        if($type == self::LOGIN_TYPE_WX)     $userNewInfo['wx_union_id'] = $openId;
+        if($type == self::LOGIN_TYPE_PASSWORD) $userNewInfo['password'] = self::password($password);
+        $userNewInfo = array_filter($userNewInfo);
+
+        /*
+         * 这里有两种情况
+         * 1.微信绑定
+         * 2.ios绑定
+         * 3.第一次手机注册
+         * */
+        if(!$userInfo) {
+
+            $userModel->register($mobile,$nickname,$userNewInfo);
+            $userInfo   = $userModel->get_user_info_by_mobile($mobile);
+            return $this->login_action($userInfo,true);
+
+        } else {
+            if(count($userNewInfo) > 0) {
+                $userModel->update_user_info($userInfo['id'],$userNewInfo);
+            }
+            $userInfo   = $userModel->get_user_info($userInfo['id']);
+            return $this->login_action($userInfo);
+        }
+    }
+
     /**
      * 比赛比较
      * */

@@ -33,7 +33,8 @@ class UserModel extends Model
         'token',
         'football_team',
         'credit',
-        'star_id'
+        'star_id',
+        'password',
     ];
 
     /**
@@ -116,22 +117,34 @@ class UserModel extends Model
     {
         if($type == 'wx')
         {
-            $colum  = "wx_unionid";
+            $column  = "wx_unionid";
 
         }elseif($type == 'qq') {
 
-            $colum  = "qq_openid";
+            $column  = "qq_openid";
+
+        } elseif($type == 'ios') {
+
+            $column = 'apple_id';
         }
 
-        $userInfo = $this->where($colum,$openId)->select('id')->first();
+        $userInfo = $this->where($column,$openId)->select('id')->first();
         if($userInfo)
         {
-            $this->get_user_info($userInfo->id);
+            return $this->get_user_info($userInfo->id);
         }
 
         return false;
     }
 
+
+    public function get_user_info_by_apple_id($appleId) {
+        $userInfo = self::where('apple_id', $appleId)->first();
+        if($userInfo) {
+            return $this->get_user_info($userInfo->id);
+        }
+        return false;
+    }
     /*
      * 修改用户信息
      * */
