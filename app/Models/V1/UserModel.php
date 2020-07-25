@@ -164,7 +164,14 @@ class UserModel extends Model
     public function user_global_ability($userId)
     {
         $ability        = DB::table('user_global_ability')->where('user_id',$userId)->first();
+        if(!$ability) {
 
+            $defaultAbility = DB::table('user_global_ability')->first()->toArray();
+            $ability = new \stdClass();
+            foreach($defaultAbility as $key => $v) {
+                $ability->$key = 0;
+            }
+        }
         return $ability;
     }
 
