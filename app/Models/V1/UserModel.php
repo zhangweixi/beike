@@ -232,11 +232,16 @@ class UserModel extends Model
 
     static function userRank($userId, $rankColumn,$onlyFriend=0) {
         $grade = BaseUserAbilityModel::where('user_id', $userId)->value($rankColumn);
+        if(!$grade) {
+            return 0;
+        }
+
         $db = DB::table('user_global_ability as a');
         if($onlyFriend) {
             $db->leftJoin('friend as d','d.friend_user_id','=','a.user_id')->where('d.user_id', $userId)->orWhere('a.user_id', $userId);
         }
-        return $db->where('a.'.$rankColumn,'<',$grade)->count();
+        $rank = $db->where('a.'.$rankColumn,'<',$grade)->count();
+        return $rank + 1;
     }
 
 }
