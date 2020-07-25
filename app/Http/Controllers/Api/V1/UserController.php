@@ -328,7 +328,7 @@ class UserController extends Controller
             'pass'  => $userAbility->pass_num_total,
             'touch' => $userAbility->touchball_num_total,
             'speed' => $userAbility->run_speed_max,
-            'distance'=>$userAbility->run_distance_total,
+            'distance'=>ceil($userAbility->run_distance_total/1000),
             'total' => MatchModel::where('user_id',$userId)->count()
         ];
 
