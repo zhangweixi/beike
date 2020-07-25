@@ -1359,6 +1359,8 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseUserAbilityModel::where('user_id',$matchInfo->user_id)->update($globalGrade);
 
+        $this->set_user_same_star($matchInfo->user_id); //设置类似球星
+
         //销毁比赛的历史信息
         self::destory_match_cache($matchId,$matchInfo->court_id);
 
@@ -2083,33 +2085,11 @@ class AnalysisMatchData implements ShouldQueue
      * @param $userId
      */
     public function set_user_same_star($userId) {
-
-        $userInfo = BaseUserModel::find($userId);
-        $position = $userInfo->role1 ?: $userInfo->role2;
-        $userGrades = BaseUserAbilityModel::where('user_id',$userId)
-            ->select('grade_pass','grade_shoot','grade_strength','grade_dribble','grade_defense','grade_speed','grade')
-            ->first()->toArray();
-
-        $max = 0;
-        $type = '';
-        foreach($userGrades as $key => $v) {
-            if($v > $max && $key != 'grade') {
-                $max = $v;
-                $type = $key;
-            }
+        $sameStars = BaseStarModel::global_ability_same_star($userId);
+        if( $sameStars ) {
+            $userInfo = BaseUserModel::find($userId);
+            $userInfo->star_id = $sameStars[0]->id;
+            $userInfo->save();
         }
-
-        $type = str_replace("grade_","",$type);
-        if(empty($position) || empty($type)) {    //如果没有位置，那就比较总分
-            $type = "grade";
-            $max = $userGrades['grade'];
-            $star = BaseStarModel::where('id','>',0);
-        } else {
-            $star = BaseStarModel::where('position', $position);
-        }
-
-        $star = $star->select(DB::raw("ABS($type - $max) as dis"),'id',$type)->orderBy('dis')->first();
-        $userInfo->star_id = $star->id;
-        $userInfo->save();
     }
 }
