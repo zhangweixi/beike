@@ -409,7 +409,6 @@ class FriendController extends Controller
 
         if($page === 1) { //获取自己的排名
             $myRank = UserModel::userRank($userId,$rankType,$onlyFriend);
-            $myRank = $myRank ?: 1;
         } else {
             $myRank = 0;
         }
