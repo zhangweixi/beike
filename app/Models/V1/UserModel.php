@@ -166,7 +166,7 @@ class UserModel extends Model
         $ability        = DB::table('user_global_ability')->where('user_id',$userId)->first();
         if(!$ability) {
 
-            $defaultAbility = DB::table('user_global_ability')->first()->toArray();
+            $defaultAbility = DB::table('user_global_ability')->first();
             $ability = new \stdClass();
             foreach($defaultAbility as $key => $v) {
                 $ability->$key = 0;
