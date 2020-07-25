@@ -412,7 +412,11 @@ class FriendController extends Controller
         } else {
             $myRank = 0;
         }
-
+        foreach($friends as $friend) {
+            if($rankType == 'run_distance_total') {
+                $friend->grade = round($friend->grade/1000,2);
+            }
+        }
         return apiData()->add('myRank', $myRank)->add('users', $friends)->send();
     }
 }
