@@ -96,6 +96,7 @@ class CourtModel extends Model
         }
 
         return $db->where('court_name',"<>",'')
+        ->whereNull('deleted_at')
         ->select('court_id','court_name','public','user_id')
         ->get();
     }
