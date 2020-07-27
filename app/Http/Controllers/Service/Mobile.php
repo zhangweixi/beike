@@ -18,7 +18,7 @@ class Mobile extends Controller{
     {
 
         $mobile     = $request->input('mobile');
-        $country    = $request->input('country','086');
+        $country    = $request->input('country','86');
         $checkRes   = $this->check_params(['mobile'=>[$mobile,'缺少手机号']]);
         if($checkRes->status == false)
         {
