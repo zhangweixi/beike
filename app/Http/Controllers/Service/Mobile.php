@@ -45,7 +45,7 @@ class Mobile extends Controller{
 
         $mobile     = $request->input('mobile');
         $code       = $request->input('code');
-
+        $country    = $request->input('country','86');
         $data       = [
             'mobile'=>[$mobile,"手机号错误"],
             'code'  =>[$code,'缺少验证码']
@@ -58,7 +58,7 @@ class Mobile extends Controller{
         }
 
         $mobileMessage  = new MobileMassege();
-        $codeCheck      = $mobileMessage->check_valid_code($mobile,$code);
+        $codeCheck      = $mobileMessage->check_valid_code($country.$mobile,$code);
         if($codeCheck == false)
         {
             return apiData()->send(3004,$mobileMessage->error);
