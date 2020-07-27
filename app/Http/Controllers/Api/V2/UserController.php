@@ -24,7 +24,7 @@ class UserController extends V1Controller
      * */
     public function login(Request $request)
     {
-        $country    = $request->input('country','');
+        $country    = $request->input('country','86');
         $mobile     = delete_str($request->input('mobile',""));
         $code       = delete_str($request->input('code',""));
         $password   = delete_str($request->input('password',''));
