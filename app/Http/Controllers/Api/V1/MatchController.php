@@ -680,13 +680,13 @@ class MatchController extends Controller
 
             $match->shoot   = $match->shoot ?? 0;
             $match->pass    = $match->pass ?? 0;
-            $match->run     = $match->run/1000 ?? 0;
+            $match->run     = round($match->run/1000 ?? 0,2);
             $match->x       = $totalNum - $key;
 
-            $match->run_low_dis = $match->run_low_dis / 1000;
-            $match->run_mid_dis = $match->run_mid_dis / 1000;
-            $match->run_high_dis = $match->run_high_dis / 1000;
-            $match->run_static_dis = $match->run_static_dis / 1000;
+            $match->run_low_dis = round($match->run_low_dis / 1000,2);
+            $match->run_mid_dis = round($match->run_mid_dis / 1000,2);
+            $match->run_high_dis = round($match->run_high_dis / 1000,2);
+            $match->run_static_dis = round($match->run_static_dis / 1000,2);
 
         }
 
@@ -711,7 +711,7 @@ class MatchController extends Controller
 
         $matchInfo = [
             'totalPass' => $totalPass,
-            'totalRun'  => $totalRun/1000,
+            'totalRun'  => round($totalRun/1000,2),
             'totalShoot'=> $totalShoot,
             'matches'   => $matches
         ];
