@@ -515,23 +515,23 @@ class MatchController extends Controller
             'passShort'    => [
                 'speedMax'  => speed_second_to_hour($matchResult->pass_s_speed_max),
                 'speedAvg'  => speed_second_to_hour($matchResult->pass_s_speed_avg),
-                'disMax'    => $matchResult->pass_s_dis_max/1000,
-                'disAvg'    => $matchResult->pass_s_dis_avg/1000,
+                'disMax'    => round($matchResult->pass_s_dis_max/1000,2),
+                'disAvg'    => round($matchResult->pass_s_dis_avg/1000,2),
                 'number'    => $matchResult->pass_s_num
             ],
             'passLength'    => [
                 'speedMax'  => speed_second_to_hour($matchResult->pass_l_speed_max),
                 'speedAvg'  => speed_second_to_hour($matchResult->pass_l_speed_avg),
-                'disMax'    => $matchResult->pass_l_dis_max/1000,
-                'disAvg'    => $matchResult->pass_l_dis_avg/1000,
+                'disMax'    => round($matchResult->pass_l_dis_max/1000,2),
+                'disAvg'    => round($matchResult->pass_l_dis_avg/1000,2),
                 'number'    => $matchResult->pass_l_num
             ],
 
             'run'        => [
-                'walkDis'      => $matchResult->run_static_dis/1000,
-                'lowDis'       => $matchResult->run_low_dis/1000,
-                'midDis'       => $matchResult->run_mid_dis/1000,
-                'highDis'      => $matchResult->run_high_dis/1000,
+                'walkDis'      => round($matchResult->run_static_dis/1000,2),
+                'lowDis'       => round($matchResult->run_low_dis/1000,2),
+                'midDis'       => round($matchResult->run_mid_dis/1000,2),
+                'highDis'      => round($matchResult->run_high_dis/1000,2),
                 'walkTime'     => $matchResult->run_static_time,
                 'lowTime'      => $matchResult->run_low_time,
                 'midTime'      => $matchResult->run_mid_time,
