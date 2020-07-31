@@ -57,7 +57,8 @@ class FriendModel extends Model
         $db = DB::table('friend as a')
             ->leftJoin('users as b','b.id','=','a.friend_user_id')
             ->leftJoin('user_global_ability as d','d.user_id','=','a.friend_user_id')
-            ->select('a.friend_id','a.friend_user_id','b.nick_name','b.birthday as age',DB::raw('IFNULL(d.grade,0) as grade'),'b.role1 as role','b.head_img')
+            ->leftJoin('football_team as f','f.team_id','=',DB::raw("b.football_team and b.football_team > 0"))
+            ->select('a.friend_id','a.friend_user_id','b.nick_name','b.birthday as age','b.height','b.weight',DB::raw('IFNULL(d.grade,0) as grade'),'b.role1 as role','b.head_img','f.team_name')
             ->where('a.user_id',$userId);
 
         if($keywords != "")

@@ -22,7 +22,7 @@ class BaseStarModel extends Model
     static function same_stars($num, $options, $grade, $position) {
 
         $columns = implode("+", $options);
-        $db =  self::select('id','name','age','team','grade','img','position',DB::raw("$columns as total"),DB::raw("abs($columns - $grade) as scale" ));
+        $db =  self::select('id','name','age','team','grade','img','height','position',DB::raw("$columns as total"),DB::raw("abs($columns - $grade) as scale" ));
         if($position) {
             $db->where('position', $position);
         }

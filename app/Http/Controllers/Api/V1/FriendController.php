@@ -226,7 +226,6 @@ class FriendController extends Controller
         //查找已加入系统的用户
         $mobiles    = [];
         $names      = [];
-
         foreach($users as $user)
         {
             if($user->mobile == trim($userInfo->mobile))
@@ -240,7 +239,8 @@ class FriendController extends Controller
         //已注册的用户
         $registeredUsers    = DB::table('users as a')
             ->leftJoin('user_global_ability as d','d.user_id','=','a.id')
-            ->select('a.id','a.birthday as age','role1 as role','a.mobile','a.head_img','d.grade')
+            ->leftJoin('football_team as f','f.team_id','=',DB::raw("a.football_team and a.football_team > 0"))
+            ->select('a.id','a.birthday as age','a.weight','a.height','role1 as role','a.mobile','a.head_img','d.grade','f.team_name')
             ->whereNotIn("a.id",$allFriend)
             ->whereIn('a.mobile',$mobiles)
             ->get();
@@ -273,7 +273,9 @@ class FriendController extends Controller
                     'grade'     => 0,
                     'head_img'  => get_default_head(),
                     'age'       => 0,
-
+                    'height'    => 0,
+                    'weight'    => 0,
+                    'team_name' => ''
                 ];
                 array_push($unregisteredUsers,$unregiFriend);
             }

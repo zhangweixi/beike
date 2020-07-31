@@ -80,7 +80,8 @@ class MatchController extends V1MatchController{
 
         /*基本信息*/
         $matchInfo->foot    = BaseUserModel::where('id', $matchInfo->user_id)->value('foot');
-        $matchInfo->advice  = '';
+        $matchInfo->advice  = '你太牛逼了，还没有人有你这么厉害，说话又好听，技术又牛逼，开锁还无声';
+        $matchInfo->style   = '你本厂比赛踢得和梅西一样出色';
         $matchInfo->grade   = BaseMatchResultModel::where('match_id', $matchId)->value('grade');
         return apiData()
             ->set_data('matchInfo',$matchInfo)

@@ -400,6 +400,17 @@ class MatchController extends Controller
     }
 
     /**
+     * 比赛基础信息
+     * */
+    public function match_base(Request $request){
+
+        $matchId    = $request->input('matchId');
+        $matchModel = new MatchModel();
+        $matchInfo  = $matchModel->get_match_detail($matchId);
+        return apiData()->set_data('data',$matchInfo)->send_old();
+    }
+
+    /**
      * 比赛详细基本信息
      * */
     public function match_detail_base(Request $request)
@@ -448,16 +459,7 @@ class MatchController extends Controller
             ->send(200,'success');
     }
 
-    /**
-     * 比赛基础信息
-     * */
-    public function match_base(Request $request){
 
-        $matchId    = $request->input('matchId');
-        $matchModel = new MatchModel();
-        $matchInfo  = $matchModel->get_match_detail($matchId);
-        return apiData()->set_data('data',$matchInfo)->send_old();
-    }
 
     public function match_detail_mood(Request $request)
     {
