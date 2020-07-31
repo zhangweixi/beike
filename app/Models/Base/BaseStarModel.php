@@ -30,7 +30,7 @@ class BaseStarModel extends Model
         ->limit($num)
         ->get();
         foreach($stars as $star) {
-            $star->scale = min($grade,$star->total) / max($grade,$star->total);
+            $star->scale = round(min($grade,$star->total) / max($grade,$star->total),4);
         }
         return $stars;
     }
