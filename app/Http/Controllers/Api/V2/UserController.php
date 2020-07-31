@@ -134,11 +134,12 @@ class UserController extends V1Controller
 
             $friendAbility          = new \stdClass();
             $friendAbility->grade   = $friendInfo->grade;
-            $friendAbility->shoot   = $friendInfo->shoot;
-            $friendAbility->pass    = $friendInfo->pass;
-            $friendAbility->strength= $friendInfo->strength;
-            $friendAbility->defense = $friendInfo->defense;
-            $friendInfo->run        = $friendInfo->speed;
+            $friendAbility->grade_shoot   = $friendInfo->shoot;
+            $friendAbility->grade_pass    = $friendInfo->pass;
+            $friendAbility->grade_strength= $friendInfo->strength;
+            $friendAbility->grade_defense = $friendInfo->defense;
+            $friendAbility->grade_dribble = $friendInfo->dribble;
+            $friendInfo->grade_run        = $friendInfo->speed;
 
             $shootDesire    = 0;
             $shootStrength  = 0;
