@@ -173,7 +173,7 @@ class UserController extends Controller
 
         /*=========获取球星等级========== 结束 */
         $userInfo['friendNum'] = FriendModel::where('user_id', $userId)->count();
-        $userInfo['description'] = '这个人很懒，还没有填写个人介绍';
+        $userInfo['description'] = $userInfo['description'] ?: '这个人很懒，没有填写任何介绍';
         return apiData()->set_data('userInfo',$userInfo)->set_data('deviceInfo',$deviceInfo)->send(200,'success');
     }
 

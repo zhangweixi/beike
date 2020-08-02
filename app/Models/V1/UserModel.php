@@ -34,7 +34,7 @@ class UserModel extends Model
         'football_team',
         'credit',
         'star_id',
-        'password',
+        'description'
     ];
 
     /**
