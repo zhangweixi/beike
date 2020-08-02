@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Service;
 use App\Common\Http;
+use App\Models\Base\BaseMatchModel;
+use App\Models\Base\BaseMatchResultModel;
+use App\Models\V1\MatchModel;
 
 class Match
 {
@@ -25,5 +28,19 @@ class Match
         }
 
         return $res->code == 200 ? true : false;
+    }
+
+    /**
+     * 计算比赛的经验值
+     * @param $matchId 比赛ID
+     * @return float
+     */
+    public static function calculate_empiric($matchId) {
+        $matchInfo = BaseMatchResultModel::where('match_id', $matchId)->select('grade_run','grade_touchball_num','grade_shoot','grade_speed','grade_defense','grade_dribble')->first()->toArray();
+        $match = BaseMatchModel::find($matchId);
+        $time = $match->time_length / 3600;
+        $grade = array_sum($matchInfo);
+        //echo $time;exit;
+        return  round(($grade / count($matchInfo)) / 100  * $time,2);
     }
 }

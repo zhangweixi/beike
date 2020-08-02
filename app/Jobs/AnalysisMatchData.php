@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Common\Geohash;
 use App\Common\WechatTemplate;
 use App\Http\Controllers\Service\GPSPoint;
+use App\Http\Controllers\Service\Match;
 use App\Http\Controllers\Service\MatchGrade;
 use App\Http\Controllers\Service\Wechat;
 use App\Models\Base\BaseFootballCourtModel;
@@ -1359,7 +1360,12 @@ class AnalysisMatchData implements ShouldQueue
 
         BaseUserAbilityModel::where('user_id',$matchInfo->user_id)->update($globalGrade);
 
+        //设置等级分数
+        $gradeEmpiric = Match::calculate_empiric($matchId);
+        BaseUserAbilityModel::where('user_id', $matchInfo->user_id)->increment('grade_empiric', $gradeEmpiric);
+
         $this->set_user_same_star($matchInfo->user_id); //设置类似球星
+
 
         //销毁比赛的历史信息
         self::destory_match_cache($matchId,$matchInfo->court_id);
