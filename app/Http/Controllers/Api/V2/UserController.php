@@ -139,7 +139,7 @@ class UserController extends V1Controller
             $friendAbility->grade_strength= $friendInfo->strength;
             $friendAbility->grade_defense = $friendInfo->defense;
             $friendAbility->grade_dribble = $friendInfo->dribble;
-            $friendInfo->grade_run        = $friendInfo->speed;
+            $friendAbility->grade_run     = $friendInfo->speed;
 
             $shootDesire    = 0;
             $shootStrength  = 0;

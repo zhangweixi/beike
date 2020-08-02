@@ -59,6 +59,7 @@ class StarController extends Controller
     public function detail(Request $i) {
         $starInfo = BaseStarModel::find($i->input('id'));
         $starInfo->img = url($starInfo->img);
+        $starInfo->defence = $starInfo->defense;
         return apiData()->set_data('data',$starInfo)->send();
     }
 }

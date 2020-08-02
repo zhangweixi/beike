@@ -31,6 +31,7 @@ class BaseStarModel extends Model
         ->get();
         foreach($stars as $star) {
             $star->scale = round(min($grade,$star->total) / max($grade,$star->total),4);
+            $star->defence = $star->defense;
         }
         return $stars;
     }
