@@ -31,7 +31,7 @@ class BaseStarModel extends Model
         ->get();
         foreach($stars as $star) {
             $star->scale = round(min($grade,$star->total) / max($grade,$star->total),4);
-            $star->defence = $star->defense;
+            //$star->defence = $star->defense;
         }
         return $stars;
     }
@@ -48,11 +48,13 @@ class BaseStarModel extends Model
             $key1 = "grade_".$key;
             $abilityValue[$key] = $ability->$key1;
         }
+
         $abilityValue = array_sort($abilityValue);
         $abilityValue = array_splice($abilityValue,3,3);
         $totalGrade   = array_sum($abilityValue);
         $keys = array_keys($abilityValue);
         $position     = $userInfo->role?: $userInfo->role;
+
         return BaseStarModel::same_stars(7, $keys, $totalGrade, $position);
     }
 }
