@@ -408,7 +408,7 @@ class UserController extends Controller
             'strength'  => self::def_grade($ability,'grade_strength',30),
             'dribble'   => self::def_grade($ability,'grade_dribble',30),
             'defense'   => self::def_grade($ability,'grade_defense',30),
-            'run'       => self::def_grade($ability,'grade_run',30)
+            'run'       => self::def_grade($ability,'grade_speed',30)
         ];
         return $baseMap;
     }
