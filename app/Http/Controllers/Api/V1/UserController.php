@@ -151,7 +151,7 @@ class UserController extends Controller
         }
 
         /*=========获取球星等级========== 开始 */
-        $userGrade = BaseUserAbilityModel::where('user_id', $userId)->value('grade');
+        $userGrade = BaseUserAbilityModel::where('user_id', $userId)->value('grade_empiric');
         $userStar  = null;
         if ($userGrade) {
             $userStar = BaseStarTypeModel::where('grade','<=',$userGrade)
@@ -159,6 +159,7 @@ class UserController extends Controller
                 ->orderBy('grade','desc')
                 ->first();
         }
+
         if (!$userStar) {
             $userStar = new \stdClass();
             $userStar->id = 0;
