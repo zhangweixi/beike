@@ -42,6 +42,12 @@ class BaseStarModel extends Model
         $userModel = new UserModel();
         $ability = $userModel->user_global_ability($userId);
         $userInfo = $userModel->find($userId);
+        $position     = $userInfo->role?: $userInfo->role;
+        return self::same_ability_star($position,$ability,7);
+        //return BaseStarModel::same_stars(7, $keys, $totalGrade, $position);
+    }
+
+    static function same_ability_star($position,$ability,$num){
         $abilityKey = ['shoot','pass','strength','dribble','defense','speed'];
         $abilityValue=[];
         foreach($abilityKey as $key) {
@@ -53,8 +59,7 @@ class BaseStarModel extends Model
         $abilityValue = array_splice($abilityValue,3,3);
         $totalGrade   = array_sum($abilityValue);
         $keys = array_keys($abilityValue);
-        $position     = $userInfo->role?: $userInfo->role;
 
-        return BaseStarModel::same_stars(7, $keys, $totalGrade, $position);
+        return BaseStarModel::same_stars($num, $keys, $totalGrade, $position);
     }
 }

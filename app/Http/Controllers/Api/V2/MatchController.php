@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\MatchController as V1MatchController;
 use App\Http\Controllers\Service\Match;
 use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchResultModel;
+use App\Models\Base\BaseStarModel;
 use App\Models\Base\BaseStarTypeModel;
 use App\Models\Base\BaseUserModel;
 use App\Models\V1\CourtModel;
@@ -95,9 +96,21 @@ class MatchController extends V1MatchController{
             'speed' => $gradeSpeed,
             'position'=>$position
         ]);
+
         $comments = array_random($comments,3);
         $matchInfo->advice  = implode("\n\r",$comments);
-        $matchInfo->style   = '你本厂比赛踢得和梅西一样出色';
+
+
+        $ability    = new \stdClass();
+        $ability->grade_shoot = $matchInfo->shoot;
+        $ability->grade_pass = $matchInfo->pass;
+        $ability->grade_strength = $matchInfo->strength;
+        $ability->grade_dribble = $matchInfo->dribble;
+        $ability->grade_defense = $matchInfo->defense;
+        $ability->speed = $gradeSpeed;
+        $sameStar = BaseStarModel::same_ability_star($position,$ability,1);
+        $matchInfo->style   = '你本厂比赛踢得和'.$sameStar[0]->name.'一样出色';
+
         $matchInfo->grade   = BaseMatchResultModel::where('match_id', $matchId)->value('grade');
         return apiData()
             ->set_data('matchInfo',$matchInfo)
