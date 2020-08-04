@@ -2,12 +2,14 @@
 namespace App\Http\Controllers\Api\V2;
 
 use App\Http\Controllers\Api\V1\MatchController as V1MatchController;
+use App\Http\Controllers\Service\Match;
 use App\Models\Base\BaseFootballCourtModel;
 use App\Models\Base\BaseMatchResultModel;
 use App\Models\Base\BaseStarTypeModel;
 use App\Models\Base\BaseUserModel;
 use App\Models\V1\CourtModel;
 use App\Models\V1\MatchModel;
+use App\Models\V1\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -66,6 +68,7 @@ class MatchController extends V1MatchController{
             $matchInfo->dribble = $matchResult->grade_dribble ?? 0;
             $matchInfo->defense = $matchResult->grade_defense ?? 0;
             $matchInfo->run     = $matchResult->grade_run ?? 0;
+            $gradeSpeed         = $matchResult->grade_speed??0;
 
         }else{//默认值
 
@@ -76,11 +79,24 @@ class MatchController extends V1MatchController{
             $matchInfo->dribble = 0;
             $matchInfo->defense = 0;
             $matchInfo->run     = 0;
+            $gradeSpeed         = 0;
+
         }
 
         /*基本信息*/
         $matchInfo->foot    = BaseUserModel::where('id', $matchInfo->user_id)->value('foot');
-        $matchInfo->advice  = '你太牛逼了，还没有人有你这么厉害，说话又好听，技术又牛逼，开锁还无声';
+        $position = UserModel::where('id',$matchInfo->user_id)->select(['role1','role2'])->first();
+        $position = $position->role1 ?: $position->role2;
+        $comments = Match::get_comments([
+            'shoot' => $matchInfo->shoot,
+            'pass'  => $matchInfo->pass,
+            'run'   => $matchInfo->run,
+            'distance'=> $matchInfo->run,
+            'speed' => $gradeSpeed,
+            'position'=>$position
+        ]);
+
+        $matchInfo->advice  = implode('',$comments);
         $matchInfo->style   = '你本厂比赛踢得和梅西一样出色';
         $matchInfo->grade   = BaseMatchResultModel::where('match_id', $matchId)->value('grade');
         return apiData()
@@ -88,5 +104,7 @@ class MatchController extends V1MatchController{
             ->set_data('map',$map)
             ->send(200,'success');
     }
+
+
 
 }
