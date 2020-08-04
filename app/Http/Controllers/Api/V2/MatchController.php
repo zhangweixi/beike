@@ -107,7 +107,7 @@ class MatchController extends V1MatchController{
         $ability->grade_strength = $matchInfo->strength;
         $ability->grade_dribble = $matchInfo->dribble;
         $ability->grade_defense = $matchInfo->defense;
-        $ability->speed = $gradeSpeed;
+        $ability->grade_speed = $gradeSpeed;
         $sameStar = BaseStarModel::same_ability_star($position,$ability,1);
         $matchInfo->style   = '你本厂比赛踢得和'.$sameStar[0]->name.'一样出色';
 
