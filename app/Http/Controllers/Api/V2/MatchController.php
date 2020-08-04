@@ -96,7 +96,7 @@ class MatchController extends V1MatchController{
             'position'=>$position
         ]);
         $comments = array_random($comments,3);
-        $matchInfo->advice  = implode('\n\r',$comments);
+        $matchInfo->advice  = implode("\n\r",$comments);
         $matchInfo->style   = '你本厂比赛踢得和梅西一样出色';
         $matchInfo->grade   = BaseMatchResultModel::where('match_id', $matchId)->value('grade');
         return apiData()
