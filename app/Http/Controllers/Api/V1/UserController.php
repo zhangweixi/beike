@@ -152,24 +152,15 @@ class UserController extends Controller
 
         /*=========获取球星等级========== 开始 */
         $userGrade = BaseUserAbilityModel::where('user_id', $userId)->value('grade_empiric');
+        $userGrade = $userGrade ?: 0;
         $userStar  = null;
-        if ($userGrade) {
-            $userStar = BaseStarTypeModel::where('grade','<=',$userGrade)
-                ->select('id','name','img','grade')
-                ->orderBy('grade','desc')
-                ->first();
-        }
 
-        if (!$userStar) {
-            $userStar = new \stdClass();
-            $userStar->id = 0;
-            $userStar->name = '';
-            $userStar->img = '';
-            $userStar->grade = 0;
-        } else {
-            $userStar->img = url($userStar->img);
-        }
-        //$userStar->gradeEmpiric =
+        $userStar = BaseStarTypeModel::where('grade','<=',$userGrade)
+            ->select('id','name','img','grade')
+            ->orderBy('grade','desc')
+            ->first();
+
+        $userStar->img = url($userStar->img);
         $userStar->grade = $userGrade ?: 0;
         $userStar->getDate = date('Y-m-d');
         $userStar->maxGrade = 1000;
