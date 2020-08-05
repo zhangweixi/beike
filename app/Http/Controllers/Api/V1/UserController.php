@@ -169,7 +169,10 @@ class UserController extends Controller
         } else {
             $userStar->img = url($userStar->img);
         }
+        //$userStar->gradeEmpiric =
+        $userStar->grade = $userGrade ?: 0;
         $userStar->getDate = date('Y-m-d');
+        $userStar->maxGrade = 1000;
         $userInfo['starGrade'] = $userStar;
 
         /*=========获取球星等级========== 结束 */
